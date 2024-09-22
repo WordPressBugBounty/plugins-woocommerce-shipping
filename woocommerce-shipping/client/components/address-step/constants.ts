@@ -1,0 +1,12 @@
+export const ADDRESS_TYPES = {
+	ORIGIN: 'origin',
+	DESTINATION: 'destination',
+};
+
+export const UPDATE_ADDRESS_STATUS = {
+	INIT: 0,
+	NORMALIZING_ADDRESS: 1,
+	ADDRESS_NORMALIZED: 2,
+	UPDATING_ADDRESS: 3,
+	ADDRESS_UPDATED: 4,
+};
