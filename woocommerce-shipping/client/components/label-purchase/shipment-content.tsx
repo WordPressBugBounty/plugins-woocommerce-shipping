@@ -25,6 +25,8 @@ import { PurchaseNotice } from './label';
 import { PaymentButtons } from './purchase';
 import { RefundedNotice } from './label/refunded-notice';
 import { NoRatesAvailable } from './shipping-service/no-rates-available';
+import { LABEL_PURCHASE_STATUS } from 'data/constants';
+import { PurchaseErrorNotice } from './purchase/purchase-error-notice';
 
 interface ShipmentContentProps {
 	items: unknown[];
@@ -71,12 +73,15 @@ export const ShipmentContent = ( {
 			align="flex-start"
 		>
 			<FlexBlock className="shipment-items">
-				{ hasPurchasedLabel( false ) && (
-					<>
-						<PurchaseNotice />
-						<Divider margin="12" />
-					</>
-				) }
+				{ hasPurchasedLabel( false ) &&
+					getCurrentShipmentLabel()?.status !==
+						LABEL_PURCHASE_STATUS.PURCHASE_ERROR && (
+						<>
+							<PurchaseNotice />
+							<Divider margin="12" />
+						</>
+					) }
+				<PurchaseErrorNotice label={ getCurrentShipmentLabel() } />
 				{ hasRequestedRefund() && ! hasPurchasedLabel() && (
 					<>
 						<RefundedNotice />

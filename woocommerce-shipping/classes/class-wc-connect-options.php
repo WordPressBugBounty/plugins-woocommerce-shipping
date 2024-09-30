@@ -76,14 +76,12 @@ class WC_Connect_Options {
 
 		$non_compacts = self::get_option_names( 'non_compact' );
 		foreach ( $non_compacts as $non_compact ) {
-			delete_option( "wc_connect_$non_compact" );
+			delete_option( "wcshipping_$non_compact" );
 		}
-
-		self::delete_all_shipping_methods_options();
 	}
 
 	/**
-	 * Returns the requested option.  Looks in wc_connect_options or wc_connect_$name as appropriate.
+	 * Returns the requested option.  Looks in wcshipping_options or wcshipping_$name as appropriate.
 	 *
 	 * @param string $name Option name
 	 * @param mixed  $default (optional)

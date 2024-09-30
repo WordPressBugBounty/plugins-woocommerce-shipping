@@ -7,6 +7,7 @@ import {
 	UPDATE_SHIPMENT_ADDRESS_FAILED,
 	VERIFY_ORDER_SHIPPING_ADDRESS,
 	VERIFY_ORDER_SHIPPING_ADDRESS_FAILED,
+	VERIFY_ORDER_SHIPPING_ADDRESS_START,
 } from './action-types';
 import { Action, AddressTypes, Destination, OriginAddress } from 'types';
 import { resetAddressNormalizationResponse } from './actions';
@@ -24,6 +25,13 @@ export interface ShippingAddressVerifyAction extends Action {
 
 export interface ShippingAddressVerifyFailedAction extends Action {
 	type: VERIFY_ORDER_SHIPPING_ADDRESS_FAILED;
+	payload: {
+		addressType: AddressTypes;
+	};
+}
+
+export interface ShippingAddressVerifyStartAction extends Action {
+	type: VERIFY_ORDER_SHIPPING_ADDRESS_START;
 	payload: {
 		addressType: AddressTypes;
 	};
@@ -99,4 +107,5 @@ export type AddressActions =
 	| ReturnType< typeof resetAddressNormalizationResponse >
 	| UpdateShipmentAddressAction
 	| UpdateShipmentAddressFailedAction
-	| NormalizationAddressAction;
+	| NormalizationAddressAction
+	| ShippingAddressVerifyStartAction;

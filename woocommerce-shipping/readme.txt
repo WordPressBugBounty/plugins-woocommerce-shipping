@@ -7,7 +7,7 @@ Requires at least: 6.4
 Tested up to: 6.6
 WC requires at least: 8.9
 WC tested up to: 9.1
-Stable tag: 1.1.3
+Stable tag: 1.1.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -122,6 +122,19 @@ Absolutely! You can read our Terms of Service [here](https://wordpress.com/tos).
 4. WooCommerce Shipping print label screen.
 
 == Changelog ==
+
+= 1.1.4 - 2024-09-25 =
+* Fix   - Selectively migrate WooCommerce Shipping & Tax packages if WCShipping created its own new settings.
+* Fix   - Don't remove non-compact options prefixed with "wc_connect_" on uninstallation.
+* Add   - Automate address verification for shipping address on the purchase screen.
+* Add   - Improve the purchase status header during the purchase process
+* Tweak - Improve timestamp handling on plugin status page.
+* Fix   - Don't remove non-compact options prefixed with "wc_connect_" on uninstallation.
+* Fix   - Focusing in the custom package form doesn't deactivate the "Get rates button" button.
+* Fix   - Ensure custom items stay in sync with the shipment items.
+* Fix   - Surface payment errors to the user.
+* Fix   - Remember dismissal of migration banners.
+* Fix   - Customs form's weight to represent the total weight instead of individual line item weight.
 
 = 1.1.3 - 2024-09-18 =
 * Add   - Remember last order complete checkbox state for next label purchase.

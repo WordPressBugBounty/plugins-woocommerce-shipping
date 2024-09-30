@@ -571,6 +571,7 @@ class WC_Connect_Shipping_Label {
 				'continents'        => $this->continents->get(),
 				'context'           => $args['args']['context'],
 				'items'             => $items_count,
+				'constants'         => Utils::get_constants_for_js(),
 			),
 			$args,
 			$order,

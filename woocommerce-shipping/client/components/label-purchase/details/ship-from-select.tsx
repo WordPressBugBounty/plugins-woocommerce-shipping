@@ -23,6 +23,7 @@ import { settingsPageUrl } from '../constants';
 import { ShipFromOption } from './ship-from-option';
 import { useLabelPurchaseContext } from '../context';
 import { AddressStep } from 'components/address-step';
+import { ADDRESS_TYPES } from 'data/constants';
 import { AddressVerifiedIcon } from 'components/address-verified-icon';
 import { addressStore } from 'data/address';
 
@@ -68,7 +69,7 @@ export const ShipFromSelect = ( { disabled }: ShipFromSelectProps ) => {
 			),
 			{
 				a: (
-					<Link href={ settingsPageUrl } type="internal">
+					<Link href={ settingsPageUrl } type="wp-admin">
 						{ __( 'visit settings', 'woocommerce-shipping' ) }
 					</Link>
 				),
@@ -130,6 +131,7 @@ export const ShipFromSelect = ( { disabled }: ShipFromSelectProps ) => {
 							'Validate your address',
 							'woocommerce-shipping'
 						) }
+						addressType={ ADDRESS_TYPES.ORIGIN }
 					/>
 				) }
 			</Flex>

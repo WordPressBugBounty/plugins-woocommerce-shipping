@@ -28,3 +28,7 @@ export const getConfigMeta = ( state ) => {
 	//TODO: Why did we call it formMeta? Can we rename this from the API?
 	return state.formMeta;
 };
+
+export const getEnabledServices = ( state ) => {
+	return state?.enabledServices ?? [];
+};

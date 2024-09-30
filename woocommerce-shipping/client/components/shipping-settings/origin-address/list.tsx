@@ -23,6 +23,7 @@ import { help } from '@wordpress/icons';
 import { addressStore } from 'data/address';
 import { OriginAddress } from 'types';
 import { AddressStep } from 'components/address-step';
+import { ADDRESS_TYPES } from 'data/constants';
 import { useShippingSettingsContext } from '../context';
 import { AddressColumn } from './address-column';
 import { AddressVerifiedIcon } from '../../address-verified-icon';
@@ -130,6 +131,9 @@ export const OriginAddressList = () => {
 												onClick={ openEditAddressForm(
 													address
 												) }
+												addressType={
+													ADDRESS_TYPES.ORIGIN
+												}
 											/>
 										</HStack>
 									) }

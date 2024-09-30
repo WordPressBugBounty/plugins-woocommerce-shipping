@@ -582,6 +582,10 @@ return array(
 		'version' => '3.0.9',
 		'path'    => $vendorDir . '/automattic/jetpack-autoloader/src/class-shutdown-handler.php'
 	),
+	'UtilsTest' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/tests/php/Utils/UtilsTest.php'
+	),
 	'Version_Loader' => array(
 		'version' => '3.0.9',
 		'path'    => $vendorDir . '/automattic/jetpack-autoloader/src/class-version-loader.php'
@@ -593,5 +597,9 @@ return array(
 	'ViewServiceTest' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/tests/php/LabelPurchase/ViewServiceTest.php'
+	),
+	'WC_Connect_Compatibility_WCShipping_Packages' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/tests/php/Double/WC_Connect_Compatibility_WCShipping_Packages.php'
 	),
 );

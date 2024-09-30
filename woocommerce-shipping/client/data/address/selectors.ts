@@ -78,3 +78,10 @@ export const getPreparedDestination = ( state: AddressState ) => {
 	// eslint-disable-next-line no-unused-vars
 	return destination;
 };
+
+export function getIsAddressVerificationInProgress(
+	state: AddressState,
+	type: AddressTypes
+) {
+	return state[ type ]?.isAddressVerificationInProgress ?? false;
+}

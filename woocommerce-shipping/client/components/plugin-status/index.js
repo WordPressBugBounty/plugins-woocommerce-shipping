@@ -165,6 +165,13 @@ const PluginStatus = ( props ) => {
 	};
 
 	const getLastUpdatedShippingStatus = () => {
+		const isValidDate =
+			wcShippingHealthHealthItem.timestamp > 0 ? true : false;
+
+		if ( ! isValidDate ) {
+			return false;
+		}
+
 		const lastUpdated = new Date(
 			wcShippingHealthHealthItem.timestamp * 1000
 		);
@@ -186,6 +193,18 @@ const PluginStatus = ( props ) => {
 	if ( isLoading ) {
 		return <div>Loading...</div>;
 	}
+
+	const lastUpdateText =
+		getLastUpdatedShippingStatus() !== false
+			? sprintf(
+					// translators: %s is last update time.
+					__( 'Last update on %s', 'woocommerce-shipping' ),
+					getLastUpdatedShippingStatus()
+			  )
+			: __(
+					'Cannot retrieve the last update time.',
+					'woocommerce-shipping'
+			  );
 
 	return (
 		<div>
@@ -220,7 +239,7 @@ const PluginStatus = ( props ) => {
 						) }
 					/>
 					<p>
-						Last update on { getLastUpdatedShippingStatus() }{ ' ' }
+						{ lastUpdateText }{ ' ' }
 						<Button
 							disabled={ isBusy }
 							variant="link"

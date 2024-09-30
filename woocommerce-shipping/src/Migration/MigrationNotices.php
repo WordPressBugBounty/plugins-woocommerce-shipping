@@ -11,11 +11,20 @@ namespace Automattic\WCShipping\Migration;
  * Class MigrationNotices
  */
 class MigrationNotices {
+
+	/**
+	 * @var MigrationController $migration_controller
+	 */
+	private static $migration_controller;
+
 	/**
 	 * Constructor.
 	 */
-	public static function init(): void {
+	public static function init( MigrationController $migration_controller ): void {
+		self::$migration_controller = $migration_controller;
 		add_action( 'admin_notices', array( __CLASS__, 'output_migration_notices' ) );
+		add_action( 'admin_footer', array( __CLASS__, 'enqueue_migration_notice_dismiss_script' ) );
+		add_action( 'wp_ajax_dismiss_admin_notice', array( __CLASS__, 'dismiss_migration_completed_notice' ) );
 	}
 
 	/**
@@ -53,11 +62,6 @@ class MigrationNotices {
 				'dismissible' => true,
 			)
 		);
-
-		// Allow the notice to persist for 3 minutes.
-		if ( ! get_option( 'wcshipping_installation_completed_shown' ) ) {
-			update_option( 'wcshipping_installation_completed_shown', current_time( 'U' ) + ( MINUTE_IN_SECONDS * 3 ), false );
-		}
 	}
 
 	/**
@@ -78,12 +82,7 @@ class MigrationNotices {
 				return false;
 		}
 
-		$option_value = get_option( $option_name );
-		if ( ! $option_value ) {
-			return true;
-		}
-
-		return current_time( 'U' ) < $option_value;
+		return ! get_option( $option_name );
 	}
 
 	/**
@@ -145,28 +144,79 @@ class MigrationNotices {
 	public static function data_migration_started_notice() {
 		switch ( MigrationState::get_data_migration_required_type() ) {
 			case MigrationState::SETTINGS_TYPE:
-				$message = __( 'WooCommerce Shipping & Tax settings are being migrated to WooCommerce Shipping.', 'woocommerce-shipping' );
+				$is_migrating_labels = false;
+				$message             = __( 'WooCommerce Shipping & Tax settings are being migrated to WooCommerce Shipping.', 'woocommerce-shipping' );
 				break;
 			case MigrationState::LABELS_TYPE:
-				$message = __( 'WooCommerce Shipping & Tax labels are being migrated to WooCommerce Shipping.', 'woocommerce-shipping' );
+				$is_migrating_labels = true;
+				$message             = __( 'WooCommerce Shipping & Tax labels are being migrated to WooCommerce Shipping.', 'woocommerce-shipping' );
 				break;
 			case MigrationState::ALL_TYPE:
-				$message = __( 'WooCommerce Shipping & Tax legacy settings and labels are being migrated to WooCommerce Shipping.', 'woocommerce-shipping' );
+				$is_migrating_labels = true;
+				$message             = __( 'WooCommerce Shipping & Tax legacy settings and labels are being migrated to WooCommerce Shipping.', 'woocommerce-shipping' );
 				break;
 			default:
 				return;
 		}
 
-		wp_admin_notice(
-			sprintf(
-				'<p>%s</p><p>%s</p>',
-				esc_html( $message ),
-				esc_html__( 'You may continue to use your website as usual. We will notify you once the migration process is complete.', 'woocommerce-shipping' )
-			),
+		$admin_notice = sprintf(
+			'<p>%s</p><p>%s</p>%s',
+			$message,
+			__( 'You may continue to use your website as usual. We will notify you once the migration process is complete.', 'woocommerce-shipping' ),
+			$is_migrating_labels ? self::data_migration_progress() : ''
+		);
+
+		$allowed_tags = array_merge(
+			wp_kses_allowed_html( 'post' ),
 			array(
-				'type'        => 'success',
-				'dismissible' => true,
+				'style'    => array(),
+				'progress' => array(
+					'id'    => true,
+					'max'   => true,
+					'value' => true,
+				),
 			)
+		);
+
+		echo wp_kses(
+			wp_get_admin_notice(
+				$admin_notice,
+				array(
+					'type'        => 'success',
+					'dismissible' => true,
+				)
+			),
+			$allowed_tags
+		);
+	}
+
+	private static function data_migration_progress() {
+		$progress = self::$migration_controller->get_labels_migration_progress();
+
+		$progress_element = sprintf(
+			'<label for="migration_progress_bar">%s</label>',
+			__( 'Current progress:', 'woocommerce-shipping' )
+		);
+		$progress_bar     = sprintf(
+			'<progress id="migration_progress_bar" max="100" value="%1$d">%1$d %%</progress> %1$d %%',
+			(int) $progress
+		);
+
+		return sprintf(
+			'<style>
+				.migration_progress {
+					display: flex;
+					align-items: center;
+					gap: 0.5rem;
+				}
+
+				.migration_progress progress {
+					font-size: 1rem;
+				}
+			</style>
+			<p class="migration_progress">%s %s</p>',
+			$progress_element,
+			$progress_bar
 		);
 	}
 
@@ -185,10 +235,34 @@ class MigrationNotices {
 				'dismissible' => true,
 			)
 		);
+	}
 
-		// Allow the notice to persist for 3 minutes.
-		if ( ! get_option( 'wcshipping_migration_completed_shown' ) ) {
-			update_option( 'wcshipping_migration_completed_shown', current_time( 'U' ) + ( MINUTE_IN_SECONDS * 3 ), false );
+	public static function dismiss_migration_completed_notice() {
+		check_ajax_referer( 'wcshipping_migration_completed_dismiss_notice', 'nonce' );
+		if ( isset( $_POST['notice'] ) && 'wcshipping_migration_installed_message' === $_POST['notice'] ) {
+			update_option( 'wcshipping_installation_completed_shown', true );
+		} elseif ( isset( $_POST['notice'] ) && 'wcshipping_migration_completed_message' === $_POST['notice'] ) {
+			update_option( 'wcshipping_migration_completed_shown', true );
 		}
+	}
+
+	public static function enqueue_migration_notice_dismiss_script() {
+		$nonce = wp_create_nonce( 'wcshipping_migration_completed_dismiss_notice' );
+		?>
+		<script type="text/javascript">
+		jQuery(document).ready(function($) {
+			$('.notice.is-dismissible').on('click', '.notice-dismiss', function() {
+				var notice = $(this).closest('.notice').attr('id');
+				if (notice) {
+					$.post(ajaxurl, {
+						action: 'dismiss_admin_notice',
+						notice: notice,
+						nonce: '<?php echo esc_js( $nonce ); ?>'
+					});
+				}
+			});
+		});
+		</script>
+		<?php
 	}
 }

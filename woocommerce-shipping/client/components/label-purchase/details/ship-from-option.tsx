@@ -11,6 +11,7 @@ import { AddressVerifiedIcon } from '../../address-verified-icon';
 import { useLabelPurchaseContext } from '../context';
 import { check, Icon } from '@wordpress/icons';
 import { Link } from '@woocommerce/components';
+import { ADDRESS_TYPES } from 'data/constants';
 
 interface ShipFromOptionProps {
 	address: OriginAddress;
@@ -71,6 +72,7 @@ export const ShipFromOption = ( {
 				{ Boolean( address.isVerified ) === false && (
 					<AddressVerifiedIcon
 						isVerified={ false }
+						addressType={ ADDRESS_TYPES.ORIGIN }
 						errorMessage={ __(
 							'Verify to use this address',
 							'woocommerce-shipping'

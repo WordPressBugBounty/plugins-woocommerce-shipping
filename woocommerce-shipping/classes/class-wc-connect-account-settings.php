@@ -2,6 +2,8 @@
 
 namespace Automattic\WCShipping\Connect;
 
+use Automattic\WCShipping\Integrations\WCST;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -58,6 +60,8 @@ class WC_Connect_Account_Settings {
 				'last_carrier_id'      => $last_carrier_id,
 				'last_order_completed' => $last_order_completed,
 			),
+			// Make sure there's an active WCS&T installation that supports parallel loading.
+			'enabledServices'        => WCST::is_wcst_active( '2.8.2' ) ? $this->settings_store->get_enabled_services() : array(),
 		);
 	}
 }

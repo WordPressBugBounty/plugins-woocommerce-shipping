@@ -29,9 +29,9 @@ interface UseLabelsStateProps {
 		typeof usePackageState
 	>[ 'getPackageForRequest' ];
 	totalWeight: number;
-	getCurrentShipment: ReturnType<
+	getShipmentItems: ReturnType<
 		typeof useShipmentState
-	>[ 'getCurrentShipment' ];
+	>[ 'getShipmentItems' ];
 	getSelectedRate: ReturnType< typeof useRatesState >[ 'getSelectedRate' ];
 	getShipmentHazmat: ReturnType<
 		typeof useHazmatState
@@ -74,7 +74,7 @@ const getLabelStatusErrorMessage = ( e: Error ): string[] => {
 export function useLabelsState( {
 	currentShipmentId,
 	getPackageForRequest,
-	getCurrentShipment,
+	getShipmentItems,
 	getSelectedRate,
 	totalWeight,
 	getShipmentHazmat,
@@ -244,6 +244,7 @@ export function useLabelsState( {
 			}
 
 			setIsPurchasing( true );
+			setLabelStatusUpdateErrors( [] );
 			const { id: box_id, isLetter, length, width, height } = pkg;
 
 			const {
@@ -271,7 +272,7 @@ export function useLabelsState( {
 					service_id: serviceId,
 					carrier_id: carrierId,
 					service_name: serviceName,
-					products: getCurrentShipment().map(
+					products: getShipmentItems().map(
 						( { product_id } ) => product_id
 					),
 					weight: totalWeight,
@@ -312,7 +313,7 @@ export function useLabelsState( {
 		[
 			getPackageForRequest,
 			currentShipmentId,
-			getCurrentShipment,
+			getShipmentItems,
 			getSelectedRate,
 			totalWeight,
 			setIsPurchasing,
@@ -416,12 +417,22 @@ export function useLabelsState( {
 					} )
 				);
 			} catch ( error ) {
+				setLabelStatusUpdateErrors(
+					( error as LabelPurchaseError ).message
+				);
+				// If there is an error, we should update the rates to make sure the same rate's shipmentId is not used again
+				maybeUpdateRates();
 				return Promise.reject( error );
 			} finally {
 				setIsUpdatingStatus( false );
 			}
 		},
-		[ fetchLabelStatus, isUpdatingStatus ]
+		[
+			fetchLabelStatus,
+			isUpdatingStatus,
+			setLabelStatusUpdateErrors,
+			maybeUpdateRates,
+		]
 	);
 
 	useEffect( () => {

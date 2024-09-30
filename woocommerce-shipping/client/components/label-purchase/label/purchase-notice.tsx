@@ -47,13 +47,27 @@ export const PurchaseNotice = withBoundary( () => {
 		await updatePurchaseStatus( selectedLabel.labelId );
 	};
 
+	let purchaseResultTitleText = __(
+		'There was an issue processing your purchase',
+		'woocommerce-shipping'
+	);
+
+	if ( hasPurchasedLabel() && labelStatusUpdateErrors.length === 0 ) {
+		purchaseResultTitleText = __(
+			'Your shipping label is ready to print',
+			'woocommerce-shipping'
+		);
+	}
+
 	return (
 		<>
 			<Heading level={ 3 }>
-				{ __(
-					'Your shipping label is ready to print',
-					'woocommerce-shipping'
-				) }
+				{ isPurchasing || isUpdatingStatus
+					? __(
+							'Please wait while we process your shipping label purchase',
+							'woocommerce-shipping'
+					  )
+					: purchaseResultTitleText }
 			</Heading>
 			<Spacer margin={ 7 } />
 			<Notice

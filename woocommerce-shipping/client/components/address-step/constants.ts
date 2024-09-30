@@ -1,8 +1,3 @@
-export const ADDRESS_TYPES = {
-	ORIGIN: 'origin',
-	DESTINATION: 'destination',
-};
-
 export const UPDATE_ADDRESS_STATUS = {
 	INIT: 0,
 	NORMALIZING_ADDRESS: 1,

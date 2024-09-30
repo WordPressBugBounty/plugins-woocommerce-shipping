@@ -236,13 +236,14 @@ class LabelRateService {
 				}
 
 				/**
-				 * React app is passing the item "value" as the individual value. The
-				 * connect server expects "value" to represent "total value". The connect server
-				 * uses "value" with this definition https://docs.easypost.com/docs/customs-items#customsitems-object.
+				 * React app is passing the item "value", "weight" as the individual value and weight. The
+				 * connect server expects "value" to represent "total value", "weight" to represent "total weight".
+				 * The connect server uses "value" and "weight" with this definition https://docs.easypost.com/docs/customs-items#customsitems-object.
 				 *
-				 * This function updates the "value" in all items within all packages to "total value".
+				 * This function updates the "value" and "weight" in all items within all packages to "total value" and "total weight" respectively.
 				 */
-				$item['value'] = $item['value'] * $item['quantity'];
+				$item['value']  = $item['value'] * $item['quantity'];
+				$item['weight'] = $item['weight'] * $item['quantity'];
 			}
 		}
 	}

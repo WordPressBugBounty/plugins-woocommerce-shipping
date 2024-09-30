@@ -279,12 +279,12 @@ class LabelRateRESTController extends WCShippingRESTController {
 				'required'    => true,
 			),
 			'value'            => array(
-				'description' => __( 'The value of this item', 'woocommerce-shipping' ),
+				'description' => __( 'The total value of this item', 'woocommerce-shipping' ),
 				'type'        => 'number',
 				'context'     => array( 'view', 'edit' ),
 			),
 			'weight'           => array(
-				'description' => __( 'The weight of this item', 'woocommerce-shipping' ),
+				'description' => __( 'The total weight of this item', 'woocommerce-shipping' ),
 				'type'        => 'number',
 				'context'     => array( 'view', 'edit' ),
 			),

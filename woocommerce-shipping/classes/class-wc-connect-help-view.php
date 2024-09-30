@@ -100,11 +100,15 @@ class WC_Connect_Help_View {
 		$schemas                    = $this->service_schemas_store->get_service_schemas();
 		$last_fetch_timestamp       = $this->service_schemas_store->get_last_fetch_timestamp();
 		$health_items['wcshipping'] = array(
-			'timestamp'           => $last_fetch_timestamp,
+			'timestamp'           => intval( $last_fetch_timestamp ),
 			'has_service_schemas' => ! is_null( $schemas ),
 			'error_threshold'     => 3 * DAY_IN_SECONDS,
 			'warning_threshold'   => DAY_IN_SECONDS,
 		);
+
+		if ( empty( $last_fetch_timestamp ) ) {
+			$this->logger->log( 'Cannot retrieve last fetch timestamp information.', __FUNCTION__ );
+		}
 
 		return $health_items;
 	}

@@ -1,8 +1,11 @@
 import React, { MouseEvent, MouseEventHandler } from 'react';
+import { useSelect } from '@wordpress/data';
+import { addressStore } from 'data/address';
 import { Button, Icon } from '@wordpress/components';
 import { check, info } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
 import './styles.scss';
+import { AddressTypes } from 'types';
 
 interface AddressVerifiedIconProps {
 	isVerified: boolean;
@@ -11,6 +14,7 @@ interface AddressVerifiedIconProps {
 	errorMessage?: string;
 	onClick?: MouseEventHandler;
 	message?: string;
+	addressType: AddressTypes;
 }
 
 export const AddressVerifiedIcon = ( {
@@ -20,12 +24,30 @@ export const AddressVerifiedIcon = ( {
 	errorMessage = __( 'Unverified address', 'woocommerce-shipping' ),
 	onClick,
 	message = __( 'Address verified', 'woocommerce-shipping' ),
+	addressType,
 }: AddressVerifiedIconProps ) => {
-	if ( isVerified && ! isFormChanged && isFormValid ) {
+	const isBusyVerifying = useSelect(
+		( select ) =>
+			select( addressStore ).getIsAddressVerificationInProgress(
+				addressType
+			),
+		[]
+	);
+
+	if ( isVerified && ! isFormChanged && isFormValid && ! isBusyVerifying ) {
 		return (
 			<span className="verification">
 				<Icon icon={ check } size={ 16 } />
 				{ message }
+			</span>
+		);
+	}
+
+	if ( isBusyVerifying ) {
+		return (
+			<span className="verification in-progress">
+				<Icon icon={ check } size={ 16 } />
+				{ __( 'Verifying address…', 'woocommerce-shipping' ) }
 			</span>
 		);
 	}

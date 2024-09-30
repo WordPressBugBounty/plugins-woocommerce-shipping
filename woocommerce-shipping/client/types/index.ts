@@ -46,3 +46,4 @@ export * from './wpcom-connection.d';
 export * from './shipment-item.d';
 export * from './label-shipment-id-map.d';
 export * from './user-meta.d';
+export * from './constants.d';

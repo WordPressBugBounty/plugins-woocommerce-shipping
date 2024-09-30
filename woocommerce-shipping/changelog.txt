@@ -1,5 +1,18 @@
 *** WooCommerce Shipping Changelog ***
 
+= 1.1.4 - 2024-09-25 =
+* Fix   - Selectively migrate WooCommerce Shipping & Tax packages if WCShipping created its own new settings.
+* Fix   - Don't remove non-compact options prefixed with "wc_connect_" on uninstallation.
+* Add   - Automate address verification for shipping address on the purchase screen.
+* Add   - Improve the purchase status header during the purchase process
+* Tweak - Improve timestamp handling on plugin status page.
+* Fix   - Don't remove non-compact options prefixed with "wc_connect_" on uninstallation.
+* Fix   - Focusing in the custom package form doesn't deactivate the "Get rates button" button.
+* Fix   - Ensure custom items stay in sync with the shipment items.
+* Fix   - Surface payment errors to the user.
+* Fix   - Remember dismissal of migration banners
+* Fix   - Customs form's weight to represent the total weight instead of individual line item weight.
+
 = 1.1.3 - 2024-09-18 =
 * Add   - Remember last order complete checkbox state for next label purchase.
 * Add   - Automatically fetch rates on label purchase modal load when all conditions are met for fetching rates.

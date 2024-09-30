@@ -11,9 +11,8 @@ import { useFormContext } from '@woocommerce/components';
 import { __ } from '@wordpress/i18n';
 import { getCountryNames, getStateNames, isMailAndPhoneRequired } from 'utils';
 import { useAddressContext } from './context';
-import { ADDRESS_TYPES } from './constants';
-import React from 'react';
 import { withBoundary } from 'components/HOC';
+import { ADDRESS_TYPES } from 'data/constants';
 
 export const AddressFields = withBoundary(
 	( { group, errorCallback, originCountry } ) => {

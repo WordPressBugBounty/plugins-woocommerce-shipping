@@ -176,4 +176,15 @@ class MigrationController {
 	public function needs_settings_migration(): bool {
 		return $this->settings_migrator->needs_migration();
 	}
+
+	/**
+	 * Get progress of the labels migration.
+	 *
+	 * @return array
+	 */
+	public function get_labels_migration_progress(): int {
+		$total     = $this->label_migrator->get_total_count();
+		$processed = $total - $this->label_migrator->get_total_pending_count();
+		return ( $processed * 100.0 ) / $total;
+	}
 }

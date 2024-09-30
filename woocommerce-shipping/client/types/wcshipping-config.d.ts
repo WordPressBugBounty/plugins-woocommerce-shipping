@@ -14,6 +14,7 @@ import { SelectedDestination } from './selected-destination';
 import { CustomsState } from './customs-state';
 import { Carrier } from './carrier';
 import { OriginAddress } from './origin-address';
+import { Constants } from './constants';
 
 // Todo: Gradually improve this type definition.
 export interface WCShippingConfig {
@@ -81,4 +82,5 @@ export interface WCShippingConfig {
 	};
 	origin_addresses: LocationResponse[];
 	eu_countries: string[];
+	constants: Constants;
 }

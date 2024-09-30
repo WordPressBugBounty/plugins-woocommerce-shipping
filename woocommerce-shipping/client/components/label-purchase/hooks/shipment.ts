@@ -48,8 +48,8 @@ export function useShipmentState() {
 		);
 	};
 
-	const getCurrentShipment = useCallback(
-		() => shipments[ currentShipmentId ],
+	const getShipmentItems = useCallback(
+		( shipmentId = currentShipmentId ) => shipments[ shipmentId ],
 		[ shipments, currentShipmentId ]
 	);
 
@@ -102,7 +102,7 @@ export function useShipmentState() {
 		setSelection,
 		currentShipmentId,
 		setCurrentShipmentId,
-		getCurrentShipment,
+		getShipmentItems,
 		getOrigin,
 		setOrigin,
 		revertLabelShipmentIdsToUpdate,

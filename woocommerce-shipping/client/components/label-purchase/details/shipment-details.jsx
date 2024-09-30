@@ -1,9 +1,9 @@
 import {
 	createInterpolateElement,
 	useEffect,
+	useRef,
 	useState,
 } from '@wordpress/element';
-
 import {
 	__experimentalDivider as Divider,
 	__experimentalHeading as Heading,
@@ -22,10 +22,12 @@ import {
 	formatAddressFields,
 	getCurrentOrder,
 	getOrderDestination,
+	areAddressesClose,
 } from 'utils';
 import { addressStore } from 'data/address';
 import { useLabelPurchaseContext } from 'components/label-purchase/context';
-import { ADDRESS_TYPES, AddressStep } from 'components/address-step';
+import { AddressStep } from 'components/address-step';
+import { ADDRESS_TYPES } from 'data/constants';
 import { AddressVerifiedIcon } from 'components/address-verified-icon';
 import { ControlledPopover } from 'components/controlled-popover';
 import { withBoundary } from 'components/HOC';
@@ -35,13 +37,20 @@ import { ShipmentCosts } from './shipment-costs';
 export const ShipmentDetails = withBoundary( ( { order, address } ) => {
 	const [ isAddressModalOpen, setIsAddressModalOpen ] = useState( false );
 	const shippingType = getCurrentOrder().shipping_methods;
-
-	const isDestinationVerified = useSelect(
+	const isDestinationAddressVerified = useSelect(
 		( select ) =>
-			select( addressStore ).getIsAddressVerified( 'destination' ),
+			select( addressStore ).getIsAddressVerified(
+				ADDRESS_TYPES.DESTINATION
+			),
 		[]
 	);
-
+	const normalisedDestinationAddress = useSelect(
+		( select ) =>
+			select( addressStore ).getNormalizedAddress(
+				ADDRESS_TYPES.DESTINATION
+			),
+		[]
+	);
 	const {
 		storeCurrency,
 		rates: { getSelectedRate, updateRates },
@@ -53,13 +62,78 @@ export const ShipmentDetails = withBoundary( ( { order, address } ) => {
 		},
 		shipment: { getOrigin },
 	} = useLabelPurchaseContext();
+
+	/**
+	 * 1) We need to run the auto verification process only once but the useEffect runs on every render. So we use a ref
+	 * to keep track of it, but if `normalisedDestinationAddress` is not defined yet, we want to allow it to run again
+	 * that's why passing an empty dependency array wouldn't work, and we need to use a ref to keep track of the
+	 * effective runs
+	 *
+	 * 2) We should also not run the auto verification process if the address modal is open.
+	 *
+	 */
+	const hasAutoVerificationRunOnce = useRef( false );
+
 	useEffect( () => {
-		const verifyShippingAddress = async () =>
+		if ( hasAutoVerificationRunOnce.current || isAddressModalOpen ) {
+			return;
+		}
+
+		// Check if the destination address is verified, if not, run it through the normalization process and then through areAddressesClose to determine if it's close enough to auto verify the address.
+		const verifyShippingAddress = async () => {
+			if ( isDestinationAddressVerified ) {
+				return Promise.resolve();
+			}
+
 			await dispatch( addressStore ).verifyOrderShippingAddress( {
 				orderId: order.id,
 			} );
+
+			// If the address is not verified, lets normalize it and check if it's close to the verified address and then auto verify it.
+			if ( ! isDestinationAddressVerified ) {
+				if ( ! normalisedDestinationAddress ) {
+					return Promise.resolve();
+				}
+
+				// Set the flag to true so that the auto verification process runs only once.
+				hasAutoVerificationRunOnce.current = true;
+
+				const transformedNormalisedAddress = {
+					...normalisedDestinationAddress,
+					address1: normalisedDestinationAddress.address_1,
+					address2: normalisedDestinationAddress.address_2,
+				};
+
+				const shouldAutoVerify = areAddressesClose(
+					transformedNormalisedAddress,
+					address
+				);
+
+				if ( ! shouldAutoVerify ) {
+					return Promise.resolve();
+				}
+
+				// If made it till here, verify the address.
+				await dispatch( addressStore ).updateShipmentAddress(
+					{
+						orderId: order.id ?? '',
+						address: transformedNormalisedAddress,
+						isVerified: true, // Either the address is verified or the normalized address is selected
+					},
+					ADDRESS_TYPES.DESTINATION
+				);
+			}
+
+			return Promise.resolve();
+		};
+
 		verifyShippingAddress();
-	}, [ order ] );
+	}, [
+		order,
+		address,
+		isDestinationAddressVerified,
+		normalisedDestinationAddress,
+	] );
 
 	const discount = getSelectedRate()?.rate
 		? getSelectedRate().rate.retailRate - getSelectedRate().rate.rate
@@ -87,8 +161,7 @@ export const ShipmentDetails = withBoundary( ( { order, address } ) => {
 					<Text>{ addressToString( getSelectedOrigin() ) }</Text>
 				) }
 
-				{ currentLabel?.isLegacy && (
-					// Inaccurate ship from address
+				{ currentLabel?.isLegacy && ( // Inaccurate ship from address
 					<Text>**************************</Text>
 				) }
 			</BaseControl>
@@ -111,8 +184,9 @@ export const ShipmentDetails = withBoundary( ( { order, address } ) => {
 						/>
 						{ addressToString( address ) }
 						<AddressVerifiedIcon
-							isVerified={ isDestinationVerified }
+							isVerified={ isDestinationAddressVerified }
 							onClick={ () => setIsAddressModalOpen( true ) }
+							addressType={ ADDRESS_TYPES.DESTINATION }
 						></AddressVerifiedIcon>
 					</Text>
 				) }
@@ -181,14 +255,12 @@ export const ShipmentDetails = withBoundary( ( { order, address } ) => {
 						>
 							{ createInterpolateElement(
 								sprintf(
-									hasPurchasedLabel( false )
-										? // translators: %s is the discount amount
-										  __(
+									hasPurchasedLabel( false ) // translators: %s is the discount amount
+										? __(
 												'You saved %s with WooCommerce Shipping. <i/>',
 												'woocommerce-shipping'
-										  )
-										: // translators: %s is the discount amount
-										  __(
+										  ) // translators: %s is the discount amount
+										: __(
 												'You save %s with WooCommerce Shipping. <i/>',
 												'woocommerce-shipping'
 										  ),

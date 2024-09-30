@@ -7,5 +7,6 @@ export interface ShipmentAddressState< T = OriginAddress > {
 	submittedAddress: T | null;
 	isTrivialNormalization: boolean | null;
 	addressNeedsConfirmation: boolean;
+	isAddressVerificationInProgress?: boolean;
 	formErrors: Record< string, string >;
 }

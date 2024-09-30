@@ -11,6 +11,7 @@ import {
 	UPDATE_SHIPMENT_ADDRESS_FAILED,
 	VERIFY_ORDER_SHIPPING_ADDRESS,
 	VERIFY_ORDER_SHIPPING_ADDRESS_FAILED,
+	VERIFY_ORDER_SHIPPING_ADDRESS_START,
 } from './action-types';
 import {
 	getAddressNormalizationPath,
@@ -25,7 +26,7 @@ import {
 	composeName,
 	snakeCaseKeys,
 } from 'utils';
-import { ADDRESS_TYPES } from 'components/address-step';
+import { ADDRESS_TYPES } from 'data/constants';
 import {
 	AddressTypes,
 	Destination,
@@ -40,6 +41,7 @@ import {
 	NormalizationAddressFailedAction,
 	ShippingAddressVerifyAction,
 	ShippingAddressVerifyFailedAction,
+	ShippingAddressVerifyStartAction,
 	UpdateShipmentAddressAction,
 	UpdateShipmentAddressFailedAction,
 } from './types.d';
@@ -49,7 +51,7 @@ export function* verifyOrderShippingAddress( {
 }: {
 	orderId: string;
 } ): Generator<
-	ReturnType< typeof apiFetch >,
+	ReturnType< typeof apiFetch > | ShippingAddressVerifyStartAction,
 	ShippingAddressVerifyAction | ShippingAddressVerifyFailedAction,
 	{
 		success: boolean;
@@ -58,6 +60,12 @@ export function* verifyOrderShippingAddress( {
 		isVerified: boolean;
 	}
 > {
+	yield {
+		type: VERIFY_ORDER_SHIPPING_ADDRESS_START,
+		payload: {
+			addressType: 'destination',
+		},
+	};
 	try {
 		const result = yield apiFetch( {
 			path: getVerifyOrderShippingAddressPath( orderId ),
@@ -88,7 +96,7 @@ export function* normalizeAddress(
 	},
 	addressType: 'origin' | 'destination'
 ): Generator<
-	ReturnType< typeof apiFetch >,
+	ReturnType< typeof apiFetch > | ShippingAddressVerifyStartAction,
 	NormalizationAddressAction | NormalizationAddressFailedAction,
 	{
 		success: boolean;
@@ -98,6 +106,12 @@ export function* normalizeAddress(
 		normalizedAddress: LocationResponse;
 	}
 > {
+	yield {
+		type: VERIFY_ORDER_SHIPPING_ADDRESS_START,
+		payload: {
+			addressType,
+		},
+	};
 	try {
 		const {
 			address: submittedAddress,
@@ -166,7 +180,7 @@ export function* updateShipmentAddress(
 	},
 	type: AddressTypes
 ): Generator<
-	ReturnType< typeof apiFetch >,
+	ReturnType< typeof apiFetch > | ShippingAddressVerifyStartAction,
 	UpdateShipmentAddressAction | UpdateShipmentAddressFailedAction,
 	{
 		success: boolean;
@@ -175,6 +189,13 @@ export function* updateShipmentAddress(
 		message?: string;
 	}
 > {
+	yield {
+		type: VERIFY_ORDER_SHIPPING_ADDRESS_START,
+		payload: {
+			addressType: type,
+		},
+	};
+
 	try {
 		const snakeCaseAddress = snakeCaseKeys<
 			Destination | OriginAddress,

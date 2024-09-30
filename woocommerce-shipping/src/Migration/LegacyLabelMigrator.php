@@ -49,6 +49,11 @@ class LegacyLabelMigrator implements BatchProcessorInterface {
 	private $total_pending_count;
 
 	/**
+	 * @var int $total_count
+	 */
+	private $total_count;
+
+	/**
 	 * @var int $total_processed_count
 	 */
 	private $total_processed_count = 0;
@@ -65,6 +70,25 @@ class LegacyLabelMigrator implements BatchProcessorInterface {
 
 	public function get_description(): string {
 		return 'Migrates labels from legacy extension to WooCommerce Shipping';
+	}
+
+	public function get_total_count(): int {
+		if ( $this->total_count ) {
+			return $this->total_count;
+		}
+
+		global $wpdb;
+		$table_name  = OrderUtil::get_table_for_order_meta();
+
+		$this->total_count = $wpdb->get_var(
+			$wpdb->prepare(
+				'SELECT COUNT(*) FROM %i WHERE meta_key=%s',
+				$table_name,
+				self::LEGACY_LABEL_META_KEY
+			)
+		);
+
+		return $this->total_count;
 	}
 
 	public function get_total_pending_count(): int {

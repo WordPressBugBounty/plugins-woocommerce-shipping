@@ -17,3 +17,4 @@ export * from './package';
 export * from './sentry';
 export * from './error-boundary';
 export * from './tracks';
+export * from './address';

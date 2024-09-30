@@ -925,7 +925,7 @@ class Loader {
 		add_action( 'admin_notices', array( WC_Connect_Error_Notice::instance(), 'render_notice' ) );
 		add_action( 'admin_notices', array( $this, 'render_schema_notices' ) );
 		// Queue up hooks for data migration admin messages.
-		MigrationNotices::init();
+		MigrationNotices::init( $this->migration_controller );
 	}
 
 	/**

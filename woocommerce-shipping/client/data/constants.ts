@@ -18,3 +18,8 @@ export const LABEL_PURCHASE_STATUS = {
 	PURCHASE_ERROR: 'PURCHASE_ERROR',
 	ANONYMIZED: 'ANONYMIZED',
 } as const;
+
+export const ADDRESS_TYPES = {
+	ORIGIN: 'origin',
+	DESTINATION: 'destination',
+} as const;

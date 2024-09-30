@@ -332,6 +332,7 @@ class View {
 				'is_origin_verified'      => (bool) $this->settings_store->is_origin_address_normalized(),
 				'shipments'               => $this->shipments_service->get_order_shipments_json( $order->get_id() ),
 				'origin_addresses'        => $this->origin_address_service->get_origin_addresses(),
+				'constants'               => Utils::get_constants_for_js(),
 			),
 			$args,
 			$order,

@@ -48,7 +48,7 @@ class LegacySettingsMigrator {
 		'wcshipping' => 'wcshipping_origin_addresses',
 	);
 
-	public const NONE_MIGRATABLE_SETTINGS = array(
+	public const NON_MIGRATABLE_SETTINGS = array(
 		'tos'    => 'tos_accepted',
 		'guid'   => 'store_guid',
 		'banner' => 'should_display_nux_after_jp_cxn_banner',
@@ -58,6 +58,20 @@ class LegacySettingsMigrator {
 		// page before doing a migration.
 		'pm_url' => 'add_payment_method_url',
 		'pms'    => 'payment_methods',
+	);
+
+	public const WCST_PACKAGE_COMPATIBILITY_CLASS_FQN = 'WC_Connect_Compatibility_WCShipping_Packages';
+
+	public const WCST_PACKAGE_COMPATIBILITY_FILTERS = array(
+		/* Item: array( 'filter name', 'callback' ) */
+		array(
+			'option_wc_connect_options',
+			array( self::WCST_PACKAGE_COMPATIBILITY_CLASS_FQN, 'intercept_packages_read' ),
+		),
+		array(
+			'option_wc_connect_options',
+			array( self::WCST_PACKAGE_COMPATIBILITY_CLASS_FQN, 'intercept_predefined_packages_read' ),
+		),
 	);
 
 	public function __construct() {
@@ -79,15 +93,30 @@ class LegacySettingsMigrator {
 	public function needs_migration(): bool {
 		$wcshipping_options = get_option( self::OPTIONS['wcshipping'] );
 		$wcshipping_origins = get_option( self::ORIGIN_ADDRESS['wcshipping'] );
-		$legacy_options     = get_option( self::OPTIONS['legacy'] );
+		$legacy_options     = $this->get_legacy_options();
 		$legacy_origins     = get_option( self::ORIGIN_ADDRESS['legacy'] );
 
-		foreach ( self::NONE_MIGRATABLE_SETTINGS as $setting_key ) {
+		foreach ( self::NON_MIGRATABLE_SETTINGS as $setting_key ) {
 			if ( isset( $wcshipping_options[ $setting_key ] ) ) {
 				unset( $wcshipping_options[ $setting_key ] );
 			}
 			if ( isset( $legacy_options[ $setting_key ] ) ) {
 				unset( $legacy_options[ $setting_key ] );
+			}
+		}
+
+		/**
+		 * If this user previously has WCS&T installed, then there are legacy options.
+		 * In this case, the migration is required for the user. The user, however, can
+		 * choose to delay the migration and create add entries to `wcshipping_options`
+		 * before starting migration. This check is to ensure that migration is still
+		 * required even if `wcshipping_options` isn't empty.
+		 */
+		if ( ! empty( $legacy_options ) || ! empty( $legacy_origins ) ) {
+			$migrationState = MigrationState::get_state();
+			if ( $migrationState !== MigrationState::DATA_MIGRATION_COMPLETED ) {
+				// If the migration hasn't finished, then this user still needs to run migration.
+				return true;
 			}
 		}
 
@@ -101,30 +130,60 @@ class LegacySettingsMigrator {
 			return;
 		}
 
-		$legacy_options     = get_option( self::OPTIONS['legacy'], array() );
-		$wcshipping_options = get_option( self::OPTIONS['wcshipping'], array() );
+		$legacy_options              = $this->get_legacy_options();
+		$existing_wcshipping_options = get_option( self::OPTIONS['wcshipping'], array() );
 
-		foreach ( self::NONE_MIGRATABLE_SETTINGS as $setting_key ) {
-			if ( isset( $legacy_options[ $setting_key ] ) ) {
-				// We want to keep store_guid since it's unique to the store and a new one
-				// will be generated if we do not move it.
-				if ( 'store_guid' === $setting_key ) {
-					continue;
-				}
+		// First, make a copy of the WCS&T options, then we selectively overwrite based on each option's algorithm
+		$new_wcshipping_options = $legacy_options;
 
-				unset( $legacy_options[ $setting_key ] );
+		// Loop through the ones we can not migrate, delete them.
+		foreach ( self::NON_MIGRATABLE_SETTINGS as $setting_key ) {
+			if ( isset( $new_wcshipping_options[ $setting_key ] ) ) {
+				unset( $new_wcshipping_options[ $setting_key ] );
 			}
 		}
 
-		if ( ! empty( $legacy_options ) ) {
-			update_option(
-				self::OPTIONS['wcshipping'],
-				array_merge(
-					$wcshipping_options,
-					$legacy_options
-				)
-			);
+		// If no settings are left to migrate, then quit.
+		if ( empty( $new_wcshipping_options ) ) {
+			return;
 		}
+
+		// Then, combine the settings together.. Use WCS&T as base, overwrite it with WooShipping on top
+		$new_wcshipping_options = array_merge(
+			$new_wcshipping_options,
+			$existing_wcshipping_options,
+		);
+
+		// We want to keep the old store_guid since it's unique to the store and a new one will be generated if we do not move it.
+		// Check this: https://github.com/woocommerce/woocommerce-shipping/pull/680#discussion_r1733339443
+		if ( ! empty( $legacy_options['store_guid'] ) ) {
+			$new_wcshipping_options['store_guid'] = $legacy_options['store_guid'] ?? $existing_wcshipping_options['store_guid'];
+		}
+
+		// For payment methods, we will default to the new if it's already there.
+		if ( ! empty( $legacy_options['payment_methods'] ) ) {
+			$new_wcshipping_options['payment_methods'] = $existing_wcshipping_options['payment_methods'] ?? $legacy_options['payment_methods'];
+		}
+
+		// For account settings, it has selected_payment_method_id which is related to payment_methods. The logic should be the same as above.
+		if ( ! empty( $legacy_options['account_settings'] ) ) {
+			$new_wcshipping_options['account_settings'] = $existing_wcshipping_options['account_settings'] ?? $legacy_options['account_settings'];
+		}
+
+		// For packages, they need to be combined together.
+		if ( ! empty( $legacy_options['packages'] ) ) {
+			$new_wcshipping_options['packages'] = array_merge( $legacy_options['packages'], $existing_wcshipping_options['packages'] ?? array() );
+		}
+
+		// For predefined packages, overwrite the WCS&T with the new ones if it exists.
+		if ( ! empty( $legacy_options['predefined_packages'] ) ) {
+			$new_wcshipping_options['predefined_packages'] = array_merge( $legacy_options['predefined_packages'], $existing_wcshipping_options['predefined_packages'] ?? array() );
+		}
+
+		update_option(
+			self::OPTIONS['wcshipping'],
+			$new_wcshipping_options
+		);
 	}
 
 	/**
@@ -183,5 +242,39 @@ class LegacySettingsMigrator {
 				)
 			);
 		}
+	}
+
+	/**
+	 * Gets the value of `wc_connect_options`, deregistering WCS&T's packages setting redirection if needed.
+	 *
+	 * WCS&T 2.8.2 introduced a compatibility layer which will detect reads of and writes to `wc_connect_options`
+	 * and replace the option's `packages` and `predefined_packages` keys with those of `wcshipping_options`.
+	 *
+	 * This was done to keep packages between WCS&T and WCShipping in sync. Keeping them synchronized is necessary
+	 * for WCS&T's package manager (which WCShipping surfaces) and WCShipping's package selection field to display
+	 * the same packages.
+	 *
+	 * @return array
+	 */
+	private function get_legacy_options(): array {
+		$disabled_filters = array();
+
+		// Remove filters if they were registered by WCS&T.
+		foreach ( self::WCST_PACKAGE_COMPATIBILITY_FILTERS as $filter ) {
+			if ( has_filter( $filter[0], $filter[1] ) ) {
+				$disabled_filters[] = $filter;
+				remove_filter( $filter[0], $filter[1] );
+			}
+		}
+
+		// Get the value.
+		$value = get_option( self::OPTIONS['legacy'], array() );
+
+		// Add back filters that were previously unregistered.
+		foreach ( $disabled_filters as $filter ) {
+			add_filter( $filter[0], $filter[1] );
+		}
+
+		return $value;
 	}
 }

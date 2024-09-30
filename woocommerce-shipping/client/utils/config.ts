@@ -28,3 +28,8 @@ export const getSelectedHazmat = () =>
 
 export const getCustomsInformation = () =>
 	getConfig().shippingLabelData.storedData.customs_information;
+
+export const getPluginRelativeDirectory = ( forWooCommerce = false ) =>
+	forWooCommerce
+		? getConfig().constants.WC_PLUGIN_RELATIVE_DIR
+		: getConfig().constants.WCSHIPPING_RELATIVE_PLUGIN_DIR;

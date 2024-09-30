@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { useCallback, useEffect, useState } from '@wordpress/element';
+import { useCallback, useEffect, useRef, useState } from '@wordpress/element';
 import {
 	__experimentalInputControl as InputControl,
 	__experimentalSpacer as Spacer,
@@ -32,7 +32,7 @@ export const CustomPackage = withBoundary(
 		const [ saveAsTemplate, setSaveAsTemplate ] = useState( false );
 		const [ isSaving, setIsSaving ] = useState( false );
 		const [ isSaved, setIsSaved ] = useState( false );
-
+		const containerRef = useRef( null );
 		const {
 			rates: { errors, isFetching, setErrors, fetchRates },
 			customs: { hasErrors: hasCustomsErrors },
@@ -65,16 +65,47 @@ export const CustomPackage = withBoundary(
 			}
 		}, [ updateErrors, setErrors ] );
 
+		const invalidDimensionError = __(
+			'Invalid dimension value.',
+			'woocommerce-shipping'
+		);
+
+		const setErrorForInvalidDimension = ( value, fieldName ) => {
+			if ( ! [ 'width', 'height', 'length' ].includes( fieldName ) ) {
+				return;
+			}
+
+			const parsedVal = parseFloat( value );
+
+			if ( parsedVal <= 0 || Number.isNaN( parsedVal ) ) {
+				setErrors( {
+					...errors,
+					[ fieldName ]: {
+						message: invalidDimensionError,
+					},
+				} );
+			}
+		};
+
 		useEffect( () => {
 			if (
 				currentPackageTab === TAB_NAMES.CUSTOM_PACKAGE &&
 				essentialDetailsFocusArea === PACKAGE_SECTION
 			) {
-				setErrors( {
-					width: true,
-					height: true,
-					length: true,
+				// Show probable errors for the dimensions.
+				setErrorForInvalidDimension( rawPackageData.width, 'width' );
+				setErrorForInvalidDimension( rawPackageData.height, 'height' );
+				setErrorForInvalidDimension( rawPackageData.length, 'length' );
+
+				// Scroll to the container so the user can see probable errors.
+				window.scrollTo( {
+					left: 0,
+					top: containerRef.current.offsetTop,
+					behavior: 'smooth',
 				} );
+
+				// Reset the focus area so that the next setting of the focus area will work.
+				resetEssentialDetailsFocusArea();
 			}
 		}, [ currentPackageTab, essentialDetailsFocusArea, setErrors ] );
 
@@ -160,28 +191,6 @@ export const CustomPackage = withBoundary(
 			setSelectedPackage,
 		] );
 
-		const invalidDimensionError = __(
-			'Invalid dimension value.',
-			'woocommerce-shipping'
-		);
-
-		const setErrorForInvalidDimension = ( value, fieldName ) => {
-			if ( ! [ 'width', 'height', 'length' ].includes( fieldName ) ) {
-				return;
-			}
-
-			const parsedVal = parseFloat( value );
-
-			if ( parsedVal <= 0 || Number.isNaN( parsedVal ) ) {
-				setErrors( {
-					...errors,
-					[ fieldName ]: {
-						message: invalidDimensionError,
-					},
-				} );
-			}
-		};
-
 		const getControlProps = ( fieldName, className = '' ) => ( {
 			onChange: ( val ) => {
 				const { ...newErrors } = errors;
@@ -253,7 +262,7 @@ export const CustomPackage = withBoundary(
 		] );
 
 		return (
-			<Flex direction="column" gap={ 6 }>
+			<Flex direction="column" gap={ 6 } ref={ containerRef }>
 				<FlexItem>
 					<Flex
 						direction="column"
@@ -379,6 +388,7 @@ export const CustomPackage = withBoundary(
 									gap={ 6 }
 									direction="row"
 									justify="space-between"
+									align="flex-start"
 								>
 									<InputControl
 										label={ __(

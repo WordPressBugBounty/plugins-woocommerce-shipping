@@ -18,6 +18,7 @@ import {
 	UPDATE_SHIPMENT_ADDRESS_FAILED,
 	VERIFY_ORDER_SHIPPING_ADDRESS,
 	VERIFY_ORDER_SHIPPING_ADDRESS_FAILED,
+	VERIFY_ORDER_SHIPPING_ADDRESS_START,
 } from './action-types';
 import {
 	AddOriginAddressAction,
@@ -28,6 +29,7 @@ import {
 	NormalizationAddressFailedAction,
 	ShippingAddressVerifyAction,
 	ShippingAddressVerifyFailedAction,
+	ShippingAddressVerifyStartAction,
 	UpdateShipmentAddressAction,
 	UpdateShipmentAddressFailedAction,
 } from './types.d';
@@ -40,6 +42,7 @@ export const getReducer = ( withDestination: boolean ) => {
 			addresses: getOriginAddresses(),
 			address: getFirstSelectableOriginAddress(),
 			isVerified: getFirstSelectableOriginAddress()?.isVerified,
+			isAddressVerificationInProgress: false,
 			normalizedAddress: null,
 			submittedAddress: null,
 			isTrivialNormalization: null,
@@ -53,6 +56,7 @@ export const getReducer = ( withDestination: boolean ) => {
 		defaultState.destination = {
 			address: getCurrentOrderShipTo(),
 			isVerified: getIsDestinationVerified(),
+			isAddressVerificationInProgress: false,
 			normalizedAddress: null,
 			submittedAddress: null,
 			isTrivialNormalization: null,
@@ -83,6 +87,7 @@ export const getReducer = ( withDestination: boolean ) => {
 					addressNeedsConfirmation: true,
 					submittedAddress: address,
 					formErrors: {},
+					isAddressVerificationInProgress: false,
 				},
 			} )
 		)
@@ -106,6 +111,7 @@ export const getReducer = ( withDestination: boolean ) => {
 						normalizedAddress: null,
 						submittedAddress: payload.address,
 						formErrors: normalizationErrors,
+						isAddressVerificationInProgress: false,
 					},
 				};
 			}
@@ -154,6 +160,7 @@ export const getReducer = ( withDestination: boolean ) => {
 						isVerified,
 						address,
 						addressNeedsConfirmation: false,
+						isAddressVerificationInProgress: false,
 						...addressesMerger,
 					},
 				};
@@ -173,6 +180,7 @@ export const getReducer = ( withDestination: boolean ) => {
 					isVerified: false,
 					addressNeedsConfirmation: false,
 					formErrors: { general: message },
+					isAddressVerificationInProgress: false,
 				},
 			} )
 		)
@@ -211,6 +219,21 @@ export const getReducer = ( withDestination: boolean ) => {
 			}
 		)
 		.on(
+			VERIFY_ORDER_SHIPPING_ADDRESS_START,
+			(
+				state,
+				{ payload: { addressType } }: ShippingAddressVerifyStartAction
+			) => {
+				return {
+					...state,
+					[ addressType ]: {
+						...state[ addressType ],
+						isAddressVerificationInProgress: true,
+					},
+				};
+			}
+		)
+		.on(
 			VERIFY_ORDER_SHIPPING_ADDRESS,
 			(
 				state,
@@ -229,6 +252,7 @@ export const getReducer = ( withDestination: boolean ) => {
 					isVerified,
 					normalizedAddress,
 					isTrivialNormalization,
+					isAddressVerificationInProgress: false,
 				},
 			} )
 		)
@@ -243,6 +267,7 @@ export const getReducer = ( withDestination: boolean ) => {
 					[ addressType ]: {
 						...state[ addressType ],
 						isVerified: false,
+						isAddressVerificationInProgress: false,
 					},
 				};
 			}

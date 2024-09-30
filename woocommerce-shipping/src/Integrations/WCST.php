@@ -26,11 +26,32 @@ class WCST {
 	}
 
 	/**
+	 * Check if the WooCommerce Shipping & Tax plugin is active.
+	 *
+	 * @since 1.1.4
+	 *
+	 * @param string|null $min_version Optional. Version number to compare.
+	 * @return bool Whether the WooCommerce Shipping & Tax plugin is active and matches the version if provided.
+	 */
+	public static function is_wcst_active( $min_version = null ): bool {
+		if ( ! is_plugin_active( self::PLUGIN_FILE ) ) {
+			return false;
+		}
+
+		if ( $min_version ) {
+			$plugin_data = get_plugin_data( WP_PLUGIN_DIR . '/' . self::PLUGIN_FILE );
+			return version_compare( $plugin_data['Version'], $min_version, '>=' );
+		}
+
+		return true;
+	}
+
+	/**
 	 * Maybe filter the plugin name.
 	 */
 	public static function maybe_filter_plugin_name(): void {
 		if (
-			is_plugin_active( 'woocommerce-services/woocommerce-services.php' ) &&
+			self::is_wcst_active() &&
 			! is_plugin_active( 'woocommerce-tax/woocommerce-tax.php' ) ) {
 				// Use the "all_plugins" filter to change the plugin name.
 				add_filter( 'all_plugins', array( __CLASS__, 'change_plugin_name' ) );

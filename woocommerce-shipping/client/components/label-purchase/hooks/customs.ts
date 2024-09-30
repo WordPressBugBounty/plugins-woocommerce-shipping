@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from '@wordpress/element';
+import { useCallback, useEffect, useRef, useState } from '@wordpress/element';
 import { isEmpty } from 'lodash';
 import {
 	CustomsItem,
@@ -29,9 +29,9 @@ const getInitialShipmentCustomsState = < T >( items: T ) => ( {
 
 export function useCustomsState(
 	currentShipmentId: string,
-	getCurrentShipmentItems: ReturnType<
+	getShipmentItems: ReturnType<
 		typeof useShipmentState
-	>[ 'getCurrentShipment' ],
+	>[ 'getShipmentItems' ],
 	getOrigin: ReturnType< typeof useShipmentState >[ 'getOrigin' ]
 ) {
 	const origin = getOrigin() ?? select( addressStore ).getStoreOrigin();
@@ -56,12 +56,12 @@ export function useCustomsState(
 			items: FormErrors< CustomsItem >[];
 		}
 	>( {
-		items: getCurrentShipmentItems().map( () => ( {} ) ),
+		items: getShipmentItems().map( () => ( {} ) ),
 	} );
 
 	const getCustomsItems = useCallback(
-		(): CustomsItem[] =>
-			getCurrentShipmentItems().map( ( props ) => ( {
+		( shipmentId = currentShipmentId ) =>
+			getShipmentItems( shipmentId )?.map( ( props ) => ( {
 				...props,
 				description:
 					props.meta?.customs_info?.description ?? props.name,
@@ -70,7 +70,7 @@ export function useCustomsState(
 				originCountry:
 					props.meta?.customs_info?.origin_country ?? origin.country,
 			} ) ),
-		[ getCurrentShipmentItems, origin ]
+		[ getShipmentItems, currentShipmentId, origin.country ]
 	);
 
 	const [ state, setState ] = useState<
@@ -81,16 +81,33 @@ export function useCustomsState(
 			getInitialShipmentCustomsState( getCustomsItems() ),
 	} );
 
+	const previousStateRef = useRef( state );
 	/**
 	 * Make sure on shipment change, the shipment has the correct customs information
 	 * - If the shipment has no customs information, set it to the default
 	 * - If the shipment has customs information, set it to the stored information
 	 */
 	useEffect( () => {
+		const allTheCustomItems = (
+			previousStateRef.current
+				? Object.values( previousStateRef.current )
+				: Object.values( state )
+		)
+			.map( ( { items } ) => items )
+			.flat();
+
 		const currentShipmentCustomsInfo =
 			select( labelPurchaseStore ).getCustomsInformation(
 				currentShipmentId
-			) ?? getInitialShipmentCustomsState( getCustomsItems() );
+			) ??
+			getInitialShipmentCustomsState(
+				getCustomsItems().map(
+					( item ) =>
+						allTheCustomItems.find(
+							( i ) => i.product_id === item.product_id
+						) ?? item
+				)
+			);
 
 		if ( isEmpty( state[ currentShipmentId ] ) ) {
 			setState( ( prev ) => ( {
@@ -195,6 +212,65 @@ export function useCustomsState(
 		);
 	}, [ errors, getCustomsState, isHSTariffNumberRequired ] );
 
+	/**
+	 * Update the customs state based on the shipment items.
+	 * This is to be called when the shipment items change.
+	 */
+	const updateCustomsItems = () => {
+		previousStateRef.current = state; // Store previous state reference for comparison
+
+		// Flatten the customs items from all shipments to avoid redundant iterations
+		const allCustomItems = Object.values( state ).flatMap(
+			( { items } ) => items
+		);
+
+		// Reduce over the state and update the customs items for each shipment
+		const newState = Object.entries( state ).reduce(
+			( acc, [ shipmentId, customsState ] ) => {
+				// Get the customs items for the current shipmentId
+				const customsItems = getCustomsItems( shipmentId );
+
+				// If no customs items, return the accumulator as-is (shipment not eligible for customs)
+				if ( ! customsItems ) {
+					return acc;
+				}
+
+				// Map over the customs items and merge with existing items if found
+				const updatedItems = customsItems.map( ( customsItem ) => {
+					// Try to find the customs item in the current shipment or across all shipments
+					const existingItem =
+						customsState.items.find(
+							( item ) =>
+								item.product_id === customsItem.product_id
+						) ??
+						allCustomItems.find(
+							( item ) =>
+								item.product_id === customsItem.product_id
+						);
+
+					// Merge customs item with existing data (if any), otherwise use new customs item
+					return {
+						...customsItem,
+						...( existingItem ?? {} ), // Retain existing values if present
+					};
+				} );
+
+				// Return updated state for this shipment
+				return {
+					...acc,
+					[ shipmentId ]: {
+						...customsState,
+						items: updatedItems,
+					},
+				};
+			},
+			{} as typeof state
+		);
+
+		// Update the state with the new customs data
+		setState( newState );
+	};
+
 	return {
 		getCustomsState,
 		setCustomsState,
@@ -203,5 +279,6 @@ export function useCustomsState(
 		setErrors,
 		isCustomsNeeded,
 		isHSTariffNumberRequired,
+		updateCustomsItems,
 	};
 }

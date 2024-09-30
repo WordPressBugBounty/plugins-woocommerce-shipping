@@ -3,6 +3,7 @@ namespace Automattic\WCShipping\Connect;
 
 use Automattic\WCShipping\DOM\Manipulation as DOM_Manipulation;
 use Automattic\WCShipping\OriginAddresses\OriginAddressService;
+use Automattic\WCShipping\Utils;
 
 class WC_Connect_Settings_Pages {
 	/**
@@ -152,6 +153,7 @@ class WC_Connect_Settings_Pages {
 
 		$extra_args['origin_addresses'] = $origin_addresses;
 		$extra_args['continents']       = $this->continents->get();
+		$extra_args['constants']        = Utils::get_constants_for_js();
 		$extra_args['accountSettings']  = $this->account_settings->get();
 		DOM_Manipulation::create_root_script_element( 'woocommerce-shipping-settings' );
 

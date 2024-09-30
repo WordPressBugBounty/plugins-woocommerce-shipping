@@ -21,7 +21,7 @@ import {
 	validateRequiredFields,
 } from 'utils';
 import { AddressContextProvider } from './context';
-import { ADDRESS_TYPES } from './constants';
+import { ADDRESS_TYPES } from 'data/constants';
 import {
 	AddressTypes,
 	CamelCaseType,
@@ -281,6 +281,7 @@ export const AddressStep = withBoundary(
 										isFormChanged={ isDirty }
 										isFormValid={ isValidForm }
 										errorMessage={ warningMessage }
+										addressType={ ADDRESS_TYPES.ORIGIN }
 									/>
 									<FlexItem>
 										<Flex gap={ 2 }>

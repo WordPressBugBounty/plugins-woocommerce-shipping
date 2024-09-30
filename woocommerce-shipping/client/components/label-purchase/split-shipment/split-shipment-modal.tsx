@@ -1,4 +1,3 @@
-import React from 'react';
 import {
 	__experimentalConfirmDialog as ConfirmDialog,
 	__experimentalSpacer as Spacer,
@@ -66,6 +65,7 @@ export const SplitShipmentModal = ( { close }: SplitShipmentModalProps ) => {
 			labelShipmentIdsToUpdate,
 		},
 		labels: { hasPurchasedLabel },
+		customs: { updateCustomsItems },
 	} = useLabelPurchaseContext();
 
 	const hasVariations = Object.values( shipments )
@@ -165,6 +165,8 @@ export const SplitShipmentModal = ( { close }: SplitShipmentModalProps ) => {
 		} else {
 			close();
 		}
+
+		updateCustomsItems();
 	};
 
 	const shouldClose = () => {
