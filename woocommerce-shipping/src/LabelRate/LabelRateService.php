@@ -249,7 +249,7 @@ class LabelRateService {
 	}
 
 	/**
-	 * Remove unneccessary parameters before passing it to the connect server.
+	 * Remove unnecessary parameters before passing it to the connect server.
 	 *
 	 * @param array $payload Request payload.
 	 * @return array
@@ -267,6 +267,13 @@ class LabelRateService {
 		}
 		unset( $payload['origin']['address_1'] );
 		unset( $payload['destination']['address_1'] );
+
+		// We only require either the origin name or company name to be defined, but if both
+		// are defined, then we should consider "name" as something that's used internally and
+		// should not be shown on shipping labels.
+		if ( ! empty( $payload['origin']['name'] ) && ! empty( $payload['origin']['company'] ) ) {
+			$payload['origin']['name'] = '';
+		}
 
 		// Rename country_code, state_code to "country" and "state".
 		$payload['origin']['country']      = $payload['origin']['country_code'];

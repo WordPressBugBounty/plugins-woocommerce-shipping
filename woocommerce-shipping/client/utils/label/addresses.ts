@@ -3,10 +3,7 @@ import { getConfig, removeShipmentFromKeys } from 'utils';
 import { Destination, LocationResponse, OriginAddress } from 'types';
 import { camelCaseKeys } from '../common';
 
-export const getLabelOrigins = (): Record<
-	`shipment_${ number }`,
-	OriginAddress
-> | null => {
+export const getLabelOrigins = (): Record< string, OriginAddress > | null => {
 	const origins = getConfig().shippingLabelData.storedData.selected_origin;
 	return origins
 		? removeShipmentFromKeys(
@@ -16,7 +13,7 @@ export const getLabelOrigins = (): Record<
 };
 
 export const getLabelDestinations = (): Record<
-	`shipment_${ number }`,
+	string,
 	Destination
 > | null => {
 	const destinations =

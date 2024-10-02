@@ -24,7 +24,7 @@ export const Customs = (): JSX.Element => {
 	} = useLabelPurchaseContext();
 
 	const { country } = useSelect(
-		( select ) => select( addressStore ).getDestination(),
+		( select ) => select( addressStore ).getOrderDestination(),
 		[]
 	);
 

@@ -108,9 +108,3 @@ export const getPurchasedLabels = () => {
 	const { currentOrderLabels = [] } = getConfig().shippingLabelData;
 	return groupBy( currentOrderLabels.map( camelCaseKeys ), 'id' );
 };
-
-export const getOrderDestination = (): Destination => {
-	return camelCaseKeys(
-		getConfig().shippingLabelData.storedData.destination
-	);
-};

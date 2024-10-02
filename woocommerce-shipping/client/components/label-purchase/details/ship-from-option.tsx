@@ -27,7 +27,7 @@ export const ShipFromOption = ( {
 	editAddress,
 }: ShipFromOptionProps ) => {
 	const {
-		shipment: { setOrigin },
+		shipment: { setShipmentOrigin },
 	} = useLabelPurchaseContext();
 
 	const onEditClick = ( e: MouseEvent ) => {
@@ -40,7 +40,7 @@ export const ShipFromOption = ( {
 		<MenuItem
 			onClick={ () => {
 				if ( address.isVerified ) {
-					setOrigin( address.id );
+					setShipmentOrigin( address.id );
 				} else {
 					editAddress( address );
 				}

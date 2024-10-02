@@ -1,14 +1,12 @@
 import { AddressTypes, Destination } from 'types';
-import { camelCaseKeys, composeAddress, composeName } from 'utils';
+import { camelCaseKeys, composeAddress, composeName, getConfig } from 'utils';
 import { AddressState } from '../types';
 
-export const getStoreOrigin = ( state: AddressState ) => {
-	return state.storeOrigin;
-};
-
-export const getDestination = ( state: AddressState ): Destination => {
-	return camelCaseKeys( state.destination?.address ?? {} );
-};
+export const getOrderDestination = ( state: AddressState ): Destination =>
+	camelCaseKeys(
+		state.destination?.address ??
+			getConfig().shippingLabelData.storedData.destination
+	);
 
 export const getOriginAddresses = ( state: AddressState ) =>
 	state.origin.addresses;
@@ -61,7 +59,7 @@ export const getPreparedDestination = ( state: AddressState ) => {
 		address1,
 		address2,
 		...rawDestination
-	} = getDestination( state );
+	} = getOrderDestination( state );
 	const destination = {
 		...rawDestination,
 		name: composeName( {

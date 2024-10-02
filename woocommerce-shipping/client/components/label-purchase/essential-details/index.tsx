@@ -18,7 +18,7 @@ export const EssentialDetails = withBoundary( () => {
 	const {
 		essentialDetails,
 		customs: { isCustomsNeeded },
-		shipment: { getOrigin },
+		shipment: { getShipmentOrigin },
 		rates: { getSelectedRate },
 		hazmat: { getShipmentHazmat },
 		packages: { isPackageSpecified },
@@ -124,7 +124,7 @@ export const EssentialDetails = withBoundary( () => {
 		if ( getCurrentShipmentLabel()?.isLegacy ) {
 			return false;
 		}
-		return ! getSelectedRate() || ! getOrigin().isVerified;
+		return ! getSelectedRate() || ! getShipmentOrigin().isVerified;
 	};
 
 	return (

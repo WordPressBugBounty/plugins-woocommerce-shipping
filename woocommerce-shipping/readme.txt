@@ -7,7 +7,7 @@ Requires at least: 6.4
 Tested up to: 6.6
 WC requires at least: 8.9
 WC tested up to: 9.1
-Stable tag: 1.1.4
+Stable tag: 1.1.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -122,6 +122,14 @@ Absolutely! You can read our Terms of Service [here](https://wordpress.com/tos).
 4. WooCommerce Shipping print label screen.
 
 == Changelog ==
+
+= 1.1.5 - 2024-10-02 =
+* Fix   - A single order being shipped within the same country and internationally could cause confusion with the customs form.
+* Fix   - Changing a shipment's origin or destination address was not being reflected correctly throughout the entire UI.
+* Fix   - Total shipment weight exceeding 1k caused the total weight field to be blank.
+* Fix   - Moving shipment items to another shipment can cause the app to crash under certain conditions.
+* Fix   - Shipping labels now hide the origin name when the origin address includes a company name.
+* Dev   - New `wcshipping_include_email_tracking_info` filter so 3rd party plugins can enable/disable tracking info in emails.
 
 = 1.1.4 - 2024-09-25 =
 * Fix   - Selectively migrate WooCommerce Shipping & Tax packages if WCShipping created its own new settings.

@@ -12,7 +12,6 @@ import {
 } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 import { getCurrentOrder } from 'utils';
-import { addressStore } from 'data/address';
 import { labelPurchaseStore } from 'data/label-purchase';
 import { Items } from 'components/label-purchase/items';
 import { Packages } from 'components/label-purchase/packages';
@@ -39,10 +38,6 @@ export const ShipmentContent = ( {
 }: ShipmentContentProps ): JSX.Element => {
 	const order = getCurrentOrder();
 
-	const destinationAddress = useSelect(
-		( select ) => select( addressStore ).getDestination(),
-		[]
-	);
 	const {
 		labels: {
 			hasPurchasedLabel,
@@ -50,7 +45,7 @@ export const ShipmentContent = ( {
 			getCurrentShipmentLabel,
 		},
 		customs: { isCustomsNeeded },
-		shipment: { currentShipmentId },
+		shipment: { currentShipmentId, getShipmentDestination },
 		rates: { isFetching },
 		packages: { isCustomPackageTab },
 		hazmat: { getShipmentHazmat },
@@ -217,7 +212,7 @@ export const ShipmentContent = ( {
 			<FlexBlock>
 				<ShipmentDetails
 					order={ order }
-					address={ destinationAddress }
+					address={ getShipmentDestination() }
 				/>
 				<PaymentButtons order={ order } />
 			</FlexBlock>

@@ -14,7 +14,6 @@ import {
 	getLastOrderCompleted,
 } from 'utils';
 import { labelPurchaseStore } from 'data/label-purchase';
-import { addressStore } from 'data/address';
 import { usePackageState } from './packages';
 import { useShipmentState } from './shipment';
 import { useRatesState } from './rates';
@@ -37,7 +36,9 @@ interface UseLabelsStateProps {
 		typeof useHazmatState
 	>[ 'getShipmentHazmat' ];
 	updateRates: ReturnType< typeof useRatesState >[ 'updateRates' ];
-	getOrigin: ReturnType< typeof useShipmentState >[ 'getOrigin' ];
+	getShipmentOrigin: ReturnType<
+		typeof useShipmentState
+	>[ 'getShipmentOrigin' ];
 	customs: ReturnType< typeof useCustomsState >;
 	shipments: ReturnType< typeof useShipmentState >[ 'shipments' ];
 }
@@ -79,7 +80,7 @@ export function useLabelsState( {
 	totalWeight,
 	getShipmentHazmat,
 	updateRates,
-	getOrigin,
+	getShipmentOrigin,
 	customs: { maybeApplyCustomsToPackage, getCustomsState },
 	shipments,
 }: UseLabelsStateProps ) {
@@ -90,22 +91,10 @@ export function useLabelsState( {
 		[ currentShipmentId ]
 	);
 
-	const getSelectedOrigin = useCallback(
-		( shipmentId = currentShipmentId ) =>
-			select( labelPurchaseStore ).getLabelOrigins( shipmentId ),
-		[ currentShipmentId ]
-	);
-
-	const getSelectedDestination = useCallback(
-		( shipmentId = currentShipmentId ) =>
-			select( labelPurchaseStore ).getLabelDestinations( shipmentId ),
-		[ currentShipmentId ]
-	);
-
 	const currentShipmentLabel = getShipmentLabel();
 
 	const purchasedLabels = select( labelPurchaseStore ).getPurchasedLabels();
-	const country = select( addressStore ).getStoreOrigin()?.country;
+	const country = getShipmentOrigin()?.country;
 
 	const paperSizes = getPaperSizes( country );
 	const [ labels, setLabels ] = useState<
@@ -291,7 +280,7 @@ export function useLabelsState( {
 						[ `shipment_${ currentShipmentId }` ]:
 							getShipmentHazmat(),
 					},
-					getOrigin(),
+					getShipmentOrigin(),
 					{
 						[ `shipment_${ currentShipmentId }` ]:
 							getCustomsState(),
@@ -319,7 +308,7 @@ export function useLabelsState( {
 			setIsPurchasing,
 			getShipmentHazmat,
 			maybeUpdateRates,
-			getOrigin,
+			getShipmentOrigin,
 			maybeApplyCustomsToPackage,
 			getCustomsState,
 		]
@@ -526,8 +515,6 @@ export function useLabelsState( {
 		refundLabel,
 		hasRequestedRefund,
 		getLabelProductIds,
-		getSelectedOrigin,
-		getSelectedDestination,
 		getShipmentsWithoutLabel,
 		labelStatusUpdateErrors,
 	};

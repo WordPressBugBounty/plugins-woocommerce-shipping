@@ -11,6 +11,7 @@ const formatNumber = ( val: string | number ) =>
 	numberFormat(
 		{
 			precision: 2,
+			thousandSeparator: '',
 		},
 		Number( val )
 	);

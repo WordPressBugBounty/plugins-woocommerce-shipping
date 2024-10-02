@@ -33,6 +33,12 @@ class WC_Connect_Extension_Compatibility {
 			}
 		}
 
-		return true;
+		/**
+		 * Filter the flag indicating whether WooCommerce Shipping should add tracking info to emails.
+		 *
+		 * @param bool $send_email True if WCS should send the tracking info, false otherwise.
+		 * @since 1.1.5
+		 */
+		return apply_filters( 'wcshipping_include_email_tracking_info', true );
 	}
 }

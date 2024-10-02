@@ -60,7 +60,7 @@ const getOriginCountryNames = (
 		ACCEPTED_USPS_ORIGIN_COUNTRIES.includes( value )
 	);
 export const getCountryNames = (
-	group: 'destination' | 'origin',
+	group: 'destination' | 'origin' | 'all',
 	countryCode: string | undefined | null,
 	config = getConfig()
 ) => {

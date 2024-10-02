@@ -35,8 +35,8 @@ import { withBoundary } from 'components/HOC';
 interface AddressStepProps< T = Destination > {
 	type: AddressTypes;
 	address: T;
-	onCompleteCallback: () => void;
-	onUpdateCallback?: ( address: T ) => void;
+	onCompleteCallback: ( address: T ) => void;
+	onCancelCallback?: () => void;
 	orderId?: string; // order id is only needed when dealing with destination address
 	isAdd: boolean; // if the form is used to add an address
 	originCountry?: string; // origin country is only needed for destination address for validations
@@ -47,7 +47,7 @@ export const AddressStep = withBoundary(
 		type,
 		address,
 		onCompleteCallback,
-		onUpdateCallback,
+		onCancelCallback,
 		isAdd = false,
 		orderId,
 		originCountry,
@@ -180,7 +180,6 @@ export const AddressStep = withBoundary(
 			setIsUpdating( false );
 			setIsConfirming( false );
 			setIsComplete( true );
-			onUpdateCallback?.( address );
 		};
 
 		const returnFromSuggestion = () => {
@@ -200,13 +199,13 @@ export const AddressStep = withBoundary(
 
 		useEffect( () => {
 			if ( isComplete && isEmpty( validationErrors ) ) {
-				onCompleteCallback();
+				onCompleteCallback( address );
 			}
 
 			if ( ! isEmpty( validationErrors ) ) {
 				setIsComplete( false );
 			}
-		}, [ isComplete, validationErrors, onCompleteCallback ] );
+		}, [ address, isComplete, validationErrors, onCompleteCallback ] );
 
 		const isSubmitButtonDisabled = ( {
 			isDirty,
@@ -286,7 +285,7 @@ export const AddressStep = withBoundary(
 									<FlexItem>
 										<Flex gap={ 2 }>
 											<Button
-												onClick={ onCompleteCallback }
+												onClick={ onCancelCallback }
 												isBusy={ isUpdating }
 												variant="tertiary"
 											>

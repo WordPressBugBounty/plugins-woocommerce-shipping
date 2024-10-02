@@ -56,8 +56,9 @@ export const OrderLabelPurchase = ( {
 		currentShipmentId,
 		setCurrentShipmentId,
 		getShipmentItems,
-		setOrigin,
-		getOrigin,
+		setShipmentOrigin,
+		getShipmentOrigin,
+		getShipmentDestination,
 		revertLabelShipmentIdsToUpdate,
 		labelShipmentIdsToUpdate,
 	} = useShipmentState();
@@ -78,7 +79,8 @@ export const OrderLabelPurchase = ( {
 	const customs = useCustomsState(
 		currentShipmentId,
 		getShipmentItems,
-		getOrigin
+		getShipmentOrigin,
+		getShipmentDestination
 	);
 	const {
 		selectedRates,
@@ -98,7 +100,7 @@ export const OrderLabelPurchase = ( {
 		getPackageForRequest: packages.getPackageForRequest,
 		totalWeight,
 		customs,
-		getOrigin,
+		getShipmentOrigin,
 	} );
 
 	const labels = useLabelsState( {
@@ -109,7 +111,7 @@ export const OrderLabelPurchase = ( {
 		getSelectedRate,
 		getShipmentHazmat,
 		updateRates,
-		getOrigin,
+		getShipmentOrigin,
 		customs,
 		shipments,
 	} );
@@ -200,8 +202,9 @@ export const OrderLabelPurchase = ( {
 					resetSelections,
 					currentShipmentId,
 					getShipmentItems,
-					setOrigin,
-					getOrigin,
+					setShipmentOrigin,
+					getShipmentOrigin,
+					getShipmentDestination,
 					setCurrentShipmentId,
 					revertLabelShipmentIdsToUpdate,
 					labelShipmentIdsToUpdate,

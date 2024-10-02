@@ -1,5 +1,11 @@
 import clsx from 'clsx';
-import { useCallback, useEffect, useRef, useState } from '@wordpress/element';
+import {
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from '@wordpress/element';
 import {
 	__experimentalInputControl as InputControl,
 	__experimentalSpacer as Spacer,
@@ -223,7 +229,7 @@ export const CustomPackage = withBoundary(
 			fetchRates( rawPackageData );
 		}, [ rawPackageData, fetchRates ] );
 
-		const disableFetchButton = useCallback( () => {
+		const disableFetchButton = useMemo( () => {
 			return (
 				isFetching ||
 				! rawPackageData.length ||
@@ -438,8 +444,7 @@ export const CustomPackage = withBoundary(
 							onClick={ getRates }
 							isBusy={ isFetching }
 							disabled={
-								disableFetchButton() ||
-								! getShipmentTotalWeight()
+								disableFetchButton || ! getShipmentTotalWeight()
 							}
 						/>
 					</Flex>

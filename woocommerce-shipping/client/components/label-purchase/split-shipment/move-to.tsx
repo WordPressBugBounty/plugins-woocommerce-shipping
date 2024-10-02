@@ -13,7 +13,13 @@ interface SplitHeaderProps {
 
 export const MoveTo = ( { isDisabled }: SplitHeaderProps ) => {
 	const {
-		shipment: { shipments, setShipments, selections, resetSelections },
+		shipment: {
+			shipments,
+			setShipments,
+			selections,
+			resetSelections,
+			setCurrentShipmentId,
+		},
 		labels: { hasPurchasedLabel },
 	} = useLabelPurchaseContext();
 
@@ -35,6 +41,13 @@ export const MoveTo = ( { isDisabled }: SplitHeaderProps ) => {
 			[ destinationKey ]:
 				shipments[ destinationKey ].concat( itemsToAdd ),
 		};
+
+		/**
+		 * We need to reset the current shipment id to the first shipment
+		 * to prevent the app from using a shipmentId that no longer exists.
+		 */
+		setCurrentShipmentId( '0' );
+
 		setShipments(
 			normalizeShipments( newShipments ) as Record<
 				string,
@@ -79,7 +92,7 @@ export const MoveTo = ( { isDisabled }: SplitHeaderProps ) => {
 								onClose();
 							} }
 							disabled={ preventMoveToShipment }
-							arial-disabled={ preventMoveToShipment }
+							aria-disabled={ preventMoveToShipment }
 						>
 							{ getShipmentTitle(
 								key,

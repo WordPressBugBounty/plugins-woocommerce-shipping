@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from '@wordpress/element';
-import { isEmpty } from 'lodash';
+import { isEmpty, isEqual } from 'lodash';
 import {
 	CustomsItem,
 	CustomsState,
@@ -16,7 +16,6 @@ import {
 	sanitizeHSTariffNumber,
 } from 'utils';
 import { useShipmentState } from './shipment';
-import { addressStore } from 'data/address';
 import { labelPurchaseStore } from 'data/label-purchase';
 
 const getInitialShipmentCustomsState = < T >( items: T ) => ( {
@@ -32,13 +31,15 @@ export function useCustomsState(
 	getShipmentItems: ReturnType<
 		typeof useShipmentState
 	>[ 'getShipmentItems' ],
-	getOrigin: ReturnType< typeof useShipmentState >[ 'getOrigin' ]
+	getShipmentOrigin: ReturnType<
+		typeof useShipmentState
+	>[ 'getShipmentOrigin' ],
+	getShipmentDestination: ReturnType<
+		typeof useShipmentState
+	>[ 'getShipmentDestination' ]
 ) {
-	const origin = getOrigin() ?? select( addressStore ).getStoreOrigin();
-	const destination = useSelect(
-		( s ) => s( addressStore ).getDestination(),
-		[ origin ]
-	);
+	const origin = getShipmentOrigin();
+	const destination = getShipmentDestination();
 
 	const storedCustomsInformationForShipment = useSelect(
 		( s ) =>
@@ -131,6 +132,29 @@ export function useCustomsState(
 		[ currentShipmentId ]
 	);
 
+	/**
+	 * Reset the customs errors if customs is no longer needed.
+	 *
+	 * Make sure that if a destination changes, but we're no longer showing the customs form,
+	 * we reset the errors to avoid showing errors from a previous destination.
+	 * The reason why we do not have to do something similar when the form is present is because
+	 * it will re-validate the customs state when displayed.
+	 */
+	useEffect( () => {
+		if ( ! isCustomsNeeded() ) {
+			const newErrors = {
+				items: getShipmentItems().map( () => ( {} ) ),
+			};
+
+			setErrors( ( prevErrors ) => {
+				if ( ! isEqual( prevErrors, newErrors ) ) {
+					return newErrors;
+				}
+				return prevErrors;
+			} );
+		}
+	}, [ getShipmentItems, isCustomsNeeded ] );
+
 	const maybeApplyCustomsToPackage = useCallback(
 		< T = RequestPackage >(
 			pkg: T
@@ -187,11 +211,11 @@ export function useCustomsState(
 	);
 
 	const isHSTariffNumberRequired = useCallback( () => {
-		const destinationAddress = select( addressStore ).getDestination();
+		const destinationAddress = destination;
 		return destinationAddress
 			? isCountryInEU( destinationAddress.country )
 			: false;
-	}, [] );
+	}, [ destination ] );
 
 	const hasErrors = useCallback( () => {
 		const { items, ...rest } = errors;

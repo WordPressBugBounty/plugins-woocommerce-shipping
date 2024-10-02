@@ -26,7 +26,7 @@ export const CustomsForm = (): JSX.Element => {
 	const weightUnit = getWeightUnit();
 	const {
 		storeCurrency: { getCurrencyConfig },
-		shipment: { getOrigin },
+		shipment: { getShipmentOrigin },
 		customs: { isHSTariffNumberRequired },
 		labels: { hasPurchasedLabel },
 	} = useLabelPurchaseContext();
@@ -55,9 +55,9 @@ export const CustomsForm = (): JSX.Element => {
 
 	/**
 	 * Origin is defined at this point,
-	 * we're asking for destination countries as there shouldn't be any limit on the destination country, countries used for origin are limited to US for now
+	 * we're asking for all countries as there shouldn't be any limit on the destination country, countries used for origin are limited to US for now
 	 */
-	const countryNames = getCountryNames( 'destination', getOrigin().country );
+	const countryNames = getCountryNames( 'all', getShipmentOrigin().country );
 
 	const showOtherRestrictionType = restrictionType === 'other';
 	const showOtherContentsType = contentsType === 'other';

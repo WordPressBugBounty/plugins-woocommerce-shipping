@@ -24,7 +24,9 @@ interface UseRatesStateProps {
 	>[ 'applyHazmatToPackage' ];
 	totalWeight: number;
 	customs: ReturnType< typeof useCustomsState >;
-	getOrigin: ReturnType< typeof useShipmentState >[ 'getOrigin' ];
+	getShipmentOrigin: ReturnType<
+		typeof useShipmentState
+	>[ 'getShipmentOrigin' ];
 }
 
 /**
@@ -121,7 +123,7 @@ export function useRatesState( {
 	applyHazmatToPackage,
 	totalWeight,
 	customs: { maybeApplyCustomsToPackage },
-	getOrigin,
+	getShipmentOrigin,
 }: UseRatesStateProps ) {
 	const accountSettings = getAccountSettings();
 	const currentShipmentRates =
@@ -257,7 +259,7 @@ export function useRatesState( {
 					),
 				],
 				orderId: getCurrentOrder().id,
-				origin: getOrigin(),
+				origin: getShipmentOrigin(),
 			} );
 
 			if ( responseType === RATES_FETCH_FAILED ) {
@@ -298,7 +300,7 @@ export function useRatesState( {
 			totalWeight,
 			applyHazmatToPackage,
 			maybeApplyCustomsToPackage,
-			getOrigin,
+			getShipmentOrigin,
 			preselectRateBasedOnLastSelections,
 		]
 	);

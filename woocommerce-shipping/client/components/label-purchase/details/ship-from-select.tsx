@@ -37,28 +37,29 @@ export const ShipFromSelect = ( { disabled }: ShipFromSelectProps ) => {
 		[]
 	);
 	const {
-		shipment: { getOrigin, setOrigin },
+		shipment: { getShipmentOrigin, setShipmentOrigin },
 		rates: { updateRates },
 	} = useLabelPurchaseContext();
-	const prevOrigin = useRef( getOrigin() );
+	const prevOrigin = useRef( getShipmentOrigin() );
 
 	useEffect( () => {
-		if ( prevOrigin.current?.id !== getOrigin()?.id ) {
+		if ( prevOrigin.current?.id !== getShipmentOrigin()?.id ) {
 			updateRates();
 		}
-		prevOrigin.current = getOrigin();
-	}, [ getOrigin, updateRates, prevOrigin ] );
+		prevOrigin.current = getShipmentOrigin();
+	}, [ getShipmentOrigin, updateRates, prevOrigin ] );
 
 	const [ addressForEdit, openAddressForEdit ] = useState<
 		OriginAddress | false
 	>( false );
 
-	const onUpdateCallback = useCallback(
+	const onCompleteCallback = useCallback(
 		( address: OriginAddress ) => {
-			setOrigin( address.id );
+			setShipmentOrigin( address.id );
+			openAddressForEdit( false );
 			updateRates();
 		},
-		[ setOrigin, updateRates ]
+		[ setShipmentOrigin, updateRates ]
 	);
 
 	if ( origins.length < 1 ) {
@@ -94,7 +95,9 @@ export const ShipFromSelect = ( { disabled }: ShipFromSelectProps ) => {
 					text={ '' }
 					icon={
 						<>
-							<span>{ addressToString( getOrigin() ) }</span>
+							<span>
+								{ addressToString( getShipmentOrigin() ) }
+							</span>
 							<Icon icon={ chevronDown } />
 						</>
 					}
@@ -110,7 +113,7 @@ export const ShipFromSelect = ( { disabled }: ShipFromSelectProps ) => {
 									close={ onClose }
 									address={ address }
 									isSelected={
-										address.id === getOrigin()?.id
+										address.id === getShipmentOrigin()?.id
 									}
 									editAddress={ openAddressForEdit }
 								/>
@@ -122,7 +125,7 @@ export const ShipFromSelect = ( { disabled }: ShipFromSelectProps ) => {
 					<AddressVerifiedIcon
 						isVerified={ false }
 						onClick={ () => {
-							const org = getOrigin();
+							const org = getShipmentOrigin();
 							if ( org ) {
 								openAddressForEdit( org );
 							}
@@ -154,8 +157,8 @@ export const ShipFromSelect = ( { disabled }: ShipFromSelectProps ) => {
 								snakeCaseKeys( addressForEdit )
 							)
 						) }
-						onCompleteCallback={ () => openAddressForEdit( false ) }
-						onUpdateCallback={ onUpdateCallback }
+						onCompleteCallback={ onCompleteCallback }
+						onCancelCallback={ () => openAddressForEdit( false ) }
 						orderId={ `${ getConfig().order.id }` }
 						isAdd={ false }
 					/>

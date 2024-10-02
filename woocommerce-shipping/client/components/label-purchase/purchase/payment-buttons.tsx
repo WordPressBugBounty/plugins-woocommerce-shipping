@@ -41,7 +41,7 @@ interface PaymentButtonsProps {
 
 export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 	const {
-		shipment: { shipments, currentShipmentId, getOrigin },
+		shipment: { shipments, currentShipmentId, getShipmentOrigin },
 		labels: {
 			selectedLabelSize,
 			requestLabelPurchase,
@@ -259,7 +259,7 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 									isPurchasing ||
 									isUpdatingStatus ||
 									hasPurchasedLabel( false ) ||
-									! getOrigin().isVerified
+									! getShipmentOrigin().isVerified
 								}
 								onClick={ purchaseLabel }
 								isBusy={ isPurchasing }
@@ -267,7 +267,7 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 									! getSelectedRate() ||
 									isPurchasing ||
 									hasPurchasedLabel( false ) ||
-									! getOrigin().isVerified
+									! getShipmentOrigin().isVerified
 								}
 							>
 								{ purchaseButtonLabel }

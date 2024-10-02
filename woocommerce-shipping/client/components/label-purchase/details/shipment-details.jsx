@@ -21,7 +21,6 @@ import {
 	addressToString,
 	formatAddressFields,
 	getCurrentOrder,
-	getOrderDestination,
 	areAddressesClose,
 } from 'utils';
 import { addressStore } from 'data/address';
@@ -54,13 +53,8 @@ export const ShipmentDetails = withBoundary( ( { order, address } ) => {
 	const {
 		storeCurrency,
 		rates: { getSelectedRate, updateRates },
-		labels: {
-			hasPurchasedLabel,
-			getSelectedDestination,
-			getSelectedOrigin,
-			getCurrentShipmentLabel,
-		},
-		shipment: { getOrigin },
+		labels: { hasPurchasedLabel, getCurrentShipmentLabel },
+		shipment: { getShipmentOrigin, getShipmentDestination },
 	} = useLabelPurchaseContext();
 
 	/**
@@ -139,7 +133,8 @@ export const ShipmentDetails = withBoundary( ( { order, address } ) => {
 		? getSelectedRate().rate.retailRate - getSelectedRate().rate.rate
 		: 0;
 
-	const onDestinationUpdate = () => {
+	const onCompleteCallback = () => {
+		setIsAddressModalOpen( false );
 		updateRates();
 	};
 
@@ -157,8 +152,8 @@ export const ShipmentDetails = withBoundary( ( { order, address } ) => {
 				{ ! hasPurchasedLabel( false ) && (
 					<ShipFromSelect disabled={ hasPurchasedLabel( false ) } />
 				) }
-				{ hasPurchasedLabel( false ) && getSelectedOrigin() && (
-					<Text>{ addressToString( getSelectedOrigin() ) }</Text>
+				{ hasPurchasedLabel( false ) && getShipmentOrigin() && (
+					<Text>{ addressToString( getShipmentOrigin() ) }</Text>
 				) }
 
 				{ currentLabel?.isLegacy && ( // Inaccurate ship from address
@@ -191,11 +186,8 @@ export const ShipmentDetails = withBoundary( ( { order, address } ) => {
 					</Text>
 				) }
 				{ hasPurchasedLabel( false ) &&
-					getSelectedDestination() &&
-					addressToString( getSelectedDestination() ) }
-
-				{ currentLabel?.isLegacy &&
-					addressToString( getOrderDestination() ) }
+					getShipmentDestination() &&
+					addressToString( getShipmentDestination() ) }
 			</BaseControl>
 
 			<BaseControl
@@ -300,12 +292,12 @@ export const ShipmentDetails = withBoundary( ( { order, address } ) => {
 					<AddressStep
 						type={ ADDRESS_TYPES.DESTINATION }
 						address={ formatAddressFields( address ) }
-						onCompleteCallback={ () =>
+						onCompleteCallback={ onCompleteCallback }
+						onCancelCallback={ () =>
 							setIsAddressModalOpen( false )
 						}
-						onUpdateCallback={ onDestinationUpdate }
 						orderId={ `${ order.id }` }
-						originCountry={ getOrigin()?.country }
+						originCountry={ getShipmentOrigin()?.country }
 					/>
 				</Modal>
 			) }

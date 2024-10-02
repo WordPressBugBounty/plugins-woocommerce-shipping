@@ -242,6 +242,7 @@ export const OriginAddressList = () => {
 								)
 							) }
 							onCompleteCallback={ closeOriginAddressForm }
+							onCancelCallback={ closeOriginAddressForm }
 							isAdd={ ! Boolean( selectedOriginAddress?.id ) }
 						/>
 					</Modal>
