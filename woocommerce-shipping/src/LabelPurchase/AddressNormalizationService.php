@@ -45,6 +45,7 @@ class AddressNormalizationService {
 	 * @var OriginAddressService
 	 */
 	private $origin_address_service;
+
 	/**
 	 * Class constructor.
 	 *
@@ -62,7 +63,8 @@ class AddressNormalizationService {
 	/**
 	 * Confirm and update origin address in store.
 	 *
-	 * @param array $address     Origin shipping address.
+	 * @param array $address Origin shipping address.
+	 *
 	 * @return array|WP_Error REST response body.
 	 */
 	public function update_origin_address( $address ) {
@@ -79,6 +81,7 @@ class AddressNormalizationService {
 				)
 			);
 		}
+
 		return array(
 			'success'    => true,
 			'address'    => $this->format_address_for_client( $address ),
@@ -92,6 +95,7 @@ class AddressNormalizationService {
 	 * @param int|string $order_id    WC order ID.
 	 * @param array      $address     Destination shipping address.
 	 * @param bool       $is_verified Is destination address normalized/verified.
+	 *
 	 * @return array REST response body.
 	 */
 	public function update_destination_address( $order_id, $address, $is_verified ) {
@@ -100,6 +104,7 @@ class AddressNormalizationService {
 		if ( $result ) {
 			$this->settings_store->set_is_destination_address_normalized( $order_id, (bool) $is_verified );
 		}
+
 		return array(
 			'success'    => $result,
 			'address'    => $formatted_address,
@@ -111,6 +116,7 @@ class AddressNormalizationService {
 	 * Checks whether destination address has already been verified/normalized.
 	 *
 	 * @param int|string $order_id WC order ID.
+	 *
 	 * @return array|WP_Error REST response body.
 	 */
 	public function is_destination_address_verified( $order_id ) {
@@ -133,6 +139,7 @@ class AddressNormalizationService {
 				array( 'message' => $response->get_error_message() )
 			);
 			$this->logger->log( $error, __CLASS__ );
+
 			return $error;
 		}
 
@@ -143,6 +150,7 @@ class AddressNormalizationService {
 				$response->field_errors
 			);
 			$this->logger->log( $error, __CLASS__ );
+
 			return array(
 				'success'    => false,
 				'errors'     => $response->field_errors,
@@ -162,6 +170,7 @@ class AddressNormalizationService {
 	 * Requests server to normalize address.
 	 *
 	 * @param array $address Address to normalize.
+	 *
 	 * @return array|WP_Error REST response body.
 	 */
 	public function get_normalization_response( $address ) {
@@ -173,16 +182,23 @@ class AddressNormalizationService {
 				array( 'message' => $response->get_error_message() )
 			);
 			$this->logger->log( $error, __CLASS__ );
+
 			return $error;
 		}
 
 		if ( isset( $response->field_errors ) ) {
-			$error = new WP_Error(
-				'address_normalization_failed',
-				$response->field_errors->general,
-				$response->field_errors
-			);
-			$this->logger->log( $error, __CLASS__ );
+			$error_message = __( 'Address normalization failed', 'woocommerce-shipping' );
+
+			// If there is a general error message, use that.
+			if ( isset( $response->field_errors->general ) ) {
+				$error_message = $response->field_errors->general;
+			// If there is an address error message, use that.
+			} elseif ( isset( $response->field_errors->address ) ) {
+				$error_message = $response->field_errors->address;
+			}
+
+			$this->logger->log( $error_message, __CLASS__ );
+
 			return array(
 				'success'                => false,
 				'errors'                 => $response->field_errors,
@@ -203,6 +219,7 @@ class AddressNormalizationService {
 	 * Returns normalization response for address from server.
 	 *
 	 * @param array $address Address to normalize.
+	 *
 	 * @return object|WP_Error REST reponse object.
 	 */
 	private function normalize_address( $address ) {
@@ -217,6 +234,7 @@ class AddressNormalizationService {
 		if ( isset( $response->normalized ) ) {
 			$response->normalized = $this->format_address_for_client( $response->normalized, $address );
 		}
+
 		return $response;
 	}
 
@@ -224,6 +242,7 @@ class AddressNormalizationService {
 	 * Formats address request body to support required server validation.
 	 *
 	 * @param array $address Input address.
+	 *
 	 * @return array Formatted request body.
 	 */
 	private function format_address_for_connect_server( $address ) {
@@ -285,6 +304,7 @@ class AddressNormalizationService {
 	 * Formats address response to reflect expected WC address format.
 	 *
 	 * @param array $address Server address.
+	 *
 	 * @return array Formatted response body.
 	 */
 	private function format_address_for_client( $address, $original_address = array() ) {

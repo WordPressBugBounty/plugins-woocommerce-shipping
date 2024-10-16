@@ -3,14 +3,14 @@ import {
 	Carrier,
 	CustomPackageResponse,
 	CustomsState,
-	Destination,
 	HazmatState,
 	Label,
 	LabelPurchaseError,
-	OriginAddress,
 	Rate,
+	RequestAddress,
 	ShipmentRecord,
 } from 'types';
+import { getPreparedDestination } from '../address/selectors';
 
 export interface LabelPurchaseState extends object {
 	rates?: Record<
@@ -30,8 +30,11 @@ export interface LabelPurchaseState extends object {
 		  } >
 		| '';
 	selectedHazmatConfig: HazmatState | '';
-	selectedOrigins: Record< string, OriginAddress > | null;
-	selectedDestinations: Record< string, Destination > | null;
+	selectedOrigins: Record< string, CamelCaseType< RequestAddress > > | null;
+	selectedDestinations: Record<
+		string,
+		ReturnType< typeof getPreparedDestination >
+	> | null;
 	customsInformation: ShipmentRecord< CustomsState > | '';
 	packages: {
 		custom: CamelCaseType< CustomPackageResponse >[];

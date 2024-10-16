@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInitf91b97ef127e2779faaaa753dfde8f94
+class ComposerStaticInit54b86a5c60678dfbd1366d25475affb2
 {
     public static $files = array (
         '3773ef3f09c37da5478d578e32b03a4b' => __DIR__ . '/..' . '/automattic/jetpack-assets/actions.php',
@@ -93,12 +93,18 @@ class ComposerStaticInitf91b97ef127e2779faaaa753dfde8f94
         'Automattic\\Jetpack\\Terms_Of_Service' => __DIR__ . '/..' . '/automattic/jetpack-connection/src/class-terms-of-service.php',
         'Automattic\\Jetpack\\Tracking' => __DIR__ . '/..' . '/automattic/jetpack-connection/src/class-tracking.php',
         'Automattic\\WCShipping\\Autoloader' => __DIR__ . '/../..' . '/src/Autoloader.php',
+        'Automattic\\WCShipping\\Checkout\\CheckoutController' => __DIR__ . '/../..' . '/src/Checkout/CheckoutController.php',
+        'Automattic\\WCShipping\\Checkout\\CheckoutNotifier' => __DIR__ . '/../..' . '/src/Checkout/CheckoutNotifier.php',
+        'Automattic\\WCShipping\\Checkout\\CheckoutService' => __DIR__ . '/../..' . '/src/Checkout/CheckoutService.php',
+        'Automattic\\WCShipping\\Checkout\\StoreNotice' => __DIR__ . '/../..' . '/src/Checkout/StoreNotice.php',
+        'Automattic\\WCShipping\\Checkout\\StoreNoticeTypes' => __DIR__ . '/../..' . '/src/Checkout/StoreNoticeTypes.php',
         'Automattic\\WCShipping\\DOM\\Manipulation' => __DIR__ . '/../..' . '/src/DOM/Manipulation.php',
         'Automattic\\WCShipping\\Exceptions\\RESTRequestException' => __DIR__ . '/../..' . '/src/Exceptions/RESTRequestException.php',
         'Automattic\\WCShipping\\Integrations\\AssetsRESTController' => __DIR__ . '/../..' . '/src/Integrations/AssetsRESTController.php',
         'Automattic\\WCShipping\\Integrations\\ConfigRESTController' => __DIR__ . '/../..' . '/src/Integrations/ConfigRESTController.php',
         'Automattic\\WCShipping\\Integrations\\TosRESTController' => __DIR__ . '/../..' . '/src/Integrations/TosRESTController.php',
         'Automattic\\WCShipping\\Integrations\\WCST' => __DIR__ . '/../..' . '/src/Integrations/WCST.php',
+        'Automattic\\WCShipping\\Integrations\\WooCommerceBlocksIntegration' => __DIR__ . '/../..' . '/src/Integrations/WooCommerceBlocksIntegration.php',
         'Automattic\\WCShipping\\Integrations\\WooCommerceShipmentTracking' => __DIR__ . '/../..' . '/src/Integrations/WooCommerceShipmentTracking.php',
         'Automattic\\WCShipping\\LabelPurchase\\AddressNormalizationService' => __DIR__ . '/../..' . '/src/LabelPurchase/AddressNormalizationService.php',
         'Automattic\\WCShipping\\LabelPurchase\\AddressRESTController' => __DIR__ . '/../..' . '/src/LabelPurchase/AddressRESTController.php',
@@ -117,6 +123,7 @@ class ComposerStaticInitf91b97ef127e2779faaaa753dfde8f94
         'Automattic\\WCShipping\\LabelSettings\\SelfHelpRestController' => __DIR__ . '/../..' . '/src/LabelSettings/SelfHelpRestController.php',
         'Automattic\\WCShipping\\LabelSettings\\ServiceDataRefreshRestController' => __DIR__ . '/../..' . '/src/LabelSettings/ServiceDataRefreshRestController.php',
         'Automattic\\WCShipping\\Loader' => __DIR__ . '/../..' . '/src/Loader.php',
+        'Automattic\\WCShipping\\Logger' => __DIR__ . '/../..' . '/src/Logger.php',
         'Automattic\\WCShipping\\Migration\\LegacyLabelMigrator' => __DIR__ . '/../..' . '/src/Migration/LegacyLabelMigrator.php',
         'Automattic\\WCShipping\\Migration\\LegacySettingsMigrator' => __DIR__ . '/../..' . '/src/Migration/LegacySettingsMigrator.php',
         'Automattic\\WCShipping\\Migration\\MigrationController' => __DIR__ . '/../..' . '/src/Migration/MigrationController.php',
@@ -129,7 +136,12 @@ class ComposerStaticInitf91b97ef127e2779faaaa753dfde8f94
         'Automattic\\WCShipping\\Shipment\\Address' => __DIR__ . '/../..' . '/src/Shipment/Address.php',
         'Automattic\\WCShipping\\Shipments\\ShipmentsRESTController' => __DIR__ . '/../..' . '/src/Shipments/ShipmentsRESTController.php',
         'Automattic\\WCShipping\\Shipments\\ShipmentsService' => __DIR__ . '/../..' . '/src/Shipments/ShipmentsService.php',
+        'Automattic\\WCShipping\\StoreApi\\AbstractStoreApiExtension' => __DIR__ . '/../..' . '/src/StoreApi/AbstractStoreApiExtension.php',
+        'Automattic\\WCShipping\\StoreApi\\Extensions\\BlocksCheckoutAddressValidationExtension' => __DIR__ . '/../..' . '/src/StoreApi/Extensions/BlocksCheckoutAddressValidationExtension.php',
+        'Automattic\\WCShipping\\StoreApi\\StoreApiExtendSchema' => __DIR__ . '/../..' . '/src/StoreApi/StoreApiExtendSchema.php',
+        'Automattic\\WCShipping\\StoreApi\\StoreApiExtensionController' => __DIR__ . '/../..' . '/src/StoreApi/StoreApiExtensionController.php',
         'Automattic\\WCShipping\\Tracks' => __DIR__ . '/../..' . '/src/Tracks.php',
+        'Automattic\\WCShipping\\Utilities\\AddressUtils' => __DIR__ . '/../..' . '/src/Utilities/AddressUtils.php',
         'Automattic\\WCShipping\\Utils' => __DIR__ . '/../..' . '/src/Utils.php',
         'Automattic\\WCShipping\\WCShippingRESTController' => __DIR__ . '/../..' . '/src/WCShippingRESTController.php',
         'Automattic\\WCShipping\\WPCOMConnection\\WPCOMConnectionRESTController' => __DIR__ . '/../..' . '/src/WPCOMConnection/WPCOMConnectionRESTController.php',
@@ -146,9 +158,9 @@ class ComposerStaticInitf91b97ef127e2779faaaa753dfde8f94
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInitf91b97ef127e2779faaaa753dfde8f94::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInitf91b97ef127e2779faaaa753dfde8f94::$prefixDirsPsr4;
-            $loader->classMap = ComposerStaticInitf91b97ef127e2779faaaa753dfde8f94::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInit54b86a5c60678dfbd1366d25475affb2::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInit54b86a5c60678dfbd1366d25475affb2::$prefixDirsPsr4;
+            $loader->classMap = ComposerStaticInit54b86a5c60678dfbd1366d25475affb2::$classMap;
 
         }, null, ClassLoader::class);
     }

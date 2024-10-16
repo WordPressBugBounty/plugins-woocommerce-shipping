@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from '@wordpress/element';
 import { applyShipmentHazmat } from 'utils/rates';
-import { HazmatState, RequestPackage } from 'types';
+import { Hazmat, HazmatState, RequestPackage } from 'types';
 import { select } from '@wordpress/data';
 import { labelPurchaseStore } from 'data/label-purchase';
 
-const defaultHazmatStateForShipment = {
+const defaultHazmatStateForShipment: Hazmat = {
 	isHazmat: false,
 	category: '',
 };

@@ -75,6 +75,7 @@ export function* getRates( payload: {
 			data: {
 				order_id: orderId,
 				destination,
+				// Todo: To be updated via  woocommerce-shipping/issues/859
 				origin: mapAddressForRequest( origin ),
 				...restOfPayload,
 			},

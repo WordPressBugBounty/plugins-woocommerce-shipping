@@ -29,6 +29,7 @@ export const LabelsSettingsComponent = () => {
 		emailReceiptEnabled,
 		rememberServiceEnabled,
 		rememberPackageEnabled,
+		checkoutAddressValidation,
 		storeOwnerUsername,
 		storeOwnerLogin,
 		storeOwnerEmail,
@@ -81,6 +82,9 @@ export const LabelsSettingsComponent = () => {
 	};
 	const rememberPackageCheckboxHandler = ( value ) => {
 		updateFormData( 'use_last_package', value );
+	};
+	const rememberCheckoutAddressValidationCheckboxHandler = ( value ) => {
+		updateFormData( 'checkout_address_validation', value );
 	};
 
 	const saveButtonHandler = async () => {
@@ -205,6 +209,21 @@ export const LabelsSettingsComponent = () => {
 							checked={ rememberPackageEnabled }
 							onChange={ ( value ) =>
 								rememberPackageCheckboxHandler( value )
+							}
+						/>
+
+						<CheckboxControl
+							label={ __(
+								'Enable address validation at checkout',
+								'woocommerce-shipping'
+							) }
+							help={ __(
+								'Give your customers the chance to validate their shipping address before they complete their purchase.',
+								'woocommerce-shipping'
+							) }
+							checked={ checkoutAddressValidation }
+							onChange={ ( value ) =>
+								rememberCheckoutAddressValidationCheckboxHandler( value )
 							}
 						/>
 					</CardBody>

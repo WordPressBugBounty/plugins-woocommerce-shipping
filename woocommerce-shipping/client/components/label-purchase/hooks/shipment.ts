@@ -8,6 +8,7 @@ import { LabelShipmentIdMap, OriginAddress, ShipmentItem } from 'types';
 import { addressStore } from 'data/address';
 import { labelPurchaseStore } from 'data/label-purchase';
 import { invert } from 'lodash';
+import { LABEL_PURCHASE_STATUS } from 'data/constants';
 
 export function useShipmentState() {
 	const [ currentShipmentId, setCurrentShipmentId ] = useState( '0' );
@@ -26,10 +27,14 @@ export function useShipmentState() {
 		0: getFirstSelectableOriginAddress(),
 	} );
 
+	const findOriginAddressById = ( originId: string ) => {
+		const origins = selectData( addressStore ).getOriginAddresses();
+		return origins.find( ( a ) => a.id === originId );
+	};
+
 	const setShipmentOrigin = useCallback(
 		( originId: string ) => {
-			const origins = selectData( addressStore ).getOriginAddresses();
-			const origin = origins.find( ( a ) => a.id === originId );
+			const origin = findOriginAddressById( originId );
 
 			if ( ! origin ) {
 				return;
@@ -69,7 +74,8 @@ export function useShipmentState() {
 	useEffect( () => {
 		// Fetching the origin and destination addresses for the most recently purchased label doesn't check
 		// if it has been refunded or not, so we check for "activePurchasedLabel" as well.
-		if ( activePurchasedLabel && purchasedLabelOrigin ) {
+		// older implementations of purchasedLabelOrigin don't have the id property, so we check for it.
+		if ( activePurchasedLabel && purchasedLabelOrigin?.id ) {
 			setShipmentOrigin( purchasedLabelOrigin.id );
 		} else if ( ! shipmentOrigins[ currentShipmentId ] ) {
 			setShipmentOrigin( getFirstSelectableOriginAddress().id );
@@ -114,7 +120,12 @@ export function useShipmentState() {
 
 	const getShipmentOrigin = useCallback( () => {
 		if ( activePurchasedLabel && purchasedLabelOrigin ) {
-			return purchasedLabelOrigin;
+			const foundOrigin = findOriginAddressById(
+				purchasedLabelOrigin.id
+			);
+			if ( foundOrigin ) {
+				return foundOrigin;
+			}
 		}
 
 		return (
@@ -127,6 +138,18 @@ export function useShipmentState() {
 		purchasedLabelOrigin,
 		shipmentOrigins,
 	] );
+
+	/**
+	 * Returns the ship from address recorded at the time of purchase.
+	 * This can differ from the current ship from address if the user has changed it.
+	 * If the user has changed the address, the id will remain the same, but the address will be different.
+	 */
+	const getShipmentPurchaseOrigin = () =>
+		activePurchasedLabel &&
+		purchasedLabelOrigin &&
+		activePurchasedLabel.status === LABEL_PURCHASE_STATUS.PURCHASED
+			? purchasedLabelOrigin
+			: null;
 
 	const getShipmentDestination = useCallback( () => {
 		if ( activePurchasedLabel && purchasedLabelDestination ) {
@@ -172,5 +195,6 @@ export function useShipmentState() {
 		getShipmentDestination,
 		revertLabelShipmentIdsToUpdate,
 		labelShipmentIdsToUpdate,
+		getShipmentPurchaseOrigin,
 	};
 }

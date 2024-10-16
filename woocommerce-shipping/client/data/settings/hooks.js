@@ -8,6 +8,7 @@ export const useSettings = () => {
 		email_receipts: emailReceiptEnabled,
 		use_last_service: rememberServiceEnabled,
 		use_last_package: rememberPackageEnabled,
+		checkout_address_validation: checkoutAddressValidation,
 	} = useSelect( ( select ) => {
 		const settings = select( settingsStore ).getConfigSettings();
 		if ( ! settings ) {
@@ -17,6 +18,7 @@ export const useSettings = () => {
 				email_receipts: '',
 				use_last_service: '',
 				use_last_package: '',
+				checkout_address_validation: '',
 			};
 		}
 		return {
@@ -24,6 +26,8 @@ export const useSettings = () => {
 			email_receipts: settings.email_receipts ?? '',
 			use_last_service: settings.use_last_service ?? '',
 			use_last_package: settings.use_last_package ?? '',
+			checkout_address_validation:
+				settings.checkout_address_validation ?? '',
 		};
 	} );
 
@@ -55,6 +59,7 @@ export const useSettings = () => {
 		emailReceiptEnabled,
 		rememberServiceEnabled,
 		rememberPackageEnabled,
+		checkoutAddressValidation,
 		storeOwnerUsername,
 		storeOwnerLogin,
 		storeOwnerEmail,

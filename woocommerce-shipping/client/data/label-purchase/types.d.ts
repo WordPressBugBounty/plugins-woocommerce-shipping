@@ -3,16 +3,16 @@ import {
 	Action,
 	CamelCaseType,
 	CustomPackageResponse,
-	Destination,
 	Label,
 	LabelPurchaseError,
 	LabelShipmentIdMap,
 	Order,
-	OriginAddress,
 	RateWithParent,
+	RequestAddress,
 } from 'types';
 import { LABEL_PURCHASE_SUCCESS, LABEL_STATUS_RESOLVED } from './label';
 import { PACKAGES_UPDATE, PACKAGES_UPDATE_ERROR } from './packages';
+import { getPreparedDestination } from '../address/selectors';
 
 export interface LabelPurchaseSuccessAction extends Action {
 	type: LABEL_PURCHASE_SUCCESS;
@@ -26,8 +26,11 @@ export interface LabelPurchaseSuccessAction extends Action {
 				category: string;
 			}
 		>;
-		selectedOrigins: Record< string, OriginAddress >;
-		selectedDestinations: Record< string, Destination >;
+		selectedOrigins: Record< string, CamelCaseType< RequestAddress > >;
+		selectedDestinations: Record<
+			string,
+			ReturnType< typeof getPreparedDestination >
+		>;
 	};
 	error?: Record< string, LabelPurchaseError >;
 }

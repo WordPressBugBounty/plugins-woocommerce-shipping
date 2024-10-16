@@ -13,7 +13,7 @@ import {
 } from './hooks';
 import { useEssentialDetails } from './hooks/essential-details';
 
-interface LabelPurchaseContextType {
+export interface LabelPurchaseContextType {
 	orderItems: unknown[];
 	storeCurrency: ReturnType< typeof CurrencyFactory >;
 	hazmat: ReturnType< typeof useHazmatState >;

@@ -1,4 +1,4 @@
 import { ShipmentRecord } from './helpers';
-import { LocationResponse } from './connect-server';
+import { RequestAddress } from './connect-server';
 
-export type SelectedOrigin = ShipmentRecord< LocationResponse >;
+export type SelectedOrigin = ShipmentRecord< RequestAddress >;

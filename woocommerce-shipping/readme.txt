@@ -5,9 +5,9 @@ Requires Plugins: woocommerce
 Requires PHP: 7.4
 Requires at least: 6.4
 Tested up to: 6.6
-WC requires at least: 8.9
-WC tested up to: 9.1
-Stable tag: 1.1.5
+WC requires at least: 9.1
+WC tested up to: 9.3
+Stable tag: 1.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -123,6 +123,12 @@ Absolutely! You can read our Terms of Service [here](https://wordpress.com/tos).
 
 == Changelog ==
 
+= 1.2.0 - 2024-10-16 =
+* Add   - Option to allow shipping address validation at checkout.
+* Fix   - A failed payment would hinder future purchases.
+* Tweak - Do not cache new shipping API endpoints.
+* Tweak - Improve asset file versioning.
+
 = 1.1.5 - 2024-10-02 =
 * Fix   - A single order being shipped within the same country and internationally could cause confusion with the customs form.
 * Fix   - Changing a shipment's origin or destination address was not being reflected correctly throughout the entire UI.
@@ -132,11 +138,10 @@ Absolutely! You can read our Terms of Service [here](https://wordpress.com/tos).
 * Dev   - New `wcshipping_include_email_tracking_info` filter so 3rd party plugins can enable/disable tracking info in emails.
 
 = 1.1.4 - 2024-09-25 =
-* Fix   - Selectively migrate WooCommerce Shipping & Tax packages if WCShipping created its own new settings.
-* Fix   - Don't remove non-compact options prefixed with "wc_connect_" on uninstallation.
 * Add   - Automate address verification for shipping address on the purchase screen.
 * Add   - Improve the purchase status header during the purchase process
 * Tweak - Improve timestamp handling on plugin status page.
+* Fix   - Selectively migrate WooCommerce Shipping & Tax packages if WCShipping created its own new settings.
 * Fix   - Don't remove non-compact options prefixed with "wc_connect_" on uninstallation.
 * Fix   - Focusing in the custom package form doesn't deactivate the "Get rates button" button.
 * Fix   - Ensure custom items stay in sync with the shipment items.

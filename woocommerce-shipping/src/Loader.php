@@ -6,6 +6,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+use Automattic\WCShipping\Checkout\CheckoutController;
+use Automattic\WCShipping\Checkout\CheckoutService;
 use Automattic\WCShipping\Connect\WC_Connect_API_Client;
 use Automattic\WCShipping\Connect\WC_Connect_API_Client_Live;
 use Automattic\WCShipping\Connect\WC_Connect_Debug_Tools;
@@ -27,6 +29,7 @@ use Automattic\WCShipping\Connect\WC_Connect_Shipping_Label;
 use Automattic\WCShipping\Integrations\AssetsRESTController;
 use Automattic\WCShipping\Integrations\TosRESTController;
 use Automattic\WCShipping\Integrations\ConfigRESTController;
+use Automattic\WCShipping\Integrations\WooCommerceBlocksIntegration;
 use Automattic\WCShipping\Integrations\WooCommerceShipmentTracking;
 use Automattic\WCShipping\LabelPurchase\AddressNormalizationService;
 use Automattic\WCShipping\LabelPurchase\AddressRESTController;
@@ -75,8 +78,12 @@ use Automattic\WCShipping\OriginAddresses\OriginAddressService;
 use Automattic\WCShipping\Packages\PackagesRESTController;
 use Automattic\WCShipping\Shipments\ShipmentsRESTController;
 use Automattic\WCShipping\Shipments\ShipmentsService;
+use Automattic\WCShipping\StoreApi\Extensions\BlocksCheckoutAddressValidationExtension;
+use Automattic\WCShipping\StoreApi\StoreApiExtendSchema;
+use Automattic\WCShipping\StoreApi\StoreApiExtensionController;
 use Automattic\WCShipping\Utils as WCShippingUtils;
 use Automattic\WCShipping\WPCOMConnection\WPCOMConnectionRESTController;
+use Automattic\WCShipping\WCShippingRESTController;
 use Exception;
 use WC_Connect_API_Client_Local_Test_Mock;
 use WC_Data_Store;
@@ -264,6 +271,11 @@ class Loader {
 	protected $wc_connect_base_url;
 
 	/**
+	 * @var CheckoutService
+	 */
+	protected CheckoutService $checkout_service;
+
+	/**
 	 * Plugin deactivation hook.
 	 */
 	public static function plugin_deactivation() {
@@ -396,8 +408,9 @@ class Loader {
 	}
 
 	public function wpcom_static_url( $file ) {
-		$i   = hexdec( substr( md5( $file ), -1 ) ) % 2;
+		$i   = hexdec( substr( md5( $file ), - 1 ) ) % 2;
 		$url = 'http://s' . $i . '.wp.com' . $file;
+
 		return set_url_scheme( $url );
 	}
 
@@ -618,6 +631,24 @@ class Loader {
 	}
 
 	/**
+	 * Get the checkout service instance.
+	 *
+	 * @return CheckoutService
+	 */
+	public function get_checkout_service(): CheckoutService {
+		return $this->checkout_service;
+	}
+
+	/**
+	 * Set the checkout service instance.
+	 *
+	 * @param CheckoutService $checkout_service The checkout service instance.
+	 */
+	public function set_checkout_service( CheckoutService $checkout_service ) {
+		$this->checkout_service = $checkout_service;
+	}
+
+	/**
 	 * Load our textdomain
 	 *
 	 * @codeCoverageIgnore
@@ -637,6 +668,7 @@ class Loader {
 					echo '<div class="error"><p><strong>' . sprintf( esc_html__( 'WooCommerce Shipping requires the WooCommerce plugin to be installed and active. You can download %s here.', 'woocommerce-shipping' ), '<a href="https://wordpress.org/plugins/woocommerce/" target="_blank">WooCommerce</a>' ) . '</strong></p></div>';
 				}
 			);
+
 			return;
 		}
 
@@ -657,8 +689,39 @@ class Loader {
 			return;
 		}
 
+		add_action( 'woocommerce_blocks_loaded', array( $this, 'register_blocks_integration' ) );
 		add_action( 'after_plugin_row_woocommerce-services/woocommerce-services.php', array( $this, 'add_custom_message_to_wcst_plugin_list_entry' ), 10, 2 );
 		add_action( 'before_woocommerce_init', array( $this, 'pre_wc_init' ) );
+	}
+
+	/**
+	 * Deactivates the WooCommerce Shipping & Tax plugin.
+	 *
+	 * @return void
+	 */
+	public function deactivate_wcst() {
+		if ( ! current_user_can( 'activate_plugins' ) ) {
+			return;
+		}
+
+		check_admin_referer( 'action' );
+
+		deactivate_plugins( 'woocommerce-services/woocommerce-services.php' );
+
+		wp_safe_redirect( wp_get_referer() );
+		exit;
+	}
+
+	/**
+	 * Register the WooCommerceBlocks integration.
+	 */
+	public function register_blocks_integration() {
+		add_action(
+			'woocommerce_blocks_checkout_block_registration',
+			function ( $integration_registry ) {
+				$integration_registry->register( new WooCommerceBlocksIntegration() );
+			}
+		);
 	}
 
 	/**
@@ -799,6 +862,32 @@ class Loader {
 	public function after_wc_init() {
 		$this->schedule_service_schemas_fetch();
 		$this->attach_hooks();
+		$this->extend_checkout();
+		$this->extend_store_api();
+	}
+
+	/**
+	 * Extend WC Checkout.
+	 */
+	public function extend_checkout() {
+		$address_normalization_service = new AddressNormalizationService( $this->get_service_settings_store(), $this->api_client, $this->get_logger(), new OriginAddressService() );
+		$this->set_checkout_service( new CheckoutService( $address_normalization_service, $this->get_service_settings_store() ) );
+
+		new CheckoutController( $this->get_logger(), $this->get_checkout_service(), $this->get_service_settings_store() );
+	}
+
+	/**
+	 * Extend the Store API.
+	 */
+	public function extend_store_api() {
+		$store_api_extend_schema        = StoreApiExtendSchema::instance();
+		$store_api_extension_controller = new StoreApiExtensionController( $store_api_extend_schema );
+
+		// Register Store API extensions.
+		$store_api_extension_controller->register_extension( new BlocksCheckoutAddressValidationExtension( $store_api_extend_schema, $this->get_checkout_service() ) );
+
+		// Extend the Store API.
+		$store_api_extension_controller->extend_store();
 	}
 
 	/**
@@ -858,7 +947,6 @@ class Loader {
 			$payment_methods_store,
 		);
 		$nux                   = new WC_Connect_Nux( $shipping_label );
-		$options               = new WC_Connect_Options();
 		$label_rate_service    = new LabelRateService( $api_client, $logger, $settings_store );
 
 		new WC_Connect_Privacy( $settings_store, $api_client );
@@ -938,9 +1026,33 @@ class Loader {
 		if ( $schemas ) {
 			add_filter( 'woocommerce_payment_gateways', array( $this, 'woocommerce_payment_gateways' ) );
 			add_action( 'woocommerce_shipping_zone_method_added', array( $this, 'shipping_zone_method_added' ), 10, 3 );
-			add_action( 'wcshipping_shipping_zone_method_added', array( $this, 'save_defaults_to_shipping_method' ), 10, 3 );
-			add_action( 'woocommerce_shipping_zone_method_deleted', array( $this, 'shipping_zone_method_deleted' ), 10, 3 );
-			add_action( 'woocommerce_shipping_zone_method_status_toggled', array( $this, 'shipping_zone_method_status_toggled' ), 10, 4 );
+			add_action(
+				'wcshipping_shipping_zone_method_added',
+				array(
+					$this,
+					'save_defaults_to_shipping_method',
+				),
+				10,
+				3
+			);
+			add_action(
+				'woocommerce_shipping_zone_method_deleted',
+				array(
+					$this,
+					'shipping_zone_method_deleted',
+				),
+				10,
+				3
+			);
+			add_action(
+				'woocommerce_shipping_zone_method_status_toggled',
+				array(
+					$this,
+					'shipping_zone_method_status_toggled',
+				),
+				10,
+				4
+			);
 		}
 
 		// Changing the postcode, currency, weight or dimension units affect the returned schema from the server.
@@ -966,7 +1078,13 @@ class Loader {
 
 		add_action( 'rest_api_init', array( $this, 'rest_api_init' ) );
 		add_action( 'rest_api_init', array( $this, 'wc_api_dev_init' ), 9999 );
-		add_action( 'wcshipping_fetch_service_schemas', array( $schemas_store, 'fetch_service_schemas_from_connect_server' ) );
+		add_action(
+			'wcshipping_fetch_service_schemas',
+			array(
+				$schemas_store,
+				'fetch_service_schemas_from_connect_server',
+			)
+		);
 		add_filter( 'woocommerce_hidden_order_itemmeta', array( $this, 'hide_wc_connect_package_meta_data' ) );
 		add_filter( 'is_protected_meta', array( $this, 'hide_wc_connect_order_meta_data' ), 10, 3 );
 		add_action( 'add_meta_boxes_woocommerce_page_wc-orders', array( $this, 'add_order_meta_boxes' ), 9999, 1 );
@@ -1026,6 +1144,7 @@ class Loader {
 
 		if ( ! class_exists( 'WP_REST_Controller' ) ) {
 			$this->logger->debug( 'Error. WP_REST_Controller could not be found', __FUNCTION__ );
+
 			return;
 		}
 
@@ -1169,6 +1288,9 @@ class Loader {
 
 		( new AssetsRESTController() )->register_routes();
 		( new ConfigRESTController( $this->shipping_label ) )->register_routes();
+
+		// Ensure all shipping endpoints are not cached.
+		WCShippingRESTController::prevent_route_caching();
 	}
 
 	/**
@@ -1254,8 +1376,8 @@ class Loader {
 	 * Add tracking info (if available) to completed emails using the woocommerce_email_after_order_table hook
 	 *
 	 * @param bool|\WC_Order|\WC_Order_Refund $order
-	 * @param $sent_to_admin
-	 * @param $plain_text
+	 * @param                                 $sent_to_admin
+	 * @param                                 $plain_text
 	 */
 	public function add_tracking_info_to_emails( $order, $sent_to_admin, $plain_text ) {
 
@@ -1329,6 +1451,7 @@ class Loader {
 			echo "\n=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n\n";
 			echo esc_html( mb_strtoupper( __( 'Tracking', 'woocommerce-shipping' ), 'UTF-8' ) ) . "\n\n";
 			echo wp_kses( $markup, array() );
+
 			return;
 		}
 
@@ -1337,13 +1460,14 @@ class Loader {
 			<h2><?php esc_html_e( 'Tracking', 'woocommerce-shipping' ); ?></h2>
 			<table class="td" cellspacing="0" cellpadding="6" style="margin-top: 10px; width: 100%;">
 				<thead>
-				<tr>
-					<th class="td" scope="col"><?php esc_html_e( 'Provider', 'woocommerce-shipping' ); ?></th>
-					<th class="td" scope="col"><?php esc_html_e( 'Tracking number', 'woocommerce-shipping' ); ?></th>
-				</tr>
+					<tr>
+						<th class="td" scope="col"><?php esc_html_e( 'Provider', 'woocommerce-shipping' ); ?></th>
+						<th class="td"
+							scope="col"><?php esc_html_e( 'Tracking number', 'woocommerce-shipping' ); ?></th>
+					</tr>
 				</thead>
 				<tbody>
-				<?php echo wp_kses_post( $markup ); ?>
+					<?php echo wp_kses_post( $markup ); ?>
 				</tbody>
 			</table>
 		</div>
@@ -1399,6 +1523,7 @@ class Loader {
 
 	public function is_wc_connect_shipping_service( $service_id ) {
 		$shipping_service_ids = $this->get_service_schemas_store()->get_all_shipping_method_ids();
+
 		return in_array( $service_id, $shipping_service_ids );
 	}
 
@@ -1440,6 +1565,7 @@ class Loader {
 	 * @see Automattic\WooCommerce\Internal\Admin\Orders\Edit::setup
 	 *
 	 * @param WC_Order $order The order object.
+	 *
 	 * @return void
 	 */
 	public function add_order_meta_boxes( $order ) {
@@ -1464,7 +1590,18 @@ class Loader {
 
 		$label_purchase_meta_box_id = 'woocommerce-order-label';
 		$this->maybe_move_meta_box_to_top( $label_purchase_meta_box_id );
-		add_meta_box( $label_purchase_meta_box_id, __( 'Shipping Label', 'woocommerce-shipping' ), array( $this->shipping_label, 'meta_boxes' ), null, 'normal', 'high', array( 'context' => 'shipping_label' ) );
+		add_meta_box(
+			$label_purchase_meta_box_id,
+			__( 'Shipping Label', 'woocommerce-shipping' ),
+			array(
+				$this->shipping_label,
+				'meta_boxes',
+			),
+			null,
+			'normal',
+			'high',
+			array( 'context' => 'shipping_label' )
+		);
 
 		if ( $this->should_show_shipment_tracking_meta_box() ) {
 			add_meta_box( 'woocommerce-order-shipment-tracking', __( 'Shipment Tracking', 'woocommerce-shipping' ), array( $this->shipping_label, 'meta_boxes' ), null, 'side', 'high', array( 'context' => 'shipment_tracking' ) );
@@ -1484,6 +1621,7 @@ class Loader {
 	 * @link https://developer.woocommerce.com/docs/how-to-enable-high-performance-order-storage/
 	 *
 	 * @param WP_Post $post The order as a post object.
+	 *
 	 * @return void
 	 */
 	public function add_order_meta_boxes_legacy_support( $post ) {
@@ -1499,11 +1637,19 @@ class Loader {
 	public function hide_wc_connect_package_meta_data( $hidden_keys ) {
 		$hidden_keys[] = 'wcshipping_packages';
 		$hidden_keys[] = 'wcshipping_packing_log';
+
 		return $hidden_keys;
 	}
 
 	public function hide_wc_connect_order_meta_data( $protected, $meta_key, $meta_type ) {
-		if ( in_array( $meta_key, array( 'wcshipping_labels', WC_Connect_Service_Settings_Store::IS_DESTINATION_NORMALIZED_KEY ), true ) ) {
+		if ( in_array(
+			$meta_key,
+			array(
+				'wcshipping_labels',
+				WC_Connect_Service_Settings_Store::IS_DESTINATION_NORMALIZED_KEY,
+			),
+			true
+		) ) {
 			$protected = true;
 		}
 
@@ -1535,6 +1681,7 @@ class Loader {
 
 		// Add to the list.
 		$fields['shipping_phone'] = $field;
+
 		return $fields;
 	}
 
@@ -1542,6 +1689,7 @@ class Loader {
 		$fields['phone'] = array(
 			'label' => __( 'Phone', 'woocommerce-shipping' ),
 		);
+
 		return $fields;
 	}
 
@@ -1613,7 +1761,7 @@ class Loader {
 	 * Remember to call Automattic\WCShipping\DOM\Manipulation::create_root_script_element before calling do_action( 'enqueue_woocommerce_shipping_script' )
 	 * in your calling function.
 	 *
-	 * @param string $root_view The name of the entry point script to enqueue.
+	 * @param string $root_view  The name of the entry point script to enqueue.
 	 * @param array  $extra_args Extra data to pass to the entry point script, this gets added as localised data.
 	 *
 	 * @return void
@@ -1643,7 +1791,7 @@ class Loader {
 			$root_view,
 			$this->wc_connect_base_url . "style-$root_view.css",
 			array(),
-			$dependencies['version'] ?? false
+			$dependencies['version'] ? wp_hash( WCSHIPPING_VERSION . '.' . $dependencies['version'] ) : WCSHIPPING_VERSION
 		);
 
 		// Enqueue the entry point script.
@@ -1651,7 +1799,7 @@ class Loader {
 			$root_view,
 			$this->wc_connect_base_url . "$root_view.js",
 			$dependencies['dependencies'] ?? array(),
-			$dependencies['version'] ?? false,
+			$dependencies['version'] ? wp_hash( WCSHIPPING_VERSION . '.' . $dependencies['version'] ) : WCSHIPPING_VERSION,
 			array(
 				'in_footer' => true,
 			)
@@ -1714,7 +1862,10 @@ class Loader {
 			?>
 			<div class='<?php echo esc_attr( 'notice notice-' . $notice->type ); ?>' style="position: relative;">
 				<?php if ( $dismissible ) : ?>
-					<a href="<?php echo esc_url( $link_dismiss ); ?>" style="text-decoration: none;" class="notice-dismiss" title="<?php esc_attr_e( 'Dismiss this notice', 'woocommerce-shipping' ); ?>"></a>
+					<a href="<?php echo esc_url( $link_dismiss ); ?>"
+						style="text-decoration: none;"
+						class="notice-dismiss"
+						title="<?php esc_attr_e( 'Dismiss this notice', 'woocommerce-shipping' ); ?>"></a>
 				<?php endif; ?>
 				<p><?php echo wp_kses( $notice->message, $allowed_html ); ?></p>
 			</div>
@@ -1756,6 +1907,7 @@ class Loader {
 	 * If the meta box is not in the ordering thread, move it to the top, this is to respect users' ordering.
 	 *
 	 * @param string $meta_box_id The meta box ID (machine name) that we want to display at the top by default.
+	 *
 	 * @return void
 	 */
 	private function maybe_move_meta_box_to_top( string $meta_box_id ) {
@@ -1791,11 +1943,12 @@ class Loader {
 	 *
 	 * @since 1.0.0
 	 *
-	 * @see do_meta_boxes
+	 * @see   do_meta_boxes
 	 * @global array $wp_meta_boxes
 	 *
 	 * @param string $screen      The screen identifier that represents which admin page is being rendered.
 	 * @param string $meta_box_id The meta box ID we want to inject.
+	 *
 	 * @return string[]
 	 */
 	private function generate_meta_box_order_structure( string $screen, string $meta_box_id ) {

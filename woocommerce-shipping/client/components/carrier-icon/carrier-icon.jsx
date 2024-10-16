@@ -22,9 +22,9 @@ const sizeToPixels = {
 
 /**
  *
- * @param {Object} props - props
- * @param {string} props.carrier - carrier name
- * @param {string} props.size - small, medium, big
+ * @param {Object} props           - props
+ * @param {string} props.carrier   - carrier name
+ * @param {string} props.size      - small, medium, big
  * @param {string} props.positionX - CSS background position-x
  * @param {string} props.positionY -CSS background position-y
  * @return {JSX.Element} - Carrier icon

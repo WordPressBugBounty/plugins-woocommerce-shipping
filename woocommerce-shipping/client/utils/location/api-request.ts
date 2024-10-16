@@ -5,7 +5,7 @@ import { composeAddress, composeName } from '../order';
 export const mapAddressForRequest = (
 	originAddress: OriginAddress
 ): RequestAddress => {
-	const { company, phone, country, state, address_2, city, postcode } =
+	const { company, phone, country, state, address_2, city, postcode, id } =
 		snakeCaseKeys< OriginAddress, LocationResponse >( originAddress );
 
 	return {
@@ -26,5 +26,6 @@ export const mapAddressForRequest = (
 		address_2,
 		city,
 		postcode,
+		id,
 	};
 };

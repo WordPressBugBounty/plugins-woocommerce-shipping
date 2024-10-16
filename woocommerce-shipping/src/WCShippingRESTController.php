@@ -97,4 +97,47 @@ abstract class WCShippingRESTController extends WC_REST_Controller {
 				|| Rest_Authentication::init()->wp_rest_authenticate( false )
 			) && apply_filters( 'wcshipping_user_can_manage_labels', current_user_can( 'manage_woocommerce' ) || current_user_can( 'wcshipping_manage_labels' ) );
 	}
+
+	/**
+	 * Attach a hook to prevent API from being cached.
+	 */
+	public static function prevent_route_caching() {
+		if ( ! defined( 'DONOTCACHEPAGE' ) ) {
+			define( 'DONOTCACHEPAGE', true ); // Play nice with WP-Super-Cache
+		}
+
+		// Prevent our REST API endpoint responses from being added to browser cache
+		add_filter( 'rest_post_dispatch', array( __CLASS__, 'exclude_namespace_from_cache' ), PHP_INT_MAX, 3 );
+	}
+
+	/**
+	 * Send nocache_headers when any of the namespace endpoints are being accessed.
+	 *
+	 * This method is used as a callback for the 'rest_post_dispatch' filter.
+	 * It checks if the requested route falls under our namespace and, if so,
+	 * sends no-cache headers to prevent caching of the API response.
+	 *
+	 * @param mixed           $result  The result that will be sent to the client.
+	 * @param WP_REST_Server  $server  The REST server instance.
+	 * @param WP_REST_Request $request The request used to generate the response.
+	 *
+	 * @return mixed The unmodified $result.
+	 */
+	public static function exclude_namespace_from_cache( $result, $server, $request ) {
+		$namespace = '/wcshipping/';
+
+		// Check if the requested route falls under our namespace
+		if ( strpos( $request->get_route(), $namespace ) === 0 ) {
+			// Get no-cache headers
+			$nocache_headers = wp_get_nocache_headers();
+
+			// Set each no-cache header
+			foreach ( $nocache_headers as $header => $value ) {
+				$server->send_header( $header, $value );
+			}
+			$server->send_header( 'Pragma', 'no-cache' );
+		}
+
+		return $result;
+	}
 }

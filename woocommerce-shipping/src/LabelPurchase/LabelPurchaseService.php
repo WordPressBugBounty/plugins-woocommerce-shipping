@@ -149,6 +149,20 @@ class LabelPurchaseService {
 			$this->update_user_meta( $user_meta );
 		}
 
+		$origin_address_id = 'UNKNOWN_ORIGIN_ID';
+		// Assuming only verified addresses are being used to purchase labels.
+		$is_origin_address_verified = true;
+		// Todo: To be updated via  woocommerce-shipping/issues/859
+		if ( isset( $origin['id'] ) ) {
+			$origin_address_id = $origin['id'];
+			unset( $origin['id'] );
+		}
+
+		if ( isset( $origin['is_verified'] ) ) {
+			$is_origin_address_verified = $origin['is_verified'];
+			unset( $origin['is_verified'] );
+		}
+
 		$label_response = $this->api_client->send_shipping_label_request(
 			array(
 				'async'             => true,
@@ -166,8 +180,8 @@ class LabelPurchaseService {
 				$label_response->get_error_code(),
 				$label_response->get_error_message(),
 				array(
-					'succcess' => false,
-					'message'  => $label_response->get_error_message(),
+					'success' => false,
+					'message' => $label_response->get_error_message(),
 				)
 			);
 			$this->logger->log( $error, __CLASS__ );
@@ -184,7 +198,13 @@ class LabelPurchaseService {
 
 		$shipment_key = array_keys( $selected_rate )[0];
 		$origin       = array(
-			$shipment_key => $origin,
+			$shipment_key => array_merge(
+				$origin,
+				array(
+					'id'          => $origin_address_id,
+					'is_verified' => $is_origin_address_verified,
+				),
+			),
 		);
 		$destination  = array(
 			$shipment_key => $destination,

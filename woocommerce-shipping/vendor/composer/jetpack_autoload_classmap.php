@@ -6,6 +6,10 @@ $vendorDir = dirname(__DIR__);
 $baseDir   = dirname($vendorDir);
 
 return array(
+	'AddressUtilsTest' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/tests/php/Utilities/AddressUtilsTest.php'
+	),
 	'Autoloader' => array(
 		'version' => '3.0.9',
 		'path'    => $vendorDir . '/automattic/jetpack-autoloader/src/class-autoloader.php'
@@ -270,6 +274,26 @@ return array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/src/Autoloader.php'
 	),
+	'Automattic\\WCShipping\\Checkout\\CheckoutController' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/src/Checkout/CheckoutController.php'
+	),
+	'Automattic\\WCShipping\\Checkout\\CheckoutNotifier' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/src/Checkout/CheckoutNotifier.php'
+	),
+	'Automattic\\WCShipping\\Checkout\\CheckoutService' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/src/Checkout/CheckoutService.php'
+	),
+	'Automattic\\WCShipping\\Checkout\\StoreNotice' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/src/Checkout/StoreNotice.php'
+	),
+	'Automattic\\WCShipping\\Checkout\\StoreNoticeTypes' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/src/Checkout/StoreNoticeTypes.php'
+	),
 	'Automattic\\WCShipping\\DOM\\Manipulation' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/src/DOM/Manipulation.php'
@@ -293,6 +317,10 @@ return array(
 	'Automattic\\WCShipping\\Integrations\\WCST' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/src/Integrations/WCST.php'
+	),
+	'Automattic\\WCShipping\\Integrations\\WooCommerceBlocksIntegration' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/src/Integrations/WooCommerceBlocksIntegration.php'
 	),
 	'Automattic\\WCShipping\\Integrations\\WooCommerceShipmentTracking' => array(
 		'version' => 'dev-trunk',
@@ -366,6 +394,10 @@ return array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/src/Loader.php'
 	),
+	'Automattic\\WCShipping\\Logger' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/src/Logger.php'
+	),
 	'Automattic\\WCShipping\\Migration\\LegacyLabelMigrator' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/src/Migration/LegacyLabelMigrator.php'
@@ -413,6 +445,22 @@ return array(
 	'Automattic\\WCShipping\\Shipments\\ShipmentsService' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/src/Shipments/ShipmentsService.php'
+	),
+	'Automattic\\WCShipping\\StoreApi\\AbstractStoreApiExtension' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/src/StoreApi/AbstractStoreApiExtension.php'
+	),
+	'Automattic\\WCShipping\\StoreApi\\Extensions\\BlocksCheckoutAddressValidationExtension' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/src/StoreApi/Extensions/BlocksCheckoutAddressValidationExtension.php'
+	),
+	'Automattic\\WCShipping\\StoreApi\\StoreApiExtendSchema' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/src/StoreApi/StoreApiExtendSchema.php'
+	),
+	'Automattic\\WCShipping\\StoreApi\\StoreApiExtensionController' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/src/StoreApi/StoreApiExtensionController.php'
 	),
 	'Automattic\\WCShipping\\Tests\\AssetsRESTControllerTest' => array(
 		'version' => 'dev-trunk',
@@ -482,6 +530,10 @@ return array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/tests/php/Utils/ProductCustomsDataTest.php'
 	),
+	'Automattic\\WCShipping\\Tests\\php\\WCShippingRESTControllerTest' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/tests/php/WCShippingRESTController.php'
+	),
 	'Automattic\\WCShipping\\Tests\\php\\WCShipping_Test_Case' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/tests/php/WCShipping_Test_Case.php'
@@ -489,6 +541,10 @@ return array(
 	'Automattic\\WCShipping\\Tracks' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/src/Tracks.php'
+	),
+	'Automattic\\WCShipping\\Utilities\\AddressUtils' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/src/Utilities/AddressUtils.php'
 	),
 	'Automattic\\WCShipping\\Utils' => array(
 		'version' => 'dev-trunk',
@@ -501,6 +557,14 @@ return array(
 	'Automattic\\WCShipping\\WPCOMConnection\\WPCOMConnectionRESTController' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/src/WPCOMConnection/WPCOMConnectionRESTController.php'
+	),
+	'CheckoutNotifierTest' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/tests/php/Checkout/CheckoutNotifierTest.php'
+	),
+	'CheckoutServiceTest' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/tests/php/Checkout/CheckoutServiceTest.php'
 	),
 	'Container' => array(
 		'version' => '3.0.9',
@@ -581,6 +645,14 @@ return array(
 	'Shutdown_Handler' => array(
 		'version' => '3.0.9',
 		'path'    => $vendorDir . '/automattic/jetpack-autoloader/src/class-shutdown-handler.php'
+	),
+	'StoreApiExtensionControllerTest' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/tests/php/StoreApi/StoreApiExtensionControllerTest.php'
+	),
+	'StoreNoticeTest' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/tests/php/Checkout/StoreNoticeTest.php'
 	),
 	'UtilsTest' => array(
 		'version' => 'dev-trunk',

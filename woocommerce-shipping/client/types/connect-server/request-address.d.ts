@@ -1,4 +1,5 @@
 export interface RequestAddress {
+	id: string;
 	company?: string;
 	name?: string;
 	phone: string;

@@ -1,4 +1,6 @@
 import { ShipmentRecord } from './helpers';
-import { LocationResponse } from './connect-server';
+import { getPreparedDestination } from 'data/address/selectors';
 
-export type SelectedDestination = ShipmentRecord< LocationResponse >;
+export type SelectedDestination = ShipmentRecord<
+	ReturnType< typeof getPreparedDestination >
+>;

@@ -15,6 +15,7 @@ import { CustomsState } from './customs-state';
 import { Carrier } from './carrier';
 import { OriginAddress } from './origin-address';
 import { Constants } from './constants';
+import { ShipmentRecord } from './helpers';
 
 // Todo: Gradually improve this type definition.
 export interface WCShippingConfig {
@@ -70,14 +71,11 @@ export interface WCShippingConfig {
 		currentOrderLabels: ResponseLabel[];
 		storedData: {
 			destination: LocationResponse;
-			packages: Record< `shipment_${ shipmentId }`, unknown >[];
 			selected_rates: SelectedRates | '';
 			selected_hazmat: HazmatState | '';
 			selected_origin: SelectedOrigin | '';
 			selected_destination: SelectedDestination | '';
-			customs_information:
-				| Record< `shipment_${ shipmentId }`, CustomsState >
-				| '';
+			customs_information: ShipmentRecord< CustomsState > | '';
 		};
 	};
 	origin_addresses: LocationResponse[];

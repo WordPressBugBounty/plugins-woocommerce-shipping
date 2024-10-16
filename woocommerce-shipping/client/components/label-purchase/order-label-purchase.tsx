@@ -61,6 +61,7 @@ export const OrderLabelPurchase = ( {
 		getShipmentDestination,
 		revertLabelShipmentIdsToUpdate,
 		labelShipmentIdsToUpdate,
+		getShipmentPurchaseOrigin,
 	} = useShipmentState();
 
 	const { getShipmentTotalWeight, setShipmentTotalWeight } = useTotalWeight( {
@@ -208,6 +209,7 @@ export const OrderLabelPurchase = ( {
 					setCurrentShipmentId,
 					revertLabelShipmentIdsToUpdate,
 					labelShipmentIdsToUpdate,
+					getShipmentPurchaseOrigin,
 				},
 				hazmat: {
 					getShipmentHazmat,

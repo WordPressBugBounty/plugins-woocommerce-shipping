@@ -212,7 +212,7 @@ export const ShipmentContent = ( {
 			<FlexBlock>
 				<ShipmentDetails
 					order={ order }
-					address={ getShipmentDestination() }
+					destinationAddress={ getShipmentDestination() }
 				/>
 				<PaymentButtons order={ order } />
 			</FlexBlock>

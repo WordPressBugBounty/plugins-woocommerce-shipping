@@ -19,11 +19,9 @@ import {
 } from 'utils';
 import {
 	CustomsState,
-	Destination,
 	HazmatState,
 	LabelRequestPackages,
 	LabelShipmentIdMap,
-	LocationResponse,
 	OriginAddress,
 	Rate,
 	RefundResponse,
@@ -32,6 +30,7 @@ import {
 	SelectedDestination,
 	SelectedOrigin,
 	SelectedRates,
+	ShipmentRecord,
 	UserMeta,
 } from 'types';
 import {
@@ -57,7 +56,7 @@ export function* purchaseLabel(
 	>,
 	hazmatState: HazmatState,
 	originAddress: OriginAddress,
-	customsState: Record< `shipment_${ typeof shipmentId }`, CustomsState >,
+	customsState: ShipmentRecord< CustomsState >,
 	userMeta: Partial< UserMeta >
 ): Generator<
 	ReturnType< typeof apiFetch >,
@@ -86,6 +85,7 @@ export function* purchaseLabel(
 		method: 'POST',
 		data: {
 			async: true,
+			// Todo: To be updated via  woocommerce-shipping/issues/859
 			origin,
 			destination,
 			packages,
@@ -102,7 +102,7 @@ export function* purchaseLabel(
 	);
 	const selectedDestinations = mapValues(
 		normalizeSelectionKey( selected_destination ),
-		( value ) => camelCaseKeys< LocationResponse, Destination >( value )
+		( value ) => camelCaseKeys( value )
 	);
 
 	return {

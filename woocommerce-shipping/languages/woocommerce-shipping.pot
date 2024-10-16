@@ -2,37 +2,42 @@
 # This file is distributed under the GPL v2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: WooCommerce Shipping 1.1.5\n"
+"Project-Id-Version: WooCommerce Shipping 1.2.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/woocommerce-shipping\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2024-10-02T20:27:17+00:00\n"
+"POT-Creation-Date: 2024-10-16T09:40:01+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"X-Generator: WP-CLI 2.8.1\n"
+"X-Generator: WP-CLI 2.11.0\n"
 "X-Domain: woocommerce-shipping\n"
 
 #. Plugin Name of the plugin
+#: woocommerce-shipping.php
 #: classes/class-wc-connect-privacy.php:34
 #: classes/class-wc-connect-settings-pages.php:84
 msgid "WooCommerce Shipping"
 msgstr ""
 
 #. Plugin URI of the plugin
+#: woocommerce-shipping.php
 msgid "https://woocommerce.com/products/shipping/"
 msgstr ""
 
 #. Description of the plugin
+#: woocommerce-shipping.php
 msgid "Save time and money with WooCommerce Shipping. Print discounted shipping labels with just a few clicks from your WooCommerce dashboard."
 msgstr ""
 
 #. Author of the plugin
+#: woocommerce-shipping.php
 msgid "WooCommerce"
 msgstr ""
 
 #. Author URI of the plugin
+#: woocommerce-shipping.php
 msgid "https://woocommerce.com/"
 msgstr ""
 
@@ -127,7 +132,7 @@ msgid "<strong>\"%2$s\" is missing weight, length, width, or height.</strong><br
 msgstr ""
 
 #: classes/class-wc-connect-error-notice.php:102
-#: src/Loader.php:1717
+#: src/Loader.php:1868
 msgid "Dismiss this notice"
 msgstr ""
 
@@ -184,7 +189,7 @@ msgstr ""
 
 #: classes/class-wc-connect-help-view.php:248
 #: classes/class-wc-connect-settings-pages.php:45
-#: src/Loader.php:748
+#: src/Loader.php:811
 #: src/Onboarding/SettingsPage.php:73
 msgctxt "The WooCommerce Shipping brandname"
 msgid "WooCommerce Shipping"
@@ -254,56 +259,56 @@ msgstr ""
 msgid "Shipping label tracking number"
 msgstr ""
 
-#: classes/class-wc-connect-service-settings-store.php:490
+#: classes/class-wc-connect-service-settings-store.php:495
 msgctxt "A service with an unknown title and unknown method_title"
 msgid "Unknown"
 msgstr ""
 
-#: classes/class-wc-connect-service-settings-store.php:494
+#: classes/class-wc-connect-service-settings-store.php:499
 msgid "Rest of the World"
 msgstr ""
 
-#: classes/class-wc-connect-service-settings-store.php:526
+#: classes/class-wc-connect-service-settings-store.php:531
 msgid "An invalid service instance was received."
 msgstr ""
 
-#: classes/class-wc-connect-service-settings-store.php:531
+#: classes/class-wc-connect-service-settings-store.php:536
 msgid "An invalid service ID was received."
 msgstr ""
 
-#: classes/class-wc-connect-service-settings-store.php:703
+#: classes/class-wc-connect-service-settings-store.php:708
 msgid "kg"
 msgstr ""
 
-#: classes/class-wc-connect-service-settings-store.php:705
+#: classes/class-wc-connect-service-settings-store.php:710
 msgid "g"
 msgstr ""
 
-#: classes/class-wc-connect-service-settings-store.php:707
+#: classes/class-wc-connect-service-settings-store.php:712
 msgid "lbs"
 msgstr ""
 
-#: classes/class-wc-connect-service-settings-store.php:709
+#: classes/class-wc-connect-service-settings-store.php:714
 msgid "oz"
 msgstr ""
 
-#: classes/class-wc-connect-service-settings-store.php:711
+#: classes/class-wc-connect-service-settings-store.php:716
 msgid "m"
 msgstr ""
 
-#: classes/class-wc-connect-service-settings-store.php:713
+#: classes/class-wc-connect-service-settings-store.php:718
 msgid "cm"
 msgstr ""
 
-#: classes/class-wc-connect-service-settings-store.php:715
+#: classes/class-wc-connect-service-settings-store.php:720
 msgid "mm"
 msgstr ""
 
-#: classes/class-wc-connect-service-settings-store.php:717
+#: classes/class-wc-connect-service-settings-store.php:722
 msgid "in"
 msgstr ""
 
-#: classes/class-wc-connect-service-settings-store.php:719
+#: classes/class-wc-connect-service-settings-store.php:724
 msgid "yd"
 msgstr ""
 
@@ -378,12 +383,12 @@ msgid "Order not found"
 msgstr ""
 
 #: classes/legacy-api-controllers/class-wc-rest-connect-shipping-label-controller.php:151
-#: src/LabelPurchase/LabelPurchaseService.php:256
+#: src/LabelPurchase/LabelPurchaseService.php:276
 msgid "Individual packaging"
 msgstr ""
 
 #: classes/legacy-api-controllers/class-wc-rest-connect-shipping-label-controller.php:155
-#: src/LabelPurchase/LabelPurchaseService.php:260
+#: src/LabelPurchase/LabelPurchaseService.php:280
 msgid "Unknown package"
 msgstr ""
 
@@ -494,6 +499,24 @@ msgstr ""
 msgid "Data resource description."
 msgstr ""
 
+#: src/Checkout/CheckoutService.php:166
+#: src/Checkout/CheckoutService.php:192
+msgid "We couldn't verify the shipping address you entered. Please review and ensure it's accurate before placing your order."
+msgstr ""
+
+#: src/Checkout/CheckoutService.php:174
+msgid "Name is required."
+msgstr ""
+
+#: src/Checkout/CheckoutService.php:324
+msgid "Apply suggested address"
+msgstr ""
+
+#. translators: 1: address, 2: button
+#: src/Checkout/CheckoutService.php:328
+msgid "We couldn't verify your shipping address. Did you mean %1$s? %2$s"
+msgstr ""
+
 #. translators: %s is a link to the status page.
 #: src/DOM/Manipulation.php:34
 msgid "Section not loading? Visit the <a href=\"%s\">status page</a> for troubleshooting steps."
@@ -502,6 +525,10 @@ msgstr ""
 #: src/Integrations/WCST.php:83
 msgctxt "WooCommerce Shipping & Tax plugin description override to WooCommerce Tax"
 msgid "Previously WooCommerce Shipping & Tax. Hosted tax calculations for WooCommerce."
+msgstr ""
+
+#: src/LabelPurchase/AddressNormalizationService.php:190
+msgid "Address normalization failed"
 msgstr ""
 
 #: src/LabelPurchase/View.php:242
@@ -665,51 +692,51 @@ msgid "The provided phone number is not valid"
 msgstr ""
 
 #. translators: %s WC download URL link.
-#: src/Loader.php:637
+#: src/Loader.php:668
 msgid "WooCommerce Shipping requires the WooCommerce plugin to be installed and active. You can download %s here."
 msgstr ""
 
-#: src/Loader.php:890
+#: src/Loader.php:978
 msgid "Settings"
 msgstr ""
 
-#: src/Loader.php:897
+#: src/Loader.php:985
 msgid "Documentation"
 msgstr ""
 
-#: src/Loader.php:898
+#: src/Loader.php:986
 #: dist/woocommerce-shipping-admin-status.js:14
 msgid "Support"
 msgstr ""
 
-#: src/Loader.php:1330
-#: src/Loader.php:1337
+#: src/Loader.php:1452
+#: src/Loader.php:1460
 msgid "Tracking"
 msgstr ""
 
-#: src/Loader.php:1341
+#: src/Loader.php:1464
 msgid "Provider"
 msgstr ""
 
-#: src/Loader.php:1342
+#: src/Loader.php:1466
 msgid "Tracking number"
 msgstr ""
 
-#: src/Loader.php:1467
+#: src/Loader.php:1595
 msgid "Shipping Label"
 msgstr ""
 
-#: src/Loader.php:1470
+#: src/Loader.php:1607
 msgid "Shipment Tracking"
 msgstr ""
 
-#: src/Loader.php:1515
-#: src/Loader.php:1543
+#: src/Loader.php:1661
+#: src/Loader.php:1690
 #: dist/woocommerce-shipping-create-shipping-label.js:25
 msgid "Phone"
 msgstr ""
 
-#: src/Loader.php:1746
+#: src/Loader.php:1897
 msgid "WooCommerce Shipping & Tax has been deactivated. Your data and settings have been carried over to the dedicated WooCommerce Shipping and WooCommerce Tax extensions.<br />For support, please <a href=\"https://woocommerce.com/my-account/create-a-ticket/\">contact our Happiness Engineers</a>."
 msgstr ""
 
@@ -853,6 +880,10 @@ msgstr ""
 msgid "Order not found when updating order shipments "
 msgstr ""
 
+#: src/StoreApi/Extensions/BlocksCheckoutAddressValidationExtension.php:109
+msgid "WC Shipping checkout address validation notices"
+msgstr ""
+
 #. translators: %s: The missing query parameter.
 #: src/WCShippingRESTController.php:39
 msgid "Required body parameter is missing: %s"
@@ -965,6 +996,10 @@ msgstr ""
 
 #: dist/woocommerce-shipping-admin-status.js:14
 msgid "Print"
+msgstr ""
+
+#: dist/woocommerce-shipping-checkout-address-validation.js:1
+msgid "We were unable to update your shipping address. Please verify that the entered address is correct."
 msgstr ""
 
 #: dist/woocommerce-shipping-create-shipping-label.js:1
