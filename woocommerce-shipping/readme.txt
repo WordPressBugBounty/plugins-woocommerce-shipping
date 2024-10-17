@@ -7,7 +7,7 @@ Requires at least: 6.4
 Tested up to: 6.6
 WC requires at least: 9.1
 WC tested up to: 9.3
-Stable tag: 1.2.0
+Stable tag: 1.2.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -32,6 +32,9 @@ Send orders in multiple shipments as products become ready.
 
 = Optimized tracking =
 Our built-in Shipment Tracking feature makes it easier for you and your customers to manage tracking numbers by automatically adding tracking IDs to “Order Complete” emails.
+
+= Address verification at checkout =
+Say goodbye to undeliverable packages and the hassle of managing incorrect addresses by enabling address verification at checkout. Including your customers in the shipping process will reduce failed deliveries, costly returns, and guesswork.
 
 = Supported store countries and currencies =
 WooCommerce Shipping currently only supports stores shipping from the following countries and using the following currencies. Please note you can still ship internationally, this is only applicable to your store's location.
@@ -120,8 +123,12 @@ Absolutely! You can read our Terms of Service [here](https://wordpress.com/tos).
 2. WooCommerce Shipping split shipment screen.
 3. WooCommerce Shipping multiple origin address selection.
 4. WooCommerce Shipping print label screen.
+5. WooCommerce Shipping address validation at checkout suggestion.
 
 == Changelog ==
+
+= 1.2.1 - 2024-10-17 =
+* Fix   - Issue with excessive rendering of the shipping label success view.
 
 = 1.2.0 - 2024-10-16 =
 * Add   - Option to allow shipping address validation at checkout.

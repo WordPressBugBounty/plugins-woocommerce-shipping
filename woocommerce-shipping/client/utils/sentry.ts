@@ -8,7 +8,7 @@ export const initSentry = () => {
 		environment: window.wcShippingSettings?.environment,
 		release: 'wcshipping@' + window.wcShippingSettings?.version,
 		replaysSessionSampleRate: 0.1,
-		replaysOnErrorSampleRate: 1.0,
+		replaysOnErrorSampleRate: 0.3,
 		// Only send errors to Sentry that comes WooCommerce or WooCommerce Shipping
 		beforeSend( event ) {
 			if ( event.exception?.values ) {

@@ -1,5 +1,8 @@
 *** WooCommerce Shipping Changelog ***
 
+= 1.2.1 - 2024-10-17 =
+* Fix   - Issue with excessive rendering of the shipping label success view.
+
 = 1.2.0 - 2024-10-16 =
 * Add   - Option to allow shipping address validation at checkout.
 * Fix   - A failed payment would hinder future purchases.

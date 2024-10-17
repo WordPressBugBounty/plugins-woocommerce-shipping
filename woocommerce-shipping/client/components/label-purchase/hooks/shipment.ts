@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from '@wordpress/element';
 import { dispatch, select as selectData, useSelect } from '@wordpress/data';
+import { invert, isEqual } from 'lodash';
 import {
 	getCurrentOrderShipments,
 	getFirstSelectableOriginAddress,
@@ -7,7 +8,6 @@ import {
 import { LabelShipmentIdMap, OriginAddress, ShipmentItem } from 'types';
 import { addressStore } from 'data/address';
 import { labelPurchaseStore } from 'data/label-purchase';
-import { invert } from 'lodash';
 import { LABEL_PURCHASE_STATUS } from 'data/constants';
 
 export function useShipmentState() {
@@ -36,7 +36,11 @@ export function useShipmentState() {
 		( originId: string ) => {
 			const origin = findOriginAddressById( originId );
 
-			if ( ! origin ) {
+			if (
+				! origin ||
+				( origin &&
+					isEqual( shipmentOrigins[ currentShipmentId ], origin ) )
+			) {
 				return;
 			}
 
@@ -45,7 +49,7 @@ export function useShipmentState() {
 				[ currentShipmentId ]: origin,
 			} ) );
 		},
-		[ currentShipmentId ]
+		[ currentShipmentId, shipmentOrigins ]
 	);
 
 	// The most recently purchased label, that has not been refunded.
