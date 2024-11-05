@@ -6,6 +6,9 @@ import {
 } from '@wordpress/components';
 import { useRef, useEffect } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
+import { select, dispatch } from '@wordpress/data';
+import { isEmpty } from 'lodash';
+import { labelPurchaseStore } from 'data/label-purchase';
 import { TAB_NAMES } from './constants';
 import { CarrierPackage, CustomPackage, SavedTemplates } from './tab-views';
 import { useLabelPurchaseContext } from 'components/label-purchase/context';
@@ -29,8 +32,9 @@ export const Packages = () => {
 			isPackageSpecified,
 			currentPackageTab,
 		},
-		shipment: { shipments },
+		shipment: { shipments, currentShipmentId },
 		essentialDetails: { focusArea: essentialDetailsFocusArea },
+		rates: { removeSelectedRate },
 	} = useLabelPurchaseContext();
 
 	const selectedPackage = getSelectedPackage();
@@ -44,7 +48,19 @@ export const Packages = () => {
 			return;
 		}
 
+		const availableRates =
+			select( labelPurchaseStore ).getRatesForShipment(
+				currentShipmentId
+			);
+
+		if ( ! isEmpty( availableRates ) ) {
+			dispatch( labelPurchaseStore ).ratesReset();
+		}
+
+		removeSelectedRate();
+
 		setCurrentPackageTab( tabName );
+
 		recordEvent( 'label_purchase_package_tab_clicked', {
 			tab_name: tabName,
 		} );

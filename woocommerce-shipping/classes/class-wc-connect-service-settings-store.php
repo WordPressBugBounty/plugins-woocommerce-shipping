@@ -2,6 +2,9 @@
 
 namespace Automattic\WCShipping\Connect;
 
+use Automattic\WCShipping\Packages\PackageRepository;
+use Automattic\WCShipping\Packages\PackagesAsArraysSanitizer;
+use Automattic\WCShipping\Packages\PackageValidationException;
 use WC_Order;
 use WC_Cache_Helper;
 use WP_Error;
@@ -37,10 +40,13 @@ class WC_Connect_Service_Settings_Store {
 	 */
 	protected $logger;
 
+	private PackageRepository $package_repository;
+
 	public function __construct( WC_Connect_Service_Schemas_Store $service_schemas_store, WC_Connect_API_Client $api_client, WC_Connect_Logger $logger ) {
 		$this->service_schemas_store = $service_schemas_store;
 		$this->api_client            = $api_client;
 		$this->logger                = $logger;
+		$this->package_repository    = new PackageRepository();
 	}
 
 	/**
@@ -120,7 +126,16 @@ class WC_Connect_Service_Settings_Store {
 		unset( $settings['paper_size'] );
 
 		// Sanitize other fields
-		$allowable_post     = array( 'email_receipts', 'enabled', 'selected_payment_method_id', 'use_last_package', 'use_last_service', 'checkout_address_validation' );
+		$allowable_post = array(
+			'email_receipts',
+			'enabled',
+			'selected_payment_method_id',
+			'use_last_package',
+			'use_last_service',
+			'checkout_address_validation',
+			'automatically_open_print_dialog',
+		);
+
 		$validated_settings = array();
 		foreach ( $settings as $settings_key => $settings_value ) {
 			if ( ! in_array( $settings_key, $allowable_post ) ) {
@@ -128,12 +143,13 @@ class WC_Connect_Service_Settings_Store {
 			}
 			$validated_settings[ $settings_key ] = $settings_value;
 		}
-		$validated_settings['selected_payment_method_id']  = intval( $validated_settings['selected_payment_method_id'] );
-		$validated_settings['email_receipts']              = $validated_settings['email_receipts'] ? true : false;
-		$validated_settings['enabled']                     = $validated_settings['enabled'] ? true : false;
-		$validated_settings['use_last_package']            = $validated_settings['use_last_package'] ? true : false;
-		$validated_settings['use_last_service']            = $validated_settings['use_last_service'] ? true : false;
-		$validated_settings['checkout_address_validation'] = $validated_settings['checkout_address_validation'] ? true : false;
+		$validated_settings['selected_payment_method_id']      = intval( $validated_settings['selected_payment_method_id'] );
+		$validated_settings['email_receipts']                  = $validated_settings['email_receipts'] ? true : false;
+		$validated_settings['enabled']                         = $validated_settings['enabled'] ? true : false;
+		$validated_settings['use_last_package']                = $validated_settings['use_last_package'] ? true : false;
+		$validated_settings['use_last_service']                = $validated_settings['use_last_service'] ? true : false;
+		$validated_settings['checkout_address_validation']     = $validated_settings['checkout_address_validation'] ? true : false;
+		$validated_settings['automatically_open_print_dialog'] = $validated_settings['automatically_open_print_dialog'] ? true : false;
 
 		$saved = WC_Connect_Options::update_option( 'account_settings', $validated_settings );
 
@@ -559,12 +575,10 @@ class WC_Connect_Service_Settings_Store {
 	 * @since 1.1.2 - Add a unique ID to the package if it doesn't already have one.
 	 * @since 1.0.0
 	 *
-	 * @return array
+	 * @return array[] Array of packages-as-arrays.
 	 */
-	public function get_packages() {
-		$packages = WC_Connect_Options::get_option( 'packages', array() );
-
-		return $this->add_id_to_packages( $packages );
+	public function get_packages(): array {
+		return $this->package_repository->get_custom_packages();
 	}
 
 	/**
@@ -574,16 +588,12 @@ class WC_Connect_Service_Settings_Store {
 	 * @since 1.0.0
 	 *
 	 * @param array $new_packages Packages to extend.
+	 *
 	 * @return void
+	 * @throws PackageValidationException If at least one of the provided packages doesn't pass validation.
 	 */
 	public function create_packages( $new_packages ) {
-		if ( ! is_array( $new_packages ) ) {
-			return;
-		}
-
-		$packages = $this->get_packages();
-		$packages = array_merge( $packages, $this->add_id_to_packages( $new_packages ) );
-		WC_Connect_Options::update_option( 'packages', $packages );
+		$this->package_repository->add_custom_packages( $new_packages );
 	}
 
 	/**
@@ -593,42 +603,12 @@ class WC_Connect_Service_Settings_Store {
 	 * @since 1.0.0
 	 *
 	 * @param array $packages The packages we wish to update.
+	 *
 	 * @return void
+	 * @throws PackageValidationException If at least one of the provided packages doesn't pass validation.
 	 */
 	public function update_packages( $packages ) {
-		if ( ! is_array( $packages ) ) {
-			return;
-		}
-
-		WC_Connect_Options::update_option( 'packages', $this->add_id_to_packages( $packages ) );
-	}
-
-	/**
-	 * Add IDs to packages that do not have any yet.
-	 *
-	 * We need a unique ID for each package to be able to identify them as a box_id
-	 * to prepopulate the saved templates form, and other types of situations where
-	 * uniqueness is required.
-	 *
-	 * This introduces backwards support for migrated WCS&T packages that do not have an ID
-	 * and older version of WC Shipping that had a bug not setting an ID.
-	 *
-	 * @since 1.1.2
-	 *
-	 * @param array $packages The packages we wish to add a unique ID to.
-	 * @return array[]
-	 */
-	private function add_id_to_packages( array $packages ) {
-		foreach ( $packages as &$package ) {
-			// Packages that are being converted from the "custom box" aka "one-offs" will have an ID of "custom_box".
-			// We need to have a unique ID for all saved template package, so we can accurately update and modify
-			// any value in the future (e.g. the name would otherwise be immutable).
-			if ( empty( $package['id'] ) || 'custom_box' === $package['id'] ) {
-				$package['id'] = md5( $package['name'] );
-			}
-		}
-
-		return $packages;
+		$this->package_repository->replace_custom_packages( $packages );
 	}
 
 	/**

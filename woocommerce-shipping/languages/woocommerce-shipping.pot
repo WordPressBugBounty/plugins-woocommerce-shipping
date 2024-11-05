@@ -2,14 +2,14 @@
 # This file is distributed under the GPL v2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: WooCommerce Shipping 1.2.1\n"
+"Project-Id-Version: WooCommerce Shipping 1.2.2\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/woocommerce-shipping\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2024-10-17T11:07:10+00:00\n"
+"POT-Creation-Date: 2024-11-05T10:25:50+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.11.0\n"
 "X-Domain: woocommerce-shipping\n"
@@ -132,7 +132,7 @@ msgid "<strong>\"%2$s\" is missing weight, length, width, or height.</strong><br
 msgstr ""
 
 #: classes/class-wc-connect-error-notice.php:102
-#: src/Loader.php:1868
+#: src/Loader.php:1870
 msgid "Dismiss this notice"
 msgstr ""
 
@@ -259,56 +259,56 @@ msgstr ""
 msgid "Shipping label tracking number"
 msgstr ""
 
-#: classes/class-wc-connect-service-settings-store.php:495
+#: classes/class-wc-connect-service-settings-store.php:511
 msgctxt "A service with an unknown title and unknown method_title"
 msgid "Unknown"
 msgstr ""
 
-#: classes/class-wc-connect-service-settings-store.php:499
+#: classes/class-wc-connect-service-settings-store.php:515
 msgid "Rest of the World"
 msgstr ""
 
-#: classes/class-wc-connect-service-settings-store.php:531
+#: classes/class-wc-connect-service-settings-store.php:547
 msgid "An invalid service instance was received."
 msgstr ""
 
-#: classes/class-wc-connect-service-settings-store.php:536
+#: classes/class-wc-connect-service-settings-store.php:552
 msgid "An invalid service ID was received."
 msgstr ""
 
-#: classes/class-wc-connect-service-settings-store.php:708
+#: classes/class-wc-connect-service-settings-store.php:688
 msgid "kg"
 msgstr ""
 
-#: classes/class-wc-connect-service-settings-store.php:710
+#: classes/class-wc-connect-service-settings-store.php:690
 msgid "g"
 msgstr ""
 
-#: classes/class-wc-connect-service-settings-store.php:712
+#: classes/class-wc-connect-service-settings-store.php:692
 msgid "lbs"
 msgstr ""
 
-#: classes/class-wc-connect-service-settings-store.php:714
+#: classes/class-wc-connect-service-settings-store.php:694
 msgid "oz"
 msgstr ""
 
-#: classes/class-wc-connect-service-settings-store.php:716
+#: classes/class-wc-connect-service-settings-store.php:696
 msgid "m"
 msgstr ""
 
-#: classes/class-wc-connect-service-settings-store.php:718
+#: classes/class-wc-connect-service-settings-store.php:698
 msgid "cm"
 msgstr ""
 
-#: classes/class-wc-connect-service-settings-store.php:720
+#: classes/class-wc-connect-service-settings-store.php:700
 msgid "mm"
 msgstr ""
 
-#: classes/class-wc-connect-service-settings-store.php:722
+#: classes/class-wc-connect-service-settings-store.php:702
 msgid "in"
 msgstr ""
 
-#: classes/class-wc-connect-service-settings-store.php:724
+#: classes/class-wc-connect-service-settings-store.php:704
 msgid "yd"
 msgstr ""
 
@@ -336,21 +336,21 @@ msgstr ""
 msgid "Unable to update settings. %s"
 msgstr ""
 
-#: classes/legacy-api-controllers/class-wc-rest-connect-packages-controller.php:81
-#: src/Packages/PackagesRESTController.php:119
+#: classes/legacy-api-controllers/class-wc-rest-connect-packages-controller.php:98
+#: src/Packages/PackagesRESTController.php:123
 msgid "The new custom package names are not unique."
 msgstr ""
 
-#: classes/legacy-api-controllers/class-wc-rest-connect-packages-controller.php:95
-#: src/Packages/PackagesRESTController.php:133
+#: classes/legacy-api-controllers/class-wc-rest-connect-packages-controller.php:112
+#: src/Packages/PackagesRESTController.php:137
 msgid "At least one of the new custom packages has the same name as existing packages."
 msgstr ""
 
-#: classes/legacy-api-controllers/class-wc-rest-connect-packages-controller.php:122
+#: classes/legacy-api-controllers/class-wc-rest-connect-packages-controller.php:143
 msgid "The new predefined package names are not unique."
 msgstr ""
 
-#: classes/legacy-api-controllers/class-wc-rest-connect-packages-controller.php:143
+#: classes/legacy-api-controllers/class-wc-rest-connect-packages-controller.php:164
 msgid "At least one of the new predefined packages has the same name as existing packages."
 msgstr ""
 
@@ -736,7 +736,7 @@ msgstr ""
 msgid "Phone"
 msgstr ""
 
-#: src/Loader.php:1897
+#: src/Loader.php:1899
 msgid "WooCommerce Shipping & Tax has been deactivated. Your data and settings have been carried over to the dedicated WooCommerce Shipping and WooCommerce Tax extensions.<br />For support, please <a href=\"https://woocommerce.com/my-account/create-a-ticket/\">contact our Happiness Engineers</a>."
 msgstr ""
 
@@ -847,11 +847,11 @@ msgstr ""
 msgid "Your shipping settings and label history have been successfully migrated — enjoy the new WooCommerce Shipping experience."
 msgstr ""
 
-#: src/Packages/PackagesRESTController.php:160
+#: src/Packages/PackagesRESTController.php:168
 msgid "At least one of the new carrier package names is not unique."
 msgstr ""
 
-#: src/Packages/PackagesRESTController.php:181
+#: src/Packages/PackagesRESTController.php:189
 msgid "At least one of the new predefined packages has the same name as an existing package."
 msgstr ""
 
@@ -1672,6 +1672,10 @@ msgid_plural "%s business days"
 msgstr[0] ""
 msgstr[1] ""
 
+#: dist/woocommerce-shipping-create-shipping-label.js:43
+msgid "Books and <a>other media</a> only"
+msgstr ""
+
 #. translators: %s: list of extras
 #: dist/woocommerce-shipping-create-shipping-label.js:46
 msgid "includes %s"
@@ -2102,19 +2106,19 @@ msgid "Error fetching label status. Please check the purchase status later."
 msgstr ""
 
 #: dist/woocommerce-shipping-create-shipping-label.js:76
-msgid "Error fetching label status."
-msgstr ""
-
-#: dist/woocommerce-shipping-create-shipping-label.js:76
-msgid "Error purchasing label."
-msgstr ""
-
-#: dist/woocommerce-shipping-create-shipping-label.js:76
 msgid "No label to print."
 msgstr ""
 
 #: dist/woocommerce-shipping-create-shipping-label.js:76
 msgid "Error printing label, try to print later."
+msgstr ""
+
+#: dist/woocommerce-shipping-create-shipping-label.js:76
+msgid "Error fetching label status."
+msgstr ""
+
+#: dist/woocommerce-shipping-create-shipping-label.js:76
+msgid "Error purchasing label."
 msgstr ""
 
 #: dist/woocommerce-shipping-create-shipping-label.js:76

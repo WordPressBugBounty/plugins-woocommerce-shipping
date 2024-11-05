@@ -1,9 +1,14 @@
+import { mockUtils } from './test-utils';
+// This import should be before all other imports for the mock to work
+mockUtils();
+
 import { useState } from '@wordpress/element';
 import { merge } from 'lodash';
 import {
 	useAccountState,
 	useCustomsState,
 	useRatesState,
+	usePackageState,
 } from 'components/label-purchase/hooks';
 import { TAB_NAMES } from 'components/label-purchase/packages';
 import {
@@ -28,8 +33,9 @@ export const ProvideTestState = ( {
 	initialValue = {},
 }: ProvideStateProps ) => {
 	const [ errors, setErrors ] = useState( {} );
+	const currentShipmentId = '0';
 	const getShipmentOrigin = () => ( {
-		id: '0',
+		id: currentShipmentId,
 		company: 'WooCommerce',
 		country: 'US',
 		state: 'CA',
@@ -51,7 +57,7 @@ export const ProvideTestState = ( {
 	);
 
 	const { fetchRates, getSelectedRate } = useRatesState( {
-		currentShipmentId: '0',
+		currentShipmentId,
 		getPackageForRequest,
 		applyHazmatToPackage: ( data ) => data,
 		totalWeight,
@@ -65,6 +71,13 @@ export const ProvideTestState = ( {
 			getSelectedRate,
 		} ),
 	};
+
+	const packages = {
+		...usePackageState( currentShipmentId, totalWeight ),
+		getPackageForRequest,
+		isSelectedASavedPackage: jest.fn( () => true ),
+	};
+
 	const _initialValue = merge(
 		{
 			shipment: {
@@ -96,11 +109,7 @@ export const ProvideTestState = ( {
 				selectedLabelSize: () => ( {} ),
 				paperSizes: [],
 			},
-			packages: {
-				currentPackageTab: TAB_NAMES.CUSTOM_PACKAGE,
-				isSelectedASavedPackage: jest.fn( () => true ),
-				getPackageForRequest,
-			},
+			packages,
 			hazmat: {
 				isHazmatSpecified: jest.fn( () => true ),
 			},

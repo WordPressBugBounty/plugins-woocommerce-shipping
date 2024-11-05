@@ -10,6 +10,8 @@ use Automattic\WCShipping\Connect\WC_Connect_Service_Settings_Store;
 use Automattic\WCShipping\Connect\WC_Connect_Logger;
 use Automattic\WCShipping\Connect\WC_Connect_Service_Schemas_Store;
 use Automattic\WCShipping\Connect\WC_Connect_Package_Settings;
+use Automattic\WCShipping\Packages\PackagesAsArraysSanitizer;
+use Automattic\WCShipping\Packages\PackageValidationException;
 use WP_REST_Response;
 
 class WC_REST_Connect_Packages_Controller extends WC_REST_Connect_Base_Controller {
@@ -28,11 +30,18 @@ class WC_REST_Connect_Packages_Controller extends WC_REST_Connect_Base_Controlle
 		);
 	}
 
+	/**
+	 * @throws PackageValidationException Doesn't really throw this because we set `throw_on_failure = false`.
+	 */
 	public function get() {
+		$result                       = $this->package_settings->get();
+		$result['formData']['custom'] = ( new PackagesAsArraysSanitizer( $result['formData']['custom'], false ) )
+			->to_packages_as_wcst_arrays();
+
 		return new WP_REST_Response(
 			array_merge(
 				array( 'success' => true ),
-				$this->package_settings->get()
+				$result
 			),
 			200
 		);
@@ -41,14 +50,20 @@ class WC_REST_Connect_Packages_Controller extends WC_REST_Connect_Base_Controlle
 	/**
 	 * Update the existing custom and predefined packages.
 	 *
-	 * @param  WP_REST_Request $request The request body contains the custom/predefined packages to replace.
+	 * @param WP_REST_Request $request The request body contains the custom/predefined packages to replace.
+	 *
 	 * @return WP_REST_Response
+	 * @throws PackageValidationException
 	 */
 	public function put( $request ) {
 		$packages = $request->get_json_params();
 
-		$this->settings_store->update_packages( $packages['custom'] );
-		$this->settings_store->update_predefined_packages( $packages['predefined'] );
+		try {
+			$this->settings_store->update_packages( $packages['custom'] );
+			$this->settings_store->update_predefined_packages( $packages['predefined'] );
+		} catch ( PackageValidationException $e ) {
+			return $e->get_error_response();
+		}
 
 		return new WP_REST_Response( array( 'success' => true ), 200 );
 	}
@@ -56,8 +71,10 @@ class WC_REST_Connect_Packages_Controller extends WC_REST_Connect_Base_Controlle
 	/**
 	 * Create custom and/or predefined packages.
 	 *
-	 * @param  WP_REST_Request $request The request body contains the custom/predefined packages to create.
+	 * @param WP_REST_Request $request The request body contains the custom/predefined packages to create.
+	 *
 	 * @return WP_Error|WP_REST_Response
+	 * @throws PackageValidationException
 	 */
 	public function post( $request ) {
 		$packages = $request->get_json_params();
@@ -98,8 +115,12 @@ class WC_REST_Connect_Packages_Controller extends WC_REST_Connect_Base_Controlle
 				return new WP_REST_Response( $error, 400 );
 			}
 
-			// If no duplicate custom packages, create the given packages.
-			$this->settings_store->create_packages( $custom_packages );
+			try {
+				// If no duplicate custom packages, create the given packages.
+				$this->settings_store->create_packages( $custom_packages );
+			} catch ( PackageValidationException $e ) {
+				return $e->get_error_response();
+			}
 		}
 
 		// Handle new predefined packages. The predefined packages are structured as a dictionary from carrier name to

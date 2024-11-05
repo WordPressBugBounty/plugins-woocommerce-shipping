@@ -1,7 +1,19 @@
 *** WooCommerce Shipping Changelog ***
 
+= 1.2.2 - 2024-11-05 =
+* Add   - Option to automatically print a label once the label is successfully purchased.
+* Add   - Option to allow users to change the unit of the total shipment weight.
+* Tweak - WordPress 6.7 Compatibility.
+* Tweak - Add caveat to USPS Media Mail rate to indicate what may be shipped via this service.
+* Tweak - Move USPS Media Mail to the bottom of the rates list.
+* Tweak - Move last purchased rate that is pre-selected to the top of the rates list.
+* Fix   - Added missing separator for zip code in the checkout address verification.
+* Fix   - Issue with legacy API endpoint for custom packages to ensure correct data output.
+* Fix   - Issue where switching between package tabs would not reset the selected rate.
+
 = 1.2.1 - 2024-10-17 =
 * Fix   - Issue with excessive rendering of the shipping label success view.
+
 
 = 1.2.0 - 2024-10-16 =
 * Add   - Option to allow shipping address validation at checkout.

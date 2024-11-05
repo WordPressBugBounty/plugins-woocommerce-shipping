@@ -182,6 +182,10 @@ class WooCommerceShipmentTracking {
 			return $value;
 		}
 
+		if ( ! is_array( $value ) ) {
+			return $value;
+		}
+
 		// Check if the value is missing the custom tracking link and add it.
 		foreach ( $value as $index => &$tracking_item ) {
 			// Only items with the same custom tracking link and tracking number will be updated.

@@ -78,7 +78,7 @@ class LegacyLabelMigrator implements BatchProcessorInterface {
 		}
 
 		global $wpdb;
-		$table_name  = OrderUtil::get_table_for_order_meta();
+		$table_name = OrderUtil::get_table_for_order_meta();
 
 		$this->total_count = $wpdb->get_var(
 			$wpdb->prepare(

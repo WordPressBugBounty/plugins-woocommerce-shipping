@@ -117,7 +117,7 @@ class AddressUtils {
 			} elseif ( 'state' === $field ) {
 				$standardized_address[ $field ] = self::convert_state_to_wc_format( $address[ $field ], $address['country'] );
 			} elseif ( 'postcode' === $field ) {
-				$standardized_address[ $field ] = wc_normalize_postcode( $address[ $field ] );
+				$standardized_address[ $field ] = wc_format_postcode( $address[ $field ], $address['country'] );
 			} else {
 				$standardized_address[ $field ] = self::get_standardized_address_field( $address[ $field ] );
 			}

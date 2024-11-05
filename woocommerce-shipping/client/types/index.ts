@@ -50,3 +50,8 @@ export * from './label-shipment-id-map.d';
 export * from './store-notice.d';
 export * from './user-meta.d';
 export * from './constants.d';
+export * from './payment-method.d';
+export * from './purchase-meta.d';
+export * from './purchase-settings.d';
+export * from './wcshipping-settings-config.d';
+export * from './weight-unit.d';

@@ -15,6 +15,7 @@ import {
 	RATES_FETCHED,
 	ORDER_STATUS_UPDATED,
 	ORDER_STATUS_UPDATE_FAILED,
+	RATES_RESET,
 } from './action-types';
 import { LabelPurchaseState } from '../types';
 import {
@@ -83,6 +84,10 @@ export const labelPurchaseReducer = createReducer( defaultState )
 			...state.rates,
 			...groupRatesByCarrier( payload ),
 		},
+	} ) )
+	.on( RATES_RESET, ( state ) => ( {
+		...state,
+		rates: undefined,
 	} ) )
 	.on(
 		LABEL_STATUS_RESOLVED,

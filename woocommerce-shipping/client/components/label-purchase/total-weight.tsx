@@ -1,11 +1,16 @@
-import { __ } from '@wordpress/i18n';
-import React from 'react';
-import { isNumber } from 'lodash';
-import { __experimentalInputControl as InputControl } from '@wordpress/components';
-import { getWeightUnit } from 'utils';
-import { useLabelPurchaseContext } from './context';
 import { numberFormat } from '@woocommerce/number';
-import { useEffect } from '@wordpress/element';
+import {
+	Flex,
+	FlexBlock,
+	__experimentalInputControl as InputControl,
+	SelectControl,
+} from '@wordpress/components';
+import { isNumber } from 'lodash';
+import { __ } from '@wordpress/i18n';
+import { useEffect, useState } from '@wordpress/element';
+import { getWeightUnit, convertWeightToUnit, WEIGHT_UNITS } from 'utils';
+import { useLabelPurchaseContext } from './context';
+import { WeightUnit } from 'types';
 
 const formatNumber = ( val: string | number ) =>
 	numberFormat(
@@ -16,7 +21,7 @@ const formatNumber = ( val: string | number ) =>
 		Number( val )
 	);
 export const TotalWeight = ( { packageWeight = 0 } ) => {
-	const weightUnit = getWeightUnit();
+	const defaultUnit = getWeightUnit();
 	const {
 		weight: {
 			getShipmentWeight,
@@ -47,14 +52,43 @@ export const TotalWeight = ( { packageWeight = 0 } ) => {
 
 	const fieldName = 'totalWeight';
 
+	const [ weightUnit, setWeightUnit ] = useState( () => {
+		const weight = getShipmentWeight();
+		if ( weight === 0 ) {
+			return defaultUnit;
+		}
+
+		const isMetric =
+			defaultUnit === WEIGHT_UNITS.KG || defaultUnit === WEIGHT_UNITS.G;
+		const smallerUnit = isMetric ? WEIGHT_UNITS.G : WEIGHT_UNITS.OZ;
+		const largerUnit = isMetric ? WEIGHT_UNITS.KG : WEIGHT_UNITS.LBS;
+		const threshold = isMetric ? 1000 : 16;
+
+		const smallerValue = convertWeightToUnit(
+			weight,
+			defaultUnit,
+			smallerUnit
+		);
+		return smallerValue < threshold ? smallerUnit : largerUnit;
+	} );
+
 	const props = {
 		onChange: ( val: string | undefined ) => {
 			const { ...newErrors } = errors;
 			delete newErrors[ fieldName ];
 			setErrors( newErrors );
-			setShipmentTotalWeight( Number( val ) );
+			// Total weight should be set in default unit
+			setShipmentTotalWeight(
+				convertWeightToUnit( Number( val ), weightUnit, defaultUnit )
+			);
 		},
-		value: formatNumber( getShipmentTotalWeight() ),
+		value: formatNumber(
+			convertWeightToUnit(
+				getShipmentTotalWeight(),
+				defaultUnit,
+				weightUnit
+			)
+		),
 		className: errors[ fieldName ]
 			? 'package-total-weight has-error'
 			: 'package-total-weight',
@@ -72,18 +106,45 @@ export const TotalWeight = ( { packageWeight = 0 } ) => {
 				? errors[ fieldName ].message
 				: '',
 	};
+
+	const onUnitChange = ( newUnit: WeightUnit ) => {
+		setWeightUnit( newUnit );
+	};
+
+	const weightUnitOptions = Object.values( WEIGHT_UNITS ).map( ( unit ) => ( {
+		label: unit,
+		value: unit,
+	} ) );
+
 	return (
-		<InputControl
-			label={ __(
-				'Total shipment weight (with package)',
-				'woocommerce-shipping'
-			) }
-			type="number"
-			suffix={ weightUnit }
-			disabled={ isFetching }
-			step="0.1"
-			min={ formatNumber( getShipmentWeight() ) }
-			{ ...props }
-		/>
+		<FlexBlock>
+			<Flex gap={ 3 } align="flex-end">
+				<InputControl
+					label={ __(
+						'Total shipment weight (with package)',
+						'woocommerce-shipping'
+					) }
+					type="number"
+					disabled={ isFetching }
+					step={ [ 'g', 'oz' ].includes( weightUnit ) ? 1 : 0.1 }
+					min={ formatNumber(
+						convertWeightToUnit(
+							getShipmentWeight(),
+							defaultUnit,
+							weightUnit
+						)
+					) }
+					{ ...props }
+				/>
+				<SelectControl
+					className="package-total-weight-unit"
+					value={ weightUnit }
+					options={ weightUnitOptions }
+					disabled={ isFetching }
+					onChange={ onUnitChange }
+					__nextHasNoMarginBottom
+				/>
+			</Flex>
+		</FlexBlock>
 	);
 };

@@ -33,3 +33,7 @@ export const getPluginRelativeDirectory = ( forWooCommerce = false ) =>
 	forWooCommerce
 		? getConfig().constants.WC_PLUGIN_RELATIVE_DIR
 		: getConfig().constants.WCSHIPPING_RELATIVE_PLUGIN_DIR;
+
+export const shouldAutomaticallyOpenPrintDialog = ( config = getConfig() ) =>
+	getAccountSettings( config ).purchaseSettings
+		.automatically_open_print_dialog;

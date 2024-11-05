@@ -428,6 +428,8 @@ class Loader {
 
 		add_action( 'plugins_loaded', array( $this, 'on_plugins_loaded' ) );
 		add_action( 'plugins_loaded', array( $this, 'jetpack_on_plugins_loaded' ), 1 );
+
+		add_action( 'after_setup_theme', array( $this, 'load_textdomain' ) );
 	}
 
 	public function get_logger() {
@@ -658,8 +660,6 @@ class Loader {
 	}
 
 	public function on_plugins_loaded() {
-		$this->load_textdomain();
-
 		if ( ! class_exists( 'WooCommerce' ) ) {
 			add_action(
 				'admin_notices',
@@ -1786,12 +1786,14 @@ class Loader {
 			}
 		}
 
+		$asset_version = ! empty( $dependencies['version'] ) ? wp_hash( WCSHIPPING_VERSION . '.' . $dependencies['version'] ) : WCSHIPPING_VERSION;
+
 		// Enqueue the stylesheet.
 		wp_enqueue_style(
 			$root_view,
 			$this->wc_connect_base_url . "style-$root_view.css",
 			array(),
-			$dependencies['version'] ? wp_hash( WCSHIPPING_VERSION . '.' . $dependencies['version'] ) : WCSHIPPING_VERSION
+			$asset_version
 		);
 
 		// Enqueue the entry point script.
@@ -1799,7 +1801,7 @@ class Loader {
 			$root_view,
 			$this->wc_connect_base_url . "$root_view.js",
 			$dependencies['dependencies'] ?? array(),
-			$dependencies['version'] ? wp_hash( WCSHIPPING_VERSION . '.' . $dependencies['version'] ) : WCSHIPPING_VERSION,
+			$asset_version,
 			array(
 				'in_footer' => true,
 			)

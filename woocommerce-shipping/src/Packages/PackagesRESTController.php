@@ -76,7 +76,11 @@ class PackagesRESTController extends WCShippingRESTController {
 		$packages = $request->get_json_params();
 
 		if ( isset( $packages['custom'] ) ) {
-			$this->settings_store->update_packages( $packages['custom'] );
+			try {
+				$this->settings_store->update_packages( $packages['custom'] );
+			} catch ( PackageValidationException $e ) {
+				return $e->get_error_response();
+			}
 		}
 
 		if ( isset( $packages['predefined'] ) ) {
@@ -136,8 +140,12 @@ class PackagesRESTController extends WCShippingRESTController {
 				return new WP_REST_Response( $error, 400 );
 			}
 
-			// If no duplicate custom packages, create the given packages.
-			$this->settings_store->create_packages( $custom_packages );
+			try {
+				// If no duplicate custom packages, create the given packages.
+				$this->settings_store->create_packages( $custom_packages );
+			} catch ( PackageValidationException $e ) {
+				return $e->get_error_response();
+			}
 		}
 
 		// Handle new predefined packages. The predefined packages are structured as a dictionary from carrier name to
@@ -220,7 +228,12 @@ class PackagesRESTController extends WCShippingRESTController {
 		// Reindex the array since we've just plugged a hole.
 		$packages = array_values( $packages );
 
-		$this->settings_store->update_packages( $packages );
+		try {
+			$this->settings_store->update_packages( $packages );
+		} catch ( PackageValidationException $e ) {
+			return $e->get_error_response();
+		}
+
 		return rest_ensure_response(
 			array(
 				'predefined' => $this->settings_store->get_predefined_packages(),

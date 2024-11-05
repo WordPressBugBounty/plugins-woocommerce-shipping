@@ -4,6 +4,7 @@ import {
 	ORDER_STATUS_UPDATED,
 	RATES_FETCH_FAILED,
 	RATES_FETCHED,
+	RATES_RESET,
 	SHIPMENTS_UPDATE_FAILED,
 	SHIPMENTS_UPDATED,
 } from './action-types';
@@ -11,7 +12,11 @@ import { getRatesPath, getShipmentsPath, getWCOrdersPath } from 'data/routes';
 import { select } from '@wordpress/data';
 import { mapAddressForRequest } from 'utils';
 import { OriginAddress } from 'types';
-import { RatesFetchedAction, RatesFetchFailedAction } from './types.d';
+import {
+	RatesFetchedAction,
+	RatesFetchFailedAction,
+	RatesResetAction,
+} from './types.d';
 import { addressStore } from '../address';
 
 export function* updateShipments( {
@@ -125,3 +130,7 @@ export function* updateOrderStatus( {
 		};
 	}
 }
+
+export const ratesReset = (): RatesResetAction => ( {
+	type: RATES_RESET,
+} );

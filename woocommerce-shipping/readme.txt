@@ -3,11 +3,11 @@ Contributors: woocommerce, automattic, harriswong, waclawjacek, samnajian, kloon
 Tags: woocommerce, shipping, usps, dhl, labels
 Requires Plugins: woocommerce
 Requires PHP: 7.4
-Requires at least: 6.4
-Tested up to: 6.6
+Requires at least: 6.5
+Tested up to: 6.7
 WC requires at least: 9.1
 WC tested up to: 9.3
-Stable tag: 1.2.1
+Stable tag: 1.2.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -126,6 +126,17 @@ Absolutely! You can read our Terms of Service [here](https://wordpress.com/tos).
 5. WooCommerce Shipping address validation at checkout suggestion.
 
 == Changelog ==
+
+= 1.2.2 - 2024-11-05 =
+* Add   - Option to automatically print a label once the label is successfully purchased.
+* Add   - Option to allow users to change the unit of the total shipment weight.
+* Tweak - WordPress 6.7 Compatibility.
+* Tweak - Add caveat to USPS Media Mail rate to indicate what may be shipped via this service.
+* Tweak - Move USPS Media Mail to the bottom of the rates list.
+* Tweak - Move last purchased rate that is pre-selected to the top of the rates list.
+* Fix   - Added missing separator for zip code in the checkout address verification.
+* Fix   - Issue with legacy API endpoint for custom packages to ensure correct data output.
+* Fix   - Issue where switching between package tabs would not reset the selected rate.
 
 = 1.2.1 - 2024-10-17 =
 * Fix   - Issue with excessive rendering of the shipping label success view.

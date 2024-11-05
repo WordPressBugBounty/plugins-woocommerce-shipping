@@ -7,8 +7,10 @@ import {
 import { dateI18n } from '@wordpress/date';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import { CarrierIcon } from 'components/carrier-icon';
+import { createInterpolateElement } from '@wordpress/element';
 import { useLabelPurchaseContext } from '../../context';
 import { RowExtras } from './row-extras';
+import clsx from 'clsx';
 
 export const RateRow = ( {
 	rate,
@@ -71,6 +73,25 @@ export const RateRow = ( {
 		);
 	}
 
+	const rateCaveat =
+		rate.serviceId === 'MediaMail'
+			? createInterpolateElement(
+					__(
+						'Books and <a>other media</a> only',
+						'woocommerce-shipping'
+					),
+					{
+						a: (
+							// eslint-disable-next-line jsx-a11y/anchor-has-content
+							<a
+								target="__blank"
+								href="https://pe.usps.com/text/DMM300/273.htm#a_3_0"
+							/>
+						),
+					}
+			  )
+			: '';
+
 	return (
 		<>
 			<input
@@ -85,7 +106,10 @@ export const RateRow = ( {
 				gap={ 4 }
 				as="label"
 				htmlFor={ rateId }
-				className={ `${ isSelected ? 'selected' : '' }` }
+				className={ clsx(
+					[ isSelected && 'selected' ],
+					[ rateCaveat && 'has-rate-caveat' ]
+				) }
 			>
 				<CarrierIcon carrier={ carrierId } positionY="top" />
 
@@ -94,6 +118,9 @@ export const RateRow = ( {
 						<Text size={ 14 } weight={ 400 }>
 							{ title }
 						</Text>
+						{ rateCaveat && (
+							<Text className="rate-caveat">{ rateCaveat }</Text>
+						) }
 						{ ! isSelected && (
 							<Text className="rate-extras">
 								{ sprintf(

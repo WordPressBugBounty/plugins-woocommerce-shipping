@@ -430,6 +430,22 @@ return array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/src/OriginAddresses/OriginAddressesRESTController.php'
 	),
+	'Automattic\\WCShipping\\Packages\\Package' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/src/Packages/Package.php'
+	),
+	'Automattic\\WCShipping\\Packages\\PackageRepository' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/src/Packages/PackageRepository.php'
+	),
+	'Automattic\\WCShipping\\Packages\\PackageValidationException' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/src/Packages/PackageValidationException.php'
+	),
+	'Automattic\\WCShipping\\Packages\\PackagesAsArraysSanitizer' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/src/Packages/PackagesAsArraysSanitizer.php'
+	),
 	'Automattic\\WCShipping\\Packages\\PackagesRESTController' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/src/Packages/PackagesRESTController.php'
@@ -469,6 +485,14 @@ return array(
 	'Automattic\\WCShipping\\Tests\\ConfigRESTControllerTest' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/tests/php/Integrations/ConfigRESTControllerTest.php'
+	),
+	'Automattic\\WCShipping\\Tests\\Packages\\PackageRepositoryTest' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/tests/php/Packages/PackageRepositoryTest.php'
+	),
+	'Automattic\\WCShipping\\Tests\\Packages\\PackagesAsArraysSanitizerTest' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/tests/php/Packages/PackagesAsArraysSanitizerTest.php'
 	),
 	'Automattic\\WCShipping\\Tests\\TosRESTControllerTest' => array(
 		'version' => 'dev-trunk',
@@ -529,6 +553,10 @@ return array(
 	'Automattic\\WCShipping\\Tests\\php\\Utils\\ProductCustomsDataTest' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/tests/php/Utils/ProductCustomsDataTest.php'
+	),
+	'Automattic\\WCShipping\\Tests\\php\\Utils\\UtilsTest' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/tests/php/Utils/UtilsTest.php'
 	),
 	'Automattic\\WCShipping\\Tests\\php\\WCShippingRESTControllerTest' => array(
 		'version' => 'dev-trunk',
@@ -626,6 +654,10 @@ return array(
 		'version' => '3.0.9',
 		'path'    => $vendorDir . '/automattic/jetpack-autoloader/src/class-php-autoloader.php'
 	),
+	'PackageTest' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/tests/php/Packages/PackageTest.php'
+	),
 	'Path_Processor' => array(
 		'version' => '3.0.9',
 		'path'    => $vendorDir . '/automattic/jetpack-autoloader/src/class-path-processor.php'
@@ -654,10 +686,6 @@ return array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/tests/php/Checkout/StoreNoticeTest.php'
 	),
-	'UtilsTest' => array(
-		'version' => 'dev-trunk',
-		'path'    => $baseDir . '/tests/php/Utils/UtilsTest.php'
-	),
 	'Version_Loader' => array(
 		'version' => '3.0.9',
 		'path'    => $vendorDir . '/automattic/jetpack-autoloader/src/class-version-loader.php'
@@ -673,5 +701,9 @@ return array(
 	'WC_Connect_Compatibility_WCShipping_Packages' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/tests/php/Double/WC_Connect_Compatibility_WCShipping_Packages.php'
+	),
+	'WC_REST_Connect_Packages_Controller_Test' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/tests/php/classes/legacy-api-controllers/WC_REST_Connect_Packages_Controller_Test.php'
 	),
 );

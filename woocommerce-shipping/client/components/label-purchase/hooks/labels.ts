@@ -12,6 +12,7 @@ import {
 	getPrintURL,
 	printDocument,
 	getLastOrderCompleted,
+	shouldAutomaticallyOpenPrintDialog,
 } from 'utils';
 import { labelPurchaseStore } from 'data/label-purchase';
 import { usePackageState } from './packages';
@@ -135,6 +136,7 @@ export function useLabelsState( {
 	const [ isUpdatingStatus, setIsUpdatingStatus ] = useState( false );
 	const [ isPrinting, setIsPrinting ] = useState( false );
 	const [ isRefunding, setIsRefunding ] = useState( false );
+
 	const [ labelStatusUpdateErrors, setLabelStatusUpdateErrors ] = useState<
 		string[]
 	>( [] );
@@ -148,6 +150,65 @@ export function useLabelsState( {
 			updateRates(); // Update rates so that the same shipment id is not used again
 		}
 	}, [ currentShipmentLabel, updateRates ] );
+
+	const printLabel = useCallback(
+		async ( isReprint = false ): Promise< void | LabelPurchaseError > => {
+			setIsPrinting( true );
+			const label =
+				select( labelPurchaseStore ).getPurchasedLabel(
+					currentShipmentId
+				);
+
+			if ( ! label ) {
+				return Promise.reject( {
+					cause: 'print_error',
+					message: [
+						__( 'No label to print.', 'woocommerce-shipping' ),
+					],
+				} );
+			}
+			const path = getPrintURL( selectedLabelSize.key, label.labelId );
+			try {
+				const pdfJson = await apiFetch< PDFJson >( {
+					path,
+					method: 'GET',
+				} );
+				await printDocument(
+					pdfJson,
+					getPDFFileName( order.id, isReprint )
+				);
+				// @ts-ignore // can't properly type the error message
+			} catch ( e: Error ) {
+				setIsPrinting( false );
+				return Promise.reject( {
+					cause: 'print_error',
+					message: [
+						__(
+							'Error printing label, try to print later.',
+							'woocommerce-shipping'
+						),
+						...( e.message ? [ e.message ] : [] ),
+					],
+				} );
+			}
+
+			setIsPrinting( false );
+			return Promise.resolve();
+		},
+		[ order, selectedLabelSize, setIsPrinting, currentShipmentId ]
+	);
+
+	/**
+	 * Print label if the setting is enabled
+	 */
+	const maybePrintLabel = useCallback(
+		( isReprint = false ) => {
+			if ( shouldAutomaticallyOpenPrintDialog() ) {
+				( async () => printLabel( isReprint ) )();
+			}
+		},
+		[ printLabel ]
+	);
 
 	const fetchLabelStatus = useCallback(
 		async (
@@ -218,10 +279,17 @@ export function useLabelsState( {
 					[ currentShipmentId ]: label,
 				} ) );
 				setIsUpdatingStatus( false );
+				maybePrintLabel();
 				return ( resolve ?? Promise.resolve )();
 			}
 		},
-		[ order.id, currentShipmentId, setLabels, maybeUpdateRates ]
+		[
+			order.id,
+			currentShipmentId,
+			setLabels,
+			maybeUpdateRates,
+			maybePrintLabel,
+		]
 	);
 
 	const requestLabelPurchase = useCallback(
@@ -312,53 +380,6 @@ export function useLabelsState( {
 			maybeApplyCustomsToPackage,
 			getCustomsState,
 		]
-	);
-
-	const printLabel = useCallback(
-		async ( isReprint = false ): Promise< void | LabelPurchaseError > => {
-			setIsPrinting( true );
-			const label =
-				select( labelPurchaseStore ).getPurchasedLabel(
-					currentShipmentId
-				);
-
-			if ( ! label ) {
-				return Promise.reject( {
-					cause: 'print_error',
-					message: [
-						__( 'No label to print.', 'woocommerce-shipping' ),
-					],
-				} );
-			}
-			const path = getPrintURL( selectedLabelSize.key, label.labelId );
-			try {
-				const pdfJson = await apiFetch< PDFJson >( {
-					path,
-					method: 'GET',
-				} );
-				await printDocument(
-					pdfJson,
-					getPDFFileName( order.id, isReprint )
-				);
-				// @ts-ignore // can't properly type the error message
-			} catch ( e: Error ) {
-				setIsPrinting( false );
-				return Promise.reject( {
-					cause: 'print_error',
-					message: [
-						__(
-							'Error printing label, try to print later.',
-							'woocommerce-shipping'
-						),
-						...( e.message ? [ e.message ] : [] ),
-					],
-				} );
-			}
-
-			setIsPrinting( false );
-			return Promise.resolve();
-		},
-		[ order, selectedLabelSize, setIsPrinting, currentShipmentId ]
 	);
 
 	const hasPurchasedLabel = useCallback(

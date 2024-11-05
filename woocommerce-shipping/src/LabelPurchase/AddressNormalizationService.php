@@ -192,7 +192,7 @@ class AddressNormalizationService {
 			// If there is a general error message, use that.
 			if ( isset( $response->field_errors->general ) ) {
 				$error_message = $response->field_errors->general;
-			// If there is an address error message, use that.
+				// If there is an address error message, use that.
 			} elseif ( isset( $response->field_errors->address ) ) {
 				$error_message = $response->field_errors->address;
 			}

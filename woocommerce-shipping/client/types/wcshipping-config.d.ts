@@ -1,56 +1,25 @@
-import {
-	CustomPackageResponse,
-	LocationResponse,
-	ResponseLabel,
-} from './connect-server';
+import { CustomPackageResponse, LocationResponse, ResponseLabel } from './connect-server';
 import { StoreOptions } from './store-options';
 import { Order } from './order';
 import { HazmatState } from './hazmat-state';
 import { Continent } from './continent';
-import { Destination } from './destination';
 import { SelectedRates } from './selected-rates';
 import { SelectedOrigin } from './selected-origin';
 import { SelectedDestination } from './selected-destination';
 import { CustomsState } from './customs-state';
-import { Carrier } from './carrier';
-import { OriginAddress } from './origin-address';
 import { Constants } from './constants';
 import { ShipmentRecord } from './helpers';
+import { UserMeta } from './user-meta';
+import { PurchaseSettings } from './purchase-settings';
+import { PurchaseMeta } from './purchase-meta';
 
 // Todo: Gradually improve this type definition.
 export interface WCShippingConfig {
 	order: Order;
 	accountSettings: {
-		purchaseSettings: {
-			email_receipts: boolean;
-			enabled: boolean;
-			paper_size: string;
-			selected_payment_method_id: number;
-			use_last_package: boolean;
-			use_last_service: boolean;
-		};
-		purchaseMeta: {
-			can_edit_settings: boolean;
-			can_manage_payments: boolean;
-			master_user_email: string;
-			master_user_login: string;
-			master_user_name: string;
-			master_user_wpcom_login: string;
-			add_payment_method_url: string;
-			payment_methods: Array< {
-				card_digits: string;
-				card_type: string;
-				expiry: string;
-				name: string;
-				payment_method_id: number;
-			} >;
-		};
-		userMeta: {
-			last_box_id: string;
-			last_carrier_id: Carrier;
-			last_service_id: string;
-			last_order_completed: boolean;
-		};
+		purchaseSettings: PurchaseSettings;
+		purchaseMeta: PurchaseMeta;
+		userMeta: UserMeta;
 		storeOptions: StoreOptions;
 	};
 	context: string;

@@ -16,3 +16,12 @@ export const emptyOriginAddress: OriginAddress = {
 	defaultAddress: false,
 	isVerified: false,
 };
+
+export const SETTINGS_KEYS = {
+	PAPER_SIZE: 'paper_size',
+	EMAIL_RECEIPTS: 'email_receipts',
+	USE_LAST_SERVICE: 'use_last_service',
+	USE_LAST_PACKAGE: 'use_last_package',
+	CHECKOUT_ADDRESS_VALIDATION: 'checkout_address_validation',
+	AUTOMATICALLY_OPEN_PRINT_DIALOG: 'automatically_open_print_dialog',
+} as const;

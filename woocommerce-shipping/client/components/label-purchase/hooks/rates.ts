@@ -2,7 +2,13 @@ import { mapValues } from 'lodash';
 import { useCallback, useState } from '@wordpress/element';
 import { dispatch, select, useSelect } from '@wordpress/data';
 import { __, sprintf } from '@wordpress/i18n';
-import { CustomPackage, Package, Rate, RequestPackage } from 'types';
+import {
+	CustomPackage,
+	Package,
+	Rate,
+	RequestPackage,
+	WPErrorRESTResponse,
+} from 'types';
 import { getAccountSettings, getCurrentOrder } from 'utils';
 import { labelPurchaseStore } from 'data/label-purchase';
 import { CUSTOM_BOX_ID_PREFIX, PACKAGE_TYPES } from '../packages';
@@ -11,7 +17,6 @@ import { useHazmatState } from './hazmat';
 import { useCustomsState } from './customs';
 import { useShipmentState } from './shipment';
 import { RATES_FETCH_FAILED } from 'data/label-purchase/action-types';
-import { WPErrorRESTResponse } from 'types';
 
 interface UseRatesStateProps {
 	currentShipmentId: string;
@@ -186,10 +191,12 @@ export function useRatesState( {
 	 * to remove the current selection.
 	 */
 	const removeSelectedRate = useCallback( () => {
-		selectRates( {
-			...selectedRates,
-			[ currentShipmentId ]: null,
-		} );
+		if ( selectedRates[ currentShipmentId ] ) {
+			selectRates( {
+				...selectedRates,
+				[ currentShipmentId ]: null,
+			} );
+		}
 	}, [ currentShipmentId, selectedRates ] );
 
 	const preselectRateBasedOnLastSelections = useCallback( () => {
@@ -209,6 +216,15 @@ export function useRatesState( {
 			);
 
 			if ( selectableRate ) {
+				// Move the preselected rate to the first index
+				const updatedRates = [
+					selectableRate,
+					...ratesForService.filter(
+						( rate ) => rate !== selectableRate
+					),
+				];
+				rates[ last_carrier_id ] = updatedRates;
+
 				selectRate( selectableRate );
 			}
 		}
@@ -298,8 +314,8 @@ export function useRatesState( {
 			errors,
 			currentShipmentId,
 			totalWeight,
-			applyHazmatToPackage,
 			maybeApplyCustomsToPackage,
+			applyHazmatToPackage,
 			getShipmentOrigin,
 			preselectRateBasedOnLastSelections,
 		]

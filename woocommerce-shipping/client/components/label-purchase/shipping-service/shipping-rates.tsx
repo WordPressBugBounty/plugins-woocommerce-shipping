@@ -148,6 +148,27 @@ export const ShippingRates = ( {
 		}
 	}, [ essentialDetailsFocusArea, shipments ] );
 
+	/**
+	 * Sort Rates when filter dropdown is used.
+	 * @param rates
+	 * @return Sorted rates
+	 */
+	const sortRates = ( rates: Rate[] ) => {
+		const sortedRates = sortBy( rates, sortingBy );
+
+		// Always put MediaMail at the bottom of the list.
+		const mediaMailRate = sortedRates.find(
+			( rate ) => rate.serviceId === 'MediaMail'
+		);
+		if ( mediaMailRate ) {
+			const filteredRates = sortedRates.filter(
+				( rate ) => rate.serviceId !== 'MediaMail'
+			);
+			return [ ...filteredRates, mediaMailRate ];
+		}
+		return sortedRates;
+	};
+
 	return (
 		<Flex
 			className={ clsx( 'shipping-rates', className ) }
@@ -179,10 +200,9 @@ export const ShippingRates = ( {
 					} }
 					children={ ( { name: carrierId } ) => (
 						<CarrierRates
-							rates={ sortBy(
+							rates={ sortRates(
 								availableRates[ carrierId as Carrier ] ||
-									Object.values( availableRates ).flat(),
-								sortingBy
+									Object.values( availableRates ).flat()
 							) }
 						/>
 					) }
