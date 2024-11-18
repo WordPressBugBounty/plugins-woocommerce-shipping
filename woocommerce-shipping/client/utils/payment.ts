@@ -22,3 +22,9 @@ export const getAddPaymentMethodURL = (
 		accountSettings,
 	}: Pick< WCShippingConfig, 'accountSettings' > = getConfig()
 ) => accountSettings.purchaseMeta.add_payment_method_url;
+
+export const canManagePayments = (
+	{
+		accountSettings,
+	}: Pick< WCShippingConfig, 'accountSettings' > = getConfig()
+) => accountSettings.purchaseMeta.can_manage_payments;

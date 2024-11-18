@@ -6,7 +6,7 @@ import { ExperimentalOrderShippingPackages } from '@woocommerce/blocks-checkout'
 
 // Internal dependencies.
 import { AddressValidationNotices } from 'components/checkout';
-import { initSentry } from 'utils';
+import { initSentry } from 'utils/sentry';
 
 initSentry();
 

@@ -62,7 +62,7 @@ class PackagesAsArraysSanitizer {
 	 * @return array{
 	 *     id: string,
 	 *     name: string,
-	 *     inner_dimensions: string,
+	 *     dimensions: string,
 	 *     box_weight: float,
 	 *     max_weight: float,
 	 *     is_letter: bool,
@@ -72,6 +72,29 @@ class PackagesAsArraysSanitizer {
 	public function to_packages_as_wcst_arrays(): array {
 		return array_map(
 			fn( Package $package ) => $package->to_wcst_array(),
+			$this->packages
+		);
+	}
+
+
+	/**
+	 * Return an array of packages as arrays after sanitizing to new API format.
+	 *
+	 * @return array{
+	 *     id: string,
+	 *     name: string,
+	 *     dimensions: string,
+	 *     length: float,
+	 *     width: float,
+	 *     height: float,
+	 *     box_weight: float,
+	 *     is_letter: bool,
+	 *     is_user_defined: bool
+	 * }[]
+	 */
+	public function to_packages_as_api_arrays(): array {
+		return array_map(
+			fn( Package $package ) => $package->to_api_array(),
 			$this->packages
 		);
 	}

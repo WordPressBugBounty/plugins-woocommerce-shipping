@@ -40,6 +40,8 @@ export const useSettings = () => {
 		master_user_name: storeOwnerUsername,
 		master_user_login: storeOwnerLogin,
 		master_user_email: storeOwnerEmail,
+		master_user_wpcom_login: storeOwnerWpcomLogin,
+		can_manage_payments: canManagePayments,
 	} = useSelect( ( select ) => {
 		const settings = select( settingsStore ).getConfigMeta();
 		if ( ! settings ) {
@@ -48,12 +50,16 @@ export const useSettings = () => {
 				master_user_name: '',
 				master_user_login: '',
 				master_user_email: '',
+				master_user_wpcom_login: '',
+				can_manage_payments: false,
 			};
 		}
 		return {
 			master_user_name: settings.master_user_name ?? '',
 			master_user_login: settings.master_user_login ?? '',
 			master_user_email: settings.master_user_email ?? '',
+			master_user_wpcom_login: settings.master_user_wpcom_login ?? '',
+			can_manage_payments: settings.can_manage_payments ?? false,
 		};
 	} );
 
@@ -67,6 +73,8 @@ export const useSettings = () => {
 		storeOwnerUsername,
 		storeOwnerLogin,
 		storeOwnerEmail,
+		storeOwnerWpcomLogin,
 		automaticallyOpenPrintDialog,
+		canManagePayments,
 	};
 };

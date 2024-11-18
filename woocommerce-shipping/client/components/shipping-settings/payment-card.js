@@ -1,9 +1,10 @@
 import React from 'react';
 import { ExternalLink, Notice, RadioControl } from '@wordpress/components';
 import { dispatch, useSelect } from '@wordpress/data';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import PaymentMethod from './payment-method';
 import { settingsStore } from 'data/settings';
+import { useSettings } from 'data/settings/hooks';
 import { createInterpolateElement } from '@wordpress/element';
 
 const PaymentCard = () => {
@@ -32,6 +33,9 @@ const PaymentCard = () => {
 		return storeSelectedPaymentMethodId?.toString();
 	} );
 
+	const { storeOwnerUsername, storeOwnerEmail, canManagePayments } =
+		useSettings();
+
 	const updateFormData = async ( formInputKey, formInputvalue ) => {
 		await dispatch( settingsStore ).updateFormData(
 			formInputKey,
@@ -43,6 +47,25 @@ const PaymentCard = () => {
 		// Store expects payment method ID to be int, to match the API.
 		updateFormData( 'selected_payment_method_id', parseInt( value, 10 ) );
 	};
+
+	if ( ! canManagePayments ) {
+		return (
+			<>
+				<h4>{ __( 'Payment', 'woocommerce-shipping' ) }</h4>
+				<Notice status="warning" isDismissible={ false }>
+					{ sprintf(
+						// translators: %1$s is the store owner's username, %2$s is the store owner's email address.
+						__(
+							'You do not have permission to manage shipping label payment methods, please contact your store administrator: %1$s (%2$s), to manage payment methods.',
+							'woocommerce-shipping'
+						),
+						storeOwnerUsername,
+						storeOwnerEmail
+					) }
+				</Notice>
+			</>
+		);
+	}
 
 	if ( paymentMethods.length === 0 ) {
 		return (

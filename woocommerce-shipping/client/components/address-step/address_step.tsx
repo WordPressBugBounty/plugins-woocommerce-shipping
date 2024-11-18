@@ -19,6 +19,7 @@ import {
 	validatePhone,
 	validatePostalCode,
 	validateRequiredFields,
+	validateEmojiString,
 } from 'utils';
 import { AddressContextProvider } from './context';
 import { ADDRESS_TYPES } from 'data/constants';
@@ -90,6 +91,7 @@ export const AddressStep = withBoundary(
 				.map( validateCountryAndState )
 				.map( validateEmail )
 				.map( validatePostalCode )
+				.map( validateEmojiString )
 				.map( ( validatable ) => {
 					if ( type === ADDRESS_TYPES.DESTINATION && originCountry ) {
 						return validateDestinationPhone( originCountry )(

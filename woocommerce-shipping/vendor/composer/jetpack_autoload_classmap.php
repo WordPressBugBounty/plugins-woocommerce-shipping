@@ -270,6 +270,18 @@ return array(
 		'version' => '2.12.3.0',
 		'path'    => $vendorDir . '/automattic/jetpack-connection/src/class-tracking.php'
 	),
+	'Automattic\\WCShipping\\Analytics\\LabelsService' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/src/Analytics/LabelsService.php'
+	),
+	'Automattic\\WCShipping\\Analytics\\ShippingLabel' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/src/Analytics/ShippingLabel.php'
+	),
+	'Automattic\\WCShipping\\Analytics\\ShippingLabelRESTController' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/src/Analytics/ShippingLabelRESTController.php'
+	),
 	'Automattic\\WCShipping\\Autoloader' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/src/Autoloader.php'
@@ -477,6 +489,14 @@ return array(
 	'Automattic\\WCShipping\\StoreApi\\StoreApiExtensionController' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/src/StoreApi/StoreApiExtensionController.php'
+	),
+	'Automattic\\WCShipping\\Tests\\Analytics\\LabelsServiceTest' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/tests/php/Analytics/LabelsServiceTest.php'
+	),
+	'Automattic\\WCShipping\\Tests\\Analytics\\ShippingLabelRESTControllerTest' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/tests/php/Analytics/ShippingLabelRESTControllerTest.php'
 	),
 	'Automattic\\WCShipping\\Tests\\AssetsRESTControllerTest' => array(
 		'version' => 'dev-trunk',

@@ -44,3 +44,5 @@ export const getWPCOMConnectionPath = () => `${ NAMESPACE }/wpcom-connection`;
 
 export const getDeleteCustomPackagesPath = ( id: string ) =>
 	`${ NAMESPACE }/packages/${ id }`;
+
+export const getLabelsReportPath = () => `${ NAMESPACE }/reports/labels`;

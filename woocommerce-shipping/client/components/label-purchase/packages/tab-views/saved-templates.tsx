@@ -28,7 +28,7 @@ import { withBoundary } from 'components/HOC/error-boundary';
 import { usePackageState } from '../../hooks';
 import { ConfirmPackageDeletion } from './saved-templates/confirm-package-deletion';
 import { DELETION_EVENTS, trackPackageDeletion } from '../utils';
-
+import { PACKAGE_TYPES } from '../constants';
 interface SavedTemplatesProps {
 	savedPackages: Package[] | CustomPackage[];
 	selectedPackage:
@@ -174,7 +174,9 @@ export const SavedTemplates = withBoundary(
 					const selectedPackageForTracks = getPackageForRequest();
 					const tracksProperties = {
 						package_id: selectedPackageForTracks?.id,
-						is_letter: selectedPackageForTracks?.isLetter,
+						is_letter:
+							selectedPackageForTracks?.type ===
+							PACKAGE_TYPES.ENVELOPE,
 						width: selectedPackageForTracks?.width,
 						height: selectedPackageForTracks?.height,
 						length: selectedPackageForTracks?.length,

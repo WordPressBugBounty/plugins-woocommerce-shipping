@@ -84,6 +84,10 @@ use Automattic\WCShipping\StoreApi\StoreApiExtensionController;
 use Automattic\WCShipping\Utils as WCShippingUtils;
 use Automattic\WCShipping\WPCOMConnection\WPCOMConnectionRESTController;
 use Automattic\WCShipping\WCShippingRESTController;
+use Automattic\WCShipping\Analytics\ShippingLabel;
+use Automattic\WCShipping\Analytics\ShippingLabelRESTController;
+use Automattic\WCShipping\Analytics\LabelsService;
+
 use Exception;
 use WC_Connect_API_Client_Local_Test_Mock;
 use WC_Data_Store;
@@ -1101,6 +1105,7 @@ class Loader {
 		WooCommerceShipmentTracking::init();
 
 		if ( is_admin() ) {
+			$this->init_analytics();
 			$this->load_admin_dependencies();
 		}
 	}
@@ -1291,6 +1296,9 @@ class Loader {
 
 		// Ensure all shipping endpoints are not cached.
 		WCShippingRESTController::prevent_route_caching();
+
+		$labels_service = new LabelsService();
+		( new ShippingLabelRESTController( $labels_service ) )->register_routes();
 	}
 
 	/**
@@ -1779,6 +1787,7 @@ class Loader {
 				'woocommerce-shipping-onboarding',
 				'woocommerce-shipping-create-shipping-label',
 				'woocommerce-shipping-shipment-tracking',
+				'woocommerce-shipping-analytics',
 			);
 			$deps_file_path = plugin_dir_path( __FILE__ ) . "dist/$root_view.asset.php";
 			if ( in_array( $root_view, $allowed_views ) && file_exists( $deps_file_path ) ) {
@@ -1796,11 +1805,16 @@ class Loader {
 			$asset_version
 		);
 
+		// We always need wp-element as a dependency for the entry point scripts.
+		$deps = isset( $dependencies['dependencies'] )
+		? array_merge( $dependencies['dependencies'], array( 'wp-element' ) )
+		: array( 'wp-element' );
+
 		// Enqueue the entry point script.
 		wp_enqueue_script(
 			$root_view,
 			$this->wc_connect_base_url . "$root_view.js",
-			$dependencies['dependencies'] ?? array(),
+			$deps,
 			$asset_version,
 			array(
 				'in_footer' => true,
@@ -2058,6 +2072,12 @@ class Loader {
 				default:
 					return;
 			}
+		}
+	}
+
+	public function init_analytics() {
+		if ( is_admin() && current_user_can( 'manage_woocommerce' ) ) {
+			( new ShippingLabel() )->init();
 		}
 	}
 }

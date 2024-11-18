@@ -86,7 +86,7 @@ class MigrationController {
 			);
 		} elseif ( $batch_processor->is_enqueued( get_class( $this->label_migrator ) ) ) {
 			$tools['wcshipping_stop_migrating_label_data'] = array(
-				'name'     => __( 'Stop migration WooCommerce Shipping labels', 'woocommerce-shipping' ),
+				'name'     => __( 'Stop migrating WooCommerce Shipping labels', 'woocommerce-shipping' ),
 				'button'   => __( 'Stop migration', 'woocommerce-shipping' ),
 				'desc'     =>
 					sprintf(

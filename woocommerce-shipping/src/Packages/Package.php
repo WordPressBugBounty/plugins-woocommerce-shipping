@@ -10,6 +10,9 @@ class Package {
 	private string $id;
 	private string $name;
 	private string $dimensions;
+	private float $length;
+	private float $width;
+	private float $height;
 	private float $box_weight;
 	private float $max_weight;
 	private string $type;
@@ -45,6 +48,7 @@ class Package {
 		$this->max_weight = $max_weight;
 		$this->set_or_generate_id( $id );
 		$this->validate();
+		$this->set_length_width_height_from_dimensions( $dimensions );
 	}
 
 	/**
@@ -100,6 +104,21 @@ class Package {
 			'max_weight'       => $this->max_weight,
 			'is_letter'        => self::TYPE_ENVELOPE === $this->type,
 			'is_user_defined'  => $this->is_user_defined,
+		);
+	}
+
+	public function to_api_array(): array {
+		return array(
+			'id'              => $this->id,
+			'name'            => $this->name,
+			'dimensions'      => $this->dimensions,
+			'length'          => $this->length,
+			'width'           => $this->width,
+			'height'          => $this->height,
+			'box_weight'      => $this->box_weight,
+			'is_letter'       => self::TYPE_ENVELOPE === $this->type,
+			'is_user_defined' => $this->is_user_defined,
+			'type'            => $this->type,
 		);
 	}
 
@@ -207,5 +226,35 @@ class Package {
 				throw new PackageValidationException( "Key $numeric_key must be a number" );
 			}
 		}
+	}
+
+	/**
+	 * Convert dimensions from "LxWxH" to "length", "width", "height".
+	 *
+	 * @param string $dimensions The dimensions string in the format "LxWxH".
+	 *
+	 * @return array{length: string, width: string, height: string}
+	 */
+	private function dimensions_to_length_width_height( string $dimensions ): array {
+		list( $length, $width, $height ) = explode( 'x', $dimensions );
+		return array(
+			'length' => trim( $length ),
+			'width'  => trim( $width ),
+			'height' => trim( $height ),
+		);
+	}
+
+	/**
+	 * Set the length, width, and height from the dimensions.
+	 *
+	 * @param string $dimensions The dimensions string in the format "LxWxH".
+	 *
+	 * @return void
+	 */
+	private function set_length_width_height_from_dimensions( string $dimensions ) {
+		$dimensions_array = $this->dimensions_to_length_width_height( $dimensions );
+		$this->length     = (float) $dimensions_array['length'];
+		$this->width      = (float) $dimensions_array['width'];
+		$this->height     = (float) $dimensions_array['height'];
 	}
 }

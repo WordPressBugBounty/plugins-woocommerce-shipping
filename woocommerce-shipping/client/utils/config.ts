@@ -1,6 +1,7 @@
-import { WCShippingConfig } from 'types';
+import { WCShippingAnalyticsConfig, WCShippingConfig } from 'types';
 
-export const getConfig = (): WCShippingConfig => window.WCShipping_Config || {};
+export const getConfig = (): WCShippingConfig =>
+	( window.WCShipping_Config || {} ) as WCShippingConfig;
 
 export const getWeightUnit = () => {
 	return getConfig().shippingLabelData.storeOptions.weight_unit;
@@ -37,3 +38,7 @@ export const getPluginRelativeDirectory = ( forWooCommerce = false ) =>
 export const shouldAutomaticallyOpenPrintDialog = ( config = getConfig() ) =>
 	getAccountSettings( config ).purchaseSettings
 		.automatically_open_print_dialog;
+
+// Only set on Analytics page
+export const getAnalyticsConfig = () =>
+	window.WCShipping_Config as WCShippingAnalyticsConfig;

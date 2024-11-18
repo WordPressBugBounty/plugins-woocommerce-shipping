@@ -2,7 +2,6 @@
 
 namespace Automattic\WCShipping;
 
-use Automattic\Jetpack\Connection\Rest_Authentication;
 use Automattic\WCShipping\Exceptions\RESTRequestException;
 use WC_REST_Controller;
 use WP_REST_Request;
@@ -92,10 +91,10 @@ abstract class WCShippingRESTController extends WC_REST_Controller {
 	 * @return bool
 	 */
 	public function ensure_rest_permission( $request ) {
-		return (
-				wp_verify_nonce( $request->get_header( 'x_wp_nonce' ), 'wp_rest' )
-				|| Rest_Authentication::init()->wp_rest_authenticate( false )
-			) && apply_filters( 'wcshipping_user_can_manage_labels', current_user_can( 'manage_woocommerce' ) || current_user_can( 'wcshipping_manage_labels' ) );
+		return apply_filters(
+			'wcshipping_user_can_manage_labels',
+			current_user_can( 'manage_woocommerce' ) || current_user_can( 'wcshipping_manage_labels' )
+		);
 	}
 
 	/**

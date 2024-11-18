@@ -172,3 +172,60 @@ export const validateEmail = ( {
 
 	return createValidationResult( values, errors, localErrors );
 };
+
+const hasInvalidChar = ( text: string ) => {
+	// Convert to string to ensure we're working with a string.
+	const textStr = String( text );
+
+	// Array of regex patterns to test.
+	const patterns = [
+		/:([^\s:]+):/gi, // Emoji pattern like :smile:.
+		/\p{Extended_Pictographic}/gu, // Unicode emojis.
+	];
+
+	// Loop through each pattern and return true if any match is found.
+	for ( const pattern of patterns ) {
+		if ( pattern.test( textStr ) ) {
+			return true;
+		}
+	}
+
+	// Return false if no pattern matches.
+	return false;
+};
+
+export const validateEmojiString = ( {
+	values,
+	errors,
+}: AddressValidationInput ): AddressValidationInput => {
+	const localErrors = createLocalErrors();
+
+	const errorMessages: Partial< {
+		[ K in keyof AddressValidationInput[ 'errors' ] ]: string;
+	} > = {
+		address: __(
+			'Address contains invalid characters.',
+			'woocommerce-shipping'
+		),
+		city: __( 'City contains invalid characters.', 'woocommerce-shipping' ),
+		postcode: __(
+			'Postal code contains invalid characters.',
+			'woocommerce-shipping'
+		),
+		state: __(
+			'State contains invalid characters.',
+			'woocommerce-shipping'
+		),
+	};
+
+	Object.entries( values ).forEach( ( [ key, value ] ) => {
+		const errorMessage =
+			errorMessages[ key as keyof AddressValidationInput[ 'errors' ] ];
+		if ( hasInvalidChar( value ) && errorMessage ) {
+			localErrors[ key as keyof AddressValidationInput[ 'errors' ] ] =
+				errorMessage;
+		}
+	} );
+
+	return createValidationResult( values, errors, localErrors );
+};

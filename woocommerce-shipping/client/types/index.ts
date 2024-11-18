@@ -2,10 +2,11 @@ import { WCTracks } from './wc-tracks.d';
 import { WCShippingConfig } from './wcshipping-config.d';
 import { WCShippingSettings } from './wcshipping-settings.d';
 import { WC } from './wc.d';
+import { WCShippingAnalyticsConfig } from './wcshipping-analytics-config.d';
 
 declare global {
 	interface Window {
-		WCShipping_Config: WCShippingConfig;
+		WCShipping_Config: WCShippingConfig | WCShippingAnalyticsConfig;
 		MSStream: unknown;
 		wcTracks: WCTracks;
 		wcShippingSettings: WCShippingSettings;
@@ -55,3 +56,7 @@ export * from './purchase-meta.d';
 export * from './purchase-settings.d';
 export * from './wcshipping-settings-config.d';
 export * from './weight-unit.d';
+export * from './report-label.d';
+export * from './report-response.d';
+export * from './report-query.d';
+export * from './wcshipping-analytics-config.d';

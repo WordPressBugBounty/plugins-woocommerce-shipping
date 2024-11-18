@@ -7,7 +7,7 @@ Requires at least: 6.5
 Tested up to: 6.7
 WC requires at least: 9.1
 WC tested up to: 9.3
-Stable tag: 1.2.2
+Stable tag: 1.2.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -126,6 +126,14 @@ Absolutely! You can read our Terms of Service [here](https://wordpress.com/tos).
 5. WooCommerce Shipping address validation at checkout suggestion.
 
 == Changelog ==
+
+= 1.2.3 - 2024-11-18 =
+* Add   - Only wp.com account owner can manage payment methods.
+* Add   - Emoji validation on shipping address.
+* Add   - Label reporting under WooCommerce -> Analytics.
+* Add   - GET method for `/package` API endpoint.
+* Fix   - Issue where legacy labels were not being migrated if the order had WC Shipping labels.
+* Fix   - “Rate not found: First” error by ensuring the package type is correctly set at the time of label purchase.
 
 = 1.2.2 - 2024-11-05 =
 * Add   - Option to automatically print a label once the label is successfully purchased.

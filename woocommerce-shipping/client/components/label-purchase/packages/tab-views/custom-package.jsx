@@ -219,7 +219,7 @@ export const CustomPackage = withBoundary(
 		const getRates = useCallback( async () => {
 			const tracksProperties = {
 				package_id: rawPackageData?.id,
-				is_letter: rawPackageData?.isLetter,
+				is_letter: rawPackageData?.type === PACKAGE_TYPES.ENVELOPE,
 				width: rawPackageData?.width,
 				height: rawPackageData?.height,
 				length: rawPackageData?.length,

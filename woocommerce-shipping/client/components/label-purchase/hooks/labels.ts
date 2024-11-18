@@ -19,6 +19,7 @@ import { usePackageState } from './packages';
 import { useShipmentState } from './shipment';
 import { useRatesState } from './rates';
 import { TIME_TO_WAIT_TO_CHECK_PURCHASED_LABEL_STATUS_MS } from '../constants';
+import { PACKAGE_TYPES } from '../packages/constants';
 import { getPaperSizes } from '../label';
 import { useHazmatState } from './hazmat';
 import { useCustomsState } from './customs';
@@ -302,7 +303,10 @@ export function useLabelsState( {
 
 			setIsPurchasing( true );
 			setLabelStatusUpdateErrors( [] );
-			const { id: box_id, isLetter, length, width, height } = pkg;
+			const { id: box_id, length, width, height } = pkg;
+			const isLetter = pkg.isUserDefined
+				? pkg.type === PACKAGE_TYPES.ENVELOPE
+				: pkg.isLetter;
 
 			const {
 				serviceId,

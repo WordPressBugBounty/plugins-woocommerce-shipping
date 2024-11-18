@@ -21,6 +21,7 @@ import {
 	hasPaymentMethod,
 	hasSelectedPaymentMethod,
 	getAddPaymentMethodURL,
+	canManagePayments as canManagePaymentsUtil,
 } from 'utils';
 import { CreditCardButton } from './credit-card-button';
 import { settingsPageUrl } from '../constants';
@@ -63,6 +64,7 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 	const [ markOrderAsCompleted, setMarkOrderAsCompleted ] =
 		useState( lastOrderCompleted );
 	const orderStatus = select( labelPurchaseStore ).getOrderStatus();
+	const canManagePayments = canManagePaymentsUtil( { accountSettings } );
 
 	const isOrderCompleted = useMemo( () => {
 		return order.status === 'completed' || orderStatus === 'completed';
@@ -297,25 +299,52 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 					</>
 				) }
 				{ ! hasPaymentMethod( { accountSettings } ) && (
-					<CreditCardButton
-						url={ getAddPaymentMethodURL() }
-						buttonLabel={ __(
-							'Add credit card',
-							'woocommerce-shipping'
+					<>
+						{ canManagePayments ? (
+							<CreditCardButton
+								url={ getAddPaymentMethodURL() }
+								buttonLabel={ __(
+									'Add credit card',
+									'woocommerce-shipping'
+								) }
+								buttonDescription={ addCardButtonDescription }
+							/>
+						) : (
+							<Notice status="warning" isDismissible={ false }>
+								{ __(
+									'Please contact your site administrator to add a payment method.',
+									'woocommerce-shipping'
+								) }
+							</Notice>
 						) }
-						buttonDescription={ addCardButtonDescription }
-					/>
+					</>
 				) }
 				{ hasPaymentMethod( { accountSettings } ) &&
 					! hasSelectedPaymentMethod( { accountSettings } ) && (
-						<CreditCardButton
-							url={ settingsPageUrl }
-							buttonLabel={ __(
-								'Choose credit card',
-								'woocommerce-shipping'
+						<>
+							{ canManagePayments ? (
+								<CreditCardButton
+									url={ settingsPageUrl }
+									buttonLabel={ __(
+										'Choose credit card',
+										'woocommerce-shipping'
+									) }
+									buttonDescription={
+										chooseCardButtonDescription
+									}
+								/>
+							) : (
+								<Notice
+									status="warning"
+									isDismissible={ false }
+								>
+									{ __(
+										'Please contact your site administrator to set a default payment method.',
+										'woocommerce-shipping'
+									) }
+								</Notice>
 							) }
-							buttonDescription={ chooseCardButtonDescription }
-						/>
+						</>
 					) }
 			</Flex>
 			<Spacer />

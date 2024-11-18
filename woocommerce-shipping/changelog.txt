@@ -1,5 +1,13 @@
 *** WooCommerce Shipping Changelog ***
 
+= 1.2.3 - 2024-11-18 =
+* Add   - Only wp.com account owner can manage payment methods.
+* Add   - Emoji validation on shipping address.
+* Add   - Label reporting under WooCommerce -> Analytics.
+* Add   - GET method for `/package` API endpoint.
+* Fix   - Issue where legacy labels were not being migrated if the order had WC Shipping labels.
+* Fix   - “Rate not found: First” error by ensuring the package type is correctly set at the time of label purchase.
+
 = 1.2.2 - 2024-11-05 =
 * Add   - Option to automatically print a label once the label is successfully purchased.
 * Add   - Option to allow users to change the unit of the total shipment weight.
@@ -9,7 +17,6 @@
 * Tweak - Move last purchased rate that is pre-selected to the top of the rates list.
 * Fix   - Added missing separator for zip code in the checkout address verification.
 * Fix   - Issue with legacy API endpoint for custom packages to ensure correct data output.
-* Fix   - Issue where switching between package tabs would not reset the selected rate.
 
 = 1.2.1 - 2024-10-17 =
 * Fix   - Issue with excessive rendering of the shipping label success view.

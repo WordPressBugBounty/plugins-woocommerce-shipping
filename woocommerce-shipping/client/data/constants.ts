@@ -3,6 +3,7 @@ export const LABEL_PURCHASE_STORE_NAME = 'wcshipping/label-purchase';
 export const SETTINGS_STORE_NAME = 'wcshipping/settings';
 export const ADDRESS_STORE_NAME = 'wcshipping/address';
 export const WPCOM_CONNECTION_STORE_NAME = 'wcshipping/wpcom-connection';
+export const ANALYTICS_STORE_NAME = 'wcshipping/analytics';
 export const NAMESPACE = '/wcshipping/v1';
 export const WC_NAMESPACE = '/wc/v3';
 export const LABEL_RATE_TYPE = {

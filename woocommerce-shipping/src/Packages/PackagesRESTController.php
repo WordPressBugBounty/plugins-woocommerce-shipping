@@ -33,6 +33,18 @@ class PackagesRESTController extends WCShippingRESTController {
 			'/' . $this->rest_base,
 			array(
 				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get' ),
+					'permission_callback' => array( $this, 'ensure_rest_permission' ),
+				),
+			)
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base,
+			array(
+				array(
 					'methods'             => WP_REST_Server::CREATABLE,
 					'callback'            => array( $this, 'post' ),
 					'permission_callback' => array( $this, 'ensure_rest_permission' ),
@@ -61,6 +73,30 @@ class PackagesRESTController extends WCShippingRESTController {
 					'methods'             => WP_REST_Server::DELETABLE,
 					'callback'            => array( $this, 'delete' ),
 					'permission_callback' => array( $this, 'ensure_rest_permission' ),
+				),
+			)
+		);
+	}
+
+	/**
+	 * Get the package settings.
+	 *
+	 * @return WP_Error|WP_REST_Response
+	 */
+	public function get() {
+		$package_settings   = $this->package_settings->get();
+		$packages_as_arrays = ( new PackagesAsArraysSanitizer( $package_settings['formData']['custom'], false ) )->to_packages_as_api_arrays();
+
+		return rest_ensure_response(
+			array(
+				'success'      => true,
+				'storeOptions' => $package_settings['storeOptions'],
+				'packages'     => array(
+					'saved'      => array(
+						'custom'     => $packages_as_arrays,
+						'predefined' => $package_settings['formData']['predefined'],
+					),
+					'predefined' => $package_settings['formSchema']['predefined'],
 				),
 			)
 		);

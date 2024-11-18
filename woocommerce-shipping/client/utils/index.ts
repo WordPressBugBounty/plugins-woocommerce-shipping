@@ -19,3 +19,4 @@ export * from './error-boundary';
 export * from './tracks';
 export * from './address';
 export * from './weight';
+export * from './analytics';

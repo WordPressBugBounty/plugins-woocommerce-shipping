@@ -2,14 +2,14 @@
 # This file is distributed under the GPL v2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: WooCommerce Shipping 1.2.2\n"
+"Project-Id-Version: WooCommerce Shipping 1.2.3\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/woocommerce-shipping\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2024-11-05T10:25:50+00:00\n"
+"POT-Creation-Date: 2024-11-18T13:44:20+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.11.0\n"
 "X-Domain: woocommerce-shipping\n"
@@ -132,7 +132,7 @@ msgid "<strong>\"%2$s\" is missing weight, length, width, or height.</strong><br
 msgstr ""
 
 #: classes/class-wc-connect-error-notice.php:102
-#: src/Loader.php:1870
+#: src/Loader.php:1884
 msgid "Dismiss this notice"
 msgstr ""
 
@@ -189,7 +189,7 @@ msgstr ""
 
 #: classes/class-wc-connect-help-view.php:248
 #: classes/class-wc-connect-settings-pages.php:45
-#: src/Loader.php:811
+#: src/Loader.php:815
 #: src/Onboarding/SettingsPage.php:73
 msgctxt "The WooCommerce Shipping brandname"
 msgid "WooCommerce Shipping"
@@ -337,12 +337,12 @@ msgid "Unable to update settings. %s"
 msgstr ""
 
 #: classes/legacy-api-controllers/class-wc-rest-connect-packages-controller.php:98
-#: src/Packages/PackagesRESTController.php:123
+#: src/Packages/PackagesRESTController.php:159
 msgid "The new custom package names are not unique."
 msgstr ""
 
 #: classes/legacy-api-controllers/class-wc-rest-connect-packages-controller.php:112
-#: src/Packages/PackagesRESTController.php:137
+#: src/Packages/PackagesRESTController.php:173
 msgid "At least one of the new custom packages has the same name as existing packages."
 msgstr ""
 
@@ -497,6 +497,17 @@ msgstr ""
 
 #: classes/wc-api-dev/class-wc-rest-dev-data-controller.php:187
 msgid "Data resource description."
+msgstr ""
+
+#: src/Analytics/LabelsService.php:195
+msgid "Requested"
+msgstr ""
+
+#: src/Analytics/ShippingLabel.php:29
+#: dist/88.js:4
+#: dist/woocommerce-shipping-analytics.js:1
+#: dist/woocommerce-shipping-analytics.js:113
+msgid "Shipping Labels"
 msgstr ""
 
 #: src/Checkout/CheckoutService.php:166
@@ -692,52 +703,60 @@ msgid "The provided phone number is not valid"
 msgstr ""
 
 #. translators: %s WC download URL link.
-#: src/Loader.php:668
+#: src/Loader.php:672
 msgid "WooCommerce Shipping requires the WooCommerce plugin to be installed and active. You can download %s here."
 msgstr ""
 
-#: src/Loader.php:978
+#: src/Loader.php:982
 msgid "Settings"
 msgstr ""
 
-#: src/Loader.php:985
+#: src/Loader.php:989
 msgid "Documentation"
 msgstr ""
 
-#: src/Loader.php:986
+#: src/Loader.php:990
 #: dist/woocommerce-shipping-admin-status.js:14
 msgid "Support"
 msgstr ""
 
-#: src/Loader.php:1452
 #: src/Loader.php:1460
+#: src/Loader.php:1468
 msgid "Tracking"
 msgstr ""
 
-#: src/Loader.php:1464
+#: src/Loader.php:1472
 msgid "Provider"
 msgstr ""
 
-#: src/Loader.php:1466
+#: src/Loader.php:1474
 msgid "Tracking number"
 msgstr ""
 
-#: src/Loader.php:1595
+#: src/Loader.php:1603
 msgid "Shipping Label"
 msgstr ""
 
-#: src/Loader.php:1607
+#: src/Loader.php:1615
 msgid "Shipment Tracking"
 msgstr ""
 
-#: src/Loader.php:1661
-#: src/Loader.php:1690
+#: src/Loader.php:1669
+#: src/Loader.php:1698
 #: dist/woocommerce-shipping-create-shipping-label.js:25
 msgid "Phone"
 msgstr ""
 
-#: src/Loader.php:1899
+#: src/Loader.php:1913
 msgid "WooCommerce Shipping & Tax has been deactivated. Your data and settings have been carried over to the dedicated WooCommerce Shipping and WooCommerce Tax extensions.<br />For support, please <a href=\"https://woocommerce.com/my-account/create-a-ticket/\">contact our Happiness Engineers</a>."
+msgstr ""
+
+#: src/Migration/LegacyLabelMigrator.php:68
+msgid "WooCommerce Shipping label migrator"
+msgstr ""
+
+#: src/Migration/LegacyLabelMigrator.php:72
+msgid "Migrates labels from legacy extension to WooCommerce Shipping"
 msgstr ""
 
 #: src/Migration/MigrationController.php:78
@@ -757,7 +776,7 @@ msgid "Start migration"
 msgstr ""
 
 #: src/Migration/MigrationController.php:89
-msgid "Stop migration WooCommerce Shipping labels"
+msgid "Stop migrating WooCommerce Shipping labels"
 msgstr ""
 
 #: src/Migration/MigrationController.php:90
@@ -847,11 +866,11 @@ msgstr ""
 msgid "Your shipping settings and label history have been successfully migrated — enjoy the new WooCommerce Shipping experience."
 msgstr ""
 
-#: src/Packages/PackagesRESTController.php:168
+#: src/Packages/PackagesRESTController.php:204
 msgid "At least one of the new carrier package names is not unique."
 msgstr ""
 
-#: src/Packages/PackagesRESTController.php:189
+#: src/Packages/PackagesRESTController.php:225
 msgid "At least one of the new predefined packages has the same name as an existing package."
 msgstr ""
 
@@ -885,12 +904,12 @@ msgid "WC Shipping checkout address validation notices"
 msgstr ""
 
 #. translators: %s: The missing query parameter.
-#: src/WCShippingRESTController.php:39
+#: src/WCShippingRESTController.php:38
 msgid "Required body parameter is missing: %s"
 msgstr ""
 
 #. translators: %s: The missing query parameter.
-#: src/WCShippingRESTController.php:72
+#: src/WCShippingRESTController.php:71
 msgid "Required parameter is missing: %s"
 msgstr ""
 
@@ -900,6 +919,68 @@ msgstr ""
 
 #: src/WPCOMConnection/WPCOMConnectionRESTController.php:60
 msgid "A string representative of where the connection was initiated."
+msgstr ""
+
+#: dist/88.js:1
+msgid "Date"
+msgstr ""
+
+#: dist/88.js:1
+msgid "Order"
+msgstr ""
+
+#: dist/88.js:1
+#: dist/woocommerce-shipping-create-shipping-label.js:3
+msgid "Price"
+msgstr ""
+
+#: dist/88.js:1
+msgid "Service"
+msgstr ""
+
+#: dist/88.js:1
+msgid "Tracking Number"
+msgstr ""
+
+#: dist/88.js:1
+msgid "Refund status"
+msgstr ""
+
+#: dist/88.js:1
+msgid "Labels purchased in this period"
+msgstr ""
+
+#: dist/88.js:1
+msgid "Total label cost in this period"
+msgstr ""
+
+#: dist/88.js:1
+msgid "Refund in this period"
+msgstr ""
+
+#. translators: %d is the cache expiration in minutes
+#: dist/88.js:4
+msgid "To improve performance, the data shown here may be up to %d minutes old."
+msgstr ""
+
+#: dist/88.js:4
+msgid "Labels in this period"
+msgstr ""
+
+#: dist/88.js:4
+msgid "Failed to fetch data for export."
+msgstr ""
+
+#: dist/88.js:4
+msgid "Failed to request download of CSV file."
+msgstr ""
+
+#: dist/88.js:4
+msgid "Export CSV"
+msgstr ""
+
+#: dist/88.js:4
+msgid "Download"
 msgstr ""
 
 #: dist/woocommerce-shipping-admin-status.js:8
@@ -1019,6 +1100,22 @@ msgid "Please, enter a valid email address."
 msgstr ""
 
 #: dist/woocommerce-shipping-create-shipping-label.js:1
+msgid "Address contains invalid characters."
+msgstr ""
+
+#: dist/woocommerce-shipping-create-shipping-label.js:1
+msgid "City contains invalid characters."
+msgstr ""
+
+#: dist/woocommerce-shipping-create-shipping-label.js:1
+msgid "Postal code contains invalid characters."
+msgstr ""
+
+#: dist/woocommerce-shipping-create-shipping-label.js:1
+msgid "State contains invalid characters."
+msgstr ""
+
+#: dist/woocommerce-shipping-create-shipping-label.js:1
 msgid "Close purchase label modal"
 msgstr ""
 
@@ -1069,10 +1166,6 @@ msgstr ""
 
 #: dist/woocommerce-shipping-create-shipping-label.js:3
 msgid "Weight"
-msgstr ""
-
-#: dist/woocommerce-shipping-create-shipping-label.js:3
-msgid "Price"
 msgstr ""
 
 #: dist/woocommerce-shipping-create-shipping-label.js:3
@@ -2008,11 +2101,19 @@ msgid "To print this shipping label, <a>add a credit card to your account</a>."
 msgstr ""
 
 #: dist/woocommerce-shipping-create-shipping-label.js:64
+msgid "Please contact your site administrator to add a payment method."
+msgstr ""
+
+#: dist/woocommerce-shipping-create-shipping-label.js:64
 msgid "Choose credit card"
 msgstr ""
 
 #: dist/woocommerce-shipping-create-shipping-label.js:64
 msgid "To print this shipping label, <a>choose a credit card to add to your account</a>."
+msgstr ""
+
+#: dist/woocommerce-shipping-create-shipping-label.js:64
+msgid "Please contact your site administrator to set a default payment method."
 msgstr ""
 
 #: dist/woocommerce-shipping-create-shipping-label.js:64
