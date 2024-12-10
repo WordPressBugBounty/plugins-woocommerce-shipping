@@ -11,7 +11,7 @@ import {
 } from '@wordpress/components';
 import { chevronDown } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
-import { createInterpolateElement } from '@wordpress/element';
+import { createInterpolateElement, useEffect } from '@wordpress/element';
 import { Link } from '@woocommerce/components';
 import clsx from 'clsx';
 
@@ -52,30 +52,44 @@ export const Hazmat = () => {
 		essentialDetails: { focusArea, resetFocusArea },
 	} = useLabelPurchaseContext();
 
+	const hazmatState = getShipmentHazmat();
+
 	const handleHazmatChange = ( value ) => {
 		recordEvent( 'label_purchase_hazmat_toggled', { hazmat: value } );
-		setShipmentHazmat(
-			value === 'yes',
-			getShipmentHazmat()?.category || ''
-		);
+		const isHazmat = value === 'yes';
+		const currentCategory = hazmatState?.category || '';
 
-		if ( typeof getShipmentHazmat()?.category === 'string' ) {
-			updateRates();
-		}
+		setShipmentHazmat( isHazmat, currentCategory );
 
-		if ( value === 'no' ) {
+		if ( ! isHazmat ) {
 			resetFocusArea();
 		}
 	};
 
 	const handleHazmatCategoryChange = ( value ) => {
-		setShipmentHazmat( getShipmentHazmat()?.isHazmat || false, value );
+		setShipmentHazmat( hazmatState?.isHazmat || false, value );
 		recordEvent( 'label_purchase_hazmat_category_selected', {
 			hazmat_category: value,
 		} );
 		resetFocusArea();
-		updateRates();
 	};
+
+	/*
+	 * The effect ensures that rates are updated when hazmat state changes.
+	 *
+	 * We intentionally omit updateRates from the deps array because:
+	 * 1. It would cause unnecessary rate updates when other package details change.
+	 * 2. updateRates is only used as a side effect and doesn't affect the effect's logic
+	 * 3. The hazmat state values are the only relevant dependencies for triggering rate updates
+	 */
+	useEffect( () => {
+		if ( hazmatState?.isHazmat && ! hazmatState?.category ) {
+			// Don't update rates if "is HAZMAT" was specified but not the category.
+			return;
+		}
+
+		updateRates();
+	}, [ hazmatState?.isHazmat, hazmatState?.category ] ); // eslint-disable-line react-hooks/exhaustive-deps
 
 	return (
 		<div>
@@ -85,7 +99,7 @@ export const Hazmat = () => {
 					'Are you shipping dangerous goods or hazardous materials?',
 					'woocommerce-shipping'
 				) }
-				selected={ getShipmentHazmat()?.isHazmat ? 'yes' : 'no' }
+				selected={ hazmatState?.isHazmat ? 'yes' : 'no' }
 				options={ [
 					{ label: __( 'No', 'woocommerce-shipping' ), value: 'no' },
 					{
@@ -97,7 +111,7 @@ export const Hazmat = () => {
 				disabled={ hasPurchasedLabel( false ) }
 			/>
 
-			{ getShipmentHazmat()?.isHazmat && (
+			{ hazmatState?.isHazmat && (
 				<div>
 					<p>
 						{ __(
@@ -168,7 +182,7 @@ export const Hazmat = () => {
 								) }
 								className={ {
 									'has-error': ! Boolean(
-										getShipmentHazmat()?.category
+										hazmatState?.category
 									),
 								} }
 								required={ true }
@@ -186,14 +200,13 @@ export const Hazmat = () => {
 												focusArea ===
 													FOCUS_AREA_HAZMAT &&
 												! Boolean(
-													getShipmentHazmat()
-														?.category
+													hazmatState?.category
 												),
 										}
 									) }
 									disabled={ hasPurchasedLabel( false ) }
 								>
-									{ getShipmentHazmat()?.category === '' ? (
+									{ hazmatState?.category === '' ? (
 										__(
 											'Select a hazardous or dangerous material category',
 											'woocommerce-shipping'
@@ -202,8 +215,7 @@ export const Hazmat = () => {
 										<section>
 											<DropdownSelectedOption
 												value={
-													getShipmentHazmat()
-														?.category || ''
+													hazmatState?.category || ''
 												}
 											/>
 										</section>
@@ -218,7 +230,7 @@ export const Hazmat = () => {
 									handleHazmatCategoryChange( value );
 									onToggle();
 								} }
-								value={ getShipmentHazmat()?.category || '' }
+								value={ hazmatState?.category || '' }
 							/>
 						) }
 					/>

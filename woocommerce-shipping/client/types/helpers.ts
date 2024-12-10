@@ -13,6 +13,12 @@ export type CamelCaseType<
 
 export type ShipmentRecord< T > = Record< `shipment_${ number | string }`, T >;
 
+export type DeepPartial< T > = T extends object
+	? {
+			[ P in keyof T ]?: DeepPartial< T[ P ] >;
+	  }
+	: T;
+
 export type SnakeCaseType< T > = {
 	[ K in keyof T as K extends string ? SnakeToCamelCase< K > : K ]: T[ K ];
 };

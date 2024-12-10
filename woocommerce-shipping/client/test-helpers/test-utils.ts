@@ -154,6 +154,15 @@ export const mockUtils = () => {
 			getOriginAddresses: () => [],
 			getFirstSelectableOriginAddress: () => ( {} ),
 			getCustomsInformation: () => '',
+			getCarrierStrategies: () => ( {
+				upsdap: {
+					originAddress: {
+						1: {
+							has_agreed_to_tos: true,
+						},
+					},
+				},
+			} ),
 			getCurrentOrder: () => ( {
 				id: 1,
 			} ),

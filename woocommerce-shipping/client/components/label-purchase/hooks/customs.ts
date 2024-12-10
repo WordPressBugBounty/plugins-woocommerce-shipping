@@ -5,6 +5,7 @@ import {
 	CustomsState,
 	RequestPackage,
 	RequestPackageWithCustoms,
+	ShipmentItem,
 } from 'types';
 import { select, useSelect } from '@wordpress/data';
 import type { FormErrors } from '@woocommerce/components';
@@ -28,6 +29,7 @@ const getInitialShipmentCustomsState = < T >( items: T ) => ( {
 
 export function useCustomsState(
 	currentShipmentId: string,
+	shipments: Record< string, ShipmentItem[] >,
 	getShipmentItems: ReturnType<
 		typeof useShipmentState
 	>[ 'getShipmentItems' ],
@@ -74,13 +76,27 @@ export function useCustomsState(
 		[ getShipmentItems, currentShipmentId, origin.country ]
 	);
 
-	const [ state, setState ] = useState<
-		Record< typeof currentShipmentId, CustomsState >
-	>( {
-		[ currentShipmentId ]:
-			storedCustomsInformationForShipment ??
-			getInitialShipmentCustomsState( getCustomsItems() ),
-	} );
+	const initialCustomsInfo: CustomsState =
+		storedCustomsInformationForShipment ??
+		getInitialShipmentCustomsState( getCustomsItems() );
+
+	const initialCustomsState: Record<
+		typeof currentShipmentId,
+		CustomsState
+	> = Object.keys( shipments ).reduce(
+		(
+			customs: Record< typeof currentShipmentId, CustomsState >,
+			id: string
+		) => {
+			customs[ id ] = initialCustomsInfo;
+			return customs;
+		},
+		{}
+	);
+	const [ state, setState ] =
+		useState< Record< typeof currentShipmentId, CustomsState > >(
+			initialCustomsState
+		);
 
 	const previousStateRef = useRef( state );
 	/**

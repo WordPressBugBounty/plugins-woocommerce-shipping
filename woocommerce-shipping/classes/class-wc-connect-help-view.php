@@ -4,6 +4,7 @@ namespace Automattic\WCShipping\Connect;
 use WC_Admin_Status;
 use stdClass;
 use Automattic\WCShipping\DOM\Manipulation as DOM_Manipulation;
+use Automattic\WCShipping\Utils;
 
 class WC_Connect_Help_View {
 
@@ -286,6 +287,7 @@ class WC_Connect_Help_View {
 				'nonce'        => wp_create_nonce( 'wp_rest' ),
 				'storeOptions' => $this->service_settings_store->get_store_options(),
 				'paperSize'    => $this->service_settings_store->get_preferred_paper_size(),
+				'constants'    => Utils::get_constants_for_js(),
 			)
 		);
 	}

@@ -11,16 +11,17 @@ import {
 	createInterpolateElement,
 	useCallback,
 	useEffect,
-	useMemo,
 	useLayoutEffect,
+	useMemo,
 	useState,
 } from '@wordpress/element';
 import { Link } from '@woocommerce/components';
 import { __, sprintf } from '@wordpress/i18n';
+import { uniq } from 'lodash';
 import {
+	getAddPaymentMethodURL,
 	hasPaymentMethod,
 	hasSelectedPaymentMethod,
-	getAddPaymentMethodURL,
 	canManagePayments as canManagePaymentsUtil,
 } from 'utils';
 import { CreditCardButton } from './credit-card-button';
@@ -28,13 +29,22 @@ import { settingsPageUrl } from '../constants';
 import { useLabelPurchaseContext } from '../context';
 import { getShipmentTitle } from '../utils';
 import { PaperSizeSelector } from '../paper-size';
-import { Label, LabelPurchaseError, Order } from 'types';
-import { uniq } from 'lodash';
+import {
+	Label,
+	LabelPurchaseError,
+	Order,
+	RateWithParent,
+	WPErrorRESTResponse,
+} from 'types';
 import { dispatch, select, useSelect } from '@wordpress/data';
 import { labelPurchaseStore } from 'data/label-purchase';
 import { EssentialDetails } from '../essential-details';
 import { recordEvent } from 'utils/tracks';
 import { LABEL_PURCHASE_STATUS } from 'data/constants';
+import { UPSDAPTos } from 'components/carrier/upsdap/upsdap-tos';
+import apiFetch from '@wordpress/api-fetch';
+import { getCarrierStrategyPath } from 'data/routes';
+import { mapAddressForRequest } from 'utils';
 
 interface PaymentButtonsProps {
 	order: Order;
@@ -51,7 +61,8 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 			hasPurchasedLabel,
 			getCurrentShipmentLabel,
 		},
-		rates: { getSelectedRate },
+		packages: { getPackageForRequest },
+		rates: { getSelectedRate, fetchRates, matchAndSelectRate },
 		account: {
 			accountSettings,
 			canPurchase,
@@ -64,6 +75,12 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 	const [ markOrderAsCompleted, setMarkOrderAsCompleted ] =
 		useState( lastOrderCompleted );
 	const orderStatus = select( labelPurchaseStore ).getOrderStatus();
+
+	const shipmentOrigin = getShipmentOrigin();
+
+	const selectedRate = getSelectedRate();
+	const [ showUPSDAPTos, setShowUPSDAPTos ] = useState( false );
+	const [ isTOSConfirming, setIsTOSConfirming ] = useState( false );
 	const canManagePayments = canManagePaymentsUtil( { accountSettings } );
 
 	const isOrderCompleted = useMemo( () => {
@@ -199,7 +216,8 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 		}
 	}, [ orderStatus ] );
 
-	const purchaseLabel = async () => {
+	const purchaseLabel = async ( rate: RateWithParent ) => {
+		resetErrors();
 		if ( hasPurchasedLabel( false ) ) {
 			return;
 		}
@@ -225,7 +243,7 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 		);
 		resetErrors();
 		try {
-			await requestLabelPurchase( order.id );
+			await requestLabelPurchase( order.id, rate );
 			const currentShipmentLabel =
 				select( labelPurchaseStore ).getPurchasedLabel(
 					currentShipmentId
@@ -234,8 +252,90 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 				await updateOrderStatus( currentShipmentLabel );
 			}
 		} catch ( e ) {
-			setErrors( e as unknown as LabelPurchaseError );
+			const error = e as unknown as WPErrorRESTResponse &
+				LabelPurchaseError;
+
+			if ( error.code === 'missing_upsdap_terms_of_service_acceptance' ) {
+				setShowUPSDAPTos( true );
+				return;
+			}
+
+			// If it's not the UPS DAP TOS error, treat it as a standard LabelPurchaseError.
+			setErrors( {
+				cause: 'purchase_error',
+				message: error.message,
+				actions: error.actions,
+			} );
 		}
+	};
+
+	// Add handler for UPS DAP TOS.
+	const handleUPSDAPTos = {
+		close: () => {
+			setShowUPSDAPTos( false );
+			setErrors( {
+				cause: 'carrier_error',
+				message: [
+					__(
+						'You must agree to the UPS® Terms and Conditions to purchase a UPS® label.',
+						'woocommerce-shipping'
+					),
+				],
+			} );
+		},
+		confirm: async ( confirmed: boolean ) => {
+			resetErrors();
+
+			try {
+				const response: { success: boolean } = await apiFetch( {
+					path: getCarrierStrategyPath( 'upsdap' ),
+					method: 'POST',
+					data: {
+						origin: mapAddressForRequest( shipmentOrigin ),
+						confirmed,
+					},
+				} );
+
+				if ( ! response.success ) {
+					// Skip to the `catch` clause to display the error.
+					throw new Error(
+						__(
+							'We were unable to update your acceptance of the UPS® Terms and Conditions. Please try again later or contact WooCommerce support if the issue persists.',
+							'woocommerce-shipping'
+						)
+					);
+				}
+
+				// Fetch rates again after successful TOS acceptance.
+				// We do this to re-create shipments using the newly created carrier account.
+				await fetchRates( getPackageForRequest() );
+
+				setShowUPSDAPTos( false );
+
+				/**
+				 * Now that we've refetched rates, we need to reselect the rate that was previously selected.
+				 * We can't purchase the UPS rate that was previously selected because it was created without TOS acceptance.
+				 */
+				if ( selectedRate ) {
+					const switchedRate = matchAndSelectRate( selectedRate );
+					if ( switchedRate ) {
+						purchaseLabel( switchedRate );
+					}
+				}
+			} catch ( error ) {
+				setErrors( {
+					cause: 'carrier_error',
+					message: [
+						__(
+							'We were unable to update your acceptance of the UPS® Terms and Conditions. Please try again later or contact WooCommerce support if the issue persists.',
+							'woocommerce-shipping'
+						),
+					],
+				} );
+			} finally {
+				setIsTOSConfirming( false );
+			}
+		},
 	};
 
 	const markAsCompletedCheckboxHandler = () => {
@@ -245,8 +345,21 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 		setAccountCompleteOrder( ! lastOrderCompleted );
 	};
 
+	// Reset errors when shipment origin or rate change
+	useEffect( resetErrors, [ shipmentOrigin, selectedRate ] );
+
 	return (
 		<>
+			{ showUPSDAPTos && (
+				<UPSDAPTos
+					close={ handleUPSDAPTos.close }
+					confirm={ handleUPSDAPTos.confirm }
+					shipmentOrigin={ shipmentOrigin }
+					error={ errors }
+					isConfirming={ isTOSConfirming }
+					setIsConfirming={ setIsTOSConfirming }
+				/>
+			) }
 			<Flex className="purchase-label-buttons" direction="column">
 				{ canPurchase() && (
 					<>
@@ -257,19 +370,24 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 							<Button
 								variant="primary"
 								disabled={
-									! getSelectedRate() ||
+									! selectedRate ||
 									isPurchasing ||
 									isUpdatingStatus ||
 									hasPurchasedLabel( false ) ||
-									! getShipmentOrigin().isVerified
+									! shipmentOrigin.isVerified
 								}
-								onClick={ purchaseLabel }
+								onClick={ () => {
+									const rate = getSelectedRate();
+									if ( rate ) {
+										purchaseLabel( rate );
+									}
+								} }
 								isBusy={ isPurchasing }
 								aria-disabled={
-									! getSelectedRate() ||
+									! selectedRate ||
 									isPurchasing ||
 									hasPurchasedLabel( false ) ||
-									! getShipmentOrigin().isVerified
+									! shipmentOrigin.isVerified
 								}
 							>
 								{ purchaseButtonLabel }

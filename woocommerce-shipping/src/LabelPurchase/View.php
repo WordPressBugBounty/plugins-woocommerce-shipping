@@ -2,6 +2,7 @@
 
 namespace Automattic\WCShipping\LabelPurchase;
 
+use Automattic\WCShipping\Carrier\CarrierStrategyService;
 use Automattic\WCShipping\Connect\WC_Connect_Account_Settings;
 use Automattic\WCShipping\Connect\WC_Connect_Service_Settings_Store;
 use Automattic\WCShipping\Connect\WC_Connect_Service_Schemas_Store;
@@ -13,6 +14,7 @@ use Automattic\WCShipping\Connect\WC_Connect_Functions;
 use Automattic\WCShipping\Connect\WC_Connect_Compatibility;
 use Automattic\WCShipping\Connect\WC_Connect_Package_Settings;
 use Automattic\WCShipping\Connect\WC_Connect_Jetpack;
+use Automattic\WCShipping\FeatureFlags\FeatureFlags;
 use Automattic\WCShipping\OriginAddresses\OriginAddressService;
 use Automattic\WCShipping\Shipments\ShipmentsService;
 use Automattic\WCShipping\DOM\Manipulation as DOM_Manipilation;
@@ -88,7 +90,8 @@ class View {
 		WC_Connect_Payment_Methods_Store $payment_methods_store,
 		ShipmentsService $shipments_service,
 		OriginAddressService $origin_address_service,
-		ViewService $view_service
+		ViewService $view_service,
+		CarrierStrategyService $carrier_service
 	) {
 		$this->api_client             = $api_client;
 		$this->settings_store         = $settings_store;
@@ -105,6 +108,7 @@ class View {
 		$this->shipments_service      = $shipments_service;
 		$this->origin_address_service = $origin_address_service;
 		$this->view_service           = $view_service;
+		$this->carrier_service        = $carrier_service;
 	}
 
 	/**
@@ -309,19 +313,26 @@ class View {
 			),
 			0
 		) - absint( $order->get_item_count_refunded() );
-		$payload     = apply_filters(
+
+		/*
+		 * Pass features supported by store as features supported by client,
+		 * because the client here is the JS bundled with the store.
+		 */
+		$package_settings = $this->package_settings->get( apply_filters( 'wcshipping_features_supported_by_store', array() ) );
+
+		$payload = apply_filters(
 			'wcshipping_meta_box_payload',
 			array(
 				'order'                   => $this->view_service->get_order_data( $order ),
 				'accountSettings'         => $this->account_settings->get( true ),
 				'packagesSettings'        => array(
 					'schema'   => array(
-						'custom'     => $this->service_schemas_store->get_packages_schema(),
-						'predefined' => $this->service_schemas_store->get_predefined_packages_schema(),
+						'custom'     => $package_settings['formSchema']['custom'],
+						'predefined' => $package_settings['formSchema']['predefined'],
 					),
 					'packages' => array(
-						'custom'     => $this->settings_store->get_packages(),
-						'predefined' => $this->settings_store->get_predefined_packages(),
+						'custom'     => $package_settings['formData']['custom'],
+						'predefined' => $package_settings['formData']['predefined'],
 					),
 				),
 				'shippingLabelData'       => $this->get_label_payload( $order->get_id() ),
@@ -333,6 +344,7 @@ class View {
 				'shipments'               => $this->shipments_service->get_order_shipments_json( $order->get_id() ),
 				'origin_addresses'        => $this->origin_address_service->get_origin_addresses(),
 				'constants'               => Utils::get_constants_for_js(),
+				'carrier_strategies'      => $this->carrier_service->get_strategies(),
 			),
 			$args,
 			$order,

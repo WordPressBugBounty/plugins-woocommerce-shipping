@@ -3,6 +3,8 @@ import { controls as wpControls } from '@wordpress/data-controls';
 import { labelPurchaseReducer } from './reducer';
 import * as selectors from './selectors';
 import * as actions from './actions';
+import * as carrierStrategyActions from '../carrier-strategy/actions';
+import * as carrierStrategySelectors from '../carrier-strategy/selectors';
 import { packagesActions, packagesSelectors } from './packages';
 import { labelActions, labelSelectors } from './label';
 import { LABEL_PURCHASE_STORE_NAME } from 'data/constants';
@@ -16,11 +18,13 @@ const storeSelectors = {
 	...labelPurchaseConfig.selectors,
 	...packagesSelectors,
 	...labelSelectors,
+	...carrierStrategySelectors,
 };
 const storeActions = {
 	...labelPurchaseConfig.actions,
 	...packagesActions,
 	...labelActions,
+	...carrierStrategyActions,
 };
 const resolvers = {};
 

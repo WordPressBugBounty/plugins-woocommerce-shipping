@@ -185,7 +185,6 @@ export const CustomPackage = withBoundary(
 			if ( newlySavedPackage ) {
 				// Set the new saved template as the selected package and redirect the user to the saved templates tab.
 				setSelectedPackage( newlySavedPackage );
-				setTab( TAB_NAMES.SAVED_TEMPLATES );
 			}
 		}, [
 			rawPackageData,
@@ -196,6 +195,16 @@ export const CustomPackage = withBoundary(
 			setTab,
 			setSelectedPackage,
 		] );
+
+		/*
+		 * Redirect to the saved templates tab after saving a custom package.
+		 */
+		useEffect( () => {
+			if ( isSaved ) {
+				setTab( TAB_NAMES.SAVED_TEMPLATES );
+				setIsSaved( false );
+			}
+		}, [ isSaved, setIsSaved, setTab ] );
 
 		const getControlProps = ( fieldName, className = '' ) => ( {
 			onChange: ( val ) => {

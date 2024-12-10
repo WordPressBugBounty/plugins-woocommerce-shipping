@@ -100,16 +100,25 @@ class LabelPurchaseRESTController extends WCShippingRESTController {
 		try {
 			// TODO: Validate JSON request schema.
 			list(
-					$origin,
-					$destination,
-					$packages,
-					$selected_rate,
-					$hazmat,
-					$customs,
-				)             = $this->get_and_check_body_params(
-					$request,
-					array( 'origin', 'destination', 'packages', 'selected_rate', 'hazmat', 'customs' )
-				);
+				$origin,
+				$destination,
+				$packages,
+				$selected_rate,
+				$hazmat,
+				$customs,
+				$features_supported_by_client
+			)                 = $this->get_and_check_body_params(
+				$request,
+				array(
+					'origin',
+					'destination',
+					'packages',
+					'selected_rate',
+					'hazmat',
+					'customs',
+					'?features_supported_by_client', // Optional parameter.
+				)
+			);
 			list( $order_id ) = $this->get_and_check_request_params( $request, array( 'order_id' ) );
 		} catch ( RESTRequestException $error ) {
 			return rest_ensure_response( $error->get_error_response() );
@@ -127,7 +136,8 @@ class LabelPurchaseRESTController extends WCShippingRESTController {
 				$selected_rate,
 				$hazmat,
 				$customs,
-				$user_meta
+				$user_meta,
+				$features_supported_by_client
 			)
 		);
 	}

@@ -34,6 +34,9 @@ export const ProvideTestState = ( {
 }: ProvideStateProps ) => {
 	const [ errors, setErrors ] = useState( {} );
 	const currentShipmentId = '0';
+	const shipments = {
+		'0': [],
+	};
 	const getShipmentOrigin = () => ( {
 		id: currentShipmentId,
 		company: 'WooCommerce',
@@ -51,13 +54,14 @@ export const ProvideTestState = ( {
 	} );
 	const customs = useCustomsState(
 		'0',
+		shipments,
 		() => [],
 		getShipmentOrigin,
 		() => getShipmentOrigin()
 	);
 
-	const { fetchRates, getSelectedRate } = useRatesState( {
-		currentShipmentId,
+	const { fetchRates } = useRatesState( {
+		currentShipmentId: '0',
 		getPackageForRequest,
 		applyHazmatToPackage: ( data ) => data,
 		totalWeight,
@@ -67,13 +71,11 @@ export const ProvideTestState = ( {
 	} );
 
 	const account = {
-		...useAccountState( {
-			getSelectedRate,
-		} ),
+		...useAccountState(),
 	};
 
 	const packages = {
-		...usePackageState( currentShipmentId, totalWeight ),
+		...usePackageState( currentShipmentId, shipments, totalWeight ),
 		getPackageForRequest,
 		isSelectedASavedPackage: jest.fn( () => true ),
 	};
@@ -92,6 +94,7 @@ export const ProvideTestState = ( {
 				fetchRates,
 				setErrors,
 				isFetching: false,
+				preselectRateBasedOnLastSelections: jest.fn(),
 			},
 			weight: {
 				getShipmentWeight: () => totalWeight,

@@ -1,15 +1,18 @@
-import { mapValues } from 'lodash';
+import { mapValues, sortBy, snakeCase } from 'lodash';
 import { useCallback, useState } from '@wordpress/element';
 import { dispatch, select, useSelect } from '@wordpress/data';
 import { __, sprintf } from '@wordpress/i18n';
 import {
+	Carrier,
 	CustomPackage,
 	Package,
 	Rate,
+	RateWithParent,
+	RecordValues,
 	RequestPackage,
 	WPErrorRESTResponse,
 } from 'types';
-import { getAccountSettings, getCurrentOrder } from 'utils';
+import { getAccountSettings, getCurrentOrder, setAccountSettings } from 'utils';
 import { labelPurchaseStore } from 'data/label-purchase';
 import { CUSTOM_BOX_ID_PREFIX, PACKAGE_TYPES } from '../packages';
 import type { usePackageState } from './packages';
@@ -17,6 +20,7 @@ import { useHazmatState } from './hazmat';
 import { useCustomsState } from './customs';
 import { useShipmentState } from './shipment';
 import { RATES_FETCH_FAILED } from 'data/label-purchase/action-types';
+import { LABEL_RATE_TYPE } from 'data/constants';
 
 interface UseRatesStateProps {
 	currentShipmentId: string;
@@ -168,15 +172,24 @@ export function useRatesState( {
 		[ currentShipmentId ]
 	);
 	const selectRate = useCallback(
-		( rate: Rate, parent?: Rate ) =>
-			selectRates( ( prev ) => ( {
+		( rate: Rate, parent?: Rate ) => {
+			setAccountSettings( {
+				...accountSettings,
+				userMeta: {
+					...accountSettings.userMeta,
+					last_carrier_id: rate.carrierId,
+					last_service_id: rate.serviceId,
+				},
+			} );
+			return selectRates( ( prev ) => ( {
 				...prev,
 				[ currentShipmentId ]: {
 					rate,
 					parent: parent ?? null,
 				},
-			} ) ),
-		[ currentShipmentId ]
+			} ) );
+		},
+		[ accountSettings, currentShipmentId ]
 	);
 
 	const getSelectedRate = useCallback(
@@ -228,6 +241,7 @@ export function useRatesState( {
 				selectRate( selectableRate );
 			}
 		}
+		return rates;
 	}, [ currentShipmentId, selectRate, accountSettings ] );
 
 	const fetchRates = useCallback(
@@ -325,12 +339,8 @@ export function useRatesState( {
 	 * Updates the rates based on the current package data
 	 */
 	const updateRates = useCallback( () => {
-		// Not updating if last request hasn't had any rates or is still fetching
-		if (
-			! availableRates ||
-			Object.keys( availableRates ).length < 1 ||
-			isFetching
-		) {
+		// Not updating if still fetching and to prevent a double fetch at render.
+		if ( isFetching || typeof availableRates === 'undefined' ) {
 			return;
 		}
 
@@ -346,6 +356,12 @@ export function useRatesState( {
 		}
 		// eslint-disable-next-line no-unused-vars
 		const { name, boxWeight, isUserDefined, ...mandatoryFields } = pkg;
+
+		// Max weight is not a mandatory field since it can be 0, and if it's 0 it won't affect isAnyFieldEmpty
+		if ( 'maxWeight' in mandatoryFields ) {
+			delete mandatoryFields.maxWeight;
+		}
+
 		const isAnyFieldEmpty = Object.values< string | boolean >(
 			mandatoryFields
 		).some( ( field ) => ! field && typeof field !== 'boolean' );
@@ -353,6 +369,118 @@ export function useRatesState( {
 			fetchRates( pkg );
 		}
 	}, [ fetchRates, availableRates, isFetching, getPackageForRequest ] );
+
+	/**
+	 * Sort Rates when filter dropdown is used.
+	 * @param rates
+	 * @return Sorted rates
+	 */
+	const sortRates = useCallback(
+		( rates: Rate[], sortingBy: string ) => {
+			let sortedRates = sortBy( rates, sortingBy );
+
+			// Always put MediaMail at the bottom of the list.
+			const mediaMailRate = sortedRates.find(
+				( rate ) => rate && rate.serviceId === 'MediaMail'
+			);
+			if ( mediaMailRate ) {
+				const filteredRates = sortedRates.filter(
+					( rate ) => rate && rate.serviceId !== 'MediaMail'
+				);
+				sortedRates = [ ...filteredRates, mediaMailRate ];
+			}
+			if ( accountSettings.purchaseSettings.use_last_service ) {
+				const last_service_id =
+					accountSettings.userMeta.last_service_id;
+				const selectableRate = sortedRates.find(
+					( rate ) => rate.serviceId === last_service_id
+				);
+
+				if ( selectableRate ) {
+					sortedRates = [
+						selectableRate,
+						...sortedRates.filter(
+							( rate ) => rate !== selectableRate
+						),
+					];
+				}
+			}
+
+			return sortedRates;
+		},
+		[
+			accountSettings.purchaseSettings.use_last_service,
+			accountSettings.userMeta.last_service_id,
+		]
+	);
+
+	/**
+	 * Reselect the rate and its parent.
+	 * This is useful when we've refetched rates and we want to select the rate with the same serviceId and price.
+	 *
+	 * @param {RateWithParent} selectedRate - The rate that was previously selected, including its parent rate if applicable.
+	 * @return {RateWithParent | false} The rate and its parent rate if found, or false if not found.
+	 */
+	const matchAndSelectRate = useCallback(
+		( selectedRate: RateWithParent ): RateWithParent | false => {
+			const allRatesForType = select(
+				labelPurchaseStore
+			).getRatesForShipment(
+				currentShipmentId,
+				snakeCase(
+					selectedRate.rate.type ?? LABEL_RATE_TYPE.DEFAULT
+				) as RecordValues< typeof LABEL_RATE_TYPE >
+			);
+
+			const foundRate = allRatesForType?.[
+				selectedRate.rate.carrierId as Carrier
+			]?.find(
+				( rate ) =>
+					rate.serviceId === selectedRate.rate.serviceId &&
+					rate.rate === selectedRate.rate.rate
+			);
+
+			if ( ! foundRate ) {
+				return false;
+			}
+
+			// Default parent rate is undefined.
+			let parentRate = null;
+
+			// If the rate is not the default rate, we need to find its parent rate.
+			if (
+				selectedRate.parent &&
+				snakeCase( selectedRate.rate.type ) !== LABEL_RATE_TYPE.DEFAULT
+			) {
+				const allDefaultRates = select(
+					labelPurchaseStore
+				).getRatesForShipment(
+					currentShipmentId,
+					snakeCase(
+						selectedRate.rate.type ?? LABEL_RATE_TYPE.DEFAULT
+					) as RecordValues< typeof LABEL_RATE_TYPE >
+				);
+				parentRate = allDefaultRates?.[
+					foundRate.carrierId as Carrier
+				]?.find(
+					( rate ) =>
+						rate.serviceId === selectedRate.parent?.serviceId
+				);
+
+				// If the parent rate is not found, we don't reselect the rate.
+				if ( ! parentRate ) {
+					return false;
+				}
+			}
+
+			selectRate( foundRate, parentRate ?? undefined );
+			return {
+				rate: foundRate,
+				parent: parentRate,
+			};
+		},
+		[ selectRate, currentShipmentId ]
+	);
 
 	return {
 		selectedRates,
@@ -363,7 +491,11 @@ export function useRatesState( {
 		isFetching,
 		updateRates,
 		fetchRates,
+		sortRates,
 		errors,
 		setErrors,
+		matchAndSelectRate,
+		availableRates,
+		preselectRateBasedOnLastSelections,
 	};
 }

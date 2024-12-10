@@ -24,4 +24,6 @@ export const SETTINGS_KEYS = {
 	USE_LAST_PACKAGE: 'use_last_package',
 	CHECKOUT_ADDRESS_VALIDATION: 'checkout_address_validation',
 	AUTOMATICALLY_OPEN_PRINT_DIALOG: 'automatically_open_print_dialog',
+	TAX_IDENTIFIER_IOSS: 'tax_identifier_ioss',
+	TAX_IDENTIFIER_VOEC: 'tax_identifier_voec',
 } as const;

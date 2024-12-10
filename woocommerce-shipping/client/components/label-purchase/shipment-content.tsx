@@ -1,4 +1,3 @@
-import React, { JSX } from 'react';
 import { isEmpty } from 'lodash';
 import { useSelect } from '@wordpress/data';
 import {
@@ -11,7 +10,7 @@ import {
 	Notice,
 } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
-import { getCurrentOrder } from 'utils';
+import { getCurrentOrder, hasUPSPackages } from 'utils';
 import { labelPurchaseStore } from 'data/label-purchase';
 import { Items } from 'components/label-purchase/items';
 import { Packages } from 'components/label-purchase/packages';
@@ -208,6 +207,16 @@ export const ShipmentContent = ( {
 							) ) }
 					</>
 				) }
+				{ hasUPSPackages() && (
+					<>
+						<p className="upsdap-trademark-notice upsdap-trademark-notice--desktop">
+							{ __(
+								'UPS, the UPS brandmark, UPS Ready®, and the color brown are trademarks of United Parcel Service of America, Inc. All Rights Reserved.',
+								'woocommerce-shipping'
+							) }
+						</p>
+					</>
+				) }
 			</FlexBlock>
 			<FlexBlock>
 				<ShipmentDetails
@@ -215,6 +224,14 @@ export const ShipmentContent = ( {
 					destinationAddress={ getShipmentDestination() }
 				/>
 				<PaymentButtons order={ order } />
+				{ hasUPSPackages() && (
+					<p className="upsdap-trademark-notice upsdap-trademark-notice--mobile">
+						{ __(
+							'UPS, the UPS brandmark, UPS Ready®, and the color brown are trademarks of United Parcel Service of America, Inc. All Rights Reserved.',
+							'woocommerce-shipping'
+						) }
+					</p>
+				) }
 			</FlexBlock>
 		</Flex>
 	);

@@ -5,6 +5,7 @@ import fedexLogo from './logos/fedex.png';
 
 const carrierLogos = {
 	ups: upsLogo,
+	upsdap: upsLogo,
 	usps: uspsLogo,
 	dhl: dhlLogo,
 	dhlexpress: dhlLogo,
@@ -18,6 +19,7 @@ const sizeToPixels = {
 	medium: '30px',
 	null: '30px',
 	big: '40px',
+	xLarge: '54px',
 };
 
 /**

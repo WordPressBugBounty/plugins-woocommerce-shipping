@@ -138,9 +138,20 @@ class LabelPurchaseService {
 	 * @param array $hazmat Selected HAZMAT category and if shipment includes HAZMAT.
 	 * @param array $customs Customs form information.
 	 * @param array $user_meta User meta array.
+	 * @param array $features_supported_by_client Features supported by client.
 	 * @return array|WP_Error REST response body.
 	 */
-	public function purchase_labels( $origin, $destination, $packages, $order_id, $selected_rate, $hazmat, $customs, $user_meta = array() ) {
+	public function purchase_labels(
+		$origin,
+		$destination,
+		$packages,
+		$order_id,
+		$selected_rate,
+		$hazmat,
+		$customs,
+		$user_meta = array(),
+		$features_supported_by_client = array()
+	) {
 		$settings         = $this->settings_store->get_account_settings();
 		$service_names    = array_column( $packages, 'service_name' );
 		$request_packages = $this->prepare_packages_for_purchase( $packages, $user_meta );
@@ -165,24 +176,26 @@ class LabelPurchaseService {
 
 		$label_response = $this->api_client->send_shipping_label_request(
 			array(
-				'async'             => true,
-				'email_receipt'     => $settings['email_receipts'] ?? false,
-				'origin'            => $origin,
-				'destination'       => $destination,
-				'payment_method_id' => $this->settings_store->get_selected_payment_method_id(),
-				'order_id'          => $order_id,
-				'packages'          => $request_packages,
+				'async'                        => true,
+				'email_receipt'                => $settings['email_receipts'] ?? false,
+				'origin'                       => $origin,
+				'destination'                  => $destination,
+				'payment_method_id'            => $this->settings_store->get_selected_payment_method_id(),
+				'order_id'                     => $order_id,
+				'packages'                     => $request_packages,
+				'features_supported_by_client' => $features_supported_by_client,
 			)
 		);
 
 		if ( is_wp_error( $label_response ) ) {
+			$error_data            = (array) $label_response->get_error_data();
+			$error_data['success'] = false;
+			$error_data['message'] = $label_response->get_error_message();
+
 			$error = new WP_Error(
 				$label_response->get_error_code(),
 				$label_response->get_error_message(),
-				array(
-					'success' => false,
-					'message' => $label_response->get_error_message(),
-				)
+				$error_data
 			);
 			$this->logger->log( $error, __CLASS__ );
 			return $error;

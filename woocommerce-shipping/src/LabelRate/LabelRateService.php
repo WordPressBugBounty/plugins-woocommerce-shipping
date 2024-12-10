@@ -82,6 +82,21 @@ class LabelRateService {
 		// Find and add payment method to payload.
 		$payload['payment_method_id'] = $this->settings_store->get_selected_payment_method_id();
 
+		// Add tax identifiers to the payload.
+		$payload['tax_identifiers'] = array();
+		foreach ( $this->settings_store->get_tax_identifiers() as $tax_id_type => $tax_id ) {
+			if ( empty( $tax_id ) ) {
+				continue;
+			}
+
+			$payload['tax_identifiers'][] = array(
+				'tax_id_type'     => strtoupper( $tax_id_type ),
+				'tax_id'          => $tax_id,
+				'issuing_country' => strtoupper( wc_get_base_location()['country'] ),
+				'entity'          => 'SENDER',
+			);
+		}
+
 		// Update the customs information on all this order's products and line items.
 		// Note: this function pass $payload by reference, $payload may get modified after this is called.
 		$this->update_product_and_payload_customs_information( $payload );

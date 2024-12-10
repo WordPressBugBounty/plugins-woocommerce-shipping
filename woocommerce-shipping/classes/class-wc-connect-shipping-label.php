@@ -556,7 +556,6 @@ class WC_Connect_Shipping_Label {
 	}
 
 	public function meta_box( $post, $args ) {
-
 		$connect_order_presenter = new WC_Connect_Order_Presenter();
 		$order                   = WC_Connect_Compatibility::instance()->init_theorder_object( $post );
 		$items                   = array_filter( $order->get_items(), array( $this, 'filter_items_needing_shipping' ) );
@@ -566,7 +565,11 @@ class WC_Connect_Shipping_Label {
 			array(
 				'order'             => $connect_order_presenter->get_order_for_api( $order ),
 				'accountSettings'   => $this->account_settings->get(),
-				'packagesSettings'  => $this->package_settings->get(),
+				/*
+				 * Pass features supported by store as features supported by client,
+				 * because the client here is the JS bundled with the store.
+				 */
+				'packagesSettings'  => $this->package_settings->get( apply_filters( 'wcshipping_features_supported_by_store', array() ) ),
 				'shippingLabelData' => $this->get_label_payload( $order->get_id() ),
 				'continents'        => $this->continents->get(),
 				'context'           => $args['args']['context'],

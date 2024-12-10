@@ -2,13 +2,18 @@ import { Flex } from '@wordpress/components';
 import { useSelect } from '@wordpress/data';
 import { getSignatureRate } from 'utils';
 import { labelPurchaseStore } from 'data/label-purchase';
-import { RateRow } from './rate-row';
 import { useLabelPurchaseContext } from 'components/label-purchase/context';
 import { useCallback, useEffect } from '@wordpress/element';
+import { withBoundary } from 'components/HOC';
+import { RateRow } from './rate-row';
 
-export const CarrierRates = ( { rates } ) => {
+export const CarrierRates = withBoundary( ( { rates } ) => {
 	const {
-		rates: { getSelectedRate, selectRate },
+		rates: {
+			getSelectedRate,
+			selectRate,
+			preselectRateBasedOnLastSelections,
+		},
 		shipment: { currentShipmentId },
 		essentialDetails: {
 			resetFocusArea: resetEssentialDetailsFocusArea,
@@ -33,8 +38,14 @@ export const CarrierRates = ( { rates } ) => {
 	useEffect( () => {
 		if ( getSelectedRate() ) {
 			setShippingServiceCompleted( false );
+		} else {
+			preselectRateBasedOnLastSelections();
 		}
-	}, [ getSelectedRate, setShippingServiceCompleted ] );
+	}, [
+		getSelectedRate,
+		preselectRateBasedOnLastSelections,
+		setShippingServiceCompleted,
+	] );
 
 	const signatureRequiredRates = useSelect( ( s ) =>
 		s( labelPurchaseStore ).getRatesForShipment(
@@ -77,4 +88,4 @@ export const CarrierRates = ( { rates } ) => {
 			) ) }
 		</Flex>
 	);
-};
+} )( 'CarrierRates' );

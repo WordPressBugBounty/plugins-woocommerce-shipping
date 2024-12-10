@@ -286,6 +286,22 @@ return array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/src/Autoloader.php'
 	),
+	'Automattic\\WCShipping\\Carrier\\CarrierStrategyService' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/src/Carrier/CarrierStrategyService.php'
+	),
+	'Automattic\\WCShipping\\Carrier\\CarrierStrategyServiceInterface' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/src/Carrier/CarrierStrategyServiceInterface.php'
+	),
+	'Automattic\\WCShipping\\Carrier\\UPSDAP\\UPSDAPCarrierStrategyRESTController' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/src/Carrier/UPSDAP/UPSDAPCarrierStrategyRESTController.php'
+	),
+	'Automattic\\WCShipping\\Carrier\\UPSDAP\\UPSDAPCarrierStrategyService' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/src/Carrier/UPSDAP/UPSDAPCarrierStrategyService.php'
+	),
 	'Automattic\\WCShipping\\Checkout\\CheckoutController' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/src/Checkout/CheckoutController.php'
@@ -313,6 +329,10 @@ return array(
 	'Automattic\\WCShipping\\Exceptions\\RESTRequestException' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/src/Exceptions/RESTRequestException.php'
+	),
+	'Automattic\\WCShipping\\FeatureFlags\\FeatureFlags' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/src/FeatureFlags/FeatureFlags.php'
 	),
 	'Automattic\\WCShipping\\Integrations\\AssetsRESTController' => array(
 		'version' => 'dev-trunk',
@@ -522,6 +542,14 @@ return array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/tests/php/Integrations/WooCommerceShipmentTrackingTest.php'
 	),
+	'Automattic\\WCShipping\\Tests\\php\\Carrier\\UPSDAP\\UPSDAPCarrierStrategyRESTControllerTest' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/tests/php/Carrier/UPSDAP/UPSDAPCarrierStrategyRESTControllerTest.php'
+	),
+	'Automattic\\WCShipping\\Tests\\php\\FeatureFlags\\FeatureFlagsTest' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/tests/php/FeatureFlags/FeatureFlagsTest.php'
+	),
 	'Automattic\\WCShipping\\Tests\\php\\LabelPurchase\\AddressRESTControllerTest' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/tests/php/LabelPurchase/AddressRESTControllerTest.php'
@@ -706,6 +734,10 @@ return array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/tests/php/Checkout/StoreNoticeTest.php'
 	),
+	'UPSDAPCarrierStrategyServiceTest' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/tests/php/Carrier/UPSDAP/UPSDAPCarrierStrategyServiceTest.php'
+	),
 	'Version_Loader' => array(
 		'version' => '3.0.9',
 		'path'    => $vendorDir . '/automattic/jetpack-autoloader/src/class-version-loader.php'
@@ -721,6 +753,10 @@ return array(
 	'WC_Connect_Compatibility_WCShipping_Packages' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/tests/php/Double/WC_Connect_Compatibility_WCShipping_Packages.php'
+	),
+	'WC_Connect_Package_Settings_Test' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/tests/php/classes/WC_Connect_Package_Settings_Test.php'
 	),
 	'WC_REST_Connect_Packages_Controller_Test' => array(
 		'version' => 'dev-trunk',

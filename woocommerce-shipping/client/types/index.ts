@@ -1,5 +1,8 @@
 import { WCTracks } from './wc-tracks.d';
-import { WCShippingConfig } from './wcshipping-config.d';
+import {
+	WCShippingConfig,
+	WCShippingConfigAccountSettings,
+} from './wcshipping-config.d';
 import { WCShippingSettings } from './wcshipping-settings.d';
 import { WC } from './wc.d';
 import { WCShippingAnalyticsConfig } from './wcshipping-analytics-config.d';
@@ -14,7 +17,7 @@ declare global {
 	}
 }
 
-export { WCShippingConfig };
+export { WCShippingConfig, WCShippingConfigAccountSettings };
 export * from './helpers';
 export * from './rate.d';
 export * from './order-item.d';
@@ -51,6 +54,8 @@ export * from './label-shipment-id-map.d';
 export * from './store-notice.d';
 export * from './user-meta.d';
 export * from './constants.d';
+export * from './carrier-strategy.d';
+export * from './upsdap-strategy.d';
 export * from './payment-method.d';
 export * from './purchase-meta.d';
 export * from './purchase-settings.d';

@@ -9,7 +9,9 @@ import {
 	Card,
 	CardBody,
 	CheckboxControl,
+	ExternalLink,
 	Flex,
+	__experimentalInputControl as InputControl,
 	SelectControl,
 	Spinner,
 } from '@wordpress/components';
@@ -21,6 +23,7 @@ import { settingsStore } from 'data/settings';
 import { getPaperSizes } from 'components/label-purchase/label';
 import { getStoreOrigin } from 'utils/location';
 import { SETTINGS_KEYS } from './constants';
+import { createInterpolateElement } from '@wordpress/element';
 
 export const LabelsSettingsComponent = () => {
 	const [ isLoading, setIsLoading ] = useState( false );
@@ -31,6 +34,7 @@ export const LabelsSettingsComponent = () => {
 		rememberServiceEnabled,
 		rememberPackageEnabled,
 		checkoutAddressValidation,
+		taxIdentifiers,
 		storeOwnerUsername,
 		storeOwnerLogin,
 		storeOwnerEmail,
@@ -49,10 +53,10 @@ export const LabelsSettingsComponent = () => {
 
 	const updateFormData =
 		( formInputKey: string ) =>
-		async ( formInputvalue: boolean | string ) => {
+		async ( formInputvalue: boolean | string | undefined ) => {
 			await dispatch( settingsStore ).updateFormData(
 				formInputKey,
-				formInputvalue
+				formInputvalue ?? null
 			);
 			maybeConfirmExit( true );
 		};
@@ -232,6 +236,66 @@ export const LabelsSettingsComponent = () => {
 							onChange={ updateFormData(
 								SETTINGS_KEYS.AUTOMATICALLY_OPEN_PRINT_DIALOG
 							) }
+						/>
+
+						<h4>
+							{ __( 'Tax identifiers', 'woocommerce-shipping' ) }
+						</h4>
+
+						<InputControl
+							label={ __(
+								'Import One-Stop Shop (IOSS)',
+								'woocommerce-shipping'
+							) }
+							help={ createInterpolateElement(
+								__(
+									'Enter your <a>Import One-Stop Shop (IOSS)</a> number to include it on customs forms when shipping to applicable EU countries.',
+									'woocommerce-shipping'
+								),
+								{
+									a: (
+										<ExternalLink href="https://vat-one-stop-shop.ec.europa.eu/">
+											{ __(
+												'Import One-Stop Shop (IOSS)',
+												'woocommerce-shipping'
+											) }
+										</ExternalLink>
+									),
+								}
+							) }
+							onChange={ updateFormData(
+								SETTINGS_KEYS.TAX_IDENTIFIER_IOSS
+							) }
+							value={ taxIdentifiers?.ioss ?? '' }
+						/>
+
+						<Spacer marginTop={ 0 } marginBottom={ 3 } />
+
+						<InputControl
+							label={ __(
+								'Norwegian VAT On E-Commerce (VOEC)',
+								'woocommerce-shipping'
+							) }
+							help={ createInterpolateElement(
+								__(
+									'Enter your <a>VOEC number (VAT On E-Commerce)</a> number to include it on customs forms when shipping to Norway.',
+									'woocommerce-shipping'
+								),
+								{
+									a: (
+										<ExternalLink href="https://www.toll.no/en/corporate/import/the-voec-scheme/">
+											{ __(
+												'VOEC number (VAT On E-Commerce)',
+												'woocommerce-shipping'
+											) }
+										</ExternalLink>
+									),
+								}
+							) }
+							onChange={ updateFormData(
+								SETTINGS_KEYS.TAX_IDENTIFIER_VOEC
+							) }
+							value={ taxIdentifiers?.voec ?? '' }
 						/>
 					</CardBody>
 				</Card>

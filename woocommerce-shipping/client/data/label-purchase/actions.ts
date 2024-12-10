@@ -83,6 +83,7 @@ export function* getRates( payload: {
 				// Todo: To be updated via  woocommerce-shipping/issues/859
 				origin: mapAddressForRequest( origin ),
 				...restOfPayload,
+				features_supported_by_client: [ 'upsdap' ],
 			},
 		} );
 		return {

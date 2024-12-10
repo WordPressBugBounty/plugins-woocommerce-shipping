@@ -1,4 +1,8 @@
-import { CustomPackageResponse, LocationResponse, ResponseLabel } from './connect-server';
+import {
+	CustomPackageResponse,
+	LocationResponse,
+	ResponseLabel,
+} from './connect-server';
 import { StoreOptions } from './store-options';
 import { Order } from './order';
 import { HazmatState } from './hazmat-state';
@@ -7,21 +11,24 @@ import { SelectedRates } from './selected-rates';
 import { SelectedOrigin } from './selected-origin';
 import { SelectedDestination } from './selected-destination';
 import { CustomsState } from './customs-state';
+import { Carrier } from './carrier';
 import { Constants } from './constants';
 import { ShipmentRecord } from './helpers';
 import { UserMeta } from './user-meta';
 import { PurchaseSettings } from './purchase-settings';
 import { PurchaseMeta } from './purchase-meta';
 
+export interface WCShippingConfigAccountSettings {
+	purchaseSettings: PurchaseSettings;
+	purchaseMeta: PurchaseMeta;
+	userMeta: UserMeta;
+	storeOptions: StoreOptions;
+}
+
 // Todo: Gradually improve this type definition.
 export interface WCShippingConfig {
 	order: Order;
-	accountSettings: {
-		purchaseSettings: PurchaseSettings;
-		purchaseMeta: PurchaseMeta;
-		userMeta: UserMeta;
-		storeOptions: StoreOptions;
-	};
+	accountSettings: WCShippingConfigAccountSettings;
 	context: string;
 	continents: Continent[];
 	is_destination_verified: boolean;
@@ -50,4 +57,14 @@ export interface WCShippingConfig {
 	origin_addresses: LocationResponse[];
 	eu_countries: string[];
 	constants: Constants;
+	carrier_strategies: {
+		upsdap: {
+			origin_address: Record<
+				string,
+				{
+					has_agreed_to_tos: boolean;
+				}
+			>;
+		};
+	};
 }

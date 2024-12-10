@@ -12,6 +12,7 @@ use Automattic\WCShipping\Connect\WC_Connect_Service_Schemas_Store;
 use Automattic\WCShipping\Connect\WC_Connect_Package_Settings;
 use Automattic\WCShipping\Packages\PackagesAsArraysSanitizer;
 use Automattic\WCShipping\Packages\PackageValidationException;
+use WP_REST_Request;
 use WP_REST_Response;
 
 class WC_REST_Connect_Packages_Controller extends WC_REST_Connect_Base_Controller {
@@ -33,8 +34,8 @@ class WC_REST_Connect_Packages_Controller extends WC_REST_Connect_Base_Controlle
 	/**
 	 * @throws PackageValidationException Doesn't really throw this because we set `throw_on_failure = false`.
 	 */
-	public function get() {
-		$result                       = $this->package_settings->get();
+	public function get( WP_REST_Request $request ) {
+		$result                       = $this->package_settings->get( $request->get_param( 'features_supported_by_client' ) );
 		$result['formData']['custom'] = ( new PackagesAsArraysSanitizer( $result['formData']['custom'], false ) )
 			->to_packages_as_wcst_arrays();
 

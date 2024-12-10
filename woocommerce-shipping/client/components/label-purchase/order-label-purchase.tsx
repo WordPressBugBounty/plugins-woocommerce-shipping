@@ -76,9 +76,14 @@ export const OrderLabelPurchase = ( {
 		isHazmatSpecified,
 	} = useHazmatState( currentShipmentId );
 	const totalWeight = getShipmentTotalWeight();
-	const packages = usePackageState( currentShipmentId, totalWeight );
+	const packages = usePackageState(
+		currentShipmentId,
+		shipments,
+		totalWeight
+	);
 	const customs = useCustomsState(
 		currentShipmentId,
+		shipments,
 		getShipmentItems,
 		getShipmentOrigin,
 		getShipmentDestination
@@ -92,8 +97,12 @@ export const OrderLabelPurchase = ( {
 		isFetching,
 		updateRates,
 		fetchRates,
+		sortRates,
 		errors,
 		setErrors,
+		matchAndSelectRate,
+		availableRates,
+		preselectRateBasedOnLastSelections,
 	} = useRatesState( {
 		currentShipmentId,
 		currentPackageTab: packages.currentPackageTab,
@@ -109,7 +118,6 @@ export const OrderLabelPurchase = ( {
 		totalWeight,
 		getPackageForRequest: packages.getPackageForRequest,
 		getShipmentItems,
-		getSelectedRate,
 		getShipmentHazmat,
 		updateRates,
 		getShipmentOrigin,
@@ -117,9 +125,7 @@ export const OrderLabelPurchase = ( {
 		shipments,
 	} );
 
-	const account = useAccountState( {
-		getSelectedRate,
-	} );
+	const account = useAccountState();
 
 	const essentialDetails = useEssentialDetails();
 
@@ -230,6 +236,10 @@ export const OrderLabelPurchase = ( {
 					errors,
 					setErrors,
 					updateRates,
+					sortRates,
+					matchAndSelectRate,
+					availableRates,
+					preselectRateBasedOnLastSelections,
 				},
 				weight: {
 					getShipmentWeight,

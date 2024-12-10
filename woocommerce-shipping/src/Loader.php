@@ -6,6 +6,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+use Automattic\WCShipping\Carrier\CarrierStrategyService;
+use Automattic\WCShipping\Carrier\UPSDAP\UPSDAPCarrierStrategyRESTController;
+use Automattic\WCShipping\Carrier\UPSDAP\UPSDAPCarrierStrategyService;
 use Automattic\WCShipping\Checkout\CheckoutController;
 use Automattic\WCShipping\Checkout\CheckoutService;
 use Automattic\WCShipping\Connect\WC_Connect_API_Client;
@@ -26,9 +29,10 @@ use Automattic\WCShipping\Connect\WC_Connect_Service_Schemas_Validator;
 use Automattic\WCShipping\Connect\WC_Connect_Service_Settings_Store;
 use Automattic\WCShipping\Connect\WC_Connect_Settings_Pages;
 use Automattic\WCShipping\Connect\WC_Connect_Shipping_Label;
+use Automattic\WCShipping\FeatureFlags\FeatureFlags;
 use Automattic\WCShipping\Integrations\AssetsRESTController;
-use Automattic\WCShipping\Integrations\TosRESTController;
 use Automattic\WCShipping\Integrations\ConfigRESTController;
+use Automattic\WCShipping\Integrations\TosRESTController;
 use Automattic\WCShipping\Integrations\WooCommerceBlocksIntegration;
 use Automattic\WCShipping\Integrations\WooCommerceShipmentTracking;
 use Automattic\WCShipping\LabelPurchase\AddressNormalizationService;
@@ -70,8 +74,8 @@ use Automattic\WCShipping\LegacyAPIControllers\WC_REST_Connect_Tos_Controller;
 use Automattic\WCShipping\Migration\LegacyLabelMigrator;
 use Automattic\WCShipping\Migration\LegacySettingsMigrator;
 use Automattic\WCShipping\Migration\MigrationController;
-use Automattic\WCShipping\Migration\MigrationState;
 use Automattic\WCShipping\Migration\MigrationNotices;
+use Automattic\WCShipping\Migration\MigrationState;
 use Automattic\WCShipping\Onboarding\SettingsPage;
 use Automattic\WCShipping\OriginAddresses\OriginAddressesRESTController;
 use Automattic\WCShipping\OriginAddresses\OriginAddressService;
@@ -100,6 +104,7 @@ use WP_REST_Request;
 use WP_REST_Server;
 
 class Loader {
+
 	/**
 	 * @var WC_Connect_Logger
 	 */
@@ -279,6 +284,10 @@ class Loader {
 	 */
 	protected CheckoutService $checkout_service;
 
+	/**
+	 * @var UPSDAPCarrierStrategyService
+	 */
+	protected $upsdap_carrier_strategy_service;
 	/**
 	 * Plugin deactivation hook.
 	 */
@@ -736,6 +745,9 @@ class Loader {
 	public function pre_wc_init() {
 		$this->load_dependencies();
 
+		// Set up feature flag support.
+		( new FeatureFlags() )->register_hooks();
+
 		// Add settings and docs links to the plugin page.
 		add_action( 'plugin_action_links_' . plugin_basename( WCSHIPPING_PLUGIN_FILE ), array( $this, 'add_plugin_action_links' ) );
 		add_action( 'plugin_row_meta', array( $this, 'add_plugin_description_links' ), 10, 2 );
@@ -928,20 +940,23 @@ class Loader {
 			require_once WCSHIPPING_PLUGIN_DIR . '/classes/class-wc-connect-api-client-live.php';
 			$api_client = new WC_Connect_API_Client_Live( $validator, $this );
 		}
-		$schemas_store            = new WC_Connect_Service_Schemas_Store( $api_client, $logger );
-		$settings_store           = new WC_Connect_Service_Settings_Store( $schemas_store, $api_client, $logger );
-		$payment_methods_store    = new WC_Connect_Payment_Methods_Store( $settings_store, $api_client, $logger );
-		$shipments_service        = new ShipmentsService( $settings_store );
-		$origin_addresses_service = new OriginAddressService();
-		$view_service             = new ViewService();
-		$shipping_label           = new View(
+		$schemas_store                         = new WC_Connect_Service_Schemas_Store( $api_client, $logger );
+		$settings_store                        = new WC_Connect_Service_Settings_Store( $schemas_store, $api_client, $logger );
+		$payment_methods_store                 = new WC_Connect_Payment_Methods_Store( $settings_store, $api_client, $logger );
+		$shipments_service                     = new ShipmentsService( $settings_store );
+		$origin_addresses_service              = new OriginAddressService();
+		$view_service                          = new ViewService();
+		$this->upsdap_carrier_strategy_service = new UPSDAPCarrierStrategyService( $origin_addresses_service, $api_client );
+		$carrier_strategy_service              = new CarrierStrategyService( $this->upsdap_carrier_strategy_service );
+		$shipping_label                        = new View(
 			$api_client,
 			$settings_store,
 			$schemas_store,
 			$payment_methods_store,
 			$shipments_service,
 			$origin_addresses_service,
-			$view_service
+			$view_service,
+			$carrier_strategy_service
 		);
 
 		$legacy_shipping_label = new WC_Connect_Shipping_Label(
@@ -996,10 +1011,11 @@ class Loader {
 	 * Load admin-only plugin dependencies.
 	 */
 	public function load_admin_dependencies() {
-		$schema          = $this->get_service_schemas_store();
-		$settings        = $this->get_service_settings_store();
-		$logger          = $this->get_logger();
-		$payment_methods = $this->get_payment_methods_store();
+		$schema                   = $this->get_service_schemas_store();
+		$settings                 = $this->get_service_settings_store();
+		$logger                   = $this->get_logger();
+		$payment_methods          = $this->get_payment_methods_store();
+		$carrier_strategy_service = new CarrierStrategyService( $this->upsdap_carrier_strategy_service );
 
 		require_once WCSHIPPING_PLUGIN_DIR . '/classes/class-wc-connect-debug-tools.php';
 		new WC_Connect_Debug_Tools( $this->api_client );
@@ -1010,7 +1026,8 @@ class Loader {
 			$this->get_service_schemas_store(),
 			new OriginAddressService(),
 			$settings,
-			$payment_methods
+			$payment_methods,
+			$carrier_strategy_service
 		);
 		$this->set_settings_pages( $settings_pages );
 		$this->set_help_view( new WC_Connect_Help_View( $schema, $settings, $logger ) );
@@ -1263,7 +1280,11 @@ class Loader {
 		$origin_addresses_service = new OriginAddressService();
 
 		$address_normalization_service = new AddressNormalizationService( $settings_store, $this->api_client, $logger, $origin_addresses_service );
-		( new AddressRESTController( $address_normalization_service, $origin_addresses_service ) )->register_routes();
+		( new AddressRESTController(
+			$address_normalization_service,
+			$origin_addresses_service,
+			$this->upsdap_carrier_strategy_service
+		) )->register_routes();
 
 		( new LabelRateRESTController( $this->label_rate_service ) )->register_routes();
 
@@ -1294,6 +1315,7 @@ class Loader {
 		( new AssetsRESTController() )->register_routes();
 		( new ConfigRESTController( $this->shipping_label ) )->register_routes();
 
+		( new UPSDAPCarrierStrategyRESTController( $this->upsdap_carrier_strategy_service ) )->register_routes();
 		// Ensure all shipping endpoints are not cached.
 		WCShippingRESTController::prevent_route_caching();
 
@@ -1437,6 +1459,9 @@ class Loader {
 					$tracking_url = 'https://tools.usps.com/go/TrackConfirmAction.action?tLabels=' . $tracking;
 					break;
 				case 'ups':
+					$tracking_url = 'https://www.ups.com/track?tracknum=' . $tracking;
+					break;
+				case 'upsdap':
 					$tracking_url = 'https://www.ups.com/track?tracknum=' . $tracking;
 					break;
 				case 'dhlexpress':

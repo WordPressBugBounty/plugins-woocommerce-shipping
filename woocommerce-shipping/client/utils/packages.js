@@ -61,6 +61,11 @@ export const getAvailableCarrierPackages = ( config = getConfig() ) => {
 	}, {} );
 };
 
+export const hasUPSPackages = () => {
+	const availablePackages = getAvailableCarrierPackages();
+	return availablePackages?.upsdap;
+};
+
 export const getPackageDimensions = ( {
 	outerDimensions,
 	innerDimensions,

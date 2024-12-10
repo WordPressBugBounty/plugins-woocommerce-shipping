@@ -8,7 +8,7 @@ import {
 	getAvailablePackagesById,
 	getPackageDimensions,
 } from 'utils';
-import { CustomPackage, Package } from 'types';
+import { CustomPackage, Package, ShipmentItem } from 'types';
 import { defaultCustomPackageData } from '../constants';
 import { CUSTOM_BOX_ID_PREFIX, PACKAGE_TYPES, TAB_NAMES } from '../packages';
 
@@ -61,6 +61,7 @@ export const getInitialPackageAndTab = (
 
 export function usePackageState(
 	currentShipmentId: string,
+	shipments: Record< string, ShipmentItem[] >,
 	totalWeight: number
 ) {
 	const savedPackages = useSelect(
@@ -76,11 +77,17 @@ export function usePackageState(
 	>( {
 		[ currentShipmentId ]: defaultCustomPackageData,
 	} );
-	const [ selectedPackage, setSelected ] = useState<
-		Record< string, Package | CustomPackage | null >
-	>( {
-		[ currentShipmentId ]: initialPackage,
-	} );
+	const initialPackages = Object.keys( shipments ).reduce(
+		( packages: Record< string, Package | null >, id: string ) => {
+			packages[ id ] = initialPackage;
+			return packages;
+		},
+		{}
+	);
+	const [ selectedPackage, setSelected ] =
+		useState< Record< string, Package | CustomPackage | null > >(
+			initialPackages
+		);
 
 	const setCustomPackage = useCallback(
 		( data: CustomPackage ) => {

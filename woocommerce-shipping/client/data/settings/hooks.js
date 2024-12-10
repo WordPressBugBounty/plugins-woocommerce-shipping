@@ -10,6 +10,7 @@ export const useSettings = () => {
 		use_last_package: rememberPackageEnabled,
 		checkout_address_validation: checkoutAddressValidation,
 		automatically_open_print_dialog: automaticallyOpenPrintDialog,
+		tax_identifiers: taxIdentifiers,
 	} = useSelect( ( select ) => {
 		const settings = select( settingsStore ).getConfigSettings();
 		if ( ! settings ) {
@@ -21,6 +22,7 @@ export const useSettings = () => {
 				use_last_package: '',
 				checkout_address_validation: '',
 				automatically_open_print_dialog: '',
+				tax_identifiers: {},
 			};
 		}
 		return {
@@ -32,6 +34,7 @@ export const useSettings = () => {
 				settings.checkout_address_validation ?? '',
 			automatically_open_print_dialog:
 				settings.automatically_open_print_dialog ?? '',
+			tax_identifiers: settings.tax_identifiers ?? {},
 		};
 	} );
 
@@ -70,6 +73,7 @@ export const useSettings = () => {
 		rememberServiceEnabled,
 		rememberPackageEnabled,
 		checkoutAddressValidation,
+		taxIdentifiers,
 		storeOwnerUsername,
 		storeOwnerLogin,
 		storeOwnerEmail,

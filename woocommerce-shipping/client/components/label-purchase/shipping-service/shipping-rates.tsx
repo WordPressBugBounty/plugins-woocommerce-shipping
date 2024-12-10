@@ -1,35 +1,30 @@
 import React from 'react';
 import {
 	__experimentalHeading as Heading,
+	__experimentalSpacer as Spacer,
 	Flex,
-	Icon,
-	TabPanel,
 	Notice,
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
-import { shipping } from '@wordpress/icons';
 import {
 	useCallback,
+	useEffect,
 	useLayoutEffect,
 	useRef,
 	useState,
-	useEffect,
 } from '@wordpress/element';
 import { usePrevious } from '@wordpress/compose';
-import { intersection, sortBy } from 'lodash';
-import { CarrierIcon } from 'components/carrier-icon';
-import { CARRIER_ID_TO_NAME } from '../packages';
+import { intersection } from 'lodash';
 import { useLabelPurchaseContext } from '../context';
 import { CarrierRates } from './carrier-rates';
 import { RatesSorter } from './rates-sorter';
-import { DELIVERY_PROPERTIES } from './constants';
+import { DEFAULT_SORT_BY, DELIVERY_PROPERTIES } from './constants';
 import { mainModalContentSelector } from '../constants';
 import { SHIPPING_SERVICE_SECTION } from '../essential-details/constants';
 import { Carrier, Rate } from 'types';
 import clsx from 'clsx';
-
-const allTabId = 'all' as const;
-type TabId = Carrier | typeof allTabId;
+import { CarrierFilter } from './carrier-filter';
+import { CARRIER_ID_TO_NAME } from '../packages';
 
 interface ShippingRatesProps {
 	isFetching: boolean;
@@ -45,67 +40,57 @@ export const ShippingRates = ( {
 	const previousFetchingState = usePrevious( isFetching );
 
 	const wrapperRef = useRef< HTMLDivElement >();
-	const shouldHaveAllTab = Object.keys( availableRates ).length > 1;
-	const [ sortingBy, setSortBy ] = useState( '' );
-	const initialTabName: TabId | '' = shouldHaveAllTab
-		? allTabId
-		: ( Object.keys( availableRates )[ 0 ] as Carrier ) ?? '';
+	const [ sortingBy, setSortBy ] = useState( DEFAULT_SORT_BY );
 
 	const {
 		shipment: { shipments },
 		essentialDetails: { focusArea: essentialDetailsFocusArea },
-		rates: { getSelectedRate },
+		rates: { sortRates },
 	} = useLabelPurchaseContext();
 
-	const [ currentTabId, setTabId ] = useState< Carrier | typeof allTabId >(
-		getSelectedRate()?.rate.carrierId ?? initialTabName
+	const [ selectedCarriers, setSelectedCarriers ] = useState< Carrier[] >(
+		Object.keys( availableRates ) as Carrier[]
 	);
 
 	const canSortByDelivery = useCallback( () => {
 		let rates;
-		if ( currentTabId === allTabId ) {
+		if ( selectedCarriers.length === 0 ) {
 			rates = Object.values( availableRates ).flat();
 		} else {
-			rates = currentTabId ? availableRates[ currentTabId ] || [] : [];
+			rates = selectedCarriers
+				.map( ( carrier ) => availableRates[ carrier ] )
+				.flat();
 		}
 
-		return rates.some(
-			( rate ) =>
-				intersection( Object.keys( rate ), DELIVERY_PROPERTIES )
-					.length > 0
+		return (
+			rates?.some(
+				( rate ) =>
+					rate &&
+					intersection( Object.keys( rate ), DELIVERY_PROPERTIES )
+						.length > 0
+			) ?? false
 		);
-	}, [ currentTabId, availableRates ] );
+	}, [ selectedCarriers, availableRates ] );
 
-	const tabs = ( Object.keys( availableRates ) as Carrier[] ).map(
+	const carriers = ( Object.keys( availableRates ) as Carrier[] ).map(
 		( carrierId ) => ( {
-			name: carrierId as string,
-			title: CARRIER_ID_TO_NAME[ carrierId ],
-			icon: (
-				<>
-					{ /*
-					 * Untyped component.
-					 * @ts-ignore */ }
-					<CarrierIcon carrier={ carrierId } />
-					{ CARRIER_ID_TO_NAME[ carrierId ] ||
-						availableRates[ carrierId ] }
-				</>
-			),
+			id: carrierId,
+			label: CARRIER_ID_TO_NAME[ carrierId ],
 		} )
 	);
 
-	if ( shouldHaveAllTab ) {
-		tabs.unshift( {
-			name: allTabId,
-			title: __( 'All carriers', 'woocommerce-shipping' ),
-			icon: (
-				<>
-					<Icon icon={ shipping } />
-					{ __( 'All carriers', 'woocommerce-shipping' ) }
-				</>
-			),
-		} );
-	}
+	const onFilterToCarriers = ( carrierIds: Carrier[] ) => {
+		setSelectedCarriers( carrierIds );
+	};
 
+	const getRates = () => {
+		if ( selectedCarriers.length === 0 ) {
+			return Object.values( availableRates ).flat();
+		}
+		return selectedCarriers
+			.flatMap( ( carrier ) => availableRates[ carrier ] )
+			.filter( Boolean );
+	};
 	/**
 	 * Scroll to the top of the shipping rates section when the rates are fetched.
 	 */
@@ -134,8 +119,7 @@ export const ShippingRates = ( {
 				return;
 			}
 			document.querySelector( mainModalContentSelector )?.scrollTo( {
-				left: 0,
-				// We have to offset the height of the header, so it doesn't overlap our message.
+				left: 0, // We have to offset the height of the header, so it doesn't overlap our message.
 				// If there's more than one shipment being created, then we also have to take the
 				// "Shipment tabs" component into account.
 				// @todo We could make this smarter by finding the height with JS, but the heights
@@ -148,27 +132,6 @@ export const ShippingRates = ( {
 		}
 	}, [ essentialDetailsFocusArea, shipments ] );
 
-	/**
-	 * Sort Rates when filter dropdown is used.
-	 * @param rates
-	 * @return Sorted rates
-	 */
-	const sortRates = ( rates: Rate[] ) => {
-		const sortedRates = sortBy( rates, sortingBy );
-
-		// Always put MediaMail at the bottom of the list.
-		const mediaMailRate = sortedRates.find(
-			( rate ) => rate.serviceId === 'MediaMail'
-		);
-		if ( mediaMailRate ) {
-			const filteredRates = sortedRates.filter(
-				( rate ) => rate.serviceId !== 'MediaMail'
-			);
-			return [ ...filteredRates, mediaMailRate ];
-		}
-		return sortedRates;
-	};
-
 	return (
 		<Flex
 			className={ clsx( 'shipping-rates', className ) }
@@ -179,6 +142,7 @@ export const ShippingRates = ( {
 			<Heading level={ 3 }>
 				{ __( 'Shipping service', 'woocommerce-shipping' ) }
 			</Heading>
+			<Spacer marginBottom="6" />
 			{ essentialDetailsFocusArea === SHIPPING_SERVICE_SECTION && (
 				<Notice
 					status="error"
@@ -191,29 +155,26 @@ export const ShippingRates = ( {
 					) }
 				</Notice>
 			) }
-			<Flex align="flex-start">
-				<TabPanel
-					tabs={ tabs }
-					className="shipping-rates-tabs"
-					onSelect={ ( carrierId ) => {
-						setTabId( carrierId as TabId );
-					} }
-					children={ ( { name: carrierId } ) => (
-						<CarrierRates
-							rates={ sortRates(
-								availableRates[ carrierId as Carrier ] ||
-									Object.values( availableRates ).flat()
-							) }
-						/>
-					) }
-					initialTabName={ currentTabId }
-					key={ currentTabId }
-				/>
-				<RatesSorter
-					canSortByDelivery={ canSortByDelivery() }
-					setSortBy={ setSortBy }
-					sortingBy={ sortingBy }
-				/>
+			<Flex align="flex-start" direction="column" gap={ 4 }>
+				<Flex>
+					{
+						carriers.length > 1 ? (
+							<CarrierFilter
+								carriers={ carriers }
+								selectedCarriers={ selectedCarriers }
+								filterToCarriers={ onFilterToCarriers }
+							/>
+						) : (
+							<div></div>
+						) // Empty div to keep the layout consistent when there's only one carrier.
+					}
+					<RatesSorter
+						canSortByDelivery={ canSortByDelivery() }
+						setSortBy={ setSortBy }
+						sortingBy={ sortingBy }
+					/>
+				</Flex>
+				<CarrierRates rates={ sortRates( getRates(), sortingBy ) } />
 			</Flex>
 		</Flex>
 	);

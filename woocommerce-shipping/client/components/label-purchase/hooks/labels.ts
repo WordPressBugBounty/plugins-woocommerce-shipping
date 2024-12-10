@@ -3,7 +3,7 @@ import { dispatch, select } from '@wordpress/data';
 import apiFetch from '@wordpress/api-fetch';
 import { __ } from '@wordpress/i18n';
 import { mapValues } from 'lodash';
-import { Label, LabelPurchaseError, PDFJson } from 'types';
+import { Label, LabelPurchaseError, PDFJson, RateWithParent } from 'types';
 import { LABEL_PURCHASE_STATUS } from 'data/constants';
 import {
 	getCurrentOrder,
@@ -33,7 +33,6 @@ interface UseLabelsStateProps {
 	getShipmentItems: ReturnType<
 		typeof useShipmentState
 	>[ 'getShipmentItems' ];
-	getSelectedRate: ReturnType< typeof useRatesState >[ 'getSelectedRate' ];
 	getShipmentHazmat: ReturnType<
 		typeof useHazmatState
 	>[ 'getShipmentHazmat' ];
@@ -56,6 +55,7 @@ const handlePurchaseException = ( e: LabelPurchaseError ) =>
 				? e.message
 				: [ e?.message ?? '' ] ),
 		],
+		code: e?.code,
 		actions: [ ...( e.actions ?? [] ) ],
 	} );
 
@@ -78,7 +78,6 @@ export function useLabelsState( {
 	currentShipmentId,
 	getPackageForRequest,
 	getShipmentItems,
-	getSelectedRate,
 	totalWeight,
 	getShipmentHazmat,
 	updateRates,
@@ -294,9 +293,11 @@ export function useLabelsState( {
 	);
 
 	const requestLabelPurchase = useCallback(
-		async ( orderId: number ): Promise< void | LabelPurchaseError > => {
+		async (
+			orderId: number,
+			selectedRate: RateWithParent
+		): Promise< void | LabelPurchaseError > => {
 			const pkg = getPackageForRequest();
-			const selectedRate = getSelectedRate();
 			if ( ! pkg || ! selectedRate ) {
 				return;
 			}
@@ -363,7 +364,17 @@ export function useLabelsState( {
 				);
 			} catch ( e ) {
 				setIsPurchasing( false );
-				maybeUpdateRates();
+				/**
+				 * If the error is not the UPS DAP TOS error, update the rates.
+				 * If it is the UPS DAP TOS error, we'll handle it in the PaymentButtons component.
+				 */
+				if (
+					! ( e as LabelPurchaseError ).code ||
+					( e as LabelPurchaseError ).code !==
+						'missing_upsdap_terms_of_service_acceptance'
+				) {
+					maybeUpdateRates();
+				}
 				return handlePurchaseException( e as LabelPurchaseError );
 			}
 
@@ -375,7 +386,6 @@ export function useLabelsState( {
 			getPackageForRequest,
 			currentShipmentId,
 			getShipmentItems,
-			getSelectedRate,
 			totalWeight,
 			setIsPurchasing,
 			getShipmentHazmat,

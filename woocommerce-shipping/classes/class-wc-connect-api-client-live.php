@@ -119,10 +119,22 @@ class WC_Connect_API_Client_Live extends WC_Connect_API_Client {
 			}
 
 			$error   = property_exists( $response_body, 'error' ) ? $response_body->error : '';
+			$code    = property_exists( $response_body, 'code' ) ? $response_body->code : '';
 			$message = property_exists( $response_body, 'message' ) ? $response_body->message : '';
 			$data    = property_exists( $response_body, 'data' ) ? (array) $response_body->data : array();
 
 			$data['response_status_code'] = $response_code;
+
+			// Prevent formatting of the ToS error so we can react to it in React.
+			if ( 'missing_upsdap_terms_of_service_acceptance' === $code ) {
+				$data['status'] = $response_code;
+
+				return new WP_Error(
+					$code,
+					$message,
+					$data
+				);
+			}
 
 			return new WP_Error(
 				'wcc_server_error_response',

@@ -1,4 +1,8 @@
-import { WCShippingAnalyticsConfig, WCShippingConfig } from 'types';
+import {
+	WCShippingAnalyticsConfig,
+	WCShippingConfig,
+	WCShippingConfigAccountSettings,
+} from 'types';
 
 export const getConfig = (): WCShippingConfig =>
 	( window.WCShipping_Config || {} ) as WCShippingConfig;
@@ -18,6 +22,12 @@ export const getDimensionsUnit = () => {
 export const getAccountSettings = ( { accountSettings } = getConfig() ) =>
 	accountSettings;
 
+export const setAccountSettings = (
+	newSettings: WCShippingConfigAccountSettings
+) => {
+	getConfig().accountSettings = newSettings;
+};
+
 export const getLastOrderCompleted = ( { accountSettings } = getConfig() ) =>
 	accountSettings.userMeta.last_order_completed;
 
@@ -34,6 +44,9 @@ export const getPluginRelativeDirectory = ( forWooCommerce = false ) =>
 	forWooCommerce
 		? getConfig().constants.WC_PLUGIN_RELATIVE_DIR
 		: getConfig().constants.WCSHIPPING_RELATIVE_PLUGIN_DIR;
+
+export const getCarrierStrategies = ( { carrier_strategies } = getConfig() ) =>
+	carrier_strategies;
 
 export const shouldAutomaticallyOpenPrintDialog = ( config = getConfig() ) =>
 	getAccountSettings( config ).purchaseSettings

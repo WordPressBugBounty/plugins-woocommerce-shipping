@@ -62,7 +62,7 @@ export const SavedTemplates = withBoundary(
 				setSelectedPackage,
 			}: SavedTemplatesProps ) => {
 				const {
-					rates: { isFetching, fetchRates, errors },
+					rates: { isFetching, fetchRates, errors, availableRates },
 					customs: { hasErrors: hasCustomsErrors },
 					hazmat: { isHazmatSpecified },
 					packages: { isSelectedASavedPackage, getPackageForRequest },
@@ -197,12 +197,16 @@ export const SavedTemplates = withBoundary(
 				 * conditions for enabling the get rates button are met.
 				 */
 				useEffect( () => {
-					if ( ! isGetRatesButtonDisabled ) {
+					if (
+						! isGetRatesButtonDisabled &&
+						! availableRates &&
+						! errors.endpoint // It should bail if there are errors reported by the endpoint
+					) {
 						getRates();
 					}
-					// We only want to run this effect once on mount.
+					// We only want to run this if no rates available
 					// eslint-disable-next-line react-hooks/exhaustive-deps
-				}, [] );
+				}, [ isGetRatesButtonDisabled, availableRates ] );
 
 				return (
 					<>

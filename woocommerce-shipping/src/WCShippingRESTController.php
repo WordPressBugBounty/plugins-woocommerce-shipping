@@ -23,7 +23,7 @@ abstract class WCShippingRESTController extends WC_REST_Controller {
 	 * returns array of request parameters.
 	 *
 	 * @param WP_REST_Request $request    Incoming WP REST request.
-	 * @param array           $param_keys Array of required body parameters.
+	 * @param array           $param_keys Array of required body parameters. Optional parameters are marked with prefix '?'.
 	 *
 	 * @throws RESTRequestException If parameter is missing.
 	 * @return array Array of parsed body parameters.
@@ -31,8 +31,10 @@ abstract class WCShippingRESTController extends WC_REST_Controller {
 	protected function get_and_check_body_params( $request, $param_keys ) {
 		$data        = $request->get_json_params();
 		$params_list = array();
-		foreach ( $param_keys as $key ) {
-			if ( ! isset( $data[ $key ] ) ) {
+		foreach ( $param_keys as $param_key ) {
+			$key         = str_replace( '?', '', $param_key );
+			$is_optional = strpos( $param_key, '?' ) === 0;
+			if ( ! isset( $data[ $key ] ) && ! $is_optional ) {
 				$message = sprintf(
 					// translators: %s: The missing query parameter.
 					__( 'Required body parameter is missing: %s', 'woocommerce-shipping' ),
@@ -46,7 +48,12 @@ abstract class WCShippingRESTController extends WC_REST_Controller {
 				 */
 				throw new RESTRequestException( esc_html( $message ) );
 			}
-			$params_list[] = $data[ $key ];
+
+			/**
+			 * If the parameter is optional, default to null if it's not set, else use the value from the request.
+			 * The exception is already thrown above if the parameter is required and not set.
+			 */
+			$params_list[] = $is_optional ? $data[ $key ] ?? null : $data[ $key ];
 		}
 		return $params_list;
 	}

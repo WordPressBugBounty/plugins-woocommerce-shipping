@@ -83,8 +83,8 @@ class PackagesRESTController extends WCShippingRESTController {
 	 *
 	 * @return WP_Error|WP_REST_Response
 	 */
-	public function get() {
-		$package_settings   = $this->package_settings->get();
+	public function get( WP_REST_Request $request ) {
+		$package_settings   = $this->package_settings->get( $request->get_param( 'features_supported_by_client' ) );
 		$packages_as_arrays = ( new PackagesAsArraysSanitizer( $package_settings['formData']['custom'], false ) )->to_packages_as_api_arrays();
 
 		return rest_ensure_response(

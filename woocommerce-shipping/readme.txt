@@ -7,7 +7,7 @@ Requires at least: 6.5
 Tested up to: 6.7
 WC requires at least: 9.1
 WC tested up to: 9.3
-Stable tag: 1.2.3
+Stable tag: 1.3.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -126,6 +126,13 @@ Absolutely! You can read our Terms of Service [here](https://wordpress.com/tos).
 5. WooCommerce Shipping address validation at checkout suggestion.
 
 == Changelog ==
+
+= 1.3.0 - 2024-12-10 =
+* Add   - UPS shipping label support, providing access to discounted rates directly in the WooCommerce dashboard (no individual UPS account required).
+* Add   - Two new tax identifiers for customs form (IOSS & VOEC) that can be found on the WooCommerce Shipping settings page.
+* Fix   - Fix issue where migrated paper size was making payment method change fail.
+* Fix   - Fix package and rates pre-selection for multiple shipments.
+* Fix   - Fix issue with fatal errors in some environments when using the Shipment Tracking extension.
 
 = 1.2.3 - 2024-11-18 =
 * Add   - Only wp.com account owner can manage payment methods.

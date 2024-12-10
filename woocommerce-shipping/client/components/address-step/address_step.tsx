@@ -1,8 +1,17 @@
 import React from 'react';
 import { isEmpty } from 'lodash';
 
-import { Button, Flex, FlexItem, Modal } from '@wordpress/components';
+import {
+	__experimentalSpacer as Spacer,
+	__experimentalText as Text,
+	Button,
+	Flex,
+	FlexItem,
+	Modal,
+	Notice,
+} from '@wordpress/components';
 import { useEffect, useState } from '@wordpress/element';
+import { Icon, warning } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
 import { dispatch, useSelect } from '@wordpress/data';
 import { Form } from '@woocommerce/components';
@@ -32,6 +41,7 @@ import {
 } from 'types';
 import { addressStore } from 'data/address';
 import { withBoundary } from 'components/HOC';
+import { carrierStrategyStore } from '../../data/carrier-strategy';
 
 interface AddressStepProps< T = Destination > {
 	type: AddressTypes;
@@ -239,6 +249,20 @@ export const AddressStep = withBoundary(
 			return ! isDirty;
 		};
 
+		const hasApprovedUPSDAPTOS = useSelect(
+			( select ) => {
+				if ( type === ADDRESS_TYPES.DESTINATION ) {
+					return false;
+				}
+				return select(
+					carrierStrategyStore
+				).getUPSDAPCarrierStrategyForAddressId( address.id )
+					.hasAgreedToTos;
+			},
+			[ address.id, type ]
+		);
+
+		const showUPSDAPTOSWarning = isAdd ? false : hasApprovedUPSDAPTOS;
 		return (
 			<div>
 				<Form< T >
@@ -264,6 +288,31 @@ export const AddressStep = withBoundary(
 										validationErrors,
 									} }
 								>
+									{ showUPSDAPTOSWarning && (
+										<>
+											<Notice
+												status="warning"
+												isDismissible={ false }
+											>
+												<Flex align="flex-start">
+													<Icon
+														icon={ warning }
+														style={ {
+															minWidth: '20px',
+														} }
+													/>
+													<Text>
+														{ __(
+															'You have accepted the UPS® Terms of Service for this address. If you update the address, the acceptance will be revoked, and you will need to accept the Terms of Service again before purchasing additional UPS® labels.',
+															'woocommerce-shipping'
+														) }
+													</Text>
+												</Flex>
+											</Notice>
+											<Spacer marginBottom={ 3 } />
+										</>
+									) }
+
 									<p>
 										{ __(
 											"Please complete all required fields and click the 'Validate and save' button below to confirm and validate your address details.",

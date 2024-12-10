@@ -1,7 +1,9 @@
 import { mapKeys, mapValues } from 'lodash';
 import {
+	camelCaseKeys,
 	camelCasePackageResponse,
 	createReducer,
+	getCarrierStrategies,
 	getConfig,
 	getCustomsInformation,
 	getLabelDestinations,
@@ -12,9 +14,9 @@ import {
 	groupRatesByCarrier,
 } from 'utils';
 import {
-	RATES_FETCHED,
-	ORDER_STATUS_UPDATED,
 	ORDER_STATUS_UPDATE_FAILED,
+	ORDER_STATUS_UPDATED,
+	RATES_FETCHED,
 	RATES_RESET,
 } from './action-types';
 import { LabelPurchaseState } from '../types';
@@ -22,12 +24,12 @@ import {
 	LabelPurchaseActions,
 	LabelPurchaseSuccessAction,
 	LabelStatusResolvedAction,
+	OrderStatusUpdatedAction,
+	OrderStatusUpdatedFailedAction,
 	PackageUpdateAction,
 	PackageUpdateFailedAction,
 	RatesFetchedAction,
 	StageLabelsNewShipmentIdsAction,
-	OrderStatusUpdatedAction,
-	OrderStatusUpdatedFailedAction,
 } from './types.d';
 import {
 	PACKAGES_UPDATE,
@@ -56,6 +58,9 @@ const defaultState: LabelPurchaseState = {
 	selectedOrigins: getLabelOrigins(),
 	purchaseAPIErrors: {},
 	customsInformation: getCustomsInformation(),
+	carrierStrategies: mapValues( getCarrierStrategies(), ( value ) =>
+		camelCaseKeys( value )
+	),
 } as const;
 
 export const labelPurchaseReducer = createReducer( defaultState )

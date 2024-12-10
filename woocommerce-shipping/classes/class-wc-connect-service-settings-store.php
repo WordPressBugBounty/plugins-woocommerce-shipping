@@ -99,6 +99,8 @@ class WC_Connect_Service_Settings_Store {
 			$result['checkout_address_validation'] = false;
 		}
 
+		$result['tax_identifiers'] = $this->get_tax_identifiers();
+
 		return $result;
 	}
 
@@ -120,10 +122,23 @@ class WC_Connect_Service_Settings_Store {
 		// Sanitize paper_size and save it separately.
 		$paper_size = $settings['paper_size'];
 		if ( ! in_array( $paper_size, array( 'label', 'letter', 'a4' ), true ) ) {
-			return false;
+			// If the paper size is not valid, set it to label as the default.
+			$paper_size = 'label';
 		}
 		$this->set_preferred_paper_size( $paper_size );
 		unset( $settings['paper_size'] );
+
+		$allowed_tax_identifier_ids = array( 'ioss', 'voec' );
+		foreach ( $allowed_tax_identifier_ids as $tax_identifier_id ) {
+			$tax_input_key = 'tax_identifier_' . $tax_identifier_id;
+
+			if ( ! isset( $settings[ $tax_input_key ] ) ) {
+				continue;
+			}
+
+			$this->set_tax_identifier( $tax_identifier_id, wc_clean( $settings[ $tax_input_key ] ) ?? '' );
+			unset( $settings[ $tax_input_key ] );
+		}
 
 		// Sanitize other fields
 		$allowable_post = array(
@@ -234,6 +249,36 @@ class WC_Connect_Service_Settings_Store {
 
 	public function set_preferred_paper_size( $size ) {
 		return WC_Connect_Options::update_option( 'paper_size', $size );
+	}
+
+	/**
+	 * Return all shipping tax identifiers for the store.
+	 *
+	 * @return array
+	 */
+	public function get_tax_identifiers() {
+		$tax_identifiers = WC_Connect_Options::get_option( 'tax_identifiers', array() );
+
+		if ( empty( $tax_identifiers ) || ! is_array( $tax_identifiers ) ) {
+			return array();
+		}
+
+		return $tax_identifiers;
+	}
+
+	/**
+	 * Sets a tax identifier for the store.
+	 *
+	 * @param string $tax_id_type The type of tax identifier, e.g. 'ioss'.
+	 * @param string $tax_id The tax identifier number / ID.
+	 *
+	 * @return bool true if the tax identifier was successfully set.
+	 */
+	public function set_tax_identifier( $tax_id_type, $tax_id ) {
+		$tax_identifiers                 = WC_Connect_Options::get_option( 'tax_identifiers', array() );
+		$tax_identifiers[ $tax_id_type ] = $tax_id;
+
+		return WC_Connect_Options::update_option( 'tax_identifiers', $tax_identifiers );
 	}
 
 	/**

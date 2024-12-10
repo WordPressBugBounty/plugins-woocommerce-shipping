@@ -79,7 +79,14 @@ export function useShipmentState() {
 		// Fetching the origin and destination addresses for the most recently purchased label doesn't check
 		// if it has been refunded or not, so we check for "activePurchasedLabel" as well.
 		// older implementations of purchasedLabelOrigin don't have the id property, so we check for it.
-		if ( activePurchasedLabel && purchasedLabelOrigin?.id ) {
+		if (
+			activePurchasedLabel &&
+			[
+				LABEL_PURCHASE_STATUS.PURCHASED,
+				LABEL_PURCHASE_STATUS.PURCHASE_IN_PROGRESS,
+			].includes( activePurchasedLabel.status ) &&
+			purchasedLabelOrigin?.id
+		) {
 			setShipmentOrigin( purchasedLabelOrigin.id );
 		} else if ( ! shipmentOrigins[ currentShipmentId ] ) {
 			setShipmentOrigin( getFirstSelectableOriginAddress().id );
@@ -123,7 +130,14 @@ export function useShipmentState() {
 	);
 
 	const getShipmentOrigin = useCallback( () => {
-		if ( activePurchasedLabel && purchasedLabelOrigin ) {
+		if (
+			activePurchasedLabel &&
+			purchasedLabelOrigin &&
+			[
+				LABEL_PURCHASE_STATUS.PURCHASED,
+				LABEL_PURCHASE_STATUS.PURCHASE_IN_PROGRESS,
+			].includes( activePurchasedLabel.status )
+		) {
 			const foundOrigin = findOriginAddressById(
 				purchasedLabelOrigin.id
 			);

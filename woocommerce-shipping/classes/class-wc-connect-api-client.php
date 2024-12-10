@@ -211,6 +211,16 @@ abstract class WC_Connect_API_Client {
 	}
 
 	/**
+	 * Make ToS Acceptance request to the WooCommerce Shipping Server.
+	 *
+	 * @param array $body Request body.
+	 * @return mixed|WP_Error Response from the server.
+	 */
+	public function send_tos_acceptance_for_origin_address( $body ) {
+		return $this->request( 'POST', '/shipping/origin-addresses', $body );
+	}
+
+	/**
 	 * Retrieve Sift configurations.
 	 *
 	 * @return object|WP_Error
@@ -546,6 +556,15 @@ abstract class WC_Connect_API_Client {
 			$headers['X-Woo-Access-Token'] = $wc_helper_auth_info['access_token'];
 			$headers['X-Woo-Site-Id']      = $wc_helper_auth_info['site_id'];
 		}
+
+		/*
+		 * Add the client's user agent as a custom header sent with every request to the Connect Server.
+		 *
+		 * When a request is made via Jetpack, as is the case when logging into a site through WPCOM on the Woo mobile app,
+		 * the user agent will be replaced with Jetpack's. This method makes sure the user agent still makes it through,
+		 * albeit as a custom header.
+		 */
+		$headers['X-WCShip-Forwarded-User-Agent'] = sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ?? '' ) );
 
 		return $headers;
 	}

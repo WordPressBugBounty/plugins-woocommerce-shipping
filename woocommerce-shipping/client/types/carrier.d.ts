@@ -1,1 +1,1 @@
-export type Carrier = 'usps' | 'fedex' | 'ups' | 'dhlexpress';
+export type Carrier = 'usps' | 'fedex' | 'ups' | 'upsdap' | 'dhlexpress';

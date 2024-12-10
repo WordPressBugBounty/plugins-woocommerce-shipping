@@ -7,12 +7,13 @@
 
 namespace Automattic\WCShipping\LabelPurchase;
 
+use Automattic\WCShipping\Carrier\UPSDAP\UPSDAPCarrierStrategyService;
+use Automattic\WCShipping\Exceptions\RESTRequestException;
 use Automattic\WCShipping\OriginAddresses\OriginAddressService;
 use Automattic\WCShipping\WCShippingRESTController;
-use Automattic\WCShipping\Exceptions\RESTRequestException;
+use WP_Error;
 use WP_REST_Request;
 use WP_REST_Server;
-use WP_Error;
 
 /**
  * REST controller for origin and destination address verification.
@@ -48,10 +49,12 @@ class AddressRESTController extends WCShippingRESTController {
 	 */
 	public function __construct(
 		AddressNormalizationService $normalization_service,
-		OriginAddressService $origin_address_service
+		OriginAddressService $origin_address_service,
+		UPSDAPCarrierStrategyService $upsdap_carrier_service
 	) {
 		$this->normalization_service  = $normalization_service;
 		$this->origin_address_service = $origin_address_service;
+		$this->upsdap_carrier_service = $upsdap_carrier_service;
 	}
 
 	/**
@@ -129,7 +132,7 @@ class AddressRESTController extends WCShippingRESTController {
 	 */
 	public function update_origin( WP_REST_Request $request ) {
 		try {
-			list( $origin ) = $this->get_and_check_body_params( $request, array( 'address', 'isVerified' ) );
+			[ $origin ] = $this->get_and_check_body_params( $request, array( 'address', 'isVerified' ) );
 		} catch ( RESTRequestException $error ) {
 			return rest_ensure_response( $error->get_error_response() );
 		}
@@ -145,8 +148,8 @@ class AddressRESTController extends WCShippingRESTController {
 	 */
 	public function update_destination( WP_REST_Request $request ) {
 		try {
-			list( $destination, $is_verified ) = $this->get_and_check_body_params( $request, array( 'address', 'isVerified' ) );
-			list( $order_id )                  = $this->get_and_check_request_params( $request, array( 'order_id' ) );
+			[ $destination, $is_verified ] = $this->get_and_check_body_params( $request, array( 'address', 'isVerified' ) );
+			[ $order_id ]                  = $this->get_and_check_request_params( $request, array( 'order_id' ) );
 		} catch ( RESTRequestException $error ) {
 			return rest_ensure_response( $error->get_error_response() );
 		}
@@ -163,7 +166,7 @@ class AddressRESTController extends WCShippingRESTController {
 	 */
 	public function verify_order_shipping_address( WP_REST_Request $request ) {
 		try {
-			list( $order_id ) = $this->get_and_check_request_params( $request, array( 'order_id' ) );
+			[ $order_id ] = $this->get_and_check_request_params( $request, array( 'order_id' ) );
 		} catch ( RESTRequestException $error ) {
 			return rest_ensure_response( $error->get_error_response() );
 		}
@@ -179,7 +182,7 @@ class AddressRESTController extends WCShippingRESTController {
 	 */
 	public function normalize_address( WP_REST_Request $request ) {
 		try {
-			list($address) = $this->get_and_check_body_params( $request, array( 'address' ) );
+			[ $address ] = $this->get_and_check_body_params( $request, array( 'address' ) );
 		} catch ( RESTRequestException $error ) {
 			return rest_ensure_response( $error->get_error_response() );
 		}
@@ -196,7 +199,7 @@ class AddressRESTController extends WCShippingRESTController {
 	 */
 	public function delete( $request ) {
 		try {
-			list( $id ) = $this->get_and_check_request_params( $request, array( 'id' ) );
+			[ $id ] = $this->get_and_check_request_params( $request, array( 'id' ) );
 		} catch ( RESTRequestException $error ) {
 			return rest_ensure_response( $error->get_error_response() );
 		}

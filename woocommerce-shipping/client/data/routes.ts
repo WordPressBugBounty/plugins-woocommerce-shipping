@@ -1,4 +1,5 @@
 import { NAMESPACE, WC_NAMESPACE } from './constants';
+import { Carrier } from '../types';
 
 export const getRatesPath = () => `${ NAMESPACE }/label/rate`;
 
@@ -44,5 +45,8 @@ export const getWPCOMConnectionPath = () => `${ NAMESPACE }/wpcom-connection`;
 
 export const getDeleteCustomPackagesPath = ( id: string ) =>
 	`${ NAMESPACE }/packages/${ id }`;
+
+export const getCarrierStrategyPath = ( carrierId: Carrier ) =>
+	`${ NAMESPACE }/carrier-strategy/${ carrierId }`;
 
 export const getLabelsReportPath = () => `${ NAMESPACE }/reports/labels`;

@@ -3,13 +3,8 @@ import apiFetch from '@wordpress/api-fetch';
 import { getAccountSettings, hasSelectedPaymentMethod } from 'utils';
 import { getAccountSettingsPath } from 'data/routes';
 import { WCShippingConfig } from 'types';
-import { useRatesState } from './rates';
 
-interface AccountStateProps {
-	getSelectedRate: ReturnType< typeof useRatesState >[ 'getSelectedRate' ];
-}
-
-export function useAccountState( { getSelectedRate }: AccountStateProps ) {
+export function useAccountState() {
 	const [ accountSettings, updateAccountSettings ] = useState(
 		getAccountSettings()
 	);
@@ -55,13 +50,7 @@ export function useAccountState( { getSelectedRate }: AccountStateProps ) {
 	};
 
 	const canPurchase = () => {
-		const selectedRate = getSelectedRate();
-
-		const labelRequiresPaymentMethod =
-			selectedRate?.rate.carrierId !== 'ups';
-		return labelRequiresPaymentMethod
-			? hasSelectedPaymentMethod( { accountSettings } )
-			: ! labelRequiresPaymentMethod;
+		return hasSelectedPaymentMethod( { accountSettings } );
 	};
 
 	return {

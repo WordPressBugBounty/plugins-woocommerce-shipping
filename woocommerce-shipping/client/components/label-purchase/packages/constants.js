@@ -11,7 +11,8 @@ export const PACKAGE_TYPES = {
 
 export const CARRIER_ID_TO_NAME = {
 	usps: 'USPS',
-	ups: 'UPS',
+	ups: 'UPS®',
+	upsdap: 'UPS®',
 	fedex: 'FedEx',
 	dhl: 'DHL',
 	dhlexpress: 'DHL Express',

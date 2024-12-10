@@ -38,7 +38,7 @@ export function* saveSettings( {
 
 export function updateFormData(
 	formInputKey: string,
-	formInputvalue: boolean | string
+	formInputvalue: boolean | string | null
 ) {
 	return {
 		type: SETTINGS_UPDATE_FORM_DATA,

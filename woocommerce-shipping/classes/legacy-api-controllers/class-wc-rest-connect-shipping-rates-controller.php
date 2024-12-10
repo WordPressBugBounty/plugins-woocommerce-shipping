@@ -4,6 +4,7 @@ namespace Automattic\WCShipping\LegacyAPIControllers;
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
+
 use stdClass;
 use WP_Error;
 

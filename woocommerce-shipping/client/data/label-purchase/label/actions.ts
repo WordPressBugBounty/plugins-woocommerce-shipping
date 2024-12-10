@@ -93,6 +93,7 @@ export function* purchaseLabel(
 			hazmat: hazmatState,
 			customs: customsState,
 			user_meta: userMeta,
+			features_supported_by_client: [ 'upsdap' ],
 		},
 	} );
 

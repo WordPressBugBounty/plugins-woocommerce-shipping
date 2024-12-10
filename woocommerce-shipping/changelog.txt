@@ -1,5 +1,12 @@
 *** WooCommerce Shipping Changelog ***
 
+= 1.3.0 - 2024-12-10 =
+* Add   - UPS shipping label support, providing access to discounted rates directly in the WooCommerce dashboard (no individual UPS account required).
+* Add   - Two new tax identifiers for customs form (IOSS & VOEC) that can be found on the WooCommerce Shipping settings page.
+* Fix   - Fix issue where migrated paper size was making payment method change fail.
+* Fix   - Fix package and rates pre-selection for multiple shipments.
+* Fix   - Fix issue with fatal errors in some environments when using the Shipment Tracking extension.
+
 = 1.2.3 - 2024-11-18 =
 * Add   - Only wp.com account owner can manage payment methods.
 * Add   - Emoji validation on shipping address.
@@ -17,10 +24,10 @@
 * Tweak - Move last purchased rate that is pre-selected to the top of the rates list.
 * Fix   - Added missing separator for zip code in the checkout address verification.
 * Fix   - Issue with legacy API endpoint for custom packages to ensure correct data output.
+* Fix   - Issue where switching between package tabs would not reset the selected rate.
 
 = 1.2.1 - 2024-10-17 =
 * Fix   - Issue with excessive rendering of the shipping label success view.
-
 
 = 1.2.0 - 2024-10-16 =
 * Add   - Option to allow shipping address validation at checkout.

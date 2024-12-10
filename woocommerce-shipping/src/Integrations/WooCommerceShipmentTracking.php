@@ -35,6 +35,10 @@ class WooCommerceShipmentTracking {
 	 * @return void
 	 */
 	public static function add_tracking_number_to_order( $order_id, $tracking_number, $carrier, $service = '' ) {
+		// Workaround for the UPS DAP carrier ID which is not supported by WC Shipment Tracking.
+		if ( 'upsdap' === $carrier ) {
+			$carrier = 'ups';
+		}
 
 		// To avoid conflicts with the WC Shipment Tracking carriers/providers and to make life easier we will use custom defined ones.
 		$tracking_url = self::get_tracking_url( $carrier ) . $tracking_number;
@@ -45,16 +49,16 @@ class WooCommerceShipmentTracking {
 		}
 
 		// If we made it till here then the WC Shipment Tracking plugin is not installed and we will use our own custom implementation.
-		$order = wc_get_order( $order_id );
+		$order = \wc_get_order( $order_id );
 		if ( ! $order instanceof \WC_Order ) {
 			return;
 		}
 
 		$tracking_item = array(
 			'tracking_provider'        => '',
-			'custom_tracking_provider' => wc_clean( $service ? $service : $carrier ),
-			'tracking_number'          => wc_clean( $tracking_number ),
-			'custom_tracking_link'     => wc_clean( $tracking_url ),
+			'custom_tracking_provider' => \wc_clean( $service ? $service : $carrier ),
+			'tracking_number'          => \wc_clean( $tracking_number ),
+			'custom_tracking_link'     => \wc_clean( $tracking_url ),
 		);
 		// Generate a unique key for the tracking item.
 		$key                          = md5( "{$tracking_item['custom_tracking_provider']}-{$tracking_item['tracking_number']}" . microtime() );
@@ -87,7 +91,7 @@ class WooCommerceShipmentTracking {
 	 * @return void
 	 */
 	public static function save_st_tracking_items( $order_id, $tracking_items ) {
-		$order = wc_get_order( $order_id );
+		$order = \wc_get_order( $order_id );
 		if ( ! $order instanceof \WC_Order ) {
 			return;
 		}
@@ -107,7 +111,7 @@ class WooCommerceShipmentTracking {
 	 * @return array Tracking items
 	 */
 	public static function get_st_tracking_items( $order_id ) {
-		$order = wc_get_order( $order_id );
+		$order = \wc_get_order( $order_id );
 
 		if ( ! $order instanceof \WC_Order ) {
 			return array();
@@ -146,7 +150,7 @@ class WooCommerceShipmentTracking {
 			return;
 		}
 
-		wc_st_add_tracking_number( $order_id, $tracking_number, $carrier, null, $tracking_url );
+		\wc_st_add_tracking_number( $order_id, $tracking_number, $carrier, null, $tracking_url );
 	}
 
 	/**
@@ -159,6 +163,7 @@ class WooCommerceShipmentTracking {
 	public static function get_tracking_url( $carrier ) {
 		$tracking_urls = array(
 			'ups'        => 'https://www.ups.com/track?tracknum=',
+			'upsdap'     => 'https://www.ups.com/track?tracknum=',
 			'usps'       => 'https://tools.usps.com/go/TrackConfirmAction?tLabels=',
 			'fedex'      => 'https://www.fedex.com/apps/fedextrack/?tracknumbers=',
 			'dhlexpress' => 'https://www.dhl.com/en/express/tracking.html?AWB=',

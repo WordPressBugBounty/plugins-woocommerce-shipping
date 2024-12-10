@@ -45,7 +45,6 @@ export const SplitShipmentModal = ( { close }: SplitShipmentModalProps ) => {
 			localStorage.getItem( SHOW_SPLIT_SHIPMENT_NOTICE ) ?? false
 		)
 	);
-
 	const [ updateError, setUpdateError ] = useState< unknown | boolean >(
 		false
 	);
@@ -74,6 +73,10 @@ export const SplitShipmentModal = ( { close }: SplitShipmentModalProps ) => {
 	const hasMultipleShipments = Object.values( shipments ).length > 1;
 	const previousShipmentsState = usePrevious( shipments );
 
+	const selectedItemsAndSubitems = () => {
+		const firstSelection = Object.values( selections )[ 0 ] ?? [];
+		return firstSelection.flatMap( ( selection ) => selection.subItems );
+	};
 	/**
 	 * Store the initial state of shipments to enable resetting the state when
 	 * the modal is closed.
@@ -244,7 +247,7 @@ export const SplitShipmentModal = ( { close }: SplitShipmentModalProps ) => {
 					hasVariations={ hasVariations }
 					selectAll={ selectAll( '0' ) }
 					hasMultipleShipments={ hasMultipleShipments }
-					selections={ Object.values( selections )[ 0 ] }
+					selections={ selectedItemsAndSubitems() }
 					selectablesCount={ getSelectablesCount(
 						Object.values( shipments )[ 0 ]
 					) }

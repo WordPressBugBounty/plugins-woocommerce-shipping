@@ -2,42 +2,37 @@
 # This file is distributed under the GPL v2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: WooCommerce Shipping 1.2.3\n"
+"Project-Id-Version: WooCommerce Shipping 1.3.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/woocommerce-shipping\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2024-11-18T13:44:20+00:00\n"
+"POT-Creation-Date: 2024-12-10T14:18:46+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"X-Generator: WP-CLI 2.11.0\n"
+"X-Generator: WP-CLI 2.6.0\n"
 "X-Domain: woocommerce-shipping\n"
 
 #. Plugin Name of the plugin
-#: woocommerce-shipping.php
 #: classes/class-wc-connect-privacy.php:34
-#: classes/class-wc-connect-settings-pages.php:84
+#: classes/class-wc-connect-settings-pages.php:88
 msgid "WooCommerce Shipping"
 msgstr ""
 
 #. Plugin URI of the plugin
-#: woocommerce-shipping.php
 msgid "https://woocommerce.com/products/shipping/"
 msgstr ""
 
 #. Description of the plugin
-#: woocommerce-shipping.php
 msgid "Save time and money with WooCommerce Shipping. Print discounted shipping labels with just a few clicks from your WooCommerce dashboard."
 msgstr ""
 
 #. Author of the plugin
-#: woocommerce-shipping.php
 msgid "WooCommerce"
 msgstr ""
 
 #. Author URI of the plugin
-#: woocommerce-shipping.php
 msgid "https://woocommerce.com/"
 msgstr ""
 
@@ -72,7 +67,7 @@ msgid "Error: The WooCommerce Shipping server returned ( %d ) and an empty respo
 msgstr ""
 
 #. translators: %1$s: error code, %2$s: error message, %3$d: HTTP response code
-#: classes/class-wc-connect-api-client-live.php:131
+#: classes/class-wc-connect-api-client-live.php:143
 msgid "Error: The WooCommerce Shipping server returned: %1$s %2$s ( %3$d )"
 msgstr ""
 
@@ -94,15 +89,15 @@ msgstr ""
 msgid "No shipping rate could be calculated. No items in the package are shippable."
 msgstr ""
 
-#: classes/class-wc-connect-api-client.php:559
+#: classes/class-wc-connect-api-client.php:578
 msgid "Unable to send request to WooCommerce Shipping server. Jetpack Token is missing"
 msgstr ""
 
-#: classes/class-wc-connect-api-client.php:566
+#: classes/class-wc-connect-api-client.php:585
 msgid "Unable to send request to WooCommerce Shipping server. Jetpack Token is malformed."
 msgstr ""
 
-#: classes/class-wc-connect-api-client.php:629
+#: classes/class-wc-connect-api-client.php:648
 msgid "Unable to send request to WooCommerce Shipping server. The timestamp generated for the signature is too old."
 msgstr ""
 
@@ -132,7 +127,7 @@ msgid "<strong>\"%2$s\" is missing weight, length, width, or height.</strong><br
 msgstr ""
 
 #: classes/class-wc-connect-error-notice.php:102
-#: src/Loader.php:1884
+#: src/Loader.php:1909
 msgid "Dismiss this notice"
 msgstr ""
 
@@ -141,61 +136,61 @@ msgid "WooCommerce Helper auth is missing"
 msgstr ""
 
 #. translators: %1$s: minimum WooCommerce version, %2$s: current WooCommerce version
-#: classes/class-wc-connect-help-view.php:59
+#: classes/class-wc-connect-help-view.php:60
 msgid "WooCommerce %1$s or higher is required (You are running %2$s)"
 msgstr ""
 
-#: classes/class-wc-connect-help-view.php:67
+#: classes/class-wc-connect-help-view.php:68
 msgid "Please set Base Location in WooCommerce Settings > General"
 msgstr ""
 
 #. translators: %s: current WooCommerce version
-#: classes/class-wc-connect-help-view.php:74
+#: classes/class-wc-connect-help-view.php:75
 msgid "WooCommerce %s is configured correctly"
 msgstr ""
 
-#: classes/class-wc-connect-help-view.php:87
+#: classes/class-wc-connect-help-view.php:88
 msgid "WooCommerce Shipping is not connected to WordPress.com. WooCommerce Shipping requires you to connect to a WordPress.com account to be able to offer shipping rates and label purchases."
 msgstr ""
 
-#: classes/class-wc-connect-help-view.php:92
+#: classes/class-wc-connect-help-view.php:93
 msgid "WooCommerce Shipping is connected to WordPress.com, and working correctly"
 msgstr ""
 
-#: classes/class-wc-connect-help-view.php:144
+#: classes/class-wc-connect-help-view.php:145
 msgid "Setup for this service has not yet been completed"
 msgstr ""
 
-#: classes/class-wc-connect-help-view.php:147
+#: classes/class-wc-connect-help-view.php:148
 msgid "No rate requests have yet been made for this service"
 msgstr ""
 
-#: classes/class-wc-connect-help-view.php:150
+#: classes/class-wc-connect-help-view.php:151
 msgid "The most recent rate request was successful"
 msgstr ""
 
-#: classes/class-wc-connect-help-view.php:153
+#: classes/class-wc-connect-help-view.php:154
 msgid "The most recent rate request failed"
 msgstr ""
 
 #. translators: %s: shipping zone name
-#: classes/class-wc-connect-help-view.php:158
+#: classes/class-wc-connect-help-view.php:159
 msgid "%s Shipping Zone"
 msgstr ""
 
-#: classes/class-wc-connect-help-view.php:219
+#: classes/class-wc-connect-help-view.php:220
 msgid "Log is empty"
 msgstr ""
 
-#: classes/class-wc-connect-help-view.php:248
-#: classes/class-wc-connect-settings-pages.php:45
-#: src/Loader.php:815
+#: classes/class-wc-connect-help-view.php:249
+#: classes/class-wc-connect-settings-pages.php:47
+#: src/Loader.php:827
 #: src/Onboarding/SettingsPage.php:73
 msgctxt "The WooCommerce Shipping brandname"
 msgid "WooCommerce Shipping"
 msgstr ""
 
-#: classes/class-wc-connect-help-view.php:276
+#: classes/class-wc-connect-help-view.php:277
 msgid "WooCommerce Shipping Status"
 msgstr ""
 
@@ -259,64 +254,64 @@ msgstr ""
 msgid "Shipping label tracking number"
 msgstr ""
 
-#: classes/class-wc-connect-service-settings-store.php:511
+#: classes/class-wc-connect-service-settings-store.php:556
 msgctxt "A service with an unknown title and unknown method_title"
 msgid "Unknown"
 msgstr ""
 
-#: classes/class-wc-connect-service-settings-store.php:515
+#: classes/class-wc-connect-service-settings-store.php:560
 msgid "Rest of the World"
 msgstr ""
 
-#: classes/class-wc-connect-service-settings-store.php:547
+#: classes/class-wc-connect-service-settings-store.php:592
 msgid "An invalid service instance was received."
 msgstr ""
 
-#: classes/class-wc-connect-service-settings-store.php:552
+#: classes/class-wc-connect-service-settings-store.php:597
 msgid "An invalid service ID was received."
 msgstr ""
 
-#: classes/class-wc-connect-service-settings-store.php:688
+#: classes/class-wc-connect-service-settings-store.php:733
 msgid "kg"
 msgstr ""
 
-#: classes/class-wc-connect-service-settings-store.php:690
+#: classes/class-wc-connect-service-settings-store.php:735
 msgid "g"
 msgstr ""
 
-#: classes/class-wc-connect-service-settings-store.php:692
+#: classes/class-wc-connect-service-settings-store.php:737
 msgid "lbs"
 msgstr ""
 
-#: classes/class-wc-connect-service-settings-store.php:694
+#: classes/class-wc-connect-service-settings-store.php:739
 msgid "oz"
 msgstr ""
 
-#: classes/class-wc-connect-service-settings-store.php:696
+#: classes/class-wc-connect-service-settings-store.php:741
 msgid "m"
 msgstr ""
 
-#: classes/class-wc-connect-service-settings-store.php:698
+#: classes/class-wc-connect-service-settings-store.php:743
 msgid "cm"
 msgstr ""
 
-#: classes/class-wc-connect-service-settings-store.php:700
+#: classes/class-wc-connect-service-settings-store.php:745
 msgid "mm"
 msgstr ""
 
-#: classes/class-wc-connect-service-settings-store.php:702
+#: classes/class-wc-connect-service-settings-store.php:747
 msgid "in"
 msgstr ""
 
-#: classes/class-wc-connect-service-settings-store.php:704
+#: classes/class-wc-connect-service-settings-store.php:749
 msgid "yd"
 msgstr ""
 
-#: classes/class-wc-connect-settings-pages.php:118
+#: classes/class-wc-connect-settings-pages.php:122
 msgid "Note: Jetpack is connected, but development mode is also enabled on this site. Please disable development mode."
 msgstr ""
 
-#: classes/class-wc-connect-settings-pages.php:120
+#: classes/class-wc-connect-settings-pages.php:124
 msgid "Note: Jetpack development mode is enabled on this site. This site will not be able to obtain payment methods from WooCommerce Shipping production servers."
 msgstr ""
 
@@ -336,21 +331,21 @@ msgstr ""
 msgid "Unable to update settings. %s"
 msgstr ""
 
-#: classes/legacy-api-controllers/class-wc-rest-connect-packages-controller.php:98
+#: classes/legacy-api-controllers/class-wc-rest-connect-packages-controller.php:99
 #: src/Packages/PackagesRESTController.php:159
 msgid "The new custom package names are not unique."
 msgstr ""
 
-#: classes/legacy-api-controllers/class-wc-rest-connect-packages-controller.php:112
+#: classes/legacy-api-controllers/class-wc-rest-connect-packages-controller.php:113
 #: src/Packages/PackagesRESTController.php:173
 msgid "At least one of the new custom packages has the same name as existing packages."
 msgstr ""
 
-#: classes/legacy-api-controllers/class-wc-rest-connect-packages-controller.php:143
+#: classes/legacy-api-controllers/class-wc-rest-connect-packages-controller.php:144
 msgid "The new predefined package names are not unique."
 msgstr ""
 
-#: classes/legacy-api-controllers/class-wc-rest-connect-packages-controller.php:164
+#: classes/legacy-api-controllers/class-wc-rest-connect-packages-controller.php:165
 msgid "At least one of the new predefined packages has the same name as existing packages."
 msgstr ""
 
@@ -383,12 +378,12 @@ msgid "Order not found"
 msgstr ""
 
 #: classes/legacy-api-controllers/class-wc-rest-connect-shipping-label-controller.php:151
-#: src/LabelPurchase/LabelPurchaseService.php:276
+#: src/LabelPurchase/LabelPurchaseService.php:289
 msgid "Individual packaging"
 msgstr ""
 
 #: classes/legacy-api-controllers/class-wc-rest-connect-shipping-label-controller.php:155
-#: src/LabelPurchase/LabelPurchaseService.php:280
+#: src/LabelPurchase/LabelPurchaseService.php:293
 msgid "Unknown package"
 msgstr ""
 
@@ -542,27 +537,27 @@ msgstr ""
 msgid "Address normalization failed"
 msgstr ""
 
-#: src/LabelPurchase/View.php:242
+#: src/LabelPurchase/View.php:246
 msgid "You do not have permission to view this banner, please contact your administrator."
 msgstr ""
 
-#: src/LabelPurchase/View.php:249
+#: src/LabelPurchase/View.php:253
 msgid "Order not found."
 msgstr ""
 
-#: src/LabelPurchase/View.php:257
+#: src/LabelPurchase/View.php:261
 msgid "Unable to retrieve WordPress connection data. Please try reconnecting your WordPress connection."
 msgstr ""
 
-#: src/LabelPurchase/View.php:266
+#: src/LabelPurchase/View.php:270
 msgid "Shipping labels has been disabled for your account."
 msgstr ""
 
-#: src/LabelPurchase/View.php:279
+#: src/LabelPurchase/View.php:283
 msgid "The origin country of this store is not supported by WooCommerce Shipping yet."
 msgstr ""
 
-#: src/LabelPurchase/View.php:298
+#: src/LabelPurchase/View.php:302
 msgid "The order does not contain any shippable products."
 msgstr ""
 
@@ -703,51 +698,51 @@ msgid "The provided phone number is not valid"
 msgstr ""
 
 #. translators: %s WC download URL link.
-#: src/Loader.php:672
+#: src/Loader.php:681
 msgid "WooCommerce Shipping requires the WooCommerce plugin to be installed and active. You can download %s here."
 msgstr ""
 
-#: src/Loader.php:982
+#: src/Loader.php:997
 msgid "Settings"
 msgstr ""
 
-#: src/Loader.php:989
+#: src/Loader.php:1004
 msgid "Documentation"
 msgstr ""
 
-#: src/Loader.php:990
+#: src/Loader.php:1005
 #: dist/woocommerce-shipping-admin-status.js:14
 msgid "Support"
 msgstr ""
 
-#: src/Loader.php:1460
-#: src/Loader.php:1468
+#: src/Loader.php:1485
+#: src/Loader.php:1493
 msgid "Tracking"
 msgstr ""
 
-#: src/Loader.php:1472
+#: src/Loader.php:1497
 msgid "Provider"
 msgstr ""
 
-#: src/Loader.php:1474
+#: src/Loader.php:1499
 msgid "Tracking number"
 msgstr ""
 
-#: src/Loader.php:1603
+#: src/Loader.php:1628
 msgid "Shipping Label"
 msgstr ""
 
-#: src/Loader.php:1615
+#: src/Loader.php:1640
 msgid "Shipment Tracking"
 msgstr ""
 
-#: src/Loader.php:1669
-#: src/Loader.php:1698
+#: src/Loader.php:1694
+#: src/Loader.php:1723
 #: dist/woocommerce-shipping-create-shipping-label.js:25
 msgid "Phone"
 msgstr ""
 
-#: src/Loader.php:1913
+#: src/Loader.php:1938
 msgid "WooCommerce Shipping & Tax has been deactivated. Your data and settings have been carried over to the dedicated WooCommerce Shipping and WooCommerce Tax extensions.<br />For support, please <a href=\"https://woocommerce.com/my-account/create-a-ticket/\">contact our Happiness Engineers</a>."
 msgstr ""
 
@@ -904,12 +899,12 @@ msgid "WC Shipping checkout address validation notices"
 msgstr ""
 
 #. translators: %s: The missing query parameter.
-#: src/WCShippingRESTController.php:38
+#: src/WCShippingRESTController.php:40
 msgid "Required body parameter is missing: %s"
 msgstr ""
 
 #. translators: %s: The missing query parameter.
-#: src/WCShippingRESTController.php:71
+#: src/WCShippingRESTController.php:78
 msgid "Required parameter is missing: %s"
 msgstr ""
 
@@ -1497,6 +1492,10 @@ msgid "Customs forms require a 10-digit phone number. Please edit your phone num
 msgstr ""
 
 #: dist/woocommerce-shipping-create-shipping-label.js:25
+msgid "You have accepted the UPS® Terms of Service for this address. If you update the address, the acceptance will be revoked, and you will need to accept the Terms of Service again before purchasing additional UPS® labels."
+msgstr ""
+
+#: dist/woocommerce-shipping-create-shipping-label.js:25
 msgid "Please complete all required fields and click the 'Validate and save' button below to confirm and validate your address details."
 msgstr ""
 
@@ -1787,7 +1786,11 @@ msgid "Fastest"
 msgstr ""
 
 #: dist/woocommerce-shipping-create-shipping-label.js:46
-msgid "All carriers"
+msgid "Carriers"
+msgstr ""
+
+#: dist/woocommerce-shipping-create-shipping-label.js:46
+msgid "Apply"
 msgstr ""
 
 #: dist/woocommerce-shipping-create-shipping-label.js:46
@@ -2079,6 +2082,46 @@ msgstr ""
 msgid "Choose <fb1>a shipping service</fb1> after getting shipping rate."
 msgstr ""
 
+#: dist/woocommerce-shipping-create-shipping-label.js:61
+msgid "UPS® Terms and Conditions"
+msgstr ""
+
+#: dist/woocommerce-shipping-create-shipping-label.js:61
+msgid "Shipping from"
+msgstr ""
+
+#: dist/woocommerce-shipping-create-shipping-label.js:61
+msgid "To start shipping from this address with UPS®, we need you to agree to the following terms and conditions::"
+msgstr ""
+
+#: dist/woocommerce-shipping-create-shipping-label.js:61
+msgid "I agree to the <a>UPS® Terms of Service</a>."
+msgstr ""
+
+#: dist/woocommerce-shipping-create-shipping-label.js:61
+msgid "UPS® Terms of Service"
+msgstr ""
+
+#: dist/woocommerce-shipping-create-shipping-label.js:61
+msgid "I will not ship any <a>Prohibited Items</a> that UPS® disallows, nor any regulated items without the necessary permissions."
+msgstr ""
+
+#: dist/woocommerce-shipping-create-shipping-label.js:61
+msgid "Prohibited Items"
+msgstr ""
+
+#: dist/woocommerce-shipping-create-shipping-label.js:61
+msgid "I also agree to the <a>UPS® Technology Agreement</a>."
+msgstr ""
+
+#: dist/woocommerce-shipping-create-shipping-label.js:61
+msgid "UPS Technology Agreement"
+msgstr ""
+
+#: dist/woocommerce-shipping-create-shipping-label.js:61
+msgid "Confirm and continue"
+msgstr ""
+
 #. translators: %s is the shipment title as Shipment 1/2, Shipment 2/2, etc.
 #: dist/woocommerce-shipping-create-shipping-label.js:64
 msgid "Purchase %s"
@@ -2086,6 +2129,14 @@ msgstr ""
 
 #: dist/woocommerce-shipping-create-shipping-label.js:64
 msgid "Purchase label"
+msgstr ""
+
+#: dist/woocommerce-shipping-create-shipping-label.js:64
+msgid "You must agree to the UPS® Terms and Conditions to purchase a UPS® label."
+msgstr ""
+
+#: dist/woocommerce-shipping-create-shipping-label.js:64
+msgid "We were unable to update your acceptance of the UPS® Terms and Conditions. Please try again later or contact WooCommerce support if the issue persists."
 msgstr ""
 
 #: dist/woocommerce-shipping-create-shipping-label.js:64
@@ -2170,6 +2221,10 @@ msgstr ""
 
 #: dist/woocommerce-shipping-create-shipping-label.js:70
 msgid "selected package type, package dimensions"
+msgstr ""
+
+#: dist/woocommerce-shipping-create-shipping-label.js:70
+msgid "UPS, the UPS brandmark, UPS Ready®, and the color brown are trademarks of United Parcel Service of America, Inc. All Rights Reserved."
 msgstr ""
 
 #: dist/woocommerce-shipping-create-shipping-label.js:70

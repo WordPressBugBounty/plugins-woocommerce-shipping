@@ -32,6 +32,8 @@ class WC_Connect_Options {
 					'origin_normalized',
 					'last_rate_request',
 					'services_last_result_code',
+					'upsdap_strategies',
+					'tax_identifiers',
 				);
 			case 'shipping_method':
 				return array(

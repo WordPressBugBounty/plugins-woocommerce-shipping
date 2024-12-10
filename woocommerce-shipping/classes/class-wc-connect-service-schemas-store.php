@@ -245,6 +245,9 @@ class WC_Connect_Service_Schemas_Store {
 		return $service_schemas->boxes;
 	}
 
+	/**
+	 * @return array|null
+	 */
 	public function get_predefined_packages_schema() {
 		$service_schemas = $this->get_service_schemas();
 		if ( ! is_object( $service_schemas ) ) {
