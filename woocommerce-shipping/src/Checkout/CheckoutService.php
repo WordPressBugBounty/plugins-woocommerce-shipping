@@ -62,7 +62,7 @@ class CheckoutService {
 	public static function get_checkout_script_data(): array {
 		$data                         = array();
 		$data['store_api_identifier'] = StoreApiExtendSchema::IDENTIFIER;
-		$data['is_blocks_checkout']   = has_block( 'woocommerce/checkout' );
+		$data['is_blocks_checkout']   = intval( has_block( 'woocommerce/checkout' ) );
 		$data['settings']             = self::get_checkout_settings();
 
 		return $data;

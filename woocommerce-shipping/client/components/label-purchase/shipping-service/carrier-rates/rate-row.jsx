@@ -75,25 +75,24 @@ export const RateRow = withBoundary(
 			);
 		}
 
-
-	const rateCaveat =
-		rate.serviceId === 'MediaMail'
-			? createInterpolateElement(
-					__(
-						'Books and <a>other media</a> only',
-						'woocommerce-shipping'
-					),
-					{
-						a: (
-							// eslint-disable-next-line jsx-a11y/anchor-has-content
-							<a
-								target="__blank"
-								href="https://pe.usps.com/text/DMM300/273.htm#a_3_0"
-							/>
+		const rateCaveat =
+			rate.serviceId === 'MediaMail'
+				? createInterpolateElement(
+						__(
+							'Books and <a>other media</a> only',
+							'woocommerce-shipping'
 						),
-					}
-			  )
-			: '';
+						{
+							a: (
+								// eslint-disable-next-line jsx-a11y/anchor-has-content
+								<a
+									target="__blank"
+									href="https://pe.usps.com/text/DMM300/273.htm#a_3_0"
+								/>
+							),
+						}
+				  )
+				: '';
 
 		return (
 			<>
@@ -113,7 +112,6 @@ export const RateRow = withBoundary(
 						[ isSelected && 'selected' ],
 						[ rateCaveat && 'has-rate-caveat' ]
 					) }
-
 				>
 					<CarrierIcon
 						carrier={ carrierId }
@@ -127,7 +125,9 @@ export const RateRow = withBoundary(
 								{ title }
 							</Text>
 							{ rateCaveat && (
-								<Text className="rate-caveat">{ rateCaveat }</Text>
+								<Text className="rate-caveat">
+									{ rateCaveat }
+								</Text>
 							) }
 							{ ! isSelected && (
 								<Text className="rate-extras">

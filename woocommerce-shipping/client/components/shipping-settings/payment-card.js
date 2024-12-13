@@ -1,5 +1,6 @@
 import React from 'react';
-import { ExternalLink, Notice, RadioControl } from '@wordpress/components';
+import { Notice, RadioControl } from '@wordpress/components';
+import { Link } from '@woocommerce/components';
 import { dispatch, useSelect } from '@wordpress/data';
 import { __, sprintf } from '@wordpress/i18n';
 import PaymentMethod from './payment-method';
@@ -77,12 +78,16 @@ const PaymentCard = () => {
 					),
 					{
 						link: (
-							<ExternalLink href={ addPaymentMethodURL }>
+							<Link
+								href={ addPaymentMethodURL }
+								target="_blank"
+								type="external"
+							>
 								{ __(
 									'Choose another card',
 									'woocommerce-shipping'
 								) }
-							</ExternalLink>
+							</Link>
 						),
 					}
 				) }
@@ -102,12 +107,16 @@ const PaymentCard = () => {
 					),
 					{
 						link: (
-							<ExternalLink href={ addPaymentMethodURL }>
+							<Link
+								href={ addPaymentMethodURL }
+								target="_blank"
+								type="external"
+							>
 								{ __(
 									'Choose another card',
 									'woocommerce-shipping'
 								) }
-							</ExternalLink>
+							</Link>
 						),
 					}
 				) }

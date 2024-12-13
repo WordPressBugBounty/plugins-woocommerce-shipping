@@ -1,5 +1,4 @@
 import * as Sentry from '@sentry/react';
-import { getPluginRelativeDirectory } from './config';
 
 export const initSentry = () => {
 	Sentry.init( {
@@ -15,10 +14,8 @@ export const initSentry = () => {
 			...( window.wcShippingSettings?.environment === 'local'
 				? [ /\/woocommerce-shipping-/ ]
 				: [] ), // Match local dev server
-			new RegExp(
-				getPluginRelativeDirectory().replace( /\//g, '\\/' ) +
-					'assets\\/'
-			), // Match woocommerce-shipping assets
+			/woocommerce-shipping\/assets/, // Match woocommerce-shipping assets
+			/woocommerce-shipping\/dist/, // Match woocommerce-shipping assets under dist
 			/wp-json\/wcshipping\//, // Match woocommerce-shipping endpoints
 		],
 	} );

@@ -7,7 +7,7 @@ Requires at least: 6.5
 Tested up to: 6.7
 WC requires at least: 9.1
 WC tested up to: 9.3
-Stable tag: 1.3.0
+Stable tag: 1.3.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -21,8 +21,8 @@ With WooCommerce Shipping, critical services are hosted on Automattic’s best-i
 
 To start shipping, simply install this free plugin, create a WooCommerce account, and start saving time and money on your packages.
 
-= Print USPS and DHL shipping labels and get heavily discounted rates =
-Ship domestically and internationally right from your WooCommerce dashboard. Print USPS and DHL labels and instantly save up to 90%. All shipments are 100% carbon-neutral. More carriers are coming soon.
+= Print USPS, UPS, and DHL shipping labels and get heavily discounted rates =
+Ship domestically and internationally right from your WooCommerce dashboard. Print USPS, UPS, and DHL labels to save up to 77% instantly. All shipments are 100% carbon-neutral. More carriers are coming soon.
 
 = Compare live shipping label rates =
 Compare live rates across carriers to make sure you get the best price without guesswork or complex math.
@@ -120,12 +120,16 @@ Absolutely! You can read our Terms of Service [here](https://wordpress.com/tos).
 
 == Screenshots ==
 1. WooCommerce Shipping label purchase screen.
-2. WooCommerce Shipping split shipment screen.
-3. WooCommerce Shipping multiple origin address selection.
-4. WooCommerce Shipping print label screen.
-5. WooCommerce Shipping address validation at checkout suggestion.
+2. WooCommerce Shipping now supports select UPS services.
+3. WooCommerce Shipping split shipment screen.
+4. WooCommerce Shipping multiple origin address selection.
+5. WooCommerce Shipping print label screen.
+6. WooCommerce Shipping address validation at checkout suggestion.
 
 == Changelog ==
+
+= 1.3.1 - 2024-12-13 =
+* Fix   - Fix issue preventing the address validation from being applied on the checkout page.
 
 = 1.3.0 - 2024-12-10 =
 * Add   - UPS shipping label support, providing access to discounted rates directly in the WooCommerce dashboard (no individual UPS account required).

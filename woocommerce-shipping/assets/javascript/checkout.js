@@ -9,18 +9,18 @@ const { __ } = wp.i18n;
 ( function () {
 
 	// We need our localized data to be able to run this script.
-	if ( ! wcshipping_checkout ) {
+	if ( ! wcShippingSettings?.checkout ) {
 		return;
 	}
 
 	// Handle classic checkout.
 	function handleClassicCheckout( suggestedAddressJSON ) {
 		const suggestedAddressObject = JSON.parse( suggestedAddressJSON );
+		const isShipToDifferentAddressChecked = document.getElementById( 'ship-to-different-address-checkbox' )?.checked;
 
 		// Loop through suggested address object and apply the values to the corresponding inputs.
 		Object.entries( suggestedAddressObject ).forEach(
 			function ( [ key, value ] ) {
-				const isShipToDifferentAddressChecked = document.getElementById( 'ship-to-different-address-checkbox' ).checked;
 				const input                           = document.querySelector( isShipToDifferentAddressChecked ? '[id="shipping_' + key + '"]' : '[id$="' + key + '"]' );
 
 				if ( input ) {
@@ -43,7 +43,7 @@ const { __ } = wp.i18n;
 			detail: {
 				suggestedAddress: suggestedAddressJSON,
 				useShippingAsBilling: useShippingAsBilling,
-				storeApiIdentifier: wcshipping_checkout.store_api_identifier,
+				storeApiIdentifier: wcShippingSettings.checkout.store_api_identifier,
 			}
 		} );
 
@@ -71,7 +71,7 @@ const { __ } = wp.i18n;
 			// Change the button text to indicate that the address is being applied.
 			button.innerHTML = __( 'Applying...', 'woocommerce-shipping' );
 
-			if ( '1' !== wcshipping_checkout.is_blocks_checkout ) {
+			if ( !['1', 1].includes( wcShippingSettings.checkout.is_blocks_checkout ) ) {
 				handleClassicCheckout( suggestedAddressJSON );
 			} else {
 				fireApplySuggestedAddressEvent( suggestedAddressJSON );

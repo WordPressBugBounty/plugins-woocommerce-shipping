@@ -83,8 +83,13 @@ class CheckoutController {
 
 		wp_localize_script(
 			$handle,
-			'wcshipping_checkout',
-			CheckoutService::get_checkout_script_data()
+			'wcShippingSettings',
+			array_merge(
+				Utils::get_settings_object(),
+				array(
+					'checkout' => CheckoutService::get_checkout_script_data(),
+				)
+			)
 		);
 
 		wp_enqueue_script( $handle );

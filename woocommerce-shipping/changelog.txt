@@ -1,5 +1,8 @@
 *** WooCommerce Shipping Changelog ***
 
+= 1.3.1 - 2024-12-13 =
+* Fix   - Fix issue preventing the address validation from being applied on the checkout page.
+
 = 1.3.0 - 2024-12-10 =
 * Add   - UPS shipping label support, providing access to discounted rates directly in the WooCommerce dashboard (no individual UPS account required).
 * Add   - Two new tax identifiers for customs form (IOSS & VOEC) that can be found on the WooCommerce Shipping settings page.
