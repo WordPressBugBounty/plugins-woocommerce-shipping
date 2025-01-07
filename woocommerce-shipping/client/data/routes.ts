@@ -35,9 +35,6 @@ export const getWCOrdersPath = ( orderId: string ) =>
 export const getLabelRefundPath = ( orderId: number, labelId: number ) =>
 	`${ NAMESPACE }/label/refund/${ orderId }/${ labelId }`;
 
-export const getOriginAddressesPath = ( id?: string | undefined ) =>
-	`${ NAMESPACE }/origin-addresses${ id ? `/${ id }` : '' }`;
-
 export const getDeleteOriginAddressPath = ( id: string ) =>
 	`${ NAMESPACE }/address/${ id }`;
 

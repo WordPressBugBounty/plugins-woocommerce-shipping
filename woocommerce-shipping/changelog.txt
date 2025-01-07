@@ -1,5 +1,16 @@
 *** WooCommerce Shipping Changelog ***
 
+= 1.3.2 - 2025-01-07 =
+* Fix   - Removing starred carrier packages would also remove the predefined packages of other carriers.
+* Fix   - Refrain from automatically fetching rates if totalWeight is 0.
+* Fix   - Shipment data type safeguards.
+* Fix   - Dynamic property creation notices on PHP 8.2+.
+* Fix   - An error in the label purchase API endpoint when no shipment info is provided.
+* Fix   - An error in the label purchase API endpoint when the client does not provide list of supported features.
+* Tweak - PHP 8.4 compatibility.
+* Tweak - Improve the total weight input behaviour and error reporting.
+* Tweak - Consolidate the origin address API endpoints and documentation.
+
 = 1.3.1 - 2024-12-13 =
 * Fix   - Fix issue preventing the address validation from being applied on the checkout page.
 

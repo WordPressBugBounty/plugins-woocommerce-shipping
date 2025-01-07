@@ -5,9 +5,9 @@ Requires Plugins: woocommerce
 Requires PHP: 7.4
 Requires at least: 6.5
 Tested up to: 6.7
-WC requires at least: 9.1
-WC tested up to: 9.3
-Stable tag: 1.3.1
+WC requires at least: 9.3
+WC tested up to: 9.5
+Stable tag: 1.3.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -128,8 +128,20 @@ Absolutely! You can read our Terms of Service [here](https://wordpress.com/tos).
 
 == Changelog ==
 
+= 1.3.2 - 2025-01-07 =
+* Fix   - Removing starred carrier packages would also remove the predefined packages of other carriers.
+* Fix   - Refrain from automatically fetching rates if totalWeight is 0.
+* Fix   - Shipment data type safeguards.
+* Fix   - Dynamic property creation notices on PHP 8.2+.
+* Fix   - An error in the label purchase API endpoint when no shipment info is provided.
+* Fix   - An error in the label purchase API endpoint when the client does not provide list of supported features.
+* Tweak - PHP 8.4 compatibility.
+* Tweak - Improve the total weight input behaviour and error reporting.
+* Tweak - Consolidate the origin address API endpoints and documentation.
+
 = 1.3.1 - 2024-12-13 =
 * Fix   - Fix issue preventing the address validation from being applied on the checkout page.
+* Fix   - Fix issue where removing starred carrier packages would also remove the predefined packages of other carriers.
 
 = 1.3.0 - 2024-12-10 =
 * Add   - UPS shipping label support, providing access to discounted rates directly in the WooCommerce dashboard (no individual UPS account required).

@@ -109,12 +109,18 @@ export const SavedTemplates = withBoundary(
 						return;
 					}
 
+					const allPredefinedPackages =
+						selectData(
+							labelPurchaseStore
+						).getPredefinedPackages();
+
 					const predefinedPackages = selectData(
 						labelPurchaseStore
 					).getPredefinedPackages( carrierId ) as string[];
 
 					await dispatch( labelPurchaseStore ).updateFavoritePackages(
 						{
+							...allPredefinedPackages,
 							[ carrierId ]: predefinedPackages.filter(
 								( p ) => p !== pkg.id
 							),

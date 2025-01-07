@@ -21,3 +21,11 @@ export const convertWeightToUnit = (
 	// Convert to grams then to target unit
 	return ( weight * toGrams[ oldUnit ] ) / toGrams[ newUnit ];
 };
+
+export const minWeightThresholds: Record< WeightUnit, number > = {
+	[ WEIGHT_UNITS.G ]: 1.5,
+	[ WEIGHT_UNITS.OZ ]: 0.05,
+	// We accept up to 2 decimal places for weight, so 0.01 is the minimum
+	[ WEIGHT_UNITS.LBS ]: 0.01,
+	[ WEIGHT_UNITS.KG ]: 0.01,
+};

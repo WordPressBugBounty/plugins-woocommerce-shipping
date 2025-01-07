@@ -4,10 +4,11 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInit452115e0647d06f3459aae4efdf99548
+class ComposerStaticInit644a80e4b25560037acd97262c6185ae
 {
     public static $files = array (
         '3773ef3f09c37da5478d578e32b03a4b' => __DIR__ . '/..' . '/automattic/jetpack-assets/actions.php',
+        '7372b7fb88a9723cf5b76d456eb0b738' => __DIR__ . '/..' . '/automattic/jetpack-connection/actions.php',
     );
 
     public static $prefixLengthsPsr4 = array (
@@ -43,6 +44,7 @@ class ComposerStaticInit452115e0647d06f3459aae4efdf99548
         'Automattic\\Jetpack\\Config' => __DIR__ . '/..' . '/automattic/jetpack-config/src/class-config.php',
         'Automattic\\Jetpack\\Connection\\Authorize_Json_Api' => __DIR__ . '/..' . '/automattic/jetpack-connection/src/class-authorize-json-api.php',
         'Automattic\\Jetpack\\Connection\\Client' => __DIR__ . '/..' . '/automattic/jetpack-connection/src/class-client.php',
+        'Automattic\\Jetpack\\Connection\\Connection_Assets' => __DIR__ . '/..' . '/automattic/jetpack-connection/src/class-connection-assets.php',
         'Automattic\\Jetpack\\Connection\\Connection_Notice' => __DIR__ . '/..' . '/automattic/jetpack-connection/src/class-connection-notice.php',
         'Automattic\\Jetpack\\Connection\\Error_Handler' => __DIR__ . '/..' . '/automattic/jetpack-connection/src/class-error-handler.php',
         'Automattic\\Jetpack\\Connection\\Initial_State' => __DIR__ . '/..' . '/automattic/jetpack-connection/src/class-initial-state.php',
@@ -139,7 +141,6 @@ class ComposerStaticInit452115e0647d06f3459aae4efdf99548
         'Automattic\\WCShipping\\Migration\\MigrationState' => __DIR__ . '/../..' . '/src/Migration/MigrationState.php',
         'Automattic\\WCShipping\\Onboarding\\SettingsPage' => __DIR__ . '/../..' . '/src/Onboarding/SettingsPage.php',
         'Automattic\\WCShipping\\OriginAddresses\\OriginAddressService' => __DIR__ . '/../..' . '/src/OriginAddresses/OriginAddressService.php',
-        'Automattic\\WCShipping\\OriginAddresses\\OriginAddressesRESTController' => __DIR__ . '/../..' . '/src/OriginAddresses/OriginAddressesRESTController.php',
         'Automattic\\WCShipping\\Packages\\Package' => __DIR__ . '/../..' . '/src/Packages/Package.php',
         'Automattic\\WCShipping\\Packages\\PackageRepository' => __DIR__ . '/../..' . '/src/Packages/PackageRepository.php',
         'Automattic\\WCShipping\\Packages\\PackageValidationException' => __DIR__ . '/../..' . '/src/Packages/PackageValidationException.php',
@@ -170,9 +171,9 @@ class ComposerStaticInit452115e0647d06f3459aae4efdf99548
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInit452115e0647d06f3459aae4efdf99548::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInit452115e0647d06f3459aae4efdf99548::$prefixDirsPsr4;
-            $loader->classMap = ComposerStaticInit452115e0647d06f3459aae4efdf99548::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInit644a80e4b25560037acd97262c6185ae::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInit644a80e4b25560037acd97262c6185ae::$prefixDirsPsr4;
+            $loader->classMap = ComposerStaticInit644a80e4b25560037acd97262c6185ae::$classMap;
 
         }, null, ClassLoader::class);
     }

@@ -77,7 +77,6 @@ use Automattic\WCShipping\Migration\MigrationController;
 use Automattic\WCShipping\Migration\MigrationNotices;
 use Automattic\WCShipping\Migration\MigrationState;
 use Automattic\WCShipping\Onboarding\SettingsPage;
-use Automattic\WCShipping\OriginAddresses\OriginAddressesRESTController;
 use Automattic\WCShipping\OriginAddresses\OriginAddressService;
 use Automattic\WCShipping\Packages\PackagesRESTController;
 use Automattic\WCShipping\Shipments\ShipmentsRESTController;
@@ -1303,8 +1302,6 @@ class Loader {
 		( new LabelStatusController( $label_purchase_service, $logger ) )->register_routes();
 
 		( new LabelPrintController( $settings_store, $this->api_client, $logger, ) )->register_routes();
-
-		( new OriginAddressesRESTController( $origin_addresses_service, $address_normalization_service ) )->register_routes();
 
 		( new LabelRefundRESTController( $label_purchase_service ) )->register_routes();
 

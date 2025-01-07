@@ -116,7 +116,7 @@ export const CarrierPackage = withBoundary(
 									setSelectedPackage={ setSelectedPackage }
 								/>
 								<Spacer marginTop={ 6 } />
-								<Flex align="flex-end" gap={ 6 }>
+								<Flex align="flex-start" gap={ 6 }>
 									<TotalWeight
 										packageWeight={
 											selectedPackage?.boxWeight ?? 0

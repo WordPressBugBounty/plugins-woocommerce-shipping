@@ -101,7 +101,11 @@ export const getCurrentOrderShipments = ( config = getConfig() ) => {
 	);
 
 	shipmentsAugmentedWithDetails[ '0' ] = [
-		...shipmentsAugmentedWithDetails[ '0' ],
+		/**
+		 * Make sure a malformed shipments object doesn't throw an error
+		 * if shipmentsAugmentedWithDetails the returned value will look like the early return when isEmpty( storedShipments ) is true
+		 */
+		...( shipmentsAugmentedWithDetails[ '0' ] ?? [] ),
 		...itemsNotInShipments.map( ( item ) => ( {
 			...item,
 			subItems: getSubItems( item ),

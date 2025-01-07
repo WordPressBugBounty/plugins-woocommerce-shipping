@@ -35,6 +35,11 @@ class WC_Connect_Settings_Pages {
 	protected string $id;
 	protected string $label;
 
+	/**
+	 * @var CarrierStrategyService
+	 */
+	protected $carrier_strategy_service;
+
 	public function __construct(
 		WC_Connect_API_Client $api_client,
 		WC_Connect_Service_Schemas_Store $service_schemas_store,

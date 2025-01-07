@@ -183,7 +183,7 @@ class LabelPurchaseService {
 				'payment_method_id'            => $this->settings_store->get_selected_payment_method_id(),
 				'order_id'                     => $order_id,
 				'packages'                     => $request_packages,
-				'features_supported_by_client' => $features_supported_by_client,
+				'features_supported_by_client' => $features_supported_by_client ?? array(),
 			)
 		);
 
@@ -201,7 +201,7 @@ class LabelPurchaseService {
 			return $error;
 		}
 
-		$purchased_labels_meta = $this->get_labels_meta_from_response( $label_response, $request_packages, $service_names );
+		$purchased_labels_meta = $this->get_labels_meta_from_response( $label_response, $request_packages, $service_names, $order_id );
 		if ( is_wp_error( $purchased_labels_meta ) ) {
 			$this->logger->log( $purchased_labels_meta, __CLASS__ );
 			return $purchased_labels_meta;
@@ -251,9 +251,10 @@ class LabelPurchaseService {
 	 * @param object $response      Purchase shipping label response from Connect Server.
 	 * @param array  $packages     Packages for purchase label request body.
 	 * @param array  $service_names List of service names for packages.
+	 * @param int    $order_id      WooCommerce order ID.
 	 * @return array|WP_Error Meta for purchased labels.
 	 */
-	private function get_labels_meta_from_response( $response, $packages, $service_names ) {
+	private function get_labels_meta_from_response( $response, $packages, $service_names, $order_id ) {
 		$label_ids             = array();
 		$purchased_labels_meta = array();
 		$package_lookup        = $this->settings_store->get_package_lookup();
@@ -304,7 +305,7 @@ class LabelPurchaseService {
 				if ( $product ) {
 					$product_names[] = $product->get_title();
 				} else {
-					$order           = wc_get_order( $product_id );
+					$order           = wc_get_order( $order_id );
 					$product_names[] = WC_Connect_Utils::get_product_name_from_order( $product_id, $order );
 				}
 			}

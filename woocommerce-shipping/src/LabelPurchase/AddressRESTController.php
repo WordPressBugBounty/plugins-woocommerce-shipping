@@ -122,6 +122,18 @@ class AddressRESTController extends WCShippingRESTController {
 				),
 			)
 		);
+
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/origins',
+			array(
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_origin_addresses' ),
+					'permission_callback' => array( $this, 'ensure_rest_permission' ),
+				),
+			)
+		);
 	}
 
 	/**
@@ -211,5 +223,14 @@ class AddressRESTController extends WCShippingRESTController {
 				'deleted_id' => $id,
 			)
 		);
+	}
+
+	/**
+	 * Get all origin addresses.
+	 *
+	 * @return WP_REST_Response|WP_Error REST response or error.
+	 */
+	public function get_origin_addresses() {
+		return rest_ensure_response( $this->origin_address_service->get_origin_addresses() );
 	}
 }

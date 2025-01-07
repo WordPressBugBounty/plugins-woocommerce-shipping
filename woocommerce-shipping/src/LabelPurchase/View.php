@@ -83,6 +83,11 @@ class View {
 	 */
 	private $view_service;
 
+	/**
+	 * @var CarrierStrategyService
+	 */
+	private $carrier_service;
+
 	public function __construct(
 		WC_Connect_API_Client $api_client,
 		WC_Connect_Service_Settings_Store $settings_store,

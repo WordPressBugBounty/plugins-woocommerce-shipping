@@ -88,7 +88,7 @@ class WC_Connect_Jetpack {
 	 * @return bool
 	 */
 	public static function is_atomic_site() {
-		return ( new Host() )->is_atomic_platform();
+		return ( new Host() )->is_woa_site();
 	}
 
 	/**

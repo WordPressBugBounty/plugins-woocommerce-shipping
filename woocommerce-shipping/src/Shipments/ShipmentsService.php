@@ -58,6 +58,12 @@ class ShipmentsService {
 		return $order->save();
 	}
 
+	/**
+	 * Get the order shipments JSON.
+	 *
+	 * @param int $order_id The WC order ID.
+	 * @return string The order shipments JSON.
+	 */
 	public function get_order_shipments_json( $order_id ) {
 		/**
 		 * @var WC_Order $order
@@ -66,9 +72,10 @@ class ShipmentsService {
 		if ( $order instanceof WC_Order ) {
 			$value = $order->get_meta( self::META_KEY );
 
-			return wp_json_encode( ! empty( $value ) ? $value : array() );
+			// The root should be an object, not an array.
+			return wp_json_encode( ! empty( $value ) ? (object) $value : (object) array() );
 		}
 
-		return wp_json_encode( array() );
+		return wp_json_encode( (object) array() );
 	}
 }

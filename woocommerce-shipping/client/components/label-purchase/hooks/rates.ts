@@ -309,13 +309,18 @@ export function useRatesState( {
 
 			const endpointErrors: {
 				message: string;
-			}[] = payload?.[ 0 ]?.default?.errors ?? [];
+			}[] = payload?.[ currentShipmentId ]?.default?.errors ?? [];
 
 			if ( endpointErrors.length ) {
 				setErrors( ( prev ) => ( {
 					...prev,
 					endpoint: {
-						rates: endpointErrors.map( ( { message } ) => message ),
+						rates: [
+							// Remove duplicate errors by using a Set as Sets can only contain unique values.
+							...new Set(
+								endpointErrors.map( ( { message } ) => message )
+							),
+						],
 					},
 				} ) );
 			}
@@ -339,8 +344,13 @@ export function useRatesState( {
 	 * Updates the rates based on the current package data
 	 */
 	const updateRates = useCallback( () => {
-		// Not updating if still fetching and to prevent a double fetch at render.
-		if ( isFetching || typeof availableRates === 'undefined' ) {
+		// Not updating if still fetching and to prevent a double fetch at render, or if totalWeight is 0.
+		if (
+			isFetching ||
+			typeof availableRates === 'undefined' ||
+			totalWeight === 0 ||
+			! Number.isFinite( parseFloat( `${ totalWeight }` ) ) // If any error occurs, totalWeight will be a string, null or undefined, so we need to convert it to a number.
+		) {
 			return;
 		}
 
@@ -368,7 +378,13 @@ export function useRatesState( {
 		if ( ! isAnyFieldEmpty ) {
 			fetchRates( pkg );
 		}
-	}, [ fetchRates, availableRates, isFetching, getPackageForRequest ] );
+	}, [
+		fetchRates,
+		availableRates,
+		isFetching,
+		getPackageForRequest,
+		totalWeight,
+	] );
 
 	/**
 	 * Sort Rates when filter dropdown is used.
