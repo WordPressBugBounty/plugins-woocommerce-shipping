@@ -9,6 +9,8 @@ import './styles.scss';
 
 const noticesContext = 'wc/checkout/shipping-address';
 const noticeIdPrefix = 'wcshipping-av-';
+const wcCheckoutScope =
+	document.querySelector( '.woocommerce-checkout' ) ?? document;
 
 type Extensions = Record<
 	string,
@@ -123,14 +125,14 @@ export const AddressValidationNotices = ( {
 		};
 
 		// Listen for custom wcShippingApplySuggestedAddress event to apply the suggested address.
-		window.addEventListener(
+		wcCheckoutScope.addEventListener(
 			'wcShippingApplySuggestedAddress',
 			applySuggestedAddressHandler
 		);
 
 		return () => {
 			// Remove the event listener when the component is unmounted.
-			window.removeEventListener(
+			wcCheckoutScope.removeEventListener(
 				'wcShippingApplySuggestedAddress',
 				applySuggestedAddressHandler
 			);

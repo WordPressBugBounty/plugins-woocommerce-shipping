@@ -29,6 +29,7 @@ use Automattic\WCShipping\Connect\WC_Connect_Service_Schemas_Validator;
 use Automattic\WCShipping\Connect\WC_Connect_Service_Settings_Store;
 use Automattic\WCShipping\Connect\WC_Connect_Settings_Pages;
 use Automattic\WCShipping\Connect\WC_Connect_Shipping_Label;
+use Automattic\WCShipping\Connect\WC_Connect_Account_Settings;
 use Automattic\WCShipping\FeatureFlags\FeatureFlags;
 use Automattic\WCShipping\Integrations\AssetsRESTController;
 use Automattic\WCShipping\Integrations\ConfigRESTController;
@@ -90,6 +91,7 @@ use Automattic\WCShipping\WCShippingRESTController;
 use Automattic\WCShipping\Analytics\ShippingLabel;
 use Automattic\WCShipping\Analytics\ShippingLabelRESTController;
 use Automattic\WCShipping\Analytics\LabelsService;
+use Automattic\WCShipping\LabelPurchase\EligibilityRESTController;
 
 use Exception;
 use WC_Connect_API_Client_Local_Test_Mock;
@@ -277,6 +279,11 @@ class Loader {
 	protected $service_object_cache = array();
 
 	protected $wc_connect_base_url;
+
+	/**
+	 * @var ViewService
+	 */
+	protected $view_service;
 
 	/**
 	 * @var CheckoutService
@@ -942,9 +949,10 @@ class Loader {
 		$schemas_store                         = new WC_Connect_Service_Schemas_Store( $api_client, $logger );
 		$settings_store                        = new WC_Connect_Service_Settings_Store( $schemas_store, $api_client, $logger );
 		$payment_methods_store                 = new WC_Connect_Payment_Methods_Store( $settings_store, $api_client, $logger );
+		$account_settings                      = new WC_Connect_Account_Settings( $settings_store, $payment_methods_store );
 		$shipments_service                     = new ShipmentsService( $settings_store );
 		$origin_addresses_service              = new OriginAddressService();
-		$view_service                          = new ViewService();
+		$this->view_service                    = new ViewService( $account_settings, $schemas_store );
 		$this->upsdap_carrier_strategy_service = new UPSDAPCarrierStrategyService( $origin_addresses_service, $api_client );
 		$carrier_strategy_service              = new CarrierStrategyService( $this->upsdap_carrier_strategy_service );
 		$shipping_label                        = new View(
@@ -954,8 +962,9 @@ class Loader {
 			$payment_methods_store,
 			$shipments_service,
 			$origin_addresses_service,
-			$view_service,
-			$carrier_strategy_service
+			$this->view_service,
+			$carrier_strategy_service,
+			$account_settings
 		);
 
 		$legacy_shipping_label = new WC_Connect_Shipping_Label(
@@ -964,7 +973,7 @@ class Loader {
 			$schemas_store,
 			$payment_methods_store,
 		);
-		$nux                   = new WC_Connect_Nux( $shipping_label );
+		$nux                   = new WC_Connect_Nux( $this->view_service );
 		$label_rate_service    = new LabelRateService( $api_client, $logger, $settings_store );
 
 		new WC_Connect_Privacy( $settings_store, $api_client );
@@ -1318,6 +1327,8 @@ class Loader {
 
 		$labels_service = new LabelsService();
 		( new ShippingLabelRESTController( $labels_service ) )->register_routes();
+
+		( new EligibilityRESTController( $this->view_service, $settings_store, $this->get_payment_methods_store() ) )->register_routes();
 	}
 
 	/**

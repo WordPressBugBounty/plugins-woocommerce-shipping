@@ -5,8 +5,41 @@ namespace Automattic\WCShipping\LabelPurchase;
 use Automattic\WCShipping\Utils;
 use WC_Order;
 use WC_Order_Item_Product;
+use Automattic\WCShipping\Connect\WC_Connect_Account_Settings;
+use Automattic\WCShipping\Connect\WC_Connect_Service_Schemas_Store;
+use Automattic\WCShipping\Connect\WC_Connect_Utils;
+
 
 class ViewService {
+
+		/**
+		 * @var array Supported countries by USPS, see: https://webpmt.usps.gov/pmt010.cfm
+		 */
+	private $supported_countries = array( 'US', 'AS', 'PR', 'VI', 'GU', 'MP', 'UM', 'FM', 'MH' );
+
+	/**
+	 * @var array Supported currencies
+	 */
+	private $supported_currencies = array( 'USD' );
+
+	/**
+	 * @var WC_Connect_Account_Settings
+	 */
+	private $account_settings;
+
+	/**
+	 * @var WC_Connect_Service_Schemas_Store
+	 */
+	private $service_schemas_store;
+
+	/**
+	 * @param WC_Connect_Account_Settings      $account_settings
+	 * @param WC_Connect_Service_Schemas_Store $service_schemas_store
+	 */
+	function __construct( WC_Connect_Account_Settings $account_settings, WC_Connect_Service_Schemas_Store $service_schemas_store ) {
+		$this->account_settings      = $account_settings;
+		$this->service_schemas_store = $service_schemas_store;
+	}
 
 	/**
 	 * Remove shipment information stored along the label for labels with PURCHASE_ERROR status based on the shipment id.
@@ -255,5 +288,111 @@ class ViewService {
 		}
 
 		return $order_data;
+	}
+
+
+	/**
+	 * Check whether the given country code is supported for shipping labels.
+	 */
+	public function is_supported_country( string $country_code ): bool {
+		return in_array( $country_code, $this->supported_countries, true );
+	}
+
+	/**
+	 * Check whether the given currency code is supported for shipping labels.
+	 */
+	public function is_supported_currency( string $currency_code ): bool {
+		return in_array( $currency_code, $this->supported_currencies, true );
+	}
+
+	/**
+	 * Check whether shipping label feature is enabled from WC Services setting.
+	 */
+	public function is_shipping_label_enabled(): bool {
+		$account_settings = $this->account_settings->get( true );
+
+		if ( isset( $account_settings['purchaseSettings']['enabled'] ) && is_bool( $account_settings['purchaseSettings']['enabled'] ) ) {
+			return $account_settings['purchaseSettings']['enabled'];
+		}
+
+		return true;
+	}
+
+	/**
+	 * Check whether the given order is eligible for shipping label creation - the order has at least one product that is:
+	 * - Shippable.
+	 * - Non-refunded.
+	 *
+	 * @param WC_Order $order The order to check for shipping label creation eligibility.
+	 * @return bool Whether the given order is eligible for shipping label creation.
+	 */
+	public function is_order_eligible_for_shipping_label_creation( WC_Order $order ): bool {
+		// Set up a dictionary from product ID to quantity in the order, which will be updated by refunds and existing labels later.
+		$quantities_by_product_id = array();
+		foreach ( $order->get_items() as $item ) {
+			$product = WC_Connect_Utils::get_item_product( $order, $item );
+			if ( $product && $product->needs_shipping() ) {
+				$product_id                              = $product->get_id();
+				$current_quantity                        = array_key_exists( $product_id, $quantities_by_product_id ) ? $quantities_by_product_id[ $product_id ] : 0;
+				$quantities_by_product_id[ $product_id ] = $current_quantity + $item->get_quantity();
+			}
+		}
+
+		// A shipping label cannot be created without a shippable product.
+		if ( empty( $quantities_by_product_id ) ) {
+			return false;
+		}
+
+		// Update the quantity for each refunded product ID in the order.
+		foreach ( $order->get_refunds() as $refund ) {
+			foreach ( $refund->get_items() as $refunded_item ) {
+				$product = WC_Connect_Utils::get_item_product( $order, $refunded_item );
+				if ( ! is_a( $product, 'WC_Product' ) ) {
+					continue;
+				}
+
+				$product_id = $product->get_id();
+				if ( array_key_exists( $product_id, $quantities_by_product_id ) ) {
+					$current_count                           = $quantities_by_product_id[ $product_id ];
+					$quantities_by_product_id[ $product_id ] = $current_count - abs( $refunded_item->get_quantity() );
+				}
+			}
+		}
+
+		// The order is eligible for shipping label creation when there is at least one product with positive quantity.
+		foreach ( $quantities_by_product_id as $product_id => $quantity ) {
+			if ( $quantity > 0 ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Check whether the store is eligible for shipping label creation:
+	 * - Store currency is supported.
+	 * - Store country is supported.
+	 *
+	 * @return bool Whether the WC store is eligible for shipping label creation.
+	 */
+	public function is_store_eligible_for_shipping_label_creation(): bool {
+		$base_currency = get_woocommerce_currency();
+		if ( ! $this->is_supported_currency( $base_currency ) ) {
+			return false;
+		}
+
+		$base_location = wc_get_base_location();
+		if ( ! $this->is_supported_country( $base_location['country'] ) ) {
+			return false;
+		}
+
+		return true;
+	}
+
+	public function is_dhl_express_available(): bool {
+		$dhl_express = $this->service_schemas_store->get_service_schema_by_id( 'dhlexpress' );
+
+		return (bool) $dhl_express;
 	}
 }

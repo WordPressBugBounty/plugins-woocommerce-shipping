@@ -1,5 +1,5 @@
 import React from 'react';
-import { useRef, useState } from '@wordpress/element';
+import { useEffect, useRef, useState } from '@wordpress/element';
 import {
 	__experimentalDivider as Divider,
 	Button,
@@ -12,7 +12,14 @@ import {
 import { __, _n } from '@wordpress/i18n';
 import CurrencyFactory from '@woocommerce/currency';
 import { check } from '@wordpress/icons';
-import { getCurrentOrderItems, getCurrentOrder } from 'utils';
+import {
+	getCurrentOrderItems,
+	getCurrentOrder,
+	recordEvent,
+	deleteUrlParam,
+	urlParamHasValue,
+	setUrlParamValue,
+} from 'utils';
 import { ShippingIcon } from './shipping-icon';
 import { ModalHeader } from './order-label-purchase-modal';
 import { LabelPurchaseContextProvider } from './context';
@@ -30,7 +37,6 @@ import {
 	useShipmentState,
 	useTotalWeight,
 } from './hooks';
-import { recordEvent } from 'utils/tracks';
 
 interface OrderLabelPurchaseProps {
 	orderId: number;
@@ -169,6 +175,10 @@ export const OrderLabelPurchase = ( {
 			: [] ),
 	];
 	const ref = useRef( null );
+
+	const labelsModalPersistKey = 'labels-modal';
+	const labelsModalPersistValue = 'open';
+
 	const selectPreviousTab = () => {
 		if ( ref?.current ) {
 			const previousTab = (
@@ -185,8 +195,10 @@ export const OrderLabelPurchase = ( {
 		setStartSplitShipment( false );
 	};
 
-	const openModalOnClick = () => {
+	const openLabelsModal = () => {
 		setIsOpen( true );
+
+		setUrlParamValue( labelsModalPersistKey, labelsModalPersistValue );
 
 		const tracksProps = {
 			order_fulfilled: orderFulfilled,
@@ -195,7 +207,22 @@ export const OrderLabelPurchase = ( {
 		recordEvent( 'order_create_shipping_label_clicked', tracksProps );
 	};
 
+	const closeLabelsModal = () => {
+		setIsOpen( false );
+
+		deleteUrlParam( labelsModalPersistKey );
+	};
+
 	const canHaveMultipleShipments = hasMissingPurchase && count > 1;
+
+	useEffect( () => {
+		// Maybe persist the modal on page refresh.
+		if (
+			urlParamHasValue( labelsModalPersistKey, labelsModalPersistValue )
+		) {
+			setIsOpen( true );
+		}
+	}, [] );
 
 	return (
 		<LabelPurchaseContextProvider
@@ -262,7 +289,7 @@ export const OrderLabelPurchase = ( {
 					) }
 				</FlexItem>
 				<FlexItem className="wcshipping-shipping-label-meta-box__button-container">
-					<Button variant="primary" onClick={ openModalOnClick }>
+					<Button variant="primary" onClick={ openLabelsModal }>
 						{ orderFulfilled
 							? _n(
 									'View purchased shipping label',
@@ -282,7 +309,7 @@ export const OrderLabelPurchase = ( {
 					<Modal
 						overlayClassName="label-purchase-overlay"
 						className="label-purchase-modal"
-						onRequestClose={ () => setIsOpen( false ) }
+						onRequestClose={ closeLabelsModal }
 						focusOnMount
 						shouldCloseOnClickOutside={ false }
 						shouldCloseOnEsc={ false }
@@ -290,7 +317,7 @@ export const OrderLabelPurchase = ( {
 						isDismissible={ false }
 					>
 						<ModalHeader
-							closeModal={ () => setIsOpen( false ) }
+							closeModal={ closeLabelsModal }
 							orderId={ orderId }
 						/>
 						{ ! hasSplitShipments && (

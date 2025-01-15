@@ -7,7 +7,7 @@ Requires at least: 6.5
 Tested up to: 6.7
 WC requires at least: 9.3
 WC tested up to: 9.5
-Stable tag: 1.3.2
+Stable tag: 1.3.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -128,6 +128,13 @@ Absolutely! You can read our Terms of Service [here](https://wordpress.com/tos).
 
 == Changelog ==
 
+= 1.3.3 - 2025-01-15 =
+* Add   - New API endpoint to check if the order is eligible for shipping label creation.
+* Fix   - Fix CORS warnings on Safari browser when address validation is enabled.
+* Fix   - Don't register address validation script if it is disabled.
+* Fix   - Change the product description tooltip link in the customs form to better explain the purpose of the information.
+* Fix   - Call to undefined function wc_st_add_tracking_number.
+
 = 1.3.2 - 2025-01-07 =
 * Fix   - Removing starred carrier packages would also remove the predefined packages of other carriers.
 * Fix   - Refrain from automatically fetching rates if totalWeight is 0.
@@ -141,7 +148,7 @@ Absolutely! You can read our Terms of Service [here](https://wordpress.com/tos).
 
 = 1.3.1 - 2024-12-13 =
 * Fix   - Fix issue preventing the address validation from being applied on the checkout page.
-* Fix   - Fix issue where removing starred carrier packages would also remove the predefined packages of other carriers.
+* Tweak - Persist the label purchase modal open state on page refresh.
 
 = 1.3.0 - 2024-12-10 =
 * Add   - UPS shipping label support, providing access to discounted rates directly in the WooCommerce dashboard (no individual UPS account required).

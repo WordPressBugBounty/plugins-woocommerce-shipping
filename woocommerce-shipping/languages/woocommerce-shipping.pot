@@ -2,14 +2,14 @@
 # This file is distributed under the GPL v2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: WooCommerce Shipping 1.3.2\n"
+"Project-Id-Version: WooCommerce Shipping 1.3.3\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/woocommerce-shipping\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2025-01-07T12:55:57+00:00\n"
+"POT-Creation-Date: 2025-01-15T18:23:50+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.6.0\n"
 "X-Domain: woocommerce-shipping\n"
@@ -127,7 +127,7 @@ msgid "<strong>\"%2$s\" is missing weight, length, width, or height.</strong><br
 msgstr ""
 
 #: classes/class-wc-connect-error-notice.php:102
-#: src/Loader.php:1906
+#: src/Loader.php:1917
 msgid "Dismiss this notice"
 msgstr ""
 
@@ -184,7 +184,7 @@ msgstr ""
 
 #: classes/class-wc-connect-help-view.php:249
 #: classes/class-wc-connect-settings-pages.php:52
-#: src/Loader.php:826
+#: src/Loader.php:833
 #: src/Onboarding/SettingsPage.php:73
 msgctxt "The WooCommerce Shipping brandname"
 msgid "WooCommerce Shipping"
@@ -537,27 +537,43 @@ msgstr ""
 msgid "Address normalization failed"
 msgstr ""
 
-#: src/LabelPurchase/View.php:251
+#: src/LabelPurchase/EligibilityRESTController.php:79
+msgid "The order ID."
+msgstr ""
+
+#: src/LabelPurchase/EligibilityRESTController.php:84
+msgid "Whether the client can create a customs form."
+msgstr ""
+
+#: src/LabelPurchase/EligibilityRESTController.php:89
+msgid "Whether the client can create a package."
+msgstr ""
+
+#: src/LabelPurchase/EligibilityRESTController.php:94
+msgid "Whether the client can create a payment method."
+msgstr ""
+
+#: src/LabelPurchase/View.php:159
 msgid "You do not have permission to view this banner, please contact your administrator."
 msgstr ""
 
-#: src/LabelPurchase/View.php:258
+#: src/LabelPurchase/View.php:166
 msgid "Order not found."
 msgstr ""
 
-#: src/LabelPurchase/View.php:266
+#: src/LabelPurchase/View.php:174
 msgid "Unable to retrieve WordPress connection data. Please try reconnecting your WordPress connection."
 msgstr ""
 
-#: src/LabelPurchase/View.php:275
+#: src/LabelPurchase/View.php:183
 msgid "Shipping labels has been disabled for your account."
 msgstr ""
 
-#: src/LabelPurchase/View.php:288
+#: src/LabelPurchase/View.php:196
 msgid "The origin country of this store is not supported by WooCommerce Shipping yet."
 msgstr ""
 
-#: src/LabelPurchase/View.php:307
+#: src/LabelPurchase/View.php:215
 msgid "The order does not contain any shippable products."
 msgstr ""
 
@@ -698,51 +714,51 @@ msgid "The provided phone number is not valid"
 msgstr ""
 
 #. translators: %s WC download URL link.
-#: src/Loader.php:680
+#: src/Loader.php:687
 msgid "WooCommerce Shipping requires the WooCommerce plugin to be installed and active. You can download %s here."
 msgstr ""
 
-#: src/Loader.php:996
+#: src/Loader.php:1005
 msgid "Settings"
 msgstr ""
 
-#: src/Loader.php:1003
+#: src/Loader.php:1012
 msgid "Documentation"
 msgstr ""
 
-#: src/Loader.php:1004
+#: src/Loader.php:1013
 #: dist/woocommerce-shipping-admin-status.js:14
 msgid "Support"
 msgstr ""
 
-#: src/Loader.php:1482
-#: src/Loader.php:1490
+#: src/Loader.php:1493
+#: src/Loader.php:1501
 msgid "Tracking"
 msgstr ""
 
-#: src/Loader.php:1494
+#: src/Loader.php:1505
 msgid "Provider"
 msgstr ""
 
-#: src/Loader.php:1496
+#: src/Loader.php:1507
 msgid "Tracking number"
 msgstr ""
 
-#: src/Loader.php:1625
+#: src/Loader.php:1636
 msgid "Shipping Label"
 msgstr ""
 
-#: src/Loader.php:1637
+#: src/Loader.php:1648
 msgid "Shipment Tracking"
 msgstr ""
 
-#: src/Loader.php:1691
-#: src/Loader.php:1720
+#: src/Loader.php:1702
+#: src/Loader.php:1731
 #: dist/woocommerce-shipping-create-shipping-label.js:27
 msgid "Phone"
 msgstr ""
 
-#: src/Loader.php:1935
+#: src/Loader.php:1946
 msgid "WooCommerce Shipping & Tax has been deactivated. Your data and settings have been carried over to the dedicated WooCommerce Shipping and WooCommerce Tax extensions.<br />For support, please <a href=\"https://woocommerce.com/my-account/create-a-ticket/\">contact our Happiness Engineers</a>."
 msgstr ""
 

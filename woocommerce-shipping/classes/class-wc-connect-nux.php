@@ -2,8 +2,8 @@
 
 namespace Automattic\WCShipping\Connect;
 
+use Automattic\WCShipping\LabelPurchase\ViewService;
 use Jetpack_Connection_Banner;
-use Automattic\WCShipping\LabelPurchase\View;
 use Automattic\WCShipping\Utils;
 use WP_Screen;
 
@@ -39,19 +39,19 @@ class WC_Connect_Nux {
 	const AUTH_SUCCESS_NONCE_ACTION = 'wcshipping_auth_successful';
 
 	/**
-	 * @var View
+	 * @var ViewService
 	 */
-	private $shipping_label;
+	private $view_service;
 
 	/**
 	 * WC_Connect_Nux constructor.
 	 *
-	 * @param View $shipping_label
+	 * @param ViewService $view_service
 	 *
 	 * @return void
 	 */
-	function __construct( View $shipping_label ) {
-		$this->shipping_label = $shipping_label;
+	function __construct( ViewService $view_service ) {
+		$this->view_service = $view_service;
 
 		add_action( 'admin_enqueue_scripts', array( $this, 'load_scripts_and_styles' ) );
 	}
@@ -372,7 +372,7 @@ class WC_Connect_Nux {
 	}
 
 	public function show_banner_before_connection() {
-		if ( ! $this->shipping_label->is_store_eligible_for_shipping_label_creation() ) {
+		if ( ! $this->view_service->is_store_eligible_for_shipping_label_creation() ) {
 			return;
 		}
 
@@ -415,7 +415,7 @@ class WC_Connect_Nux {
 	}
 
 	public function show_banner_after_connection() {
-		if ( ! $this->shipping_label->is_store_eligible_for_shipping_label_creation() ) {
+		if ( ! $this->view_service->is_store_eligible_for_shipping_label_creation() ) {
 			return;
 		}
 
@@ -470,7 +470,7 @@ class WC_Connect_Nux {
 	}
 
 	public function show_tos_banner() {
-		if ( ! $this->shipping_label->is_store_eligible_for_shipping_label_creation() ) {
+		if ( ! $this->view_service->is_store_eligible_for_shipping_label_creation() ) {
 			return;
 		}
 

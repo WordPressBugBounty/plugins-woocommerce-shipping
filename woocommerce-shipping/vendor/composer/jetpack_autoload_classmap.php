@@ -370,6 +370,10 @@ return array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/src/LabelPurchase/AddressRESTController.php'
 	),
+	'Automattic\\WCShipping\\LabelPurchase\\EligibilityRESTController' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/src/LabelPurchase/EligibilityRESTController.php'
+	),
 	'Automattic\\WCShipping\\LabelPurchase\\LabelPreviewRESTController' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/src/LabelPurchase/LabelPreviewRESTController.php'
@@ -554,6 +558,10 @@ return array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/tests/php/LabelPurchase/AddressRESTControllerTest.php'
 	),
+	'Automattic\\WCShipping\\Tests\\php\\LabelPurchase\\EligibilityRESTControllerTest' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/tests/php/LabelPurchase/EligibilityRESTControllerTest.php'
+	),
 	'Automattic\\WCShipping\\Tests\\php\\LabelPurchase\\LabelPrintServiceTest' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/tests/php/LabelPurchase/LabelPrintServiceTest.php'
@@ -625,6 +633,10 @@ return array(
 	'Automattic\\WCShipping\\Utils' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/src/Utils.php'
+	),
+	'Automattic\\WCShipping\\Validators' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/src/Validators.php'
 	),
 	'Automattic\\WCShipping\\WCShippingRESTController' => array(
 		'version' => 'dev-trunk',
@@ -757,5 +769,17 @@ return array(
 	'WC_REST_Connect_Packages_Controller_Test' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/tests/php/classes/legacy-api-controllers/WC_REST_Connect_Packages_Controller_Test.php'
+	),
+	'WC_REST_Connect_Shipping_Carrier_Types_Controller_Test' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/tests/php/classes/legacy-api-controllers/WC_REST_Connect_Shipping_Carrier_Types_Controller_Test.php'
+	),
+	'WC_REST_Connect_Shipping_Label_Controller_Test' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/tests/php/classes/legacy-api-controllers/WC_REST_Connect_Shipping_Label_Controller_Test.php'
+	),
+	'WC_REST_Connect_Subscriptions_Controller_Test' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/tests/php/classes/legacy-api-controllers/WC_REST_Connect_Subscriptions_Controller_Test.php'
 	),
 );

@@ -41,7 +41,14 @@ class WooCommerceBlocksIntegration implements IntegrationInterface {
 	 * @return string[]
 	 */
 	public function get_script_handles(): array {
-		return array( 'woocommerce-shipping-checkout-address-validation' );
+		$script_handles = array();
+
+		// Only enqueue the address validation script if address validation is enabled.
+		if ( CheckoutService::is_address_validation_enabled() ) {
+			$script_handles[] = 'woocommerce-shipping-checkout-address-validation';
+		}
+
+		return $script_handles;
 	}
 
 	/**

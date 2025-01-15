@@ -21,3 +21,4 @@ export * from './address';
 export * from './deferred';
 export * from './weight';
 export * from './analytics';
+export * from './url';

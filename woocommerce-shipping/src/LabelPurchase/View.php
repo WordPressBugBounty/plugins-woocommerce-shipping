@@ -14,7 +14,6 @@ use Automattic\WCShipping\Connect\WC_Connect_Functions;
 use Automattic\WCShipping\Connect\WC_Connect_Compatibility;
 use Automattic\WCShipping\Connect\WC_Connect_Package_Settings;
 use Automattic\WCShipping\Connect\WC_Connect_Jetpack;
-use Automattic\WCShipping\FeatureFlags\FeatureFlags;
 use Automattic\WCShipping\OriginAddresses\OriginAddressService;
 use Automattic\WCShipping\Shipments\ShipmentsService;
 use Automattic\WCShipping\DOM\Manipulation as DOM_Manipilation;
@@ -22,7 +21,6 @@ use Automattic\WCShipping\Utils;
 use WC_Order;
 use WC_Order_Item;
 use WC_Order_Item_Shipping;
-use WP_Post;
 use WC_Product;
 use WP_Error;
 
@@ -59,16 +57,6 @@ class View {
 	protected $continents;
 
 	/**
-	 * @var array Supported countries by USPS, see: https://webpmt.usps.gov/pmt010.cfm
-	 */
-	private $supported_countries = array( 'US', 'AS', 'PR', 'VI', 'GU', 'MP', 'UM', 'FM', 'MH' );
-
-	/**
-	 * @var array Supported currencies
-	 */
-	private $supported_currencies = array( 'USD' );
-
-	/**
 	 * @var ShipmentsService $shipments_service
 	 */
 	private $shipments_service;
@@ -96,15 +84,13 @@ class View {
 		ShipmentsService $shipments_service,
 		OriginAddressService $origin_address_service,
 		ViewService $view_service,
-		CarrierStrategyService $carrier_service
+		CarrierStrategyService $carrier_service,
+		WC_Connect_Account_Settings $account_settings
 	) {
 		$this->api_client             = $api_client;
 		$this->settings_store         = $settings_store;
 		$this->service_schemas_store  = $service_schemas_store;
-		$this->account_settings       = new WC_Connect_Account_Settings(
-			$settings_store,
-			$payment_methods_store
-		);
+		$this->account_settings       = $account_settings;
 		$this->package_settings       = new WC_Connect_Package_Settings(
 			$settings_store,
 			$service_schemas_store
@@ -114,84 +100,6 @@ class View {
 		$this->origin_address_service = $origin_address_service;
 		$this->view_service           = $view_service;
 		$this->carrier_service        = $carrier_service;
-	}
-
-	/**
-	 * Check whether the given order is eligible for shipping label creation - the order has at least one product that is:
-	 * - Shippable.
-	 * - Non-refunded.
-	 *
-	 * @param WC_Order $order The order to check for shipping label creation eligibility.
-	 * @return bool Whether the given order is eligible for shipping label creation.
-	 */
-	public function is_order_eligible_for_shipping_label_creation( WC_Order $order ): bool {
-		// Set up a dictionary from product ID to quantity in the order, which will be updated by refunds and existing labels later.
-		$quantities_by_product_id = array();
-		foreach ( $order->get_items() as $item ) {
-			$product = WC_Connect_Utils::get_item_product( $order, $item );
-			if ( $product && $product->needs_shipping() ) {
-				$product_id                              = $product->get_id();
-				$current_quantity                        = array_key_exists( $product_id, $quantities_by_product_id ) ? $quantities_by_product_id[ $product_id ] : 0;
-				$quantities_by_product_id[ $product_id ] = $current_quantity + $item->get_quantity();
-			}
-		}
-
-		// A shipping label cannot be created without a shippable product.
-		if ( empty( $quantities_by_product_id ) ) {
-			return false;
-		}
-
-		// Update the quantity for each refunded product ID in the order.
-		foreach ( $order->get_refunds() as $refund ) {
-			foreach ( $refund->get_items() as $refunded_item ) {
-				$product = WC_Connect_Utils::get_item_product( $order, $refunded_item );
-				if ( ! is_a( $product, 'WC_Product' ) ) {
-					continue;
-				}
-
-				$product_id = $product->get_id();
-				if ( array_key_exists( $product_id, $quantities_by_product_id ) ) {
-					$current_count                           = $quantities_by_product_id[ $product_id ];
-					$quantities_by_product_id[ $product_id ] = $current_count - abs( $refunded_item->get_quantity() );
-				}
-			}
-		}
-
-		// The order is eligible for shipping label creation when there is at least one product with positive quantity.
-		foreach ( $quantities_by_product_id as $product_id => $quantity ) {
-			if ( $quantity > 0 ) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	/**
-	 * Check whether the store is eligible for shipping label creation:
-	 * - Store currency is supported.
-	 * - Store country is supported.
-	 *
-	 * @return bool Whether the WC store is eligible for shipping label creation.
-	 */
-	public function is_store_eligible_for_shipping_label_creation(): bool {
-		$base_currency = get_woocommerce_currency();
-		if ( ! $this->is_supported_currency( $base_currency ) ) {
-			return false;
-		}
-
-		$base_location = wc_get_base_location();
-		if ( ! $this->is_supported_country( $base_location['country'] ) ) {
-			return false;
-		}
-
-		return true;
-	}
-
-	public function is_dhl_express_available(): bool {
-		$dhl_express = $this->service_schemas_store->get_service_schema_by_id( 'dhlexpress' );
-
-		return (bool) $dhl_express;
 	}
 
 	public function is_order_dhl_express_eligible(): bool {
@@ -269,7 +177,7 @@ class View {
 
 		// Return an error if shipping labels has been disabled for the account.
 		// This could e.g. be used to differentiate between showing errors or just hiding the box.
-		if ( ! $this->is_shipping_label_enabled() ) {
+		if ( ! $this->view_service->is_shipping_label_enabled() ) {
 			return new WP_Error(
 				'wcshipping_banner_disabled',
 				__( 'Shipping labels has been disabled for your account.', 'woocommerce-shipping' )
@@ -282,7 +190,7 @@ class View {
 		}
 
 		// Restrict showing the metabox to supported store countries and currencies.
-		if ( ! $this->is_store_eligible_for_shipping_label_creation() ) {
+		if ( ! $this->view_service->is_store_eligible_for_shipping_label_creation() ) {
 			return new WP_Error(
 				'wcshipping_banner_store_ineligible',
 				__( 'The origin country of this store is not supported by WooCommerce Shipping yet.', 'woocommerce-shipping' )
@@ -668,34 +576,6 @@ class View {
 
 		return $data;
 	}
-
-	/**
-	 * Check whether the given country code is supported for shipping labels.
-	 */
-	public function is_supported_country( string $country_code ): bool {
-		return in_array( $country_code, $this->supported_countries, true );
-	}
-
-	/**
-	 * Check whether the given currency code is supported for shipping labels.
-	 */
-	public function is_supported_currency( string $currency_code ): bool {
-		return in_array( $currency_code, $this->supported_currencies, true );
-	}
-
-	/**
-	 * Check whether shipping label feature is enabled from WC Services setting.
-	 */
-	private function is_shipping_label_enabled(): bool {
-		$account_settings = $this->account_settings->get( true );
-
-		if ( isset( $account_settings['purchaseSettings']['enabled'] ) && is_bool( $account_settings['purchaseSettings']['enabled'] ) ) {
-			return $account_settings['purchaseSettings']['enabled'];
-		}
-
-		return true;
-	}
-
 
 	private function filter_items_needing_shipping( WC_Order_Item $item ): bool {
 		$product = $item->get_product();

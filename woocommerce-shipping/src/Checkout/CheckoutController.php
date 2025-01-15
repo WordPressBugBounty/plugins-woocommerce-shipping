@@ -65,7 +65,7 @@ class CheckoutController {
 	 * Load assets.
 	 */
 	public function load_assets() {
-		if ( ! CheckoutService::is_checkout_page() ) {
+		if ( ! CheckoutService::is_address_validation_enabled() || ! CheckoutService::is_checkout_page() ) {
 			return;
 		}
 

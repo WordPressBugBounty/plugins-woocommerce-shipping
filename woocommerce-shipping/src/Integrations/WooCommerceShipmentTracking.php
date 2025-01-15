@@ -132,7 +132,7 @@ class WooCommerceShipmentTracking {
 	 * @return bool
 	 */
 	public static function is_st_installed() {
-		return class_exists( 'WC_Shipment_Tracking' ) || function_exists( 'wc_st_add_tracking_number' );
+		return class_exists( 'WC_Shipment_Tracking' ) && function_exists( 'wc_st_add_tracking_number' );
 	}
 
 	/**

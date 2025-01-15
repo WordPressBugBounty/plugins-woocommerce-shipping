@@ -248,7 +248,7 @@ export const CustomsForm = (): JSX.Element => {
 													{
 														a: (
 															<Link
-																href="https://pe.usps.com/text/imm/immc5_010.htm"
+																href="https://www.usps.com/international/new-eu-customs-rules.htm"
 																target="_blank"
 																rel="noopener noreferrer"
 																type="external"

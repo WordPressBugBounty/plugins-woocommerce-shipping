@@ -13,6 +13,8 @@ const { __ } = wp.i18n;
 		return;
 	}
 
+	const wcCheckoutScope = document.querySelector( '.woocommerce-checkout' );
+
 	// Handle classic checkout.
 	function handleClassicCheckout( suggestedAddressJSON ) {
 		const suggestedAddressObject = JSON.parse( suggestedAddressJSON );
@@ -47,11 +49,11 @@ const { __ } = wp.i18n;
 			}
 		} );
 
-		window.dispatchEvent( event );
+		wcCheckoutScope.dispatchEvent( event );
 	}
 
 	// Handle clicking the suggested address.
-	document.addEventListener(
+	wcCheckoutScope.addEventListener(
 		'click',
 		function ( e ) {
 
