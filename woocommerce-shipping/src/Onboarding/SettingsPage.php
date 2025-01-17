@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 use Automattic\WCShipping\Connect\WC_Connect_Service_Settings_Store;
 use Automattic\WCShipping\Connect\WC_Connect_Settings_Pages;
 use Automattic\WCShipping\DOM\Manipulation as DOM_Manipulation;
-use Automattic\WCShipping\LabelPurchase\View;
+use Automattic\WCShipping\LabelPurchase\ViewService;
 
 /**
  * Class SettingsPage.
@@ -31,7 +31,7 @@ class SettingsPage {
 	/**
 	 * View service that combines a lot of internal dependencies.
 	 *
-	 * @var View
+	 * @var ViewService
 	 */
 	protected $view_service;
 
@@ -39,10 +39,10 @@ class SettingsPage {
 	 * Constructor
 	 *
 	 * @param WC_Connect_Service_Settings_Store $service_settings_store WC Shipping setting store.
-	 * @param View                              $view_service View service that combines a lot of internal dependencies.
+	 * @param ViewService                       $view_service View service that combines a lot of internal dependencies.
 	 * @return void
 	 */
-	public function __construct( WC_Connect_Service_Settings_Store $service_settings_store, View $view_service ) {
+	public function __construct( WC_Connect_Service_Settings_Store $service_settings_store, ViewService $view_service ) {
 		$this->service_settings_store = $service_settings_store;
 		$this->view_service           = $view_service;
 	}

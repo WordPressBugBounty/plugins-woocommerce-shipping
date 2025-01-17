@@ -7,7 +7,7 @@ Requires at least: 6.5
 Tested up to: 6.7
 WC requires at least: 9.3
 WC tested up to: 9.5
-Stable tag: 1.3.3
+Stable tag: 1.3.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -127,6 +127,9 @@ Absolutely! You can read our Terms of Service [here](https://wordpress.com/tos).
 6. WooCommerce Shipping address validation at checkout suggestion.
 
 == Changelog ==
+
+= 1.3.4 - 2025-01-17 =
+* Fix   - Fatal error on settings page for new installs.
 
 = 1.3.3 - 2025-01-15 =
 * Add   - New API endpoint to check if the order is eligible for shipping label creation.

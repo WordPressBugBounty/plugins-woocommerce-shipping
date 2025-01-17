@@ -811,7 +811,7 @@ class Loader {
 	 */
 	public function init_onboarding_dependencies() {
 		// Register settings page with basic onboarding instructions.
-		$settings_page = new SettingsPage( $this->service_settings_store, $this->get_shipping_label() );
+		$settings_page = new SettingsPage( $this->service_settings_store, $this->view_service );
 		$settings_page->register_hooks();
 
 		// Register WPCOM Connection API.

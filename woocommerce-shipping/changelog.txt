@@ -1,5 +1,8 @@
 *** WooCommerce Shipping Changelog ***
 
+= 1.3.4 - 2025-01-17 =
+* Fix   - Fatal error on settings page for new installs.
+
 = 1.3.3 - 2025-01-15 =
 * Add   - New API endpoint to check if the order is eligible for shipping label creation.
 * Fix   - Fix CORS warnings on Safari browser when address validation is enabled.
