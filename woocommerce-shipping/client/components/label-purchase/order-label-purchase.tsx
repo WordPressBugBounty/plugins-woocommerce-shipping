@@ -1,7 +1,6 @@
 import React from 'react';
 import { useEffect, useRef, useState } from '@wordpress/element';
 import {
-	__experimentalDivider as Divider,
 	Button,
 	Flex,
 	FlexItem,
@@ -19,10 +18,11 @@ import {
 	deleteUrlParam,
 	urlParamHasValue,
 	setUrlParamValue,
+	getSubItems,
 } from 'utils';
 import { ShippingIcon } from './shipping-icon';
 import { ModalHeader } from './order-label-purchase-modal';
-import { LabelPurchaseContextProvider } from './context';
+import { LabelPurchaseContextProvider } from 'context/label-purchase';
 import { SplitShipmentModal } from './split-shipment';
 import { getShipmentSummaryText, getShipmentTitle } from './utils';
 import { ShipmentContent } from './shipment-content';
@@ -37,6 +37,7 @@ import {
 	useShipmentState,
 	useTotalWeight,
 } from './hooks';
+import { ShipmentItem } from 'types';
 
 interface OrderLabelPurchaseProps {
 	orderId: number;
@@ -62,12 +63,17 @@ export const OrderLabelPurchase = ( {
 		currentShipmentId,
 		setCurrentShipmentId,
 		getShipmentItems,
+		getSelectionItems,
 		setShipmentOrigin,
 		getShipmentOrigin,
 		getShipmentDestination,
 		revertLabelShipmentIdsToUpdate,
 		labelShipmentIdsToUpdate,
 		getShipmentPurchaseOrigin,
+		hasVariations,
+		hasMultipleShipments,
+		isExtraLabelPurchaseValid,
+		resetShipmentAndSelection,
 	} = useShipmentState();
 
 	const { getShipmentTotalWeight, setShipmentTotalWeight } = useTotalWeight( {
@@ -90,7 +96,9 @@ export const OrderLabelPurchase = ( {
 	const customs = useCustomsState(
 		currentShipmentId,
 		shipments,
+		selections,
 		getShipmentItems,
+		getSelectionItems,
 		getShipmentOrigin,
 		getShipmentDestination
 	);
@@ -124,56 +132,82 @@ export const OrderLabelPurchase = ( {
 		totalWeight,
 		getPackageForRequest: packages.getPackageForRequest,
 		getShipmentItems,
+		getSelectionItems,
 		getShipmentHazmat,
 		updateRates,
 		getShipmentOrigin,
 		customs,
 		shipments,
 	} );
+	const {
+		hasMissingPurchase,
+		hasUnfinishedShipment,
+		purchasedLabelsProductIds,
+		hasPurchasedLabel,
+		isPurchasing,
+		isUpdatingStatus,
+		getShipmentsWithoutLabel,
+	} = labels;
 
 	const account = useAccountState();
 
 	const essentialDetails = useEssentialDetails();
 
-	const hasSplitShipments = Object.keys( shipments ).length > 1;
-	const hasMissingPurchase = Object.keys( shipments ).some(
-		( id ) => ! labels.hasPurchasedLabel( false, false, id )
-	);
-	// Get product ids for purchased labels.
-	const purchasedLabelsProductIds: number[] = [];
-	Object.keys( shipments ).forEach( ( id ) => {
-		const ids = labels.getLabelProductIds( id );
-		purchasedLabelsProductIds.push( ...ids );
-	} );
+	const orderFulfilled = ! hasMissingPurchase();
 
-	const orderFulfilled = ! hasMissingPurchase;
+	const tabs = () => {
+		let extraTabs: { name: string; title: string }[] = [];
+		if (
+			! orderFulfilled &&
+			! isPurchasing &&
+			! isUpdatingStatus &&
+			count > 1
+		) {
+			extraTabs = [
+				{
+					name: 'edit',
+					title: __( 'Split shipment', 'woocommerce-shipping' ),
+				},
+			];
+		} else if ( hasUnfinishedShipment() ) {
+			extraTabs = [];
+		}
+		if (
+			getShipmentsWithoutLabel()?.length === 0 &&
+			! isPurchasing &&
+			! isUpdatingStatus
+		) {
+			extraTabs = [
+				{
+					name: 'new-shipment',
+					title: __( 'Add shipment', 'woocommerce-shipping' ),
+				},
+			];
+		}
+		return [
+			...Object.keys( shipments ).map( ( name ) => ( {
+				name,
+				title: getShipmentTitle(
+					name,
+					Object.keys( shipments ).length
+				),
+				icon: (
+					<>
+						{ getShipmentTitle(
+							name,
+							Object.keys( shipments ).length
+						) }
+						{ hasPurchasedLabel( true, true, name ) && (
+							<Icon icon={ check } />
+						) }
+					</>
+				),
+				className: `shipment-tab-${ name }`,
+			} ) ),
+			...extraTabs,
+		];
+	};
 
-	const tabs = [
-		...Object.keys( shipments ).map( ( name ) => ( {
-			name,
-			title: getShipmentTitle( name, Object.keys( shipments ).length ),
-			icon: (
-				<>
-					{ getShipmentTitle(
-						name,
-						Object.keys( shipments ).length
-					) }
-					{ labels.hasPurchasedLabel( true, true, name ) && (
-						<Icon icon={ check } />
-					) }
-				</>
-			),
-			className: `shipment-tab-${ name }`,
-		} ) ),
-		...( hasMissingPurchase
-			? [
-					{
-						name: 'edit',
-						title: __( 'Edit shipments', 'woocommerce-shipping' ),
-					},
-			  ]
-			: [] ),
-	];
 	const ref = useRef( null );
 
 	const labelsModalPersistKey = 'labels-modal';
@@ -207,13 +241,36 @@ export const OrderLabelPurchase = ( {
 		recordEvent( 'order_create_shipping_label_clicked', tracksProps );
 	};
 
+	const createShipmentForExtraLabel = async () => {
+		const newShipmentId = Object.keys( shipments ).length;
+		const newShipment = orderItems.map( ( orderItem ) => ( {
+			...orderItem,
+			subItems: getSubItems( orderItem as ShipmentItem ),
+		} ) );
+		const updatedShipments = {
+			...shipments,
+			[ newShipmentId ]: newShipment,
+		};
+
+		setShipments( updatedShipments );
+		setSelection( {
+			...selections,
+			[ newShipmentId ]: newShipment,
+		} );
+		setCurrentShipmentId( `${ newShipmentId }` );
+
+		const selectedPackage = packages.getSelectedPackage();
+		if ( selectedPackage ) {
+			packages.setSelectedPackage( selectedPackage );
+		}
+
+		customs.updateCustomsItems();
+	};
 	const closeLabelsModal = () => {
 		setIsOpen( false );
 
 		deleteUrlParam( labelsModalPersistKey );
 	};
-
-	const canHaveMultipleShipments = hasMissingPurchase && count > 1;
 
 	useEffect( () => {
 		// Maybe persist the modal on page refresh.
@@ -236,6 +293,7 @@ export const OrderLabelPurchase = ( {
 					resetSelections,
 					currentShipmentId,
 					getShipmentItems,
+					getSelectionItems,
 					setShipmentOrigin,
 					getShipmentOrigin,
 					getShipmentDestination,
@@ -243,6 +301,10 @@ export const OrderLabelPurchase = ( {
 					revertLabelShipmentIdsToUpdate,
 					labelShipmentIdsToUpdate,
 					getShipmentPurchaseOrigin,
+					hasVariations,
+					hasMultipleShipments,
+					isExtraLabelPurchaseValid,
+					resetShipmentAndSelection,
 				},
 				hazmat: {
 					getShipmentHazmat,
@@ -284,7 +346,7 @@ export const OrderLabelPurchase = ( {
 					<ShippingIcon />
 					{ getShipmentSummaryText(
 						orderFulfilled,
-						purchasedLabelsProductIds.length,
+						purchasedLabelsProductIds().length,
 						count
 					) }
 				</FlexItem>
@@ -292,8 +354,8 @@ export const OrderLabelPurchase = ( {
 					<Button variant="primary" onClick={ openLabelsModal }>
 						{ orderFulfilled
 							? _n(
-									'View purchased shipping label',
-									'View purchased shipping labels',
+									'View or add shipment',
+									'View or add shipments',
 									count,
 									'woocommerce-shipping'
 							  )
@@ -320,61 +382,31 @@ export const OrderLabelPurchase = ( {
 							closeModal={ closeLabelsModal }
 							orderId={ orderId }
 						/>
-						{ ! hasSplitShipments && (
-							<>
-								<Divider />
-
-								<ShipmentContent items={ orderItems }>
-									{ canHaveMultipleShipments && (
-										<Button
-											variant="tertiary"
-											onClick={ () => {
-												const tracksProps = {
-													order_product_count: count,
-												};
-												recordEvent(
-													'label_purchase_split_shipment_clicked',
-													tracksProps
-												);
-												setStartSplitShipment(
-													! startSplitShipment
-												);
-											} }
-										>
-											{ __(
-												'Split shipment',
-												'woocommerce-shipping'
-											) }
-										</Button>
-									) }
-								</ShipmentContent>
-							</>
-						) }
-						{ hasSplitShipments && (
-							<TabPanel
-								ref={ ref }
-								selectOnMove={ true }
-								className="shipment-tabs"
-								tabs={ tabs }
-								initialTabName={ currentShipmentId }
-								onSelect={ ( tabName ) => {
-									/**
-									 * storing the previous tab name to prevent jumping to a new tab
-									 * when the user clicks on the "Edit shipments" tab
-									 */
-									if ( tabName === 'edit' ) {
-										setStartSplitShipment( true );
-									} else {
-										setCurrentShipmentId( tabName );
-									}
-								} }
-								children={ () => (
-									<ShipmentContent
-										items={ shipments[ currentShipmentId ] }
-									/>
-								) }
-							/>
-						) }
+						<TabPanel
+							ref={ ref }
+							selectOnMove={ true }
+							className="shipment-tabs"
+							tabs={ tabs() }
+							initialTabName={ currentShipmentId }
+							onSelect={ ( tabName ) => {
+								/**
+								 * storing the previous tab name to prevent jumping to a new tab
+								 * when the user clicks on the "Edit shipments" tab
+								 */
+								if ( tabName === 'edit' ) {
+									setStartSplitShipment( true );
+								} else if ( tabName === 'new-shipment' ) {
+									createShipmentForExtraLabel();
+								} else {
+									setCurrentShipmentId( tabName );
+								}
+							} }
+							children={ () => (
+								<ShipmentContent
+									items={ shipments[ currentShipmentId ] }
+								/>
+							) }
+						/>
 						{ startSplitShipment && (
 							<SplitShipmentModal
 								close={ closeOrCancelShipmentEdit }

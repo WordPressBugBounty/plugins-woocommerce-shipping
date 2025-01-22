@@ -5,7 +5,7 @@ import { __ } from '@wordpress/i18n';
 import { Form } from '@woocommerce/components';
 import { useSelect } from '@wordpress/data';
 import { CustomsState } from 'types';
-import { useLabelPurchaseContext } from '../context';
+import { useLabelPurchaseContext } from 'context/label-purchase';
 import { CustomsForm } from './customs-form';
 import {
 	createLocalErrors,

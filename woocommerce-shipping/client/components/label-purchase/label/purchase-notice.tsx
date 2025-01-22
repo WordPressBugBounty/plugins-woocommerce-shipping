@@ -11,7 +11,7 @@ import {
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { hasLabelExpired } from 'utils';
-import { useLabelPurchaseContext } from '../context';
+import { useLabelPurchaseContext } from 'context/label-purchase';
 import { PaperSizeSelector } from '../paper-size';
 import { SchedulePickup } from './schedule-pickup';
 import { TrackShipment } from './track-shipment';

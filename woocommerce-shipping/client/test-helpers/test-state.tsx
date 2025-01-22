@@ -14,7 +14,7 @@ import { TAB_NAMES } from 'components/label-purchase/packages';
 import {
 	LabelPurchaseContextProvider,
 	LabelPurchaseContextType,
-} from 'components/label-purchase/context';
+} from 'context/label-purchase';
 
 interface ProvideStateProps {
 	children: React.JSX.Element | React.JSX.Element[];
@@ -55,6 +55,8 @@ export const ProvideTestState = ( {
 	const customs = useCustomsState(
 		'0',
 		shipments,
+		{},
+		() => [],
 		() => [],
 		getShipmentOrigin,
 		() => getShipmentOrigin()
@@ -88,6 +90,10 @@ export const ProvideTestState = ( {
 					0: {},
 				},
 				getShipmentOrigin,
+				selections: {
+					0: [ { id: 0 } ],
+				},
+				isExtraLabelPurchaseValid: jest.fn().mockReturnValue( true ),
 			},
 			rates: {
 				errors,
@@ -111,6 +117,7 @@ export const ProvideTestState = ( {
 				getCurrentShipmentLabel: () => null,
 				selectedLabelSize: () => ( {} ),
 				paperSizes: [],
+				hasMissingPurchase: jest.fn().mockReturnValue( false ),
 			},
 			packages,
 			hazmat: {

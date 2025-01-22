@@ -2,7 +2,7 @@ import { Button, Dropdown, Flex } from '@wordpress/components';
 import { check, chevronDown } from '@wordpress/icons';
 import React from 'react';
 import { withBoundary } from 'components/HOC';
-import { useLabelPurchaseContext } from '../context';
+import { useLabelPurchaseContext } from 'context/label-purchase';
 
 interface PaperSizeSelectorProps {
 	disabled?: boolean;

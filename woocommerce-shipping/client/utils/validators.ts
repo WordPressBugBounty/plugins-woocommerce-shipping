@@ -173,7 +173,7 @@ export const validateEmail = ( {
 	return createValidationResult( values, errors, localErrors );
 };
 
-const hasInvalidChar = ( text: string ) => {
+export const hasInvalidChar = ( text: string ) => {
 	// Convert to string to ensure we're working with a string.
 	const textStr = String( text );
 

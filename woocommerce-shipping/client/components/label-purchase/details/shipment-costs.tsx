@@ -5,7 +5,7 @@ import { isEmpty } from 'lodash';
 
 import { Label, Rate } from 'types';
 import { signatureTypeToTitle } from 'utils';
-import { useLabelPurchaseContext } from '../context';
+import { useLabelPurchaseContext } from 'context/label-purchase';
 
 interface ShipmentCostsProps {
 	selectedRate: { rate: Rate; parent: Rate | null } | null | undefined;

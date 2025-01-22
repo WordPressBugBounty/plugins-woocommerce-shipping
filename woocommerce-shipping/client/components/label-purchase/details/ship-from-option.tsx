@@ -8,7 +8,7 @@ import { __, _x, sprintf } from '@wordpress/i18n';
 import { addressToString } from 'utils';
 import { OriginAddress } from 'types';
 import { AddressVerifiedIcon } from '../../address-verified-icon';
-import { useLabelPurchaseContext } from '../context';
+import { useLabelPurchaseContext } from 'context/label-purchase';
 import { check, Icon } from '@wordpress/icons';
 import { Link } from '@woocommerce/components';
 import { ADDRESS_TYPES } from 'data/constants';

@@ -14,7 +14,7 @@ import {
 	WEIGHT_UNITS,
 	minWeightThresholds,
 } from 'utils';
-import { useLabelPurchaseContext } from './context';
+import { useLabelPurchaseContext } from 'context/label-purchase';
 import { WeightUnit } from 'types';
 
 const formatNumber = ( val: string | number ) =>

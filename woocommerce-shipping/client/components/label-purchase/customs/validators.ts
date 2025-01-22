@@ -5,6 +5,7 @@ import { CustomsItem, CustomsValidationInput, Destination } from 'types';
 import {
 	isCountryInEU,
 	isHSTariffNumberValid,
+	hasInvalidChar,
 	USPS_ITN_REQUIRED_DESTINATIONS,
 } from 'utils';
 import { getCurrentOrderItems } from 'utils/order';
@@ -188,7 +189,13 @@ export const validateItems =
 						'This field is required',
 						'woocommerce-shipping'
 					);
+				} else if ( hasInvalidChar( description ) ) {
+					localErrors.items[ index ].description = __(
+						'This field contains invalid characters.',
+						'woocommerce-shipping'
+					);
 				}
+
 				if ( isNil( weight ) || weight === '' ) {
 					localErrors.items[ index ].weight = __(
 						'This field is required',

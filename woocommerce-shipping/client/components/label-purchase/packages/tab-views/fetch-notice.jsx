@@ -1,6 +1,6 @@
 import { __experimentalSpacer as Spacer, Notice } from '@wordpress/components';
 import { isEmpty, reject } from 'lodash';
-import { useLabelPurchaseContext } from 'components/label-purchase/context';
+import { useLabelPurchaseContext } from 'context/label-purchase';
 
 export const FetchNotice = ( { margin = 'before' } ) => {
 	const {

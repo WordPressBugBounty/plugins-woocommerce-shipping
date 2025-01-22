@@ -23,7 +23,7 @@ import { getDimensionsUnit, getWeightUnit } from 'utils';
 import { FetchNotice } from './fetch-notice';
 import { TAB_NAMES, PACKAGE_TYPES } from '../constants';
 import { labelPurchaseStore } from 'data/label-purchase';
-import { useLabelPurchaseContext } from '../../context';
+import { useLabelPurchaseContext } from 'context/label-purchase';
 import { TotalWeight } from '../../total-weight';
 import { GetRatesButton } from '../../get-rates-button';
 import { PACKAGE_SECTION } from 'components/label-purchase/essential-details/constants';
@@ -49,6 +49,8 @@ export const CustomPackage = withBoundary(
 			packages: { currentPackageTab },
 			hazmat: { isHazmatSpecified },
 			weight: { getShipmentTotalWeight },
+			labels: { hasMissingPurchase },
+			shipment: { isExtraLabelPurchaseValid },
 		} = useLabelPurchaseContext();
 		const setData = useCallback(
 			( newData ) => {
@@ -238,6 +240,10 @@ export const CustomPackage = withBoundary(
 			fetchRates( rawPackageData );
 		}, [ rawPackageData, fetchRates ] );
 
+		const isExtraLabelPurchase = () => {
+			return ! hasMissingPurchase();
+		};
+
 		const disableFetchButton = useMemo( () => {
 			return (
 				isFetching ||
@@ -246,7 +252,8 @@ export const CustomPackage = withBoundary(
 				! rawPackageData.height ||
 				hasFormErrors() ||
 				hasCustomsErrors() ||
-				! isHazmatSpecified()
+				! isHazmatSpecified() ||
+				( isExtraLabelPurchase() && ! isExtraLabelPurchaseValid() )
 			);
 		}, [
 			isFetching,
@@ -256,6 +263,8 @@ export const CustomPackage = withBoundary(
 			hasFormErrors,
 			hasCustomsErrors,
 			isHazmatSpecified,
+			isExtraLabelPurchase,
+			isExtraLabelPurchaseValid,
 		] );
 
 		const disableTemplateSaveButton = useCallback( () => {

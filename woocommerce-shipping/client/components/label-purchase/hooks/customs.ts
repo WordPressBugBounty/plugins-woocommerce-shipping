@@ -30,9 +30,13 @@ const getInitialShipmentCustomsState = < T >( items: T ) => ( {
 export function useCustomsState(
 	currentShipmentId: string,
 	shipments: Record< string, ShipmentItem[] >,
+	selections: Record< string, ShipmentItem[] >,
 	getShipmentItems: ReturnType<
 		typeof useShipmentState
 	>[ 'getShipmentItems' ],
+	getSelectionItems: ReturnType<
+		typeof useShipmentState
+	>[ 'getSelectionItems' ],
 	getShipmentOrigin: ReturnType<
 		typeof useShipmentState
 	>[ 'getShipmentOrigin' ],
@@ -59,12 +63,17 @@ export function useCustomsState(
 			items: FormErrors< CustomsItem >[];
 		}
 	>( {
-		items: getShipmentItems().map( () => ( {} ) ),
+		items: getShipmentItems()?.map( () => ( {} ) ),
 	} );
 
 	const getCustomsItems = useCallback(
-		( shipmentId = currentShipmentId ) =>
-			getShipmentItems( shipmentId )?.map( ( props ) => ( {
+		( shipmentId = currentShipmentId ) => {
+			const items =
+				getSelectionItems( shipmentId )?.length > 0
+					? getSelectionItems( shipmentId )
+					: getShipmentItems( shipmentId );
+
+			return items?.map( ( props ) => ( {
 				...props,
 				description:
 					props.meta?.customs_info?.description ?? props.name,
@@ -72,8 +81,14 @@ export function useCustomsState(
 					props.meta?.customs_info?.hs_tariff_number ?? '',
 				originCountry:
 					props.meta?.customs_info?.origin_country ?? origin.country,
-			} ) ),
-		[ getShipmentItems, currentShipmentId, origin.country ]
+			} ) );
+		},
+		[
+			getSelectionItems,
+			getShipmentItems,
+			currentShipmentId,
+			origin.country,
+		]
 	);
 
 	const initialCustomsInfo: CustomsState =
@@ -118,7 +133,7 @@ export function useCustomsState(
 				currentShipmentId
 			) ??
 			getInitialShipmentCustomsState(
-				getCustomsItems().map(
+				getCustomsItems()?.map(
 					( item ) =>
 						allTheCustomItems.find(
 							( i ) => i.product_id === item.product_id
@@ -159,7 +174,7 @@ export function useCustomsState(
 	useEffect( () => {
 		if ( ! isCustomsNeeded() ) {
 			const newErrors = {
-				items: getShipmentItems().map( () => ( {} ) ),
+				items: getShipmentItems()?.map( () => ( {} ) ),
 			};
 
 			setErrors( ( prevErrors ) => {
@@ -237,7 +252,8 @@ export function useCustomsState(
 		const { items, ...rest } = errors;
 
 		if ( isHSTariffNumberRequired() ) {
-			const { items: customItems } = getCustomsState();
+			const customsState = getCustomsState();
+			const customItems = customsState ? customsState.items : [];
 			const hasInvalidHsTariff = customItems.some(
 				( { hsTariffNumber } ) =>
 					! isHSTariffNumberValid( hsTariffNumber )
@@ -310,6 +326,83 @@ export function useCustomsState(
 		// Update the state with the new customs data
 		setState( newState );
 	};
+
+	const updateCustomsItemsBasedOnSelections = useCallback(
+		( currentState: Record< string, CustomsState > ) => {
+			// Get selections for current shipment
+			const shipmentSelections = selections[ currentShipmentId ];
+
+			// Exit early if no selections exist
+			if ( ! shipmentSelections?.length ) {
+				return currentState;
+			}
+
+			// Get existing customs state or initialize new items
+			const shipmentCustomsState = currentState[ currentShipmentId ];
+			const customsItems = shipmentCustomsState?.items?.length
+				? shipmentCustomsState.items
+				: getCustomsItems();
+
+			// Filter customs items based on selections
+			const updatedItems = customsItems
+				// Only keep items that exist in selections
+				.filter( ( item ) =>
+					shipmentSelections.some(
+						( selection ) =>
+							selection.product_id === item.product_id
+					)
+				)
+				// Update quantities based on selections
+				.map( ( item ) => {
+					const itemQuantity = shipmentSelections
+						.filter(
+							( selection ) =>
+								selection.product_id === item.product_id
+						)
+						.reduce(
+							( total, { quantity } ) =>
+								total + ( quantity ?? 1 ),
+							0
+						);
+
+					return {
+						...item,
+						quantity: itemQuantity,
+					};
+				} ) as CustomsItem[];
+
+			// Add missing items from shipmentSelections
+			const missingItems = shipmentSelections.filter(
+				( selection ) =>
+					! updatedItems.some(
+						( updatedItem ) =>
+							updatedItem.product_id === selection.product_id
+					)
+			);
+
+			// Return updated state
+			return {
+				...currentState,
+				[ currentShipmentId ]: {
+					...shipmentCustomsState,
+					items: [
+						...updatedItems,
+						...getCustomsItems().filter( ( item ) =>
+							missingItems.find(
+								( missingItem ) =>
+									missingItem.product_id === item.product_id
+							)
+						),
+					],
+				},
+			};
+		},
+		[ currentShipmentId, getCustomsItems, selections ]
+	);
+
+	useEffect( () => {
+		setState( updateCustomsItemsBasedOnSelections );
+	}, [ updateCustomsItemsBasedOnSelections ] );
 
 	return {
 		getCustomsState,

@@ -15,7 +15,7 @@ import { Conditional } from 'components/HOC';
 import { CustomPackage, Package } from 'types';
 import { TemplateRow } from './saved-templates/template-row';
 import { NoSavedTemplates } from './saved-templates/no-saved-templates';
-import { useLabelPurchaseContext } from '../../context';
+import { useLabelPurchaseContext } from 'context/label-purchase';
 import { FetchNotice } from './fetch-notice';
 import { TotalWeight } from '../../total-weight';
 import { GetRatesButton } from '../../get-rates-button';
@@ -67,6 +67,8 @@ export const SavedTemplates = withBoundary(
 					hazmat: { isHazmatSpecified },
 					packages: { isSelectedASavedPackage, getPackageForRequest },
 					weight: { getShipmentTotalWeight },
+					labels: { hasMissingPurchase },
+					shipment: { isExtraLabelPurchaseValid },
 				} = useLabelPurchaseContext();
 				const [ deletablePackage, setDeletablePackage ] = useState<
 					Package | CustomPackage | false
@@ -75,13 +77,19 @@ export const SavedTemplates = withBoundary(
 				const [ isDeletingPackage, setIsDeletingPackage ] =
 					useState( false );
 
+				const isExtraLabelPurchase = () => {
+					return ! hasMissingPurchase();
+				};
+
 				const isGetRatesButtonDisabled = Boolean(
 					! selectedPackage ||
 						isFetching ||
 						Boolean( errors.totalWeight ) ||
 						hasCustomsErrors() ||
 						! isHazmatSpecified() ||
-						! getShipmentTotalWeight()
+						! getShipmentTotalWeight() ||
+						( isExtraLabelPurchase() &&
+							! isExtraLabelPurchaseValid() )
 				);
 
 				const onConfirmPackageDeletion = async (

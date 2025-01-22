@@ -18,7 +18,7 @@ import { createInterpolateElement } from '@wordpress/element';
 import { contentTypes, restrictionTypes } from './constants';
 import { ControlledPopover } from '../../controlled-popover';
 import { getCountryNames, getWeightUnit } from '../../../utils';
-import { useLabelPurchaseContext } from '../context';
+import { useLabelPurchaseContext } from 'context/label-purchase';
 import { CustomsItem, CustomsState } from 'types';
 import { CUSTOMS_SECTION } from '../essential-details/constants';
 

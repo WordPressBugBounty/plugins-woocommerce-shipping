@@ -11,7 +11,7 @@ import { isEmpty } from 'lodash';
 import { labelPurchaseStore } from 'data/label-purchase';
 import { TAB_NAMES } from './constants';
 import { CarrierPackage, CustomPackage, SavedTemplates } from './tab-views';
-import { useLabelPurchaseContext } from 'components/label-purchase/context';
+import { useLabelPurchaseContext } from 'context/label-purchase';
 import { recordEvent } from 'utils/tracks';
 import { mainModalContentSelector } from '../constants';
 import { PACKAGE_SECTION } from '../essential-details/constants';

@@ -1,5 +1,5 @@
 import { mapValues, sortBy, snakeCase } from 'lodash';
-import { useCallback, useState } from '@wordpress/element';
+import { useCallback, useMemo, useState } from '@wordpress/element';
 import { dispatch, select, useSelect } from '@wordpress/data';
 import { __, sprintf } from '@wordpress/i18n';
 import {
@@ -134,7 +134,7 @@ export function useRatesState( {
 	customs: { maybeApplyCustomsToPackage },
 	getShipmentOrigin,
 }: UseRatesStateProps ) {
-	const accountSettings = getAccountSettings();
+	const accountSettings = useMemo( getAccountSettings, [] );
 	const currentShipmentRates =
 		select( labelPurchaseStore ).getSelectedRates();
 	const [ selectedRates, selectRates ] = useState<
@@ -204,13 +204,16 @@ export function useRatesState( {
 	 * to remove the current selection.
 	 */
 	const removeSelectedRate = useCallback( () => {
-		if ( selectedRates[ currentShipmentId ] ) {
-			selectRates( {
-				...selectedRates,
-				[ currentShipmentId ]: null,
-			} );
-		}
-	}, [ currentShipmentId, selectedRates ] );
+		selectRates( ( currentSelectedRates ) => {
+			if ( currentSelectedRates[ currentShipmentId ] ) {
+				return {
+					...currentSelectedRates,
+					[ currentShipmentId ]: null,
+				};
+			}
+			return currentSelectedRates;
+		} );
+	}, [ currentShipmentId ] );
 
 	const preselectRateBasedOnLastSelections = useCallback( () => {
 		if ( ! accountSettings.purchaseSettings.use_last_service ) {
@@ -252,9 +255,7 @@ export function useRatesState( {
 		) => {
 			setIsFetching( true );
 			setErrors( { ...errors, endpoint: null } );
-			selectRates( {
-				0: null,
-			} );
+			removeSelectedRate();
 
 			const {
 				type,
@@ -331,6 +332,7 @@ export function useRatesState( {
 		},
 		[
 			errors,
+			removeSelectedRate,
 			currentShipmentId,
 			totalWeight,
 			maybeApplyCustomsToPackage,
@@ -378,13 +380,10 @@ export function useRatesState( {
 		if ( ! isAnyFieldEmpty ) {
 			fetchRates( pkg );
 		}
-	}, [
-		fetchRates,
-		availableRates,
-		isFetching,
-		getPackageForRequest,
-		totalWeight,
-	] );
+		// Adding isFetching to the dependencies array causes an intinite loop
+		// as is being updated by fetchRates
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [ fetchRates, availableRates, getPackageForRequest, totalWeight ] );
 
 	/**
 	 * Sort Rates when filter dropdown is used.

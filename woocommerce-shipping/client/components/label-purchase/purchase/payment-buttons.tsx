@@ -26,7 +26,7 @@ import {
 } from 'utils';
 import { CreditCardButton } from './credit-card-button';
 import { settingsPageUrl } from '../constants';
-import { useLabelPurchaseContext } from '../context';
+import { useLabelPurchaseContext } from 'context/label-purchase';
 import { getShipmentTitle } from '../utils';
 import { PaperSizeSelector } from '../paper-size';
 import {
@@ -52,7 +52,14 @@ interface PaymentButtonsProps {
 
 export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 	const {
-		shipment: { shipments, currentShipmentId, getShipmentOrigin },
+		shipment: {
+			shipments,
+			setShipments,
+			selections,
+			currentShipmentId,
+			getShipmentOrigin,
+			isExtraLabelPurchaseValid,
+		},
 		labels: {
 			selectedLabelSize,
 			requestLabelPurchase,
@@ -60,9 +67,10 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 			isUpdatingStatus,
 			hasPurchasedLabel,
 			getCurrentShipmentLabel,
+			hasMissingPurchase,
 		},
 		packages: { getPackageForRequest },
-		rates: { getSelectedRate, fetchRates, matchAndSelectRate },
+		rates: { isFetching, getSelectedRate, fetchRates, matchAndSelectRate },
 		account: {
 			accountSettings,
 			canPurchase,
@@ -216,11 +224,76 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 		}
 	}, [ orderStatus ] );
 
+	const maybeUpdateShipmentsFromSelection = () => {
+		// Only proceed if there are selections for the current shipment
+		if ( selections[ currentShipmentId ]?.length > 0 ) {
+			const selection = selections[ currentShipmentId ];
+			const shipment = shipments[ currentShipmentId ];
+
+			// Map through current shipment items and update based on selection
+			const updatedShipment = shipment
+				.map( ( item ) => {
+					// Handle items without sub-items
+					if ( ! item.subItems || item.subItems.length === 0 ) {
+						return (
+							selection.find( ( s ) => s.id === item.id ) ?? null
+						);
+					}
+
+					// Find selected sub-items for current item
+					const selectedSubItems = item.subItems.filter(
+						( subItem ) =>
+							selection.some( ( s ) => s.id === subItem.id )
+					);
+
+					// An item with all subitems selected
+					const selectedItem = selection.find(
+						( s ) => s.id === item.id
+					);
+
+					// If no sub-items selected, exclude this item
+					if ( ! selectedItem && selectedSubItems.length === 0 ) {
+						return null;
+					}
+
+					// Return updated item with selected sub-items
+					return {
+						...item,
+						subItems: selectedSubItems,
+						quantity:
+							selectedSubItems.length > 0
+								? selectedSubItems.length
+								: item.quantity ?? 1,
+					};
+				} )
+				// Remove null items from the shipment
+				.filter(
+					( item ): item is ( typeof shipment )[ 0 ] => item !== null
+				);
+
+			// Create new shipments object with updated shipment
+			const updatedShipments = {
+				...shipments,
+				[ currentShipmentId ]: updatedShipment,
+			};
+
+			// Update local state and dispatch to store
+			setShipments( updatedShipments );
+			dispatch( labelPurchaseStore ).updateShipments( {
+				shipments: updatedShipments,
+				orderId: `${ order?.id }`,
+				shipmentIdsToUpdate: {},
+			} );
+		}
+	};
+
 	const purchaseLabel = async ( rate: RateWithParent ) => {
 		resetErrors();
 		if ( hasPurchasedLabel( false ) ) {
 			return;
 		}
+
+		maybeUpdateShipmentsFromSelection();
 
 		const tracksProperties = {
 			order_product_count: order.line_items.length,
@@ -348,6 +421,10 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 	// Reset errors when shipment origin or rate change
 	useEffect( resetErrors, [ shipmentOrigin, selectedRate ] );
 
+	const isExtraLabelPurchase = () => {
+		return ! hasMissingPurchase();
+	};
+
 	return (
 		<>
 			{ showUPSDAPTos && (
@@ -372,9 +449,12 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 								disabled={
 									! selectedRate ||
 									isPurchasing ||
+									isFetching ||
 									isUpdatingStatus ||
 									hasPurchasedLabel( false ) ||
-									! shipmentOrigin.isVerified
+									! shipmentOrigin.isVerified ||
+									( isExtraLabelPurchase() &&
+										! isExtraLabelPurchaseValid() )
 								}
 								onClick={ () => {
 									const rate = getSelectedRate();
@@ -386,8 +466,11 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 								aria-disabled={
 									! selectedRate ||
 									isPurchasing ||
+									isFetching ||
 									hasPurchasedLabel( false ) ||
-									! shipmentOrigin.isVerified
+									! shipmentOrigin.isVerified ||
+									( isExtraLabelPurchase() &&
+										! isExtraLabelPurchaseValid() )
 								}
 							>
 								{ purchaseButtonLabel }

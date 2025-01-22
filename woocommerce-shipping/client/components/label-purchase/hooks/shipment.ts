@@ -1,9 +1,12 @@
-import { useCallback, useEffect, useState } from '@wordpress/element';
+import { useCallback, useEffect, useState, useMemo } from '@wordpress/element';
 import { dispatch, select as selectData, useSelect } from '@wordpress/data';
 import { invert, isEqual } from 'lodash';
 import {
+	getCurrentOrder,
+	getCurrentOrderItems,
 	getCurrentOrderShipments,
 	getFirstSelectableOriginAddress,
+	getSubItems,
 } from 'utils';
 import { LabelShipmentIdMap, OriginAddress, ShipmentItem } from 'types';
 import { addressStore } from 'data/address';
@@ -107,7 +110,7 @@ export function useShipmentState() {
 
 	const getShipmentWeight = useCallback(
 		() =>
-			shipments[ currentShipmentId ].reduce(
+			shipments[ currentShipmentId ]?.reduce(
 				( acc, { weight, quantity } ) =>
 					acc + Number( weight || 0 ) * Number( quantity ),
 				0
@@ -127,6 +130,11 @@ export function useShipmentState() {
 	const getShipmentItems = useCallback(
 		( shipmentId = currentShipmentId ) => shipments[ shipmentId ],
 		[ shipments, currentShipmentId ]
+	);
+
+	const getSelectionItems = useCallback(
+		( shipmentId = currentShipmentId ) => selections[ shipmentId ],
+		[ selections, currentShipmentId ]
 	);
 
 	const getShipmentOrigin = useCallback( () => {
@@ -198,6 +206,54 @@ export function useShipmentState() {
 		setLabelShipmentIdsToUpdate( {} );
 	};
 
+	const hasVariations = useMemo(
+		() =>
+			Object.values( shipments )
+				.flat()
+				.some( ( item ) => {
+					return !! item.variation?.length;
+				} ),
+		[ shipments ]
+	);
+
+	const hasMultipleShipments = useMemo(
+		() => Object.values( shipments ).length > 1,
+		[ shipments ]
+	);
+
+	const isExtraLabelPurchaseValid = () => {
+		return selections[ currentShipmentId ]?.length > 0;
+	};
+
+	const resetShipmentAndSelection = useCallback( () => {
+		const updatedShipments = {
+			...shipments,
+			[ currentShipmentId ]: undefined,
+		};
+		delete updatedShipments[ currentShipmentId ];
+
+		const order = getCurrentOrder();
+
+		dispatch( labelPurchaseStore ).updateShipments( {
+			shipments: updatedShipments,
+			orderId: `${ order?.id }`,
+			shipmentIdsToUpdate: {},
+		} );
+		const orderItems = getCurrentOrderItems();
+		const shipmentItems = orderItems.map( ( orderItem ) => ( {
+			...orderItem,
+			subItems: getSubItems( orderItem as ShipmentItem ),
+		} ) );
+		updateShipments( ( currentShipments ) => ( {
+			...currentShipments,
+			[ currentShipmentId ]: shipmentItems,
+		} ) );
+		setSelection( {
+			...selections,
+			[ currentShipmentId ]: shipmentItems,
+		} );
+	}, [ currentShipmentId, selections, shipments ] );
+
 	return {
 		shipments,
 		setShipments,
@@ -208,11 +264,16 @@ export function useShipmentState() {
 		currentShipmentId,
 		setCurrentShipmentId,
 		getShipmentItems,
+		getSelectionItems,
 		getShipmentOrigin,
 		setShipmentOrigin,
 		getShipmentDestination,
 		revertLabelShipmentIdsToUpdate,
 		labelShipmentIdsToUpdate,
 		getShipmentPurchaseOrigin,
+		hasVariations,
+		hasMultipleShipments,
+		isExtraLabelPurchaseValid,
+		resetShipmentAndSelection,
 	};
 }

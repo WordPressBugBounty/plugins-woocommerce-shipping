@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from '@wordpress/components';
-import { useLabelPurchaseContext } from '../context';
+import { useLabelPurchaseContext } from 'context/label-purchase';
 import { useCallback, useRef, useState } from '@wordpress/element';
 
 interface CreditCardButtonProps {

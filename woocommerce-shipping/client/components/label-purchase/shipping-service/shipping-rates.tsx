@@ -15,7 +15,7 @@ import {
 } from '@wordpress/element';
 import { usePrevious } from '@wordpress/compose';
 import { intersection } from 'lodash';
-import { useLabelPurchaseContext } from '../context';
+import { useLabelPurchaseContext } from 'context/label-purchase';
 import { CarrierRates } from './carrier-rates';
 import { RatesSorter } from './rates-sorter';
 import { DEFAULT_SORT_BY, DELIVERY_PROPERTIES } from './constants';

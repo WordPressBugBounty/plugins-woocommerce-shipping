@@ -19,7 +19,7 @@ import clsx from 'clsx';
  * Internal dependencies
  */
 import { uspsHazmatCategories } from './usps-hazmat-categories';
-import { useLabelPurchaseContext } from '../context';
+import { useLabelPurchaseContext } from 'context/label-purchase';
 import { recordEvent } from 'utils/tracks';
 import { FOCUS_AREA_HAZMAT } from 'components/label-purchase/essential-details/constants';
 

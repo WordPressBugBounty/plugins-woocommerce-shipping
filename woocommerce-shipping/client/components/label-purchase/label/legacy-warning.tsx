@@ -8,7 +8,7 @@ import {
 } from '@wordpress/components';
 import { warning } from '@wordpress/icons';
 import { createInterpolateElement } from '@wordpress/element';
-import { useLabelPurchaseContext } from '../context';
+import { useLabelPurchaseContext } from 'context/label-purchase';
 
 export const LegacyWarning = () => {
 	const {

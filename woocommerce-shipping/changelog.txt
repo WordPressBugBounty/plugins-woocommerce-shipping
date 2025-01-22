@@ -1,5 +1,11 @@
 *** WooCommerce Shipping Changelog ***
 
+= 1.4.0 - 2025-01-22 =
+* Add   - Added possibility to purchase additional shipping labels, after all items in an order has been included in a shipped parcel.
+* Add   - Emoji validation on customs description.
+* Fix   - Address validation triggering for guest users before required address fields are filled.
+* Fix   - Address validation unnecessarily strict for US addresses.
+
 = 1.3.4 - 2025-01-17 =
 * Fix   - Fatal error on settings page for new installs.
 

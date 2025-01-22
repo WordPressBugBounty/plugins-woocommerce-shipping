@@ -119,7 +119,9 @@ export const Items = withBoundary(
 		const weightUnit = getWeightUnit();
 		const dimensionUnit = getDimensionsUnit();
 		const currencySymbol = getCurrencySymbol();
-		const hasVariation = orderItems.some( ( item ) => item.variation );
+		const hasVariation = orderItems.some(
+			( item ) => item.variation?.length > 0
+		);
 
 		return (
 			<>

@@ -8,7 +8,7 @@ import {
 } from 'utils';
 import { ShipmentItem, ShipmentSubItem } from 'types';
 import { Items } from '../items';
-import { useLabelPurchaseContext } from '../context';
+import { useLabelPurchaseContext } from 'context/label-purchase';
 import { SelectionHeader, SplitHeader } from './header';
 
 interface SelectableItemsProps {
@@ -31,6 +31,7 @@ export const SelectableItems = ( {
 	isDisabled,
 }: SelectableItemsProps ) => {
 	const {
+		labels: { isCurrentTabPurchasingExtraLabel },
 		shipment: { shipments },
 	} = useLabelPurchaseContext();
 
@@ -41,9 +42,9 @@ export const SelectableItems = ( {
 			let subject = item;
 			let localSelections = [ ...selections ];
 			if ( add && isSubItem( item ) ) {
-				const parent = shipments[ shipmentIndex ].find(
-					( { id } ) => id === item?.parentId
-				);
+				const parent = (
+					shipments[ shipmentIndex ] || orderItems
+				).find( ( { id } ) => id === item?.parentId );
 				const areAllSubItemsSelected = ( parent?.subItems ?? [] )
 					.filter( ( { id } ) => item.id !== id )
 					.every( ( subItem ) =>
@@ -91,7 +92,8 @@ export const SelectableItems = ( {
 			isExpandable={ true }
 			header={
 				<>
-					{ ! hasMultipleShipments && (
+					{ ( ! hasMultipleShipments ||
+						isCurrentTabPurchasingExtraLabel() ) && (
 						<Flex className="selection-header-wrapper">
 							{ selections.length > 0 && (
 								<SelectionHeader

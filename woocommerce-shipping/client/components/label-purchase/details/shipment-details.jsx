@@ -24,7 +24,7 @@ import {
 	areAddressesClose,
 } from 'utils';
 import { addressStore } from 'data/address';
-import { useLabelPurchaseContext } from 'components/label-purchase/context';
+import { useLabelPurchaseContext } from 'context/label-purchase';
 import { AddressStep } from 'components/address-step';
 import { ADDRESS_TYPES } from 'data/constants';
 import { AddressVerifiedIcon } from 'components/address-verified-icon';

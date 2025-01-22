@@ -5,7 +5,7 @@ import { chevronDown } from '@wordpress/icons';
 import { getNoneSelectedShipmentItems, normalizeShipments } from 'utils';
 import { ShipmentItem } from 'types';
 import { getShipmentTitle } from '../utils';
-import { useLabelPurchaseContext } from '../context';
+import { useLabelPurchaseContext } from 'context/label-purchase';
 
 interface SplitHeaderProps {
 	isDisabled: () => boolean;

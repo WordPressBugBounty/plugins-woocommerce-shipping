@@ -16,7 +16,7 @@ import { CarrierIcon } from '../../../carrier-icon';
 import { FetchNotice } from './fetch-notice';
 import { TotalWeight } from '../../total-weight';
 import { GetRatesButton } from '../../get-rates-button';
-import { useLabelPurchaseContext } from '../../context';
+import { useLabelPurchaseContext } from 'context/label-purchase';
 import { recordEvent } from 'utils/tracks';
 
 export const CarrierPackage = withBoundary(
@@ -42,6 +42,8 @@ export const CarrierPackage = withBoundary(
 				customs: { hasErrors: hasCustomsErrors },
 				hazmat: { isHazmatSpecified },
 				weight: { getShipmentTotalWeight },
+				labels: { hasMissingPurchase },
+				shipment: { isExtraLabelPurchaseValid },
 			} = useLabelPurchaseContext();
 
 			const tabs = Object.keys( availablePackages ).map(
@@ -56,13 +58,19 @@ export const CarrierPackage = withBoundary(
 				} )
 			);
 
+			const isExtraLabelPurchase = () => {
+				return ! hasMissingPurchase();
+			};
+
 			const isGetRatesButtonDisabled =
 				! selectedPackage ||
 				isFetching ||
 				!! errors.totalWeight ||
 				hasCustomsErrors() ||
 				! isHazmatSpecified() ||
-				! getShipmentTotalWeight();
+				! getShipmentTotalWeight() ||
+				( isExtraLabelPurchase() && ! isExtraLabelPurchaseValid() );
+
 			const getRates = useCallback( () => {
 				const tracksProperties = {
 					package_id: selectedPackage?.id,

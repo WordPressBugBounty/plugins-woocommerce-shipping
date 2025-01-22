@@ -1,3 +1,4 @@
+import React, { JSX, useEffect, useRef } from 'react';
 import { isEmpty } from 'lodash';
 import { useSelect } from '@wordpress/data';
 import {
@@ -10,14 +11,20 @@ import {
 	Notice,
 } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
-import { getCurrentOrder, hasUPSPackages } from 'utils';
+import {
+	getCurrentOrder,
+	hasUPSPackages,
+	getSubItems,
+	hasSubItems,
+	getSelectablesCount,
+} from 'utils';
 import { labelPurchaseStore } from 'data/label-purchase';
 import { Items } from 'components/label-purchase/items';
 import { Packages } from 'components/label-purchase/packages';
 import { ShipmentDetails } from 'components/label-purchase/details';
 import { Hazmat } from './hazmat';
 import { ShippingRates } from './shipping-service';
-import { useLabelPurchaseContext } from './context';
+import { useLabelPurchaseContext } from 'context/label-purchase';
 import { Customs } from './customs';
 import { PurchaseNotice } from './label';
 import { PaymentButtons } from './purchase';
@@ -25,6 +32,11 @@ import { RefundedNotice } from './label/refunded-notice';
 import { NoRatesAvailable } from './shipping-service/no-rates-available';
 import { LABEL_PURCHASE_STATUS } from 'data/constants';
 import { PurchaseErrorNotice } from './purchase/purchase-error-notice';
+import { ShipmentItem, ShipmentSubItem } from 'types';
+import { ITEMS_SECTION } from './essential-details/constants';
+import { mainModalContentSelector } from './constants';
+import { SelectableItems } from './split-shipment/selectable-items';
+import { StaticHeader } from './split-shipment/header/static-header';
 
 interface ShipmentContentProps {
 	items: unknown[];
@@ -41,13 +53,27 @@ export const ShipmentContent = ( {
 		labels: {
 			hasPurchasedLabel,
 			hasRequestedRefund,
+			showRefundedNotice,
 			getCurrentShipmentLabel,
+			isCurrentTabPurchasingExtraLabel,
 		},
-		customs: { isCustomsNeeded },
-		shipment: { currentShipmentId, getShipmentDestination },
-		rates: { isFetching },
+		customs: { getCustomsState, isCustomsNeeded },
+		shipment: {
+			shipments,
+			selections,
+			setSelection,
+			getSelectionItems,
+			currentShipmentId,
+			getShipmentDestination,
+			hasVariations,
+		},
+		rates: { isFetching, updateRates },
 		packages: { isCustomPackageTab },
 		hazmat: { getShipmentHazmat },
+		essentialDetails: {
+			focusArea: essentialDetailsFocusArea,
+			setExtraLabelPurchaseCompleted,
+		},
 	} = useLabelPurchaseContext();
 	const availableRates = useSelect(
 		( select ) =>
@@ -56,6 +82,74 @@ export const ShipmentContent = ( {
 			),
 		[ currentShipmentId ]
 	);
+
+	/**
+	 * Manages auto-scrolling behavior when users click on options in the Essential Details checklist.
+	 * When the items section link is clicked, smoothly scrolls the modal to bring the items section
+	 * into view, adjusting for header height (72px) and shipment tabs (68px) when multiple shipments exist.
+	 * Triggered by the Essential Details component updating essentialDetailsFocusArea to ITEMS_SECTION.
+	 */
+	const itemsRef = useRef< HTMLDivElement >( null );
+	useEffect( () => {
+		if ( essentialDetailsFocusArea === ITEMS_SECTION && itemsRef.current ) {
+			if ( ! itemsRef.current ) {
+				return;
+			}
+			document.querySelector( mainModalContentSelector )?.scrollTo( {
+				left: 0,
+				// We have to offset the height of the header, so it doesn't overlap our message.
+				// If there's more than one shipment being created, then we also have to take the
+				// "Shipment tabs" component into account.
+				// @todo We could make this smarter by finding the height with JS, but the heights
+				//       are a fixed size, so we're keeping it dumb for now for simplicity.
+				top:
+					itemsRef.current.offsetTop -
+					( Object.keys( shipments ).length > 1 ? 140 : 72 ),
+				behavior: 'smooth',
+			} );
+		}
+	}, [ essentialDetailsFocusArea, shipments ] );
+
+	useEffect( () => {
+		if ( isCurrentTabPurchasingExtraLabel() ) {
+			setExtraLabelPurchaseCompleted( getSelectionItems()?.length > 0 );
+		}
+	}, [
+		setExtraLabelPurchaseCompleted,
+		isCurrentTabPurchasingExtraLabel,
+		getSelectionItems,
+	] );
+
+	const customsState = getCustomsState();
+
+	useEffect( () => {
+		if ( isCustomsNeeded() ) {
+			updateRates();
+		}
+	}, [ customsState?.items, isCustomsNeeded, updateRates ] );
+
+	const addSelectionForShipment =
+		( index: string | number ) =>
+		( selection: ShipmentItem[] | ShipmentSubItem[] ) => {
+			setSelection( { ...selections, [ index ]: selection } );
+		};
+
+	const selectAll = ( index: number | string ) => ( add: boolean ) => {
+		if ( add ) {
+			setSelection( {
+				...selections,
+				[ index ]: shipments[ index ]
+					.map( ( item ) =>
+						hasSubItems( item ) ? getSubItems( item ) : item
+					)
+					.flat() as ShipmentItem[],
+			} );
+		} else {
+			setSelection( {
+				[ currentShipmentId ]: [],
+			} );
+		}
+	};
 
 	return (
 		<Flex
@@ -76,14 +170,16 @@ export const ShipmentContent = ( {
 						</>
 					) }
 				<PurchaseErrorNotice label={ getCurrentShipmentLabel() } />
-				{ hasRequestedRefund() && ! hasPurchasedLabel() && (
-					<>
-						<RefundedNotice />
-						<Spacer marginBottom="12" />
-					</>
-				) }
+				{ hasRequestedRefund() &&
+					showRefundedNotice &&
+					! hasPurchasedLabel() && (
+						<>
+							<RefundedNotice />
+							<Spacer marginBottom="12" />
+						</>
+					) }
 
-				<Flex className="items-header">
+				<Flex className="items-header" ref={ itemsRef }>
 					<Heading level={ 3 }>
 						{ __( 'Items', 'woocommerce-shipping' ) }
 					</Heading>
@@ -94,7 +190,63 @@ export const ShipmentContent = ( {
 					direction="column"
 					expanded={ true }
 				>
-					<Items orderItems={ items } />
+					{ isCurrentTabPurchasingExtraLabel() ? (
+						<Flex
+							className="label-purchase__additional-label"
+							direction="column"
+							expanded={ true }
+						>
+							<Notice status="info" isDismissible={ false }>
+								<strong>
+									{ __(
+										'Select the items you want to include in the new shipment.'
+									) }
+								</strong>{ ' ' }
+								{ __(
+									'The following lists shows all the items in the current order. You can select multiple items from the list.',
+									'woocommerce-shipping'
+								) }
+							</Notice>
+							<Flex className="selectable-items__header">
+								<StaticHeader
+									hasVariations={ hasVariations }
+									selectAll={ selectAll( currentShipmentId ) }
+									hasMultipleShipments={ false }
+									selections={
+										selections[ currentShipmentId ]
+									}
+									selectablesCount={ getSelectablesCount(
+										shipments[ currentShipmentId ]
+									) }
+								/>
+							</Flex>
+							<SelectableItems
+								isSplit={ false }
+								select={ addSelectionForShipment(
+									currentShipmentId
+								) }
+								selections={
+									selections[ currentShipmentId ] || []
+								}
+								orderItems={ items as ShipmentItem[] }
+								selectAll={ selectAll( currentShipmentId ) }
+								shipmentIndex={ parseInt(
+									currentShipmentId,
+									10
+								) }
+								isDisabled={ hasPurchasedLabel(
+									true,
+									true,
+									currentShipmentId
+								) }
+							/>
+						</Flex>
+					) : (
+						<>
+							<StaticHeader hasVariations={ hasVariations } />
+							<Items orderItems={ items } />
+						</>
+					) }
 				</Flex>
 				{ Boolean( getCurrentShipmentLabel()?.isLegacy ) === false && (
 					<Flex className="label-purchase-hazmat">

@@ -218,7 +218,40 @@ class AddressUtils {
 	}
 
 	/**
-	 * Get required address field keys for the passed country.
+	 * Get required shipping address field keys for the passed country.
+	 *
+	 * @param string $country The country.
+	 * @param string $type    The address type. Default is 'billing_'.
+	 *
+	 * @return array
+	 */
+	public static function get_required_shipping_address_field_keys( string $country, string $type = 'billing_' ): array {
+		$fields_for_country = self::get_country_address_fields( $country, $type );
+		$locale             = WC()->countries->get_country_locale();
+		$country_locale     = $locale[ $country ] ?? array();
+
+		$field_keys_to_ignore = array( 'first_name', 'last_name', 'company', 'email', 'phone' );
+		$required_field_keys  = array();
+
+		foreach ( $fields_for_country as $field_key => $field ) {
+			$key = str_replace( $type, '', $field_key );
+
+			if ( in_array( $key, $field_keys_to_ignore, true ) ) {
+				continue;
+			}
+
+			$required = $field['required'] ?? $country_locale[ $key ]['required'] ?? false;
+
+			if ( $required ) {
+				$required_field_keys[] = $key;
+			}
+		}
+
+		return $required_field_keys;
+	}
+
+	/**
+	 * Get address field keys to validate for the passed country.
 	 *
 	 * @param string $country The country.
 	 * @param string $type    The address type. Default is 'billing_'.
@@ -226,7 +259,7 @@ class AddressUtils {
 	 * @return array
 	 */
 	public static function get_address_field_keys_to_validate( string $country, string $type = 'billing_' ): array {
-		$fields_for_country = WC()->countries->get_address_fields( $country, $type );
+		$fields_for_country = self::get_country_address_fields( $country, $type );
 		$locale             = WC()->countries->get_country_locale();
 		$country_locale     = $locale[ $country ] ?? array();
 
@@ -249,5 +282,25 @@ class AddressUtils {
 		}
 
 		return $field_keys_to_validate;
+	}
+
+	/**
+	 * Get address fields for the passed country.
+	 *
+	 * @param string $country The country.
+	 * @param string $type    The address type. Default is 'billing_'. Possible values are 'billing_' and 'shipping_'.
+	 *
+	 * @return array
+	 */
+	public static function get_country_address_fields( string $country, string $type = 'billing_' ): array {
+		static $fields_for_country;
+
+		if ( null !== $fields_for_country ) {
+			return $fields_for_country;
+		}
+
+		$fields_for_country = WC()->countries->get_address_fields( $country, $type );
+
+		return $fields_for_country;
 	}
 }

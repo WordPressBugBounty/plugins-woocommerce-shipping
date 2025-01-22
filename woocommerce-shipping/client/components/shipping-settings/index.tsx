@@ -5,7 +5,7 @@ import { select } from '@wordpress/data';
 import { LabelsSettingsComponent } from './labels-settings';
 import { OriginAddressList } from './origin-address/list';
 import { LiveRatesSettings } from './live-rates-settings';
-import { ShippingSettingsContextProvider } from './context';
+import { ShippingSettingsContextProvider } from 'context/shipping-settings';
 import { useOriginAddressState } from './hooks';
 import { addressStore } from 'data/address';
 import { settingsStore } from 'data/settings';

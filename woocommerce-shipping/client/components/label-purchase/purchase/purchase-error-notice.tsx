@@ -11,7 +11,7 @@ import { withBoundary } from 'components/HOC';
 import { LABEL_PURCHASE_STATUS } from 'data/constants';
 import { Label } from 'types';
 import { settingsPageUrl } from '../constants';
-import { useLabelPurchaseContext } from '../context';
+import { useLabelPurchaseContext } from 'context/label-purchase';
 
 interface PurchaseErrorNoticeProps {
 	label?: Label;

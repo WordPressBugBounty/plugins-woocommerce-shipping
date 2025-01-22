@@ -8,7 +8,7 @@ import {
 import { closeSmall } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
 import { getShipmentTitle } from '../../utils';
-import { useLabelPurchaseContext } from '../../context';
+import { useLabelPurchaseContext } from 'context/label-purchase';
 import { SelectionHeader } from './selection-header';
 import { findClosestIndex, isSubItem, normalizeSubItems } from 'utils';
 import { LabelShipmentIdMap, ShipmentItem, ShipmentSubItem } from 'types';

@@ -3,6 +3,8 @@ export function useEssentialDetails() {
 	const [ customsCompleted, setCustomsCompleted ] = useState( false );
 	const [ shippingServiceCompleted, setShippingServiceCompleted ] =
 		useState( false );
+	const [ extraLabelPurchaseCompleted, setExtraLabelPurchaseCompleted ] =
+		useState( false );
 	const [ focusArea, setFocusArea ] = useState( '' );
 
 	const isCustomsCompleted = () => {
@@ -11,6 +13,10 @@ export function useEssentialDetails() {
 
 	const isShippingServiceCompleted = () => {
 		return shippingServiceCompleted;
+	};
+
+	const isExtraLabelPurchaseCompleted = () => {
+		return extraLabelPurchaseCompleted;
 	};
 
 	const resetFocusArea = () => {
@@ -22,6 +28,8 @@ export function useEssentialDetails() {
 		setCustomsCompleted,
 		isShippingServiceCompleted,
 		setShippingServiceCompleted,
+		isExtraLabelPurchaseCompleted,
+		setExtraLabelPurchaseCompleted,
 		focusArea,
 		resetFocusArea,
 		setFocusArea,

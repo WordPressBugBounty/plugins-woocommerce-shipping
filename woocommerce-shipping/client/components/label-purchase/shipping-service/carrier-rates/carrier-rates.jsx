@@ -2,7 +2,7 @@ import { Flex } from '@wordpress/components';
 import { useSelect } from '@wordpress/data';
 import { getSignatureRate } from 'utils';
 import { labelPurchaseStore } from 'data/label-purchase';
-import { useLabelPurchaseContext } from 'components/label-purchase/context';
+import { useLabelPurchaseContext } from 'context/label-purchase';
 import { useCallback, useEffect } from '@wordpress/element';
 import { withBoundary } from 'components/HOC';
 import { RateRow } from './rate-row';

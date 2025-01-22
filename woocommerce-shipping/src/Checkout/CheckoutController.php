@@ -138,29 +138,16 @@ class CheckoutController {
 	 * @return array
 	 */
 	public function maybe_add_address_validation_notices( array $packages ): array {
-		if ( self::should_run_classic_checkout_address_validation() ) {
+		if (
+			CheckoutService::is_address_validation_enabled()
+			&& CheckoutService::is_classic_checkout()
+		) {
 			$this->add_address_validation_notices();
 		}
 
 		return $packages;
 	}
 
-	/**
-	 * Should we run classic checkout address validation?
-	 *
-	 * @return bool
-	 */
-	private static function should_run_classic_checkout_address_validation(): bool {
-		if ( ! CheckoutService::is_address_validation_enabled() ) {
-			return false;
-		}
-
-		if ( empty( $_POST ) && CheckoutService::is_checkout_page() ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
-			return false;
-		}
-
-		return true;
-	}
 
 	/**
 	 * Add address validation notices for entered shipping address.

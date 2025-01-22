@@ -5,7 +5,7 @@ import { __, sprintf } from '@wordpress/i18n';
 import { ConfirmModal } from 'components/confirm-modal';
 import { Notice } from '@wordpress/components';
 import { getRefundDuration } from 'utils';
-import { useLabelPurchaseContext } from '../context';
+import { useLabelPurchaseContext } from 'context/label-purchase';
 
 interface RefundConfirmationProps {
 	close: () => void;
@@ -13,8 +13,14 @@ interface RefundConfirmationProps {
 
 export const RefundConfirmation = ( { close }: RefundConfirmationProps ) => {
 	const {
-		labels: { getCurrentShipmentLabel, refundLabel, isRefunding },
+		labels: {
+			getCurrentShipmentLabel,
+			hasMissingPurchase,
+			refundLabel,
+			isRefunding,
+		},
 		rates: { removeSelectedRate },
+		shipment: { resetShipmentAndSelection },
 		storeCurrency: { formatAmount },
 	} = useLabelPurchaseContext();
 
@@ -26,6 +32,10 @@ export const RefundConfirmation = ( { close }: RefundConfirmationProps ) => {
 		try {
 			await refundLabel();
 			removeSelectedRate();
+			if ( ! hasMissingPurchase() ) {
+				resetShipmentAndSelection();
+			}
+
 			close();
 		} catch ( err ) {
 			setError(

@@ -14,7 +14,7 @@ import { __ } from '@wordpress/i18n';
 import { useCallback, useState } from '@wordpress/element';
 import { getDimensionsUnit, getWeightUnit } from 'utils';
 import { labelPurchaseStore } from 'data/label-purchase';
-import { useLabelPurchaseContext } from 'components/label-purchase/context';
+import { useLabelPurchaseContext } from 'context/label-purchase';
 import { recordEvent } from 'utils/tracks';
 
 export const Packages = ( {

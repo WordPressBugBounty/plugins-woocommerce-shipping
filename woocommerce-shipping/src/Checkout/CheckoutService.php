@@ -104,6 +104,16 @@ class CheckoutService {
 	}
 
 	/**
+	 * Is this a classic checkout request?
+	 *
+	 * @return bool
+	 */
+	public static function is_classic_checkout(): bool {
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing
+		return ! empty( $_POST ) && self::is_checkout_page();
+	}
+
+	/**
 	 * Validate the shipping address.
 	 *
 	 * @return array
@@ -128,9 +138,9 @@ class CheckoutService {
 		}
 
 		// Make sure the required fields are set before proceeding.
-		$required_field_keys = AddressUtils::get_address_field_keys_to_validate( $shipping_address['country'], 'shipping_' );
+		$required_field_keys = AddressUtils::get_required_shipping_address_field_keys( $shipping_address['country'], 'shipping_' );
 		foreach ( $required_field_keys as $field_key ) {
-			if ( ! isset( $shipping_address[ $field_key ] ) ) {
+			if ( empty( $shipping_address[ $field_key ] ) ) {
 				return $response;
 			}
 		}
@@ -145,6 +155,11 @@ class CheckoutService {
 
 			return $cached_response;
 		}
+
+		// We don't want any validation responses for empty name/company fields, so let's fill them with a placeholder.
+		$shipping_address['first_name'] = $shipping_address['first_name'] ?? 'noval';
+		$shipping_address['last_name']  = $shipping_address['last_name'] ?? 'noval';
+		$shipping_address['company']    = $shipping_address['company'] ?? 'noval';
 
 		// Normalize the address.
 		$address_normalization_response = $this->address_normalization_service->get_normalization_response( $shipping_address );
@@ -168,12 +183,6 @@ class CheckoutService {
 			);
 
 			foreach ( $address_normalization_response['errors'] as $message ) {
-
-				// There is no company field in the checkout form by default, so we'll adjust to indicate that name is required.
-				if ( 'Either Name or Company is required' === $message ) {
-					$message = __( 'Name is required.', 'woocommerce-shipping' );
-				}
-
 				$response['notices'][] = new StoreNotice(
 					apply_filters( 'woocommerce_shipping_address_normalization_response_error_message', $message ),
 					StoreNoticeTypes::WARNING
@@ -196,9 +205,24 @@ class CheckoutService {
 			return $response;
 		}
 
+		$field_keys_to_validate = AddressUtils::get_address_field_keys_to_validate( $shipping_address['country'], 'shipping_' );
+
+		// Remove empty values, since they must belong to optional fields.
+		foreach ( $field_keys_to_validate as $idx => $field_key ) {
+			if ( empty( $shipping_address[ $field_key ] ) ) {
+				unset( $field_keys_to_validate[ $idx ] );
+			}
+		}
+
 		// Remove elements that are not in the required fields for the country.
-		$suggested_address = array_intersect_key( $suggested_address, array_flip( $required_field_keys ) );
-		$shipping_address  = array_intersect_key( $shipping_address, array_flip( $required_field_keys ) );
+		$suggested_address = array_intersect_key( $suggested_address, array_flip( $field_keys_to_validate ) );
+		$shipping_address  = array_intersect_key( $shipping_address, array_flip( $field_keys_to_validate ) );
+
+		// If the country is US and the shipping address postcode is simple (5 digits), we should adjust
+		// the suggested address postcode to match to avoid unnecessary address validation notices.
+		if ( 'US' === $shipping_address['country'] && 5 === strlen( $shipping_address['postcode'] ) ) {
+			$suggested_address['postcode'] = substr( $suggested_address['postcode'], 0, 5 );
+		}
 
 		// Compare the entered address with the suggested address to determine if they are close.
 		$response['is_address_valid'] = AddressUtils::are_addresses_close( $shipping_address, $suggested_address );
@@ -259,12 +283,57 @@ class CheckoutService {
 	 * @return array
 	 */
 	public function get_cart_shipping_address(): array {
+
 		$customer = self::get_cart_customer_instance();
 		if ( ! $customer instanceof WC_Customer ) {
 			return array();
 		}
 
-		return $customer->get_shipping() ?? array();
+		$shipping_address = $customer->get_shipping();
+
+		self::maybe_fill_missing_shipping_address_data( $shipping_address );
+
+		return $shipping_address ?? array();
+	}
+
+	/**
+	 * Maybe fill missing shipping address data.
+	 *
+	 * @param array $shipping_address The shipping address (passed by reference).
+	 */
+	public static function maybe_fill_missing_shipping_address_data( array &$shipping_address ) {
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- We are just checking if the post data is set.
+		if ( ! self::is_classic_checkout() || ! isset( $_POST['post_data'] ) ) {
+			return;
+		}
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- WooCommerce handles nonce verification, and we sanitize it after decoding the URL.
+		$sanitized_post_data = wc_clean( urldecode( wp_unslash( $_POST['post_data'] ) ) );
+
+		$post_data = array();
+		parse_str( $sanitized_post_data, $post_data );
+
+		if ( empty( $post_data ) ) {
+			return;
+		}
+
+		$prefix =
+			! isset( $post_data['ship_to_different_address'] )
+			|| true !== wc_string_to_bool( $post_data['ship_to_different_address'] )
+				? 'billing_'
+				: 'shipping_';
+
+		$fields_to_fill = array(
+			'first_name',
+			'last_name',
+			'company',
+		);
+
+		foreach ( $fields_to_fill as $field ) {
+			if ( empty( $shipping_address[ $field ] ) && isset( $post_data[ $prefix . $field ] ) ) {
+				$shipping_address[ $field ] = $post_data[ $prefix . $field ];
+			}
+		}
 	}
 
 	/**

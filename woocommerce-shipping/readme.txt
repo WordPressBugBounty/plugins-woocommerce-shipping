@@ -7,7 +7,7 @@ Requires at least: 6.5
 Tested up to: 6.7
 WC requires at least: 9.3
 WC tested up to: 9.5
-Stable tag: 1.3.4
+Stable tag: 1.4.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -127,6 +127,12 @@ Absolutely! You can read our Terms of Service [here](https://wordpress.com/tos).
 6. WooCommerce Shipping address validation at checkout suggestion.
 
 == Changelog ==
+
+= 1.4.0 - 2025-01-22 =
+* Add   - Added possibility to purchase additional shipping labels, after all items in an order has been included in a shipped parcel.
+* Add   - Emoji validation on customs description.
+* Fix   - Address validation triggering for guest users before required address fields are filled.
+* Fix   - Address validation unnecessarily strict for US addresses.
 
 = 1.3.4 - 2025-01-17 =
 * Fix   - Fatal error on settings page for new installs.

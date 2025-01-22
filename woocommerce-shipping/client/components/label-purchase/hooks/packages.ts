@@ -1,5 +1,5 @@
 import { isEmpty } from 'lodash';
-import { useCallback, useState } from '@wordpress/element';
+import { useCallback, useMemo, useState } from '@wordpress/element';
 import { useSelect } from '@wordpress/data';
 import { labelPurchaseStore } from 'data/label-purchase';
 import {
@@ -68,8 +68,10 @@ export function usePackageState(
 		( select ) => select( labelPurchaseStore ).getSavedPackages(),
 		[ currentShipmentId ]
 	);
-	const { initialTab, initialPackage } =
-		getInitialPackageAndTab( savedPackages );
+	const { initialTab, initialPackage } = useMemo(
+		() => getInitialPackageAndTab( savedPackages ),
+		[ savedPackages ]
+	);
 
 	const [ currentPackageTab, setCurrentPackageTab ] = useState( initialTab );
 	const [ customPackageData, setCustomPackageData ] = useState<
@@ -121,7 +123,7 @@ export function usePackageState(
 		[ currentShipmentId ]
 	);
 
-	const getCustomPackage = () => {
+	const getCustomPackage = useCallback( () => {
 		if ( customPackageData[ currentShipmentId ] ) {
 			return {
 				...customPackageData[ currentShipmentId ],
@@ -131,19 +133,27 @@ export function usePackageState(
 			};
 		}
 		return defaultCustomPackageData;
-	};
+	}, [ currentShipmentId, customPackageData ] );
 
-	const getSelectedPackage = useCallback(
-		() => selectedPackage[ currentShipmentId ],
-		[ selectedPackage, currentShipmentId ]
+	const getSelectedPackage = useCallback( () => {
+		let shipmentPackage = selectedPackage[ currentShipmentId ];
+		if ( ! shipmentPackage ) {
+			shipmentPackage = initialPackage;
+		}
+		return shipmentPackage;
+	}, [ selectedPackage, currentShipmentId, initialPackage ] );
+
+	const isCustomPackageTab = useCallback(
+		() => currentPackageTab === TAB_NAMES.CUSTOM_PACKAGE,
+		[ currentPackageTab ]
 	);
-
-	const isCustomPackageTab = () =>
-		currentPackageTab === TAB_NAMES.CUSTOM_PACKAGE;
-	const getPackageForRequest = () =>
-		isCustomPackageTab()
-			? getCustomPackage()
-			: ( getSelectedPackage() as Package );
+	const getPackageForRequest = useCallback(
+		() =>
+			isCustomPackageTab()
+				? getCustomPackage()
+				: ( getSelectedPackage() as Package ),
+		[ getCustomPackage, getSelectedPackage, isCustomPackageTab ]
+	);
 
 	const isSelectedASavedPackage = useCallback( () => {
 		return savedPackages.some( ( p ) => p.id === getSelectedPackage()?.id );

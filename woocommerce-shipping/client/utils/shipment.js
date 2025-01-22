@@ -10,8 +10,10 @@ import { getConfig } from 'utils/config';
 
 const removeShipmentsWithNoMatchingItems = ( shipments, orderItems ) =>
 	Object.entries( shipments ).reduce( ( acc, [ key, shipmentItems ] ) => {
-		const items = shipmentItems.filter( ( { id } ) =>
-			orderItems.find( ( orderItem ) => orderItem.id === id )
+		const items = shipmentItems.filter( ( { id, parentId } ) =>
+			orderItems.find( ( orderItem ) =>
+				[ id, parentId ].includes( orderItem.id )
+			)
 		);
 
 		return items.length
@@ -71,7 +73,7 @@ export const getCurrentOrderShipments = ( config = getConfig() ) => {
 					};
 				}
 
-				const subItems = shipmentItem.subItems.map( ( id ) => ( {
+				const subItems = shipmentItem.subItems?.map( ( { id } ) => ( {
 					...orderItems.find(
 						( orderItem ) =>
 							orderItem.id === getParentIdFromSubItemId( id )
@@ -85,7 +87,7 @@ export const getCurrentOrderShipments = ( config = getConfig() ) => {
 				return {
 					...item,
 					subItems,
-					quantity: Math.max( 1, subItems.length ),
+					quantity: Math.max( 1, subItems?.length ),
 				};
 			} ),
 		} ),

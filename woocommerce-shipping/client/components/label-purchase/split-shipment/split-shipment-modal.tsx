@@ -26,7 +26,7 @@ import {
 	normalizeShipments,
 } from 'utils';
 import { SelectableItems } from './selectable-items';
-import { useLabelPurchaseContext } from '../context';
+import { useLabelPurchaseContext } from 'context/label-purchase';
 import { StaticHeader } from './header';
 import { MoveTo } from './move-to';
 import { SHOW_SPLIT_SHIPMENT_NOTICE } from './constants';
@@ -62,15 +62,13 @@ export const SplitShipmentModal = ( { close }: SplitShipmentModalProps ) => {
 			currentShipmentId,
 			revertLabelShipmentIdsToUpdate,
 			labelShipmentIdsToUpdate,
+			hasVariations,
+			hasMultipleShipments,
 		},
 		labels: { hasPurchasedLabel },
 		customs: { updateCustomsItems },
 	} = useLabelPurchaseContext();
 
-	const hasVariations = Object.values( shipments )
-		.flat()
-		.some( ( item ) => item.variation );
-	const hasMultipleShipments = Object.values( shipments ).length > 1;
 	const previousShipmentsState = usePrevious( shipments );
 
 	const selectedItemsAndSubitems = () => {

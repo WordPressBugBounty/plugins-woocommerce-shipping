@@ -24,5 +24,5 @@ export interface OrderItem {
 		display_value: string;
 		key: string;
 		value: string;
-	};
+	}[];
 }

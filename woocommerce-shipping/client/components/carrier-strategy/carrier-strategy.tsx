@@ -2,7 +2,7 @@ import { useState } from '@wordpress/element';
 import { createDeferred } from 'utils';
 import { Carrier } from 'types';
 import { UPSDAPStrategy } from './upsdap-strategy';
-import { useLabelPurchaseContext } from '../label-purchase/context';
+import { useLabelPurchaseContext } from 'context/label-purchase';
 
 const defaultStrategy = () => ( {
 	canPurchase: () => Promise.resolve( true ),

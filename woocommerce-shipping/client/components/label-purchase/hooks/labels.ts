@@ -7,6 +7,7 @@ import { Label, LabelPurchaseError, PDFJson, RateWithParent } from 'types';
 import { LABEL_PURCHASE_STATUS } from 'data/constants';
 import {
 	getCurrentOrder,
+	getCurrentOrderItems,
 	getPaymentSettings,
 	getPDFFileName,
 	getPrintURL,
@@ -33,6 +34,9 @@ interface UseLabelsStateProps {
 	getShipmentItems: ReturnType<
 		typeof useShipmentState
 	>[ 'getShipmentItems' ];
+	getSelectionItems: ReturnType<
+		typeof useShipmentState
+	>[ 'getSelectionItems' ];
 	getShipmentHazmat: ReturnType<
 		typeof useHazmatState
 	>[ 'getShipmentHazmat' ];
@@ -78,6 +82,7 @@ export function useLabelsState( {
 	currentShipmentId,
 	getPackageForRequest,
 	getShipmentItems,
+	getSelectionItems,
 	totalWeight,
 	getShipmentHazmat,
 	updateRates,
@@ -136,6 +141,7 @@ export function useLabelsState( {
 	const [ isUpdatingStatus, setIsUpdatingStatus ] = useState( false );
 	const [ isPrinting, setIsPrinting ] = useState( false );
 	const [ isRefunding, setIsRefunding ] = useState( false );
+	const [ showRefundedNotice, setShowRefundedNotice ] = useState( false );
 
 	const [ labelStatusUpdateErrors, setLabelStatusUpdateErrors ] = useState<
 		string[]
@@ -324,6 +330,13 @@ export function useLabelsState( {
 				number
 			>( { length, width, height }, parseFloat );
 
+			const selectionItems = getSelectionItems()?.map(
+				( { product_id } ) => product_id
+			);
+			const productsIds = selectionItems?.length
+				? selectionItems
+				: getShipmentItems().map( ( { product_id } ) => product_id );
+
 			const requestPackage = [
 				maybeApplyCustomsToPackage( {
 					id: currentShipmentId,
@@ -334,9 +347,7 @@ export function useLabelsState( {
 					service_id: serviceId,
 					carrier_id: carrierId,
 					service_name: serviceName,
-					products: getShipmentItems().map(
-						( { product_id } ) => product_id
-					),
+					products: productsIds,
 					weight: totalWeight,
 					rate_id: selectedRate.rate.rateId,
 				} ),
@@ -386,6 +397,7 @@ export function useLabelsState( {
 			getPackageForRequest,
 			currentShipmentId,
 			getShipmentItems,
+			getSelectionItems,
 			totalWeight,
 			setIsPurchasing,
 			getShipmentHazmat,
@@ -507,7 +519,7 @@ export function useLabelsState( {
 				label.labelId
 			);
 			setIsRefunding( false );
-
+			setShowRefundedNotice( true );
 			return Promise.resolve( result );
 		} catch ( e ) {
 			setIsRefunding( false );
@@ -534,6 +546,64 @@ export function useLabelsState( {
 		[ hasPurchasedLabel, shipments ]
 	);
 
+	const fulfilledOrderItemsIds = useCallback(
+		() =>
+			Object.keys( shipments )
+				.filter( ( id ) => hasPurchasedLabel( true, true, id ) )
+				.map( ( id ) => shipments[ id ] )
+				.flat()
+				.map( ( item ) =>
+					item.subItems?.length > 0 ? item.subItems : [ item ]
+				)
+				.flat()
+				.map( ( item ) => item.parentId ?? item.id ),
+		[ hasPurchasedLabel, shipments ]
+	);
+
+	const hasMissingPurchase = useCallback( () => {
+		const currentOrderItems = getCurrentOrderItems();
+		const fulfilledItemsIds = fulfilledOrderItemsIds();
+
+		return currentOrderItems.some( ( item ) => {
+			const quantity = item.quantity ?? 1;
+			const fulfillmentCount = fulfilledItemsIds.filter(
+				( id ) => id === item.id
+			).length;
+			return fulfillmentCount < quantity;
+		} );
+	}, [ fulfilledOrderItemsIds ] );
+
+	const hasUnfinishedShipment = () =>
+		Object.keys( shipments ).some( ( id ) => {
+			return ! hasPurchasedLabel( true, true, id );
+		} );
+
+	// Get product ids for purchased labels.
+	const purchasedLabelsProductIds = () =>
+		Object.keys( shipments ).reduce( ( acc: number[], id ) => {
+			const ids = getLabelProductIds( id );
+			acc.push( ...ids );
+			return acc;
+		}, [] );
+
+	const isCurrentTabPurchasingExtraLabel = useCallback( () => {
+		const currentShipmentPending =
+			getShipmentsWithoutLabel().includes( currentShipmentId );
+
+		return (
+			currentShipmentPending &&
+			! hasMissingPurchase() &&
+			! isPurchasing &&
+			! isUpdatingStatus
+		);
+	}, [
+		currentShipmentId,
+		getShipmentsWithoutLabel,
+		hasMissingPurchase,
+		isPurchasing,
+		isUpdatingStatus,
+	] );
+
 	return {
 		getCurrentShipmentLabel,
 		requestLabelPurchase,
@@ -545,6 +615,7 @@ export function useLabelsState( {
 		isUpdatingStatus,
 		isPrinting,
 		isRefunding,
+		showRefundedNotice,
 		paperSizes,
 		updatePurchaseStatus,
 		refundLabel,
@@ -552,5 +623,9 @@ export function useLabelsState( {
 		getLabelProductIds,
 		getShipmentsWithoutLabel,
 		labelStatusUpdateErrors,
+		purchasedLabelsProductIds,
+		hasMissingPurchase,
+		hasUnfinishedShipment,
+		isCurrentTabPurchasingExtraLabel,
 	};
 }

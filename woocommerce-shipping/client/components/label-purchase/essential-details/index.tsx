@@ -3,12 +3,13 @@ import { __ } from '@wordpress/i18n';
 import React from 'react';
 import { createInterpolateElement } from '@wordpress/element';
 import { withBoundary } from 'components/HOC/error-boundary';
-import { useLabelPurchaseContext } from '../context';
+import { useLabelPurchaseContext } from 'context/label-purchase';
 import {
 	FOCUS_AREA_HAZMAT,
 	CUSTOMS_SECTION,
 	PACKAGE_SECTION,
 	SHIPPING_SERVICE_SECTION,
+	ITEMS_SECTION,
 } from './constants';
 import EssentialDetailListItem from './essential-detail-list-item';
 import FlatButton from './flat-button';
@@ -22,7 +23,7 @@ export const EssentialDetails = withBoundary( () => {
 		rates: { getSelectedRate },
 		hazmat: { getShipmentHazmat },
 		packages: { isPackageSpecified },
-		labels: { getCurrentShipmentLabel },
+		labels: { getCurrentShipmentLabel, isCurrentTabPurchasingExtraLabel },
 	} = useLabelPurchaseContext();
 
 	const onClickHandler = ( focusArea: string ) => {
@@ -120,6 +121,28 @@ export const EssentialDetails = withBoundary( () => {
 		);
 	};
 
+	const extraLabelPurchaseSection = ( isCompleted: boolean ) => {
+		return (
+			<EssentialDetailListItem isCompleted={ isCompleted }>
+				{ createInterpolateElement(
+					__(
+						'Select <fb>the products</fb> you want to ship with the new label.',
+						'woocommerce-shipping'
+					),
+					{
+						fb: (
+							<FlatButton
+								onClick={ () => {
+									onClickHandler( ITEMS_SECTION );
+								} }
+							/>
+						),
+					}
+				) }
+			</EssentialDetailListItem>
+		);
+	};
+
 	const showEssentialDetails = () => {
 		if ( getCurrentShipmentLabel()?.isLegacy ) {
 			return false;
@@ -134,6 +157,10 @@ export const EssentialDetails = withBoundary( () => {
 					<h3>Essential details to provide</h3>
 				</div>
 				<ul className="essential-details__ul">
+					{ isCurrentTabPurchasingExtraLabel() &&
+						extraLabelPurchaseSection(
+							essentialDetails.isExtraLabelPurchaseCompleted()
+						) }
 					{ getShipmentHazmat()?.isHazmat &&
 						hazardousMaterialSection(
 							Boolean( getShipmentHazmat()?.category )
