@@ -26,4 +26,5 @@ export const SETTINGS_KEYS = {
 	AUTOMATICALLY_OPEN_PRINT_DIALOG: 'automatically_open_print_dialog',
 	TAX_IDENTIFIER_IOSS: 'tax_identifier_ioss',
 	TAX_IDENTIFIER_VOEC: 'tax_identifier_voec',
+	TAX_IDENTIFIER_PVA: 'tax_identifier_pva',
 } as const;

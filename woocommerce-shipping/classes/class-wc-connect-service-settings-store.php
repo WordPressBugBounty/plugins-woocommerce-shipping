@@ -128,7 +128,7 @@ class WC_Connect_Service_Settings_Store {
 		$this->set_preferred_paper_size( $paper_size );
 		unset( $settings['paper_size'] );
 
-		$allowed_tax_identifier_ids = array( 'ioss', 'voec' );
+		$allowed_tax_identifier_ids = array( 'ioss', 'voec', 'pva' );
 		foreach ( $allowed_tax_identifier_ids as $tax_identifier_id ) {
 			$tax_input_key = 'tax_identifier_' . $tax_identifier_id;
 

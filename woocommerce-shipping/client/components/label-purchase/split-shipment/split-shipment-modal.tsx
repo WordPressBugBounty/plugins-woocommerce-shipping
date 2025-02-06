@@ -12,11 +12,11 @@ import { usePrevious } from '@wordpress/compose';
 import { __, sprintf } from '@wordpress/i18n';
 import {
 	createInterpolateElement,
+	forwardRef,
 	useCallback,
 	useState,
 } from '@wordpress/element';
 import { dispatch } from '@wordpress/data';
-
 import {
 	getCurrentOrder,
 	getNoneSelectedShipmentItems,
@@ -36,10 +36,13 @@ import { recordEvent } from 'utils/tracks';
 import { ShipmentItem, ShipmentSubItem } from 'types';
 
 interface SplitShipmentModalProps {
-	close: () => void;
+	setStartSplitShipment: ( startSplitShipment: boolean ) => void;
 }
 
-export const SplitShipmentModal = ( { close }: SplitShipmentModalProps ) => {
+export const SplitShipmentModal = forwardRef<
+	HTMLBaseElement,
+	SplitShipmentModalProps
+>( ( { setStartSplitShipment }, ref ) => {
 	const [ showCreationNotice, setCreationNotice ] = useState(
 		! [ 'false', false ].includes(
 			localStorage.getItem( SHOW_SPLIT_SHIPMENT_NOTICE ) ?? false
@@ -68,6 +71,20 @@ export const SplitShipmentModal = ( { close }: SplitShipmentModalProps ) => {
 		labels: { hasPurchasedLabel },
 		customs: { updateCustomsItems },
 	} = useLabelPurchaseContext();
+
+	const selectPreviousTab = () => {
+		if ( ref && 'current' in ref && ref.current ) {
+			const previousTab = ref.current.querySelector< HTMLButtonElement >(
+				`.shipment-tab-${ currentShipmentId }`
+			);
+			previousTab?.click();
+		}
+	};
+
+	const closeOrCancelShipmentEdit = () => {
+		selectPreviousTab();
+		setStartSplitShipment( false );
+	};
 
 	const previousShipmentsState = usePrevious( shipments );
 
@@ -164,7 +181,7 @@ export const SplitShipmentModal = ( { close }: SplitShipmentModalProps ) => {
 			// @ts-ignore
 			setUpdateError( result?.error?.message );
 		} else {
-			close();
+			closeOrCancelShipmentEdit();
 		}
 
 		updateCustomsItems();
@@ -175,7 +192,7 @@ export const SplitShipmentModal = ( { close }: SplitShipmentModalProps ) => {
 			setConfirmClose( true );
 		} else {
 			recordEvent( 'split_shipment_modal_closed' );
-			close();
+			closeOrCancelShipmentEdit();
 		}
 	};
 	const dismissNotice = () => {
@@ -300,7 +317,7 @@ export const SplitShipmentModal = ( { close }: SplitShipmentModalProps ) => {
 					setShipments( getInitialState() );
 					revertLabelShipmentIdsToUpdate();
 					recordEvent( 'split_shipment_modal_close_confirm_clicked' );
-					close();
+					closeOrCancelShipmentEdit();
 				} }
 				onCancel={ () => {
 					recordEvent( 'split_shipment_modal_close_cancel_clicked' );
@@ -328,4 +345,4 @@ export const SplitShipmentModal = ( { close }: SplitShipmentModalProps ) => {
 			</ConfirmDialog>
 		</Modal>
 	);
-};
+} );

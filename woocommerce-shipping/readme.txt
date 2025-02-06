@@ -7,7 +7,7 @@ Requires at least: 6.5
 Tested up to: 6.7
 WC requires at least: 9.3
 WC tested up to: 9.5
-Stable tag: 1.4.0
+Stable tag: 1.4.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -127,6 +127,11 @@ Absolutely! You can read our Terms of Service [here](https://wordpress.com/tos).
 6. WooCommerce Shipping address validation at checkout suggestion.
 
 == Changelog ==
+
+= 1.4.1 - 2025-02-06 =
+* Tweak - Improve overall frontend performance.
+* Tweak - Improve address API documentation.
+* Add   - New tax identifier for custom forms (PVA) that can be found on the WooCommerce Shipping settings page.
 
 = 1.4.0 - 2025-01-22 =
 * Add   - Added possibility to purchase additional shipping labels, after all items in an order has been included in a shipped parcel.

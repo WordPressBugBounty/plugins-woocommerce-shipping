@@ -1,5 +1,10 @@
 *** WooCommerce Shipping Changelog ***
 
+= 1.4.1 - 2025-02-06 =
+* Tweak - Improve overall frontend performance.
+* Tweak - Improve address API documentation.
+* Add   - New tax identifier for custom forms (PVA) that can be found on the WooCommerce Shipping settings page.
+
 = 1.4.0 - 2025-01-22 =
 * Add   - Added possibility to purchase additional shipping labels, after all items in an order has been included in a shipped parcel.
 * Add   - Emoji validation on customs description.

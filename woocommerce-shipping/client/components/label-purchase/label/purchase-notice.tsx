@@ -1,4 +1,4 @@
-import React, { Fragment, isValidElement } from 'react';
+import { Fragment, isValidElement } from '@wordpress/element';
 import {
 	__experimentalDivider as Divider,
 	__experimentalHeading as Heading,
@@ -12,6 +12,7 @@ import {
 import { __ } from '@wordpress/i18n';
 import { hasLabelExpired } from 'utils';
 import { useLabelPurchaseContext } from 'context/label-purchase';
+import { isCallableElement } from 'types';
 import { PaperSizeSelector } from '../paper-size';
 import { SchedulePickup } from './schedule-pickup';
 import { TrackShipment } from './track-shipment';
@@ -182,18 +183,37 @@ export const PurchaseNotice = withBoundary( () => {
 											isUpdatingStatus
 										}
 									/>,
-								].map( ( btn, index ) => (
-									<Fragment key={ index }>
-										{ isValidElement( btn ) &&
-											index !== 0 && (
+								]
+									.filter( ( btn ) => {
+										if ( ! isValidElement( btn ) ) {
+											return false;
+										}
+
+										if ( isCallableElement( btn.type ) ) {
+											try {
+												return isValidElement(
+													btn.type(
+														btn.props as object
+													)
+												);
+											} catch {
+												return false; // Fail-safe in case calling causes an error
+											}
+										}
+
+										return false; // Skip non-callable types
+									} ) // Filter out null or invalid elements
+									.map( ( btn, index ) => (
+										<Fragment key={ index }>
+											{ index !== 0 && (
 												<Divider
 													orientation="vertical"
 													margin="0"
 												/>
 											) }
-										{ btn }
-									</Fragment>
-								) ) }
+											{ btn }
+										</Fragment>
+									) ) }
 							</Flex>
 						) }
 						{ ! hasPurchasedLabel() &&

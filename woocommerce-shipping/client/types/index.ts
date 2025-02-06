@@ -1,11 +1,8 @@
 import { WCTracks } from './wc-tracks.d';
-import {
-	WCShippingConfig,
-	WCShippingConfigAccountSettings,
-} from './wcshipping-config.d';
 import { WCShippingSettings } from './wcshipping-settings.d';
 import { WC } from './wc.d';
 import { WCShippingAnalyticsConfig } from './wcshipping-analytics-config.d';
+import { WCShippingConfig } from './wcshipping-config.d';
 
 declare global {
 	interface Window {
@@ -17,7 +14,7 @@ declare global {
 	}
 }
 
-export { WCShippingConfig, WCShippingConfigAccountSettings };
+export * from './wcshipping-config.d';
 export * from './helpers';
 export * from './rate.d';
 export * from './order-item.d';

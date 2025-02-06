@@ -1,7 +1,3 @@
-import { mockUtils } from './test-utils';
-// This import should be before all other imports for the mock to work
-mockUtils();
-
 import { useState } from '@wordpress/element';
 import { merge } from 'lodash';
 import {
@@ -12,7 +8,7 @@ import {
 } from 'components/label-purchase/hooks';
 import { TAB_NAMES } from 'components/label-purchase/packages';
 import {
-	LabelPurchaseContextProvider,
+	LabelPurchaseContext,
 	LabelPurchaseContextType,
 } from 'context/label-purchase';
 
@@ -20,6 +16,11 @@ interface ProvideStateProps {
 	children: React.JSX.Element | React.JSX.Element[];
 	initialValue?: Partial< LabelPurchaseContextType >;
 }
+
+jest.mock( 'utils', () => {
+	const { mockUtils } = jest.requireActual( './test-utils' );
+	return mockUtils();
+} );
 
 let totalWeight = 10;
 const getShipmentTotalWeight = jest.fn( () => totalWeight );
@@ -131,8 +132,8 @@ export const ProvideTestState = ( {
 		initialValue
 	) as LabelPurchaseContextType;
 	return (
-		<LabelPurchaseContextProvider initialValue={ _initialValue }>
+		<LabelPurchaseContext.Provider value={ _initialValue }>
 			{ children }
-		</LabelPurchaseContextProvider>
+		</LabelPurchaseContext.Provider>
 	);
 };

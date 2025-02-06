@@ -20,7 +20,8 @@ import React, { useState } from 'react';
 import { dispatch, select } from '@wordpress/data';
 import { useSettings } from 'data/settings/hooks';
 import { settingsStore } from 'data/settings';
-import { getPaperSizes } from 'components/label-purchase/label';
+// Shouldn't import from index to keep label-purchase decoupled from shipping-settings.
+import { getPaperSizes } from 'components/label-purchase/label/utils';
 import { getStoreOrigin } from 'utils/location';
 import { SETTINGS_KEYS } from './constants';
 import { createInterpolateElement } from '@wordpress/element';
@@ -296,6 +297,35 @@ export const LabelsSettingsComponent = () => {
 								SETTINGS_KEYS.TAX_IDENTIFIER_VOEC
 							) }
 							value={ taxIdentifiers?.voec ?? '' }
+						/>
+
+						<Spacer marginTop={ 0 } marginBottom={ 3 } />
+
+						<InputControl
+							label={ __(
+								'Postponed VAT Accounting (PVA)',
+								'woocommerce-shipping'
+							) }
+							help={ createInterpolateElement(
+								__(
+									'Enter your <a>PVA number</a> number to include it on customs forms when shipping to the United Kingdom of Great Britain and Northern Ireland.',
+									'woocommerce-shipping'
+								),
+								{
+									a: (
+										<ExternalLink href="https://www.gov.uk/guidance/check-when-you-can-account-for-import-vat-on-your-vat-return">
+											{ __(
+												'PVA number (Postponed VAT Accounting)',
+												'woocommerce-shipping'
+											) }
+										</ExternalLink>
+									),
+								}
+							) }
+							onChange={ updateFormData(
+								SETTINGS_KEYS.TAX_IDENTIFIER_PVA
+							) }
+							value={ taxIdentifiers?.pva ?? '' }
 						/>
 					</CardBody>
 				</Card>

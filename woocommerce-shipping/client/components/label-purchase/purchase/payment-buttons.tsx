@@ -168,7 +168,7 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 				a: (
 					<Link
 						onClick={ onChooseCard }
-						type="internal"
+						type="wc-admin"
 						href="#"
 						role="button"
 					>

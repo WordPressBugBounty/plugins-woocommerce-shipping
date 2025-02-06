@@ -85,94 +85,127 @@ export const orderTestData = {
 	coupon_lines: [],
 };
 
-export const mockUtils = () => {
-	jest.mock( 'utils', () => {
-		const { packagesSettings } = jest.requireActual(
-			'utils/__tests__/fixtures/package-settings'
-		);
+export const address = {
+	id: 123,
+	name: 'John',
+	address: '123 Main St',
+	address_2: 'Apt 1',
+	city: 'San Francisco',
+	state: 'CA',
+	postcode: '94105',
+	country: 'PR',
+	phone: '1234567890',
+	isVerified: true,
+};
 
-		const {
-			accountSettings, // eslint-disable-next-line @typescript-eslint/no-var-requires
-		} = jest.requireActual( 'utils/__tests__/fixtures/account-settings' );
+export const destinationAddress = {
+	id: 124,
+	name: 'John',
+	address: '124 Main St - destination',
+	address_2: 'Apt 1',
+	city: 'San Francisco - dest',
+	state: 'CA',
+	postcode: '94105',
+	country: 'PR',
+	phone: '1234567890',
+	isVerified: true,
+};
 
-		const {
-			getCarrierPackages,
-			getAvailableCarrierPackages,
-			camelCaseKeys,
-			getPackageDimensions,
-			...restOfUtils
-		} = jest.requireActual( 'utils' );
+export const mockUtils = ( overrides?: object ) => {
+	const { packagesSettings } = jest.requireActual(
+		'utils/__tests__/fixtures/package-settings'
+	);
 
-		return {
-			__esModule: true,
-			...restOfUtils,
+	const {
+		accountSettings, // eslint-disable-next-line @typescript-eslint/no-var-requires
+	} = jest.requireActual( 'utils/__tests__/fixtures/account-settings' );
 
-			getWeightUnit: () => 'lbs',
-			getDimensionsUnit: () => 'cm',
-			getCustomPackages: () => packagesSettings.packages.custom,
-			getConfig: () => ( {
-				order: orderTestData,
-				is_origin_verified: false,
-				is_destination_verified: false,
-				packagesSettings,
-				accountSettings,
-				shippingLabelData: {
-					storedData: {
-						selectedDestination: {
-							city: 'San Francisco',
-							country: 'US',
-							state: 'CA',
-							zip: '94103',
-							company: 'WooCommerce',
-							email: 'some@email.com',
-						},
+	const {
+		getCarrierPackages,
+		getAvailableCarrierPackages,
+		camelCaseKeys,
+		getPackageDimensions,
+		camelCasePackageResponse,
+		...restOfUtils
+	} = jest.requireActual( 'utils' );
+
+	return {
+		__esModule: true,
+		...restOfUtils,
+		camelCasePackageResponse,
+		getWeightUnit: () => 'lbs',
+		getDimensionsUnit: () => 'cm',
+		getCurrencySymbol: () => '$',
+		getCustomPackages: () => packagesSettings.packages.custom,
+		getConfig: () => ( {
+			order: orderTestData,
+			is_origin_verified: false,
+			is_destination_verified: false,
+			packagesSettings,
+			accountSettings,
+			shippingLabelData: {
+				storedData: {
+					selectedDestination: {
+						city: 'San Francisco',
+						country: 'US',
+						state: 'CA',
+						zip: '94103',
+						company: 'WooCommerce',
+						email: 'some@email.com',
 					},
 				},
-			} ),
-			getCarrierPackages: () =>
-				getCarrierPackages(
-					{
-						usps: [ 'medium_flat_box_top', 'small_tube' ],
-					},
-					{ packagesSettings }
-				),
-			getAvailableCarrierPackages: () =>
-				getAvailableCarrierPackages( { packagesSettings } ),
-			getIsDestinationVerified: () => false,
-			getCurrentOrderShipTo: () => ( {} ),
-			camelCaseKeys,
-			getPackageDimensions,
-			getStoreOrigin: () => ( {
-				country: 'US',
-				state: 'CA',
-			} ),
-			getPurchasedLabels: () => ( {
-				0: null,
-			} ),
-			getSelectedRates: () => null,
-			getSelectedHazmat: () => null,
-			getOriginAddresses: () => [],
-			getFirstSelectableOriginAddress: () => ( {} ),
-			getCustomsInformation: () => '',
-			getCarrierStrategies: () => ( {
-				upsdap: {
-					originAddress: {
-						1: {
-							has_agreed_to_tos: true,
-						},
+			},
+		} ),
+		getCarrierPackages: () =>
+			getCarrierPackages(
+				{
+					usps: [ 'medium_flat_box_top', 'small_tube' ],
+				},
+				{ packagesSettings }
+			),
+		getAvailableCarrierPackages: () =>
+			getAvailableCarrierPackages( { packagesSettings } ),
+		getIsDestinationVerified: () => false,
+		getCurrentOrderShipTo: () => ( {} ),
+		camelCaseKeys,
+		getPackageDimensions,
+		getStoreOrigin: () => ( {
+			country: 'US',
+			state: 'CA',
+		} ),
+		getPurchasedLabels: () => ( {
+			0: null,
+		} ),
+		getSelectedRates: () => null,
+		getSelectedHazmat: () => null,
+		getOriginAddresses: jest.fn().mockReturnValue( [ address ] ),
+		getFirstSelectableOriginAddress: () => ( {} ),
+		getCustomsInformation: () => '',
+		getCarrierStrategies: () => ( {
+			upsdap: {
+				originAddress: {
+					1: {
+						has_agreed_to_tos: true,
 					},
 				},
-			} ),
-			getCurrentOrder: () => ( {
-				id: 1,
-			} ),
-			getAccountSettings: () => ( {
-				...accountSettings,
-				purchaseSettings: {
-					use_last_service: false,
-				},
-			} ),
-			groupRatesByCarrier: () => ( {} ),
-		};
-	} );
+			},
+		} ),
+		getCurrentOrder: () => ( {
+			id: 1,
+			shipping_methods: 'Flat Rate',
+		} ),
+		getAccountSettings: () => ( {
+			...accountSettings,
+			purchaseSettings: {
+				use_last_service: false,
+			},
+		} ),
+		groupRatesByCarrier: () => ( {} ),
+		getLabelDestinations: jest
+			.fn()
+			.mockReturnValue( [ destinationAddress ] ),
+		getLabelOrigins: jest.fn().mockReturnValue( [] ),
+		getCurrentOrderItems: jest.fn().mockReturnValue( [] ),
+		...( overrides ?? {} ),
+	};
 };

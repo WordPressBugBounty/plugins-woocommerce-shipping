@@ -241,9 +241,37 @@ class AddressNormalizationService {
 	/**
 	 * Formats address request body to support required server validation.
 	 *
-	 * @param array $address Input address.
+	 * @param array $address {
+	 *     WooCommerce-style address fields.
 	 *
-	 * @return array Formatted request body.
+	 *     @type string $address_1       (Required) Street address, will be converted to 'address'
+	 *     @type string $city            (Required) City name
+	 *     @type string $state           (Required) State code
+	 *     @type string $postcode        (Required) Postal code
+	 *     @type string $country         (Required) Country code
+	 *     @type string $address_2       (Optional) Secondary address line
+	 *     @type string $first_name      (Optional, Required if company is present) First name, combined with last_name into 'name' if both present
+	 *     @type string $last_name       (Optional, Required if company is present) Last name, combined with first_name into 'name' if both present
+	 *     @type string $company         (Optional, Required if name parts are not present) Company name
+	 *     @type string $phone           (Optional) Will be removed in output
+	 *     @type string $email           (Optional) Will be removed in output
+	 *     @type string $id              (Optional) Will be removed in output
+	 *     @type bool   $default_address (Optional) Will be removed in output
+	 *     @type bool   $is_verified     (Optional) Will be removed in output
+	 * }
+	 *
+	 * @return array {
+	 *     Formatted request body for Connect Server.
+	 *
+	 *     @type string $address        (Required) Street address, copied from address_1 if present
+	 *     @type string $city           (Required) City name
+	 *     @type string $state          (Required) State code
+	 *     @type string $postcode       (Required) Postal code
+	 *     @type string $country        (Required) Country code
+	 *     @type string $address_2      (Optional) Secondary address line, defaults to empty string if not set
+	 *     @type string $name           (Optional) Full name, combined from first_name and last_name if both present, defaults to empty string
+	 *     @type string $company        (Optional) Company name
+	 * }
 	 */
 	private function format_address_for_connect_server( $address ) {
 		$request_body = $address;
@@ -301,11 +329,45 @@ class AddressNormalizationService {
 	}
 
 	/**
-	 * Formats address response to reflect expected WC address format.
+	 * Formats address response from server format to WooCommerce format.
 	 *
-	 * @param array $address Server address.
+	 * @param array $address {
+	 *     Server-formatted address fields.
 	 *
-	 * @return array Formatted response body.
+	 *     @type string $address        Street address line 1
+	 *     @type string $address_2      Secondary address line
+	 *     @type string $city           City name
+	 *     @type string $state          State code
+	 *     @type string $postcode       Postal code
+	 *     @type string $country        Country code
+	 *     @type string $name           Full name (will be split into first_name and last_name)
+	 *     @type string $company        Company name
+	 * }
+	 * @param array $original_address {
+	 *     Optional. Original address with additional fields to preserve.
+	 *
+	 *     @type string $phone           Phone number
+	 *     @type string $email           Email address
+	 *     @type string $id              Address ID
+	 *     @type bool   $default_address Whether this is the default address
+	 * }
+	 * @return array {
+	 *     WooCommerce-formatted address fields.
+	 *
+	 *     @type string $address_1       Street address line 1 (converted from address)
+	 *     @type string $address_2       Secondary address line
+	 *     @type string $city            City name
+	 *     @type string $state           State code
+	 *     @type string $postcode        Postal code
+	 *     @type string $country         Country code
+	 *     @type string $first_name      First name (split from name)
+	 *     @type string $last_name       Last name (split from name)
+	 *     @type string $company         Company name
+	 *     @type string $phone           Phone number (if in original_address)
+	 *     @type string $email           Email address (if in original_address)
+	 *     @type string $id              Address ID (if in original_address)
+	 *     @type bool   $default_address Whether this is the default address (if in original_address)
+	 * }
 	 */
 	private function format_address_for_client( $address, $original_address = array() ) {
 		$response_body = (array) $address;

@@ -1,3 +1,5 @@
+import type { ComponentType, ReactElement, ReactNode } from 'react';
+
 export type RecordValues< T extends Record< string, unknown > > = T[ keyof T ];
 
 type SnakeToCamelCase< S extends string | number | symbol > =
@@ -22,3 +24,8 @@ export type DeepPartial< T > = T extends object
 export type SnakeCaseType< T > = {
 	[ K in keyof T as K extends string ? SnakeToCamelCase< K > : K ]: T[ K ];
 };
+
+export const isCallableElement = (
+	type: ReactElement | ComponentType | ReactNode
+): type is ( props: unknown ) => ReactElement | null =>
+	typeof type === 'function';
