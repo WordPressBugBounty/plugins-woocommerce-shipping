@@ -20,10 +20,12 @@ interface LabelRequestPackages {
 	carrier_id: string;
 	height: number;
 	width: number;
+	weight: number;
 	length: number;
 	service_id: string;
 	service_name: string;
 	shipment_id: string;
+	rate_id: string;
 	is_letter: boolean;
 	products: number[];
 }

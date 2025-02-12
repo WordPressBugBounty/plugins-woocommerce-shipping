@@ -1,24 +1,47 @@
 import React from 'react';
-import { __experimentalText as Text, BaseControl } from '@wordpress/components';
+import {
+	__experimentalText as Text,
+	BaseControl,
+	Flex,
+} from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
-import { isEmpty } from 'lodash';
+import { camelCase, isEmpty } from 'lodash';
 
-import { Label, Rate } from 'types';
-import { signatureTypeToTitle } from 'utils';
+import {
+	CamelCaseType,
+	Label,
+	RateExtraOptionNames,
+	RateExtraOptions,
+	RateWithParent,
+} from 'types';
+import { extraRateTypeToTitle, filterToNonSignatureExtraOptions } from 'utils';
 import { useLabelPurchaseContext } from 'context/label-purchase';
 
+interface ExtraOptionLabelProps {
+	option: CamelCaseType< RateExtraOptionNames >;
+}
+
+const ExtraOptionLabel = ( { option }: ExtraOptionLabelProps ) => (
+	<Flex direction="row" gap={ 1 } as="section" justify="flex-start">
+		<span className="subtotal-extra-bit" />
+		{ extraRateTypeToTitle( option ) }
+	</Flex>
+);
+
 interface ShipmentCostsProps {
-	selectedRate: { rate: Rate; parent: Rate | null } | null | undefined;
+	selectedRate: RateWithParent | null | undefined;
 	label: Label | undefined;
-	hasPurchasedLabel: boolean;
+	rateOptions: RateExtraOptions;
 }
 
 export const ShipmentCosts = ( {
 	selectedRate,
 	label,
-	hasPurchasedLabel,
+	rateOptions,
 }: ShipmentCostsProps ) => {
 	const { storeCurrency } = useLabelPurchaseContext();
+	const nonSignatureRateOptions =
+		filterToNonSignatureExtraOptions( rateOptions );
 
 	let subTotal = selectedRate?.parent
 		? selectedRate?.parent?.rate
@@ -38,35 +61,84 @@ export const ShipmentCosts = ( {
 			: selectedRate?.rate?.title ) ??
 		__( 'Subtotal', 'woocommerce-shipping' );
 
-	const extraCosts =
-		( selectedRate?.rate?.rate ?? 0 ) - ( selectedRate?.parent?.rate ?? 0 );
+	const signatureCost =
+		// If signature surcharge is persisted, use it
+		rateOptions?.signature?.surcharge ??
+		// If selected rate is a signature rate, deduct the parent rate from the rate to get the signature cost
+		( ( selectedRate?.rate?.type ?? '' )
+			.toLowerCase()
+			.includes( 'signature' )
+			? selectedRate!.rate!.rate - ( selectedRate?.parent?.rate ?? 0 )
+			: 0 );
 
 	if ( label?.isLegacy ) {
 		subTotal = label.rate;
 		subTotalLabel = label.serviceName;
 	}
 
+	// If label is purchased, use the label rate
+	let totalLabelCost = label?.rate ?? selectedRate?.rate?.rate ?? 0;
+
+	/**
+	 * If label is not purchased, add the extra option surcharges to the total
+	 */
+	if ( ! label && Object.keys( nonSignatureRateOptions ).length > 0 ) {
+		totalLabelCost = Object.values( nonSignatureRateOptions ).reduce(
+			( acc, { surcharge } ) => acc + surcharge,
+			totalLabelCost
+		);
+	}
+
 	return (
 		<>
 			<BaseControl id="sub-total" label={ subTotalLabel }>
 				{ Boolean( subTotal ) && (
-					<Text>{ storeCurrency.formatAmount( subTotal! ) }</Text>
+					<Text align="right">
+						{ storeCurrency.formatAmount( subTotal! ) }
+					</Text>
 				) }
-				{ ! Boolean( selectedRate ) && ! hasPurchasedLabel && (
+				{ ! Boolean( selectedRate ) && ! label && (
 					<div className="cost-placeholder" />
 				) }
 			</BaseControl>
-			{ Boolean( selectedRate?.parent ) && (
+			{ ( Boolean( selectedRate?.parent ) ||
+				Object.keys( nonSignatureRateOptions ).length > 0 ) && (
 				<BaseControl
 					id="sub-total-extra"
 					label={
 						<>
-							<span className="subtotal-extra-bit" />
-							{ signatureTypeToTitle( selectedRate?.rate.type ) }
+							{ selectedRate?.parent && (
+								<ExtraOptionLabel
+									option={ selectedRate.rate.type }
+								/>
+							) }
+
+							{ Object.keys( nonSignatureRateOptions ).map(
+								( option ) => (
+									<ExtraOptionLabel
+										key={ option }
+										option={ camelCase( option ) }
+									/>
+								)
+							) }
 						</>
 					}
 				>
-					<Text>{ storeCurrency.formatAmount( extraCosts ) }</Text>
+					<Flex direction="column" gap={ 1 }>
+						{ selectedRate?.parent && (
+							<Text align="right">
+								{ storeCurrency.formatAmount( signatureCost ) }
+							</Text>
+						) }
+
+						{ Object.entries( nonSignatureRateOptions ).map(
+							( [ option, { surcharge } ] ) => (
+								<Text key={ option } align="right">
+									{ storeCurrency.formatAmount( surcharge ) }
+								</Text>
+							)
+						) }
+					</Flex>
 				</BaseControl>
 			) }
 			<BaseControl
@@ -76,14 +148,12 @@ export const ShipmentCosts = ( {
 				}
 			>
 				{ ( ! isEmpty( selectedRate ) || ! isEmpty( label ) ) && (
-					<Text weight={ 600 }>
-						{ storeCurrency.formatAmount(
-							selectedRate?.rate.rate ?? label?.rate ?? 0
-						) }
+					<Text weight={ 600 } align="right">
+						{ storeCurrency.formatAmount( totalLabelCost ) }
 					</Text>
 				) }
 
-				{ ! Boolean( selectedRate ) && ! hasPurchasedLabel && (
+				{ ! Boolean( selectedRate ) && ! label && (
 					<div className="cost-placeholder" />
 				) }
 			</BaseControl>

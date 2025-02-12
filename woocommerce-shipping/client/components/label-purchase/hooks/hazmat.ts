@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useState } from '@wordpress/element';
 import { applyShipmentHazmat } from 'utils/rates';
-import { Hazmat, HazmatState, RequestPackage } from 'types';
+import {
+	Hazmat,
+	HazmatState,
+	LabelRequestPackages,
+	RequestPackage,
+} from 'types';
 import { select } from '@wordpress/data';
 import { labelPurchaseStore } from 'data/label-purchase';
 
@@ -40,7 +45,7 @@ export function useHazmatState( currentShipmentId: string | number ) {
 	);
 
 	const applyHazmatToPackage = useCallback(
-		( shipmentPackage: RequestPackage ) =>
+		( shipmentPackage: RequestPackage | LabelRequestPackages ) =>
 			applyShipmentHazmat( shipmentPackage, getShipmentHazmat() ),
 		[ getShipmentHazmat ]
 	);

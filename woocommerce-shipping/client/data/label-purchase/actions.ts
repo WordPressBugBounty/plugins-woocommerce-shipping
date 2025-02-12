@@ -2,6 +2,7 @@ import { apiFetch } from '@wordpress/data-controls';
 import {
 	ORDER_STATUS_UPDATE_FAILED,
 	ORDER_STATUS_UPDATED,
+	RATES_FETCH_ABORTED,
 	RATES_FETCH_FAILED,
 	RATES_FETCHED,
 	RATES_RESET,
@@ -10,14 +11,16 @@ import {
 } from './action-types';
 import { getRatesPath, getShipmentsPath, getWCOrdersPath } from 'data/routes';
 import { select } from '@wordpress/data';
-import { mapAddressForRequest } from 'utils';
+import { AbortedResponse, isAbortError, mapAddressForRequest } from 'utils';
 import { OriginAddress } from 'types';
 import {
 	RatesFetchedAction,
 	RatesFetchFailedAction,
+	RatesFetchAbortedAction,
 	RatesResetAction,
 } from './types.d';
 import { addressStore } from '../address';
+import { abortableApiFetch } from 'utils';
 
 export function* updateShipments( {
 	shipments,
@@ -57,35 +60,42 @@ export function* updateShipments( {
 	}
 }
 
-export function* getRates( payload: {
+export function* getRates<
+	FetchReply = RatesFetchedAction[ 'payload' ] | AbortedResponse
+>( payload: {
 	orderId: string | number;
 	origin: OriginAddress;
 	packages: unknown[];
 } ): Generator<
-	ReturnType< typeof apiFetch >,
-	RatesFetchedAction | RatesFetchFailedAction,
-	{
-		success: boolean;
-		data: string; // JSON string
-	}
+	ReturnType< typeof abortableApiFetch >,
+	RatesFetchedAction | RatesFetchFailedAction | RatesFetchAbortedAction,
+	FetchReply
 > {
 	const destination = select( addressStore ).getPreparedDestination();
-
 	const { orderId, origin, ...restOfPayload } = payload;
 
 	try {
-		const result = yield apiFetch( {
-			path: getRatesPath(),
-			method: 'POST',
-			data: {
-				order_id: orderId,
-				destination,
-				// Todo: To be updated via  woocommerce-shipping/issues/859
-				origin: mapAddressForRequest( origin ),
-				...restOfPayload,
-				features_supported_by_client: [ 'upsdap' ],
+		const result = yield abortableApiFetch< FetchReply >(
+			{
+				path: getRatesPath(),
+				method: 'POST',
+				data: {
+					order_id: orderId,
+					destination,
+					origin: mapAddressForRequest( origin ),
+					...restOfPayload,
+					features_supported_by_client: [ 'upsdap' ],
+				},
 			},
-		} );
+			'get-rates'
+		);
+
+		if ( isAbortError( result ) ) {
+			return {
+				type: RATES_FETCH_ABORTED,
+			} as RatesFetchAbortedAction;
+		}
+
 		return {
 			type: RATES_FETCHED,
 			payload: result,

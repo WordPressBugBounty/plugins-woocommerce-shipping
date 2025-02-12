@@ -92,6 +92,9 @@ export const LabelPurchaseContextProvider = ( {
 		matchAndSelectRate,
 		availableRates,
 		preselectRateBasedOnLastSelections,
+		getSelectedRateOptions,
+		selectedRateOptions,
+		selectRateOption,
 	} = useRatesState( {
 		currentShipmentId,
 		currentPackageTab: packages.currentPackageTab,
@@ -113,6 +116,8 @@ export const LabelPurchaseContextProvider = ( {
 		getShipmentOrigin,
 		customs,
 		shipments,
+		applyHazmatToPackage,
+		getSelectedRateOptions,
 	} );
 
 	const account = useAccountState();
@@ -164,6 +169,9 @@ export const LabelPurchaseContextProvider = ( {
 			matchAndSelectRate,
 			availableRates,
 			preselectRateBasedOnLastSelections,
+			selectedRateOptions,
+			selectRateOption,
+			getSelectedRateOptions,
 		},
 		weight: {
 			getShipmentWeight,

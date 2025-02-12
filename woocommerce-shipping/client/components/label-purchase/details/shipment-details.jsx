@@ -16,12 +16,12 @@ import {
 import { edit, help } from '@wordpress/icons';
 import { __, sprintf } from '@wordpress/i18n';
 import { dispatch, useSelect } from '@wordpress/data';
-
 import {
 	addressToString,
 	formatAddressFields,
 	getCurrentOrder,
 	areAddressesClose,
+	returnPurchasedLabel,
 } from 'utils';
 import { addressStore } from 'data/address';
 import { useLabelPurchaseContext } from 'context/label-purchase';
@@ -53,7 +53,7 @@ export const ShipmentDetails = withBoundary(
 		);
 		const {
 			storeCurrency,
-			rates: { getSelectedRate, updateRates },
+			rates: { getSelectedRate, updateRates, getSelectedRateOptions },
 			labels: { hasPurchasedLabel, getCurrentShipmentLabel },
 			shipment: {
 				getShipmentOrigin,
@@ -134,8 +134,10 @@ export const ShipmentDetails = withBoundary(
 			normalisedDestinationAddress,
 		] );
 
-		const discount = getSelectedRate()?.rate
-			? getSelectedRate().rate.retailRate - getSelectedRate().rate.rate
+		const selectedRate = getSelectedRate();
+
+		const discount = selectedRate?.rate
+			? selectedRate.rate.retailRate - selectedRate.rate.rate
 			: 0;
 
 		const onCompleteCallback = () => {
@@ -144,6 +146,9 @@ export const ShipmentDetails = withBoundary(
 		};
 
 		const currentLabel = getCurrentShipmentLabel();
+
+		const selectedRateOptions = getSelectedRateOptions() ?? {};
+
 		return (
 			<div className="shipment-details">
 				<Heading level={ 3 }>
@@ -234,9 +239,7 @@ export const ShipmentDetails = withBoundary(
 
 				<section
 					className={ `shipment-details__costs${
-						getSelectedRate() ?? currentLabel?.rate
-							? ' has-rates'
-							: ''
+						selectedRate ?? currentLabel?.rate ? ' has-rates' : ''
 					}` }
 				>
 					<Divider margin="8" />
@@ -245,12 +248,12 @@ export const ShipmentDetails = withBoundary(
 					</Heading>
 
 					<ShipmentCosts
-						hasPurchasedLabel={ hasPurchasedLabel( false ) }
-						selectedRate={ getSelectedRate() }
-						label={ currentLabel }
+						selectedRate={ selectedRate }
+						label={ returnPurchasedLabel( currentLabel ) }
+						rateOptions={ selectedRateOptions }
 					/>
 
-					{ Boolean( getSelectedRate() ) && Boolean( discount ) && (
+					{ Boolean( selectedRate ) && Boolean( discount ) && (
 						<>
 							<Notice
 								className="rate-discount"

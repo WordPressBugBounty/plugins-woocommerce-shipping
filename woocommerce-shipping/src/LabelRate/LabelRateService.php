@@ -58,6 +58,12 @@ class LabelRateService {
 		),
 	);
 
+	private const UPSDAP_EXTRA_RATES = array(
+		'carbon_neutral'      => true,
+		'additional_handling' => true,
+		'saturday_delivery'   => true,
+	);
+
 	/**
 	 * Class constructor.
 	 *
@@ -104,15 +110,14 @@ class LabelRateService {
 		// Get all the package ID from the payload.
 		$original_package_ids = $this->get_package_ids_from_payload( $payload );
 
-		// Add additional requests to the payload.
-		$payload = $this->append_signature_required_options_to_payload( $payload );
+		$payload['packages'] = $this->get_request_payload_packages( $payload['packages'] );
 
 		$response = $this->request_rates( $payload );
 		if ( is_wp_error( $response ) ) {
 			return $response;
 		}
 		if ( property_exists( $response, 'rates' ) ) {
-			return $this->merge_signature_rates( $response->rates, $original_package_ids );
+			return $this->merge_extra_rates( $response->rates, $original_package_ids );
 		}
 		return array();
 	}
@@ -136,13 +141,13 @@ class LabelRateService {
 	 * @param array $payload Request payload.
 	 * @return array
 	 */
-	public function append_signature_required_options_to_payload( $payload ) {
+	public function get_packages_with_signature_required_options( $payload_packages ) {
 		$packages_requiring_signature = array();
 
 		// Add extra package requests with special options set.
 		foreach ( self::EXTRA_RATES as $rate_name => $rate_option ) {
 			foreach ( $rate_option as $option_name => $option_value ) {
-				foreach ( $payload['packages'] as $package ) {
+				foreach ( $payload_packages as $package ) {
 					$new_package                 = $package;
 					$new_package[ $option_name ] = $option_value;
 
@@ -151,16 +156,14 @@ class LabelRateService {
 				}
 			}
 		}
-		$payload['packages'] = array_merge( $payload['packages'], $packages_requiring_signature );
-
-		return $payload;
+		return $packages_requiring_signature;
 	}
 
 	/**
 	 * Merge default rates together with "signature required" and
 	 * "adult signature required" rates.
 	 *
-	 * The get_all_rates requests extra rate options as separate
+	 * The get_all_rates requests extra rate options and upsdap rate options as separate
 	 * packages. This function groups these separate packages
 	 * under the original the package name for easier parsing
 	 * on the frontend.
@@ -170,7 +173,7 @@ class LabelRateService {
 	 *
 	 * @return array Rates
 	 */
-	public function merge_signature_rates( $rates, $original_package_ids ) {
+	public function merge_extra_rates( $rates, $original_package_ids ) {
 		$parsed_rates = array();
 
 		foreach ( $original_package_ids as $name ) {
@@ -181,6 +184,14 @@ class LabelRateService {
 
 			// Get package for each extra rate to group them under the original package name.
 			foreach ( self::EXTRA_RATES as $extra_rate_name => $option ) {
+				$extra_rate_package_name = $name . self::SPECIAL_RATE_PREFIX . $extra_rate_name;
+				if ( isset( $rates->{ $extra_rate_package_name } ) ) {
+					$parsed_rates[ $name ][ $extra_rate_name ] = $rates->{ $extra_rate_package_name };
+				}
+			}
+
+			// Get package for each UPSDAP extra rate to group them under the original package name.
+			foreach ( self::UPSDAP_EXTRA_RATES as $extra_rate_name => $option ) {
 				$extra_rate_package_name = $name . self::SPECIAL_RATE_PREFIX . $extra_rate_name;
 				if ( isset( $rates->{ $extra_rate_package_name } ) ) {
 					$parsed_rates[ $name ][ $extra_rate_name ] = $rates->{ $extra_rate_package_name };
@@ -301,5 +312,47 @@ class LabelRateService {
 		unset( $payload['destination']['state_code'] );
 
 		return $payload;
+	}
+
+	/**
+	 * Get packages with UPSDAP extra rate options.
+	 * This function will return an array of packages with UPSDAP extra rate options set.
+	 * These packages will be used to request UPSDAP rates.
+	 *
+	 * @param $payload_packages
+	 *
+	 * @return array
+	 */
+	public function get_packages_with_extra_options_for_upsdap( $payload_packages ) {
+		$packages_with_extra_options = array();
+
+		// Add extra package requests with special options set.
+		foreach ( self::UPSDAP_EXTRA_RATES as $option_name => $option_value ) {
+			foreach ( $payload_packages as $package ) {
+				$new_package                 = $package;
+				$new_package[ $option_name ] = $option_value;
+
+				// connect-server will only run these packages against UPSDAP carrier.
+				$new_package['carrier_ids']    = array( 'upsdap' );
+				$new_package['id']            .= self::SPECIAL_RATE_PREFIX . $option_name;
+				$packages_with_extra_options[] = $new_package;
+			}
+		}
+		return $packages_with_extra_options;
+	}
+
+	/**
+	 * Get request payload packages.
+	 * The function will merge the original packages with packages with extra rate options and UPSDAP extra rate options.
+	 * These packages will be used to request rates.
+	 *
+	 * @param $packages
+	 */
+	public function get_request_payload_packages( $packages ): array {
+		return array_merge(
+			$packages,
+			$this->get_packages_with_signature_required_options( $packages ),
+			$this->get_packages_with_extra_options_for_upsdap( $packages )
+		);
 	}
 }

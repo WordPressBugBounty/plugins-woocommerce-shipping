@@ -104,9 +104,10 @@ class LabelPurchaseRESTController extends WCShippingRESTController {
 				$destination,
 				$packages,
 				$selected_rate,
+				$selected_rate_options,
 				$hazmat,
 				$customs,
-				$features_supported_by_client
+				$features_supported_by_client,
 			)                 = $this->get_and_check_body_params(
 				$request,
 				array(
@@ -114,6 +115,7 @@ class LabelPurchaseRESTController extends WCShippingRESTController {
 					'destination',
 					'packages',
 					'selected_rate',
+					'selected_rate_options',
 					'hazmat',
 					'customs',
 					'?features_supported_by_client', // Optional parameter.
@@ -134,10 +136,11 @@ class LabelPurchaseRESTController extends WCShippingRESTController {
 				$packages,
 				$order_id,
 				$selected_rate,
+				$selected_rate_options,
 				$hazmat,
 				$customs,
 				$user_meta,
-				$features_supported_by_client
+				$features_supported_by_client,
 			)
 		);
 	}

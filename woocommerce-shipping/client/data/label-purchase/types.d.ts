@@ -10,6 +10,7 @@ import {
 	RateWithParent,
 	RequestAddress,
 	SimpleAction,
+	RatesResponse,
 } from 'types';
 import { LABEL_PURCHASE_SUCCESS, LABEL_STATUS_RESOLVED } from './label';
 import { PACKAGES_UPDATE, PACKAGES_UPDATE_ERROR } from './packages';
@@ -44,12 +45,16 @@ export interface LabelStatusResolvedAction extends Action {
 
 export interface RatesFetchedAction extends Action {
 	type: RATES_FETCHED;
-	payload: unknown;
+	payload: RatesResponse;
 }
 
 export interface RatesFetchFailedAction extends Action {
 	type: RATES_FETCH_FAILED;
 	payload: Record< string, string >;
+}
+
+export interface RatesFetchAbortedAction extends Action {
+	type: RATES_FETCH_ABORTED;
 }
 
 export interface PackageUpdateAction extends Action {
@@ -95,4 +100,5 @@ export type LabelPurchaseActions =
 	| StageLabelsNewShipmentIdsAction
 	| OrderStatusUpdatedAction
 	| OrderStatusUpdatedFailedAction
-	| RatesResetAction;
+	| RatesResetAction
+	| RatesFetchAbortedAction;

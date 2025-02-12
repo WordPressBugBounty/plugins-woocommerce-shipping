@@ -57,7 +57,7 @@ export const ShipmentContent = ( {
 			getCurrentShipmentLabel,
 			isCurrentTabPurchasingExtraLabel,
 		},
-		customs: { getCustomsState, isCustomsNeeded },
+		customs: { isCustomsNeeded },
 		shipment: {
 			shipments,
 			selections,
@@ -67,7 +67,7 @@ export const ShipmentContent = ( {
 			getShipmentDestination,
 			hasVariations,
 		},
-		rates: { isFetching, updateRates },
+		rates: { isFetching },
 		packages: { isCustomPackageTab },
 		hazmat: { getShipmentHazmat },
 		essentialDetails: {
@@ -119,14 +119,6 @@ export const ShipmentContent = ( {
 		isCurrentTabPurchasingExtraLabel,
 		getSelectionItems,
 	] );
-
-	const customsState = getCustomsState();
-
-	useEffect( () => {
-		if ( isCustomsNeeded() ) {
-			updateRates();
-		}
-	}, [ customsState?.items, isCustomsNeeded, updateRates ] );
 
 	const addSelectionForShipment =
 		( index: string | number ) =>

@@ -7,6 +7,7 @@ import { LabelPurchaseContextProvider } from 'context/label-purchase';
 import { SplitShipmentModal } from './split-shipment';
 import { LabelPurchaseTabs } from './label-purchase-tabs';
 import { LabelPurchaseMetaBox } from './label-purchase-meta-box';
+import { LabelPurchaseEffects } from 'effects/label-purchase';
 
 interface OrderLabelPurchaseProps {
 	orderId: number;
@@ -41,6 +42,7 @@ export const OrderLabelPurchase = ( {
 
 	return (
 		<LabelPurchaseContextProvider orderId={ orderId }>
+			<LabelPurchaseEffects />
 			<Flex wrap className="wcshipping-shipping-label-meta-box">
 				<LabelPurchaseMetaBox setIsOpen={ setIsOpen } />
 				{ isOpen && (

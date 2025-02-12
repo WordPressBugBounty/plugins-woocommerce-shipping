@@ -1,5 +1,5 @@
-import { mapValues, sortBy, snakeCase } from 'lodash';
-import { useCallback, useMemo, useState } from '@wordpress/element';
+import { mapValues, sortBy, snakeCase, omit } from 'lodash';
+import { useCallback, useState, useMemo } from '@wordpress/element';
 import { dispatch, select, useSelect } from '@wordpress/data';
 import { __, sprintf } from '@wordpress/i18n';
 import {
@@ -11,6 +11,9 @@ import {
 	RecordValues,
 	RequestPackage,
 	WPErrorRESTResponse,
+	RateExtraOptionNames,
+	RateExtraOptionValue,
+	RateExtraOptions,
 } from 'types';
 import { getAccountSettings, getCurrentOrder, setAccountSettings } from 'utils';
 import { labelPurchaseStore } from 'data/label-purchase';
@@ -19,7 +22,10 @@ import type { usePackageState } from './packages';
 import { useHazmatState } from './hazmat';
 import { useCustomsState } from './customs';
 import { useShipmentState } from './shipment';
-import { RATES_FETCH_FAILED } from 'data/label-purchase/action-types';
+import {
+	RATES_FETCH_ABORTED,
+	RATES_FETCH_FAILED,
+} from 'data/label-purchase/action-types';
 import { LABEL_RATE_TYPE } from 'data/constants';
 
 interface UseRatesStateProps {
@@ -135,23 +141,10 @@ export function useRatesState( {
 	getShipmentOrigin,
 }: UseRatesStateProps ) {
 	const accountSettings = useMemo( getAccountSettings, [] );
-	const currentShipmentRates =
-		select( labelPurchaseStore ).getSelectedRates();
+	const allShipmentRates = select( labelPurchaseStore ).getSelectedRates();
 	const [ selectedRates, selectRates ] = useState<
-		Record<
-			string,
-			| {
-					rate: Rate;
-					parent: null | Rate;
-			  }
-			| null
-			| undefined
-		>
-	>(
-		currentShipmentRates ?? {
-			0: null,
-		}
-	);
+		Record< string, RateWithParent | null | undefined >
+	>( allShipmentRates ?? { 0: null } );
 
 	const [ isFetching, setIsFetching ] = useState( false );
 	const [ errors, setErrors ] = useState<
@@ -163,6 +156,49 @@ export function useRatesState( {
 		>
 	>( {} );
 
+	const selectedRateOptionsForAllShipments =
+		select( labelPurchaseStore ).getSelectedRateOptions();
+
+	const [ selectedRateOptions, selectRateOptions ] = useState<
+		Record< string, RateExtraOptions >
+	>( {
+		...selectedRateOptionsForAllShipments,
+		[ currentShipmentId ]:
+			selectedRateOptionsForAllShipments[ currentShipmentId ] ?? {},
+	} );
+
+	const selectRateOption = useCallback(
+		(
+			option: RateExtraOptionNames,
+			value: RateExtraOptionValue,
+			surcharge: number
+		) => {
+			selectRateOptions( ( prev ) => ( {
+				...prev,
+				[ currentShipmentId ]:
+					/**
+					 * Remove it if the value is false or 'no'
+					 * Even though the API supports it, we don't want to show it in the UI.
+					 */
+					value === false || value === 'no'
+						? omit( prev[ currentShipmentId ], option )
+						: {
+								...prev[ currentShipmentId ],
+								[ option ]: {
+									value,
+									surcharge,
+								},
+						  },
+			} ) );
+		},
+		[ currentShipmentId, selectRateOptions ]
+	);
+
+	const getSelectedRateOptions = useCallback(
+		() => selectedRateOptions[ currentShipmentId ] ?? {},
+		[ selectedRateOptions, currentShipmentId ]
+	);
+
 	const availableRates = useSelect(
 		( selector ) => {
 			return selector( labelPurchaseStore ).getRatesForShipment(
@@ -171,6 +207,14 @@ export function useRatesState( {
 		},
 		[ currentShipmentId ]
 	);
+
+	const resetSelectedRateOptions = useCallback( () => {
+		selectRateOptions( ( prev ) => ( {
+			...prev,
+			[ currentShipmentId ]: {},
+		} ) );
+	}, [ currentShipmentId, selectRateOptions ] );
+
 	const selectRate = useCallback(
 		( rate: Rate, parent?: Rate ) => {
 			setAccountSettings( {
@@ -181,6 +225,20 @@ export function useRatesState( {
 					last_service_id: rate.serviceId,
 				},
 			} );
+
+			/**
+			 * We need to reset the selected rate options when:
+			 * - The parent is null, we are selecting the default rate, so we need to reset the selected rate options.
+			 * - The shipmentId of the selected rate is different from the current shipmentId (e.g. when we've refetched rates or switched to another base rate).
+			 */
+			if (
+				! parent &&
+				selectedRates[ currentShipmentId ]?.rate?.serviceId !==
+					rate.serviceId
+			) {
+				resetSelectedRateOptions();
+			}
+
 			return selectRates( ( prev ) => ( {
 				...prev,
 				[ currentShipmentId ]: {
@@ -189,7 +247,12 @@ export function useRatesState( {
 				},
 			} ) );
 		},
-		[ accountSettings, currentShipmentId ]
+		[
+			accountSettings,
+			currentShipmentId,
+			resetSelectedRateOptions,
+			selectedRates,
+		]
 	);
 
 	const getSelectedRate = useCallback(
@@ -213,39 +276,55 @@ export function useRatesState( {
 			}
 			return currentSelectedRates;
 		} );
-	}, [ currentShipmentId ] );
 
-	const preselectRateBasedOnLastSelections = useCallback( () => {
-		if ( ! accountSettings.purchaseSettings.use_last_service ) {
-			return;
-		}
-		const { last_carrier_id, last_service_id } = accountSettings.userMeta;
-		const rates =
-			select( labelPurchaseStore ).getRatesForShipment(
-				currentShipmentId
-			);
+		resetSelectedRateOptions();
+	}, [ currentShipmentId, resetSelectedRateOptions ] );
 
-		if ( rates?.[ last_carrier_id ] ) {
-			const ratesForService = rates[ last_carrier_id ];
-			const selectableRate = ratesForService.find(
-				( rate ) => rate.serviceId === last_service_id
-			);
-
-			if ( selectableRate ) {
-				// Move the preselected rate to the first index
-				const updatedRates = [
-					selectableRate,
-					...ratesForService.filter(
-						( rate ) => rate !== selectableRate
-					),
-				];
-				rates[ last_carrier_id ] = updatedRates;
-
-				selectRate( selectableRate );
+	const preselectRateBasedOnLastSelections = useCallback(
+		// Passing shipmentId makes sure the auto-selection happens for the shipment that initiated the request
+		( shipmentId: string ) => {
+			if ( ! accountSettings.purchaseSettings.use_last_service ) {
+				return;
 			}
-		}
-		return rates;
-	}, [ currentShipmentId, selectRate, accountSettings ] );
+
+			const { last_carrier_id, last_service_id } =
+				accountSettings.userMeta;
+			const rates =
+				select( labelPurchaseStore ).getRatesForShipment( shipmentId );
+
+			if ( rates?.[ last_carrier_id ] ) {
+				const ratesForService = rates[ last_carrier_id ];
+				const selectableRate = ratesForService.find(
+					( rate ) => rate.serviceId === last_service_id
+				);
+
+				if ( selectableRate ) {
+					// Move the preselected rate to the first index
+					const updatedRates = [
+						selectableRate,
+						...ratesForService.filter(
+							( rate ) => rate !== selectableRate
+						),
+					];
+					rates[ last_carrier_id ] = updatedRates;
+
+					/**
+					 * selectRates is favor over selectRate here because selectRate remembers the selected rate
+					 * and we don't want to override that here. Besides we need to specify the shipmentId here.
+					 */
+					selectRates( ( prev ) => ( {
+						...prev,
+						[ shipmentId ]: {
+							rate: selectableRate,
+							parent: null,
+						},
+					} ) );
+				}
+			}
+			return rates;
+		},
+		[ selectRates, accountSettings ]
+	);
 
 	const fetchRates = useCallback(
 		async (
@@ -293,6 +372,12 @@ export function useRatesState( {
 				origin: getShipmentOrigin(),
 			} );
 
+			if ( responseType === RATES_FETCH_ABORTED ) {
+				// Aborted, do nothing, the previous request was aborted, so we don't need to set any errors.
+				// no need to setIsFetching( false ) because the request was aborted because of a new request.
+				return;
+			}
+
 			if ( responseType === RATES_FETCH_FAILED ) {
 				setErrors( ( prev ) => ( {
 					...prev,
@@ -328,7 +413,7 @@ export function useRatesState( {
 
 			setIsFetching( false );
 
-			preselectRateBasedOnLastSelections();
+			preselectRateBasedOnLastSelections( currentShipmentId );
 		},
 		[
 			errors,
@@ -512,5 +597,8 @@ export function useRatesState( {
 		matchAndSelectRate,
 		availableRates,
 		preselectRateBasedOnLastSelections,
+		selectedRateOptions,
+		selectRateOption,
+		getSelectedRateOptions,
 	};
 }

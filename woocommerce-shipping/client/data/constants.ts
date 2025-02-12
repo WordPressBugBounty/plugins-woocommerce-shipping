@@ -11,6 +11,16 @@ export const LABEL_RATE_TYPE = {
 	DEFAULT: 'default',
 	SIGNATURE_REQUIRED: 'signature_required',
 	ADULT_SIGNATURE_REQUIRED: 'adult_signature_required',
+	CARBON_NEUTRAL: 'carbon_neutral',
+	ADDITIONAL_HANDLING: 'additional_handling',
+	SATURDAY_DELIVERY: 'saturday_delivery',
+} as const;
+
+export const LABEL_RATE_OPTION = {
+	SIGNATURE: 'signature',
+	CARBON_NEUTRAL: 'carbon_neutral',
+	ADDITIONAL_HANDLING: 'additional_handling',
+	SATURDAY_DELIVERY: 'saturday_delivery',
 } as const;
 
 export const LABEL_PURCHASE_STATUS = {

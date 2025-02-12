@@ -20,6 +20,9 @@ export const RateRow = withBoundary(
 		setSelected,
 		signatureRequiredRate,
 		adultSignatureRequiredRate,
+		carbonNeutralRate,
+		additionalHandlingRate,
+		saturdayDeliveryRate,
 	} ) => {
 		const {
 			rateId,
@@ -34,6 +37,7 @@ export const RateRow = withBoundary(
 		} = rate;
 		const {
 			storeCurrency: { formatAmount },
+			rates: { getSelectedRateOptions, selectRateOption },
 		} = useLabelPurchaseContext();
 		const extrasText = [
 			tracking && __( 'tracking', 'woocommerce-shipping' ),
@@ -49,10 +53,15 @@ export const RateRow = withBoundary(
 			extrasText,
 			signatureRequiredRate,
 			adultSignatureRequiredRate,
+			carbonNeutralRate,
+			additionalHandlingRate,
+			saturdayDeliveryRate,
 			formatAmount,
 			setSelected,
 			selected,
 			rate,
+			selectedRateOptions: getSelectedRateOptions(),
+			selectRateOption,
 		};
 
 		const isSelected =

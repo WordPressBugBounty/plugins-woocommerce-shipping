@@ -1,4 +1,4 @@
-import { Rate } from './rate';
+import { Rate, RateExtraOptions } from './rate';
 
 /**
  * Represents a rate with its addon-less variant.
@@ -9,4 +9,5 @@ import { Rate } from './rate';
 export interface RateWithParent {
     rate: Rate;
     parent: Rate | null;
+    extraOptions?: RateExtraOptions; // only added when the label is purchased and the rate has extra options
 }

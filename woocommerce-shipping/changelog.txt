@@ -1,5 +1,11 @@
 *** WooCommerce Shipping Changelog ***
 
+= 1.5.0 - 2025-02-12 =
+* Add   - Addtional UPS label options.
+* Tweak - WooCommerce 9.7 Compatibility.
+* Fix   - Prevent race condition when fetching rates.
+
+
 = 1.4.1 - 2025-02-06 =
 * Tweak - Improve overall frontend performance.
 * Tweak - Improve address API documentation.

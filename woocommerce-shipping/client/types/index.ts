@@ -62,3 +62,4 @@ export * from './report-label.d';
 export * from './report-response.d';
 export * from './report-query.d';
 export * from './wcshipping-analytics-config.d';
+export * from './label-rate-type.d';

@@ -10,26 +10,18 @@ import {
 	RequestAddress,
 	ShipmentRecord,
 	UPSDAPStrategy,
+	SelectedRates,
 } from 'types';
 import { getPreparedDestination } from '../address/selectors';
 
 export interface LabelPurchaseState extends object {
 	rates?: Record<
 		string,
-		{
-			default: Record< Carrier, Rate[] >;
-			signature_required: Record< Carrier, Rate[] >;
-			adult_signature_required: Record< Carrier, Rate[] >;
-		}
+		Record< keyof typeof LABEL_RATE_TYPE, Record< Carrier, Rate[] > >
 	>;
 	labels: Record< string, Label[] > | null;
 	purchaseAPIErrors: Record< string, LabelPurchaseError >;
-	selectedRates:
-		| ShipmentRecord< {
-				rate: Rate;
-				parent: Rate | null;
-		  } >
-		| '';
+	selectedRates: SelectedRates | '';
 	selectedHazmatConfig: HazmatState | '';
 	selectedOrigins: Record< string, CamelCaseType< RequestAddress > > | null;
 	selectedDestinations: Record<
@@ -49,4 +41,5 @@ export interface LabelPurchaseState extends object {
 	carrierStrategies: {
 		upsdap: UPSDAPStrategy;
 	};
+	selectedRateOptions: ShipmentRecord< RateExtraOptions >;
 }

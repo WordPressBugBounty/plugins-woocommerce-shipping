@@ -206,6 +206,7 @@ export const mockUtils = ( overrides?: object ) => {
 			.mockReturnValue( [ destinationAddress ] ),
 		getLabelOrigins: jest.fn().mockReturnValue( [] ),
 		getCurrentOrderItems: jest.fn().mockReturnValue( [] ),
+		getSelectedRateOptions: jest.fn().mockReturnValue( [] ),
 		...( overrides ?? {} ),
 	};
 };

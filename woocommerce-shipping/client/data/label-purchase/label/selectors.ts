@@ -1,6 +1,7 @@
 import { LabelPurchaseState } from '../../types';
 import type { Label } from 'types';
 import { mapKeys, mapValues } from 'lodash';
+import { camelCaseKeysRecursive } from 'utils';
 
 export const getPurchasedLabel = (
 	state: LabelPurchaseState,
@@ -10,13 +11,18 @@ export const getPurchasedLabel = (
 	return labels.find( ( l ) => ! l.refund );
 };
 export const getPurchasedLabels = ( state: LabelPurchaseState ) =>
-	mapValues( state.labels, ( labels ) => labels?.[ 0 ] ?? undefined );
+	mapValues(
+		state.labels,
+		( labels ) => labels?.find( ( l ) => ! l.refund ) ?? undefined
+	);
 
 export const getSelectedRates = ( state: LabelPurchaseState ) =>
 	state.selectedRates
-		? mapKeys(
-				state.selectedRates,
-				( value, key ) => key.replace( 'shipment_', '' ) ?? key
+		? camelCaseKeysRecursive(
+				mapKeys(
+					state.selectedRates,
+					( value, key ) => key.replace( 'shipment_', '' ) ?? key
+				)
 		  )
 		: undefined;
 

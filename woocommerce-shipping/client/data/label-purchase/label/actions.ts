@@ -14,6 +14,7 @@ import {
 } from './action-types';
 import {
 	camelCaseKeys,
+	camelCaseKeysRecursive,
 	mapAddressForRequest,
 	normalizeSelectionKey,
 } from 'utils';
@@ -23,7 +24,8 @@ import {
 	LabelRequestPackages,
 	LabelShipmentIdMap,
 	OriginAddress,
-	Rate,
+	RateExtraOptions,
+	RateWithParent,
 	RefundResponse,
 	RequestPackageWithCustoms,
 	ResponseLabel,
@@ -47,13 +49,8 @@ export function* purchaseLabel(
 		| RequestPackageWithCustoms< LabelRequestPackages >[]
 		| LabelRequestPackages[],
 	shipmentId: string,
-	selectedRate: Record<
-		string,
-		{
-			rate: Rate;
-			parent: Rate | null;
-		}
-	>,
+	selectedRate: RateWithParent,
+	selectedRateOptions: RateExtraOptions,
 	hazmatState: HazmatState,
 	originAddress: OriginAddress,
 	customsState: ShipmentRecord< CustomsState >,
@@ -89,11 +86,12 @@ export function* purchaseLabel(
 			origin,
 			destination,
 			packages,
-			selected_rate: selectedRate,
+			selected_rate_options: selectedRateOptions,
 			hazmat: hazmatState,
 			customs: customsState,
 			user_meta: userMeta,
 			features_supported_by_client: [ 'upsdap' ],
+			selected_rate: selectedRate,
 		},
 	} );
 
@@ -114,7 +112,7 @@ export function* purchaseLabel(
 					camelCaseKeys( label )
 				),
 			},
-			selectedRates: normalizeSelectionKey( selected_rates ),
+			selectedRates: mapValues( selected_rates, camelCaseKeysRecursive ),
 			selectedHazmat: normalizeSelectionKey( selected_hazmat ),
 			selectedOrigins,
 			selectedDestinations,

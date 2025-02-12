@@ -10,6 +10,7 @@ import {
 	getLabelOrigins,
 	getPurchasedLabels,
 	getSelectedHazmat,
+	getSelectedRateOptions,
 	getSelectedRates,
 	groupRatesByCarrier,
 } from 'utils';
@@ -40,6 +41,8 @@ import {
 	LABEL_STAGE_NEW_SHIPMENT_IDS,
 	LABEL_STATUS_RESOLVED,
 } from './label/action-types';
+import { SelectedRates } from 'types';
+import { LABEL_PURCHASE_STATUS } from '../constants';
 
 const {
 	packagesSettings: { packages },
@@ -61,6 +64,7 @@ const defaultState: LabelPurchaseState = {
 	carrierStrategies: mapValues( getCarrierStrategies(), ( value ) =>
 		camelCaseKeys( value )
 	),
+	selectedRateOptions: getSelectedRateOptions(),
 } as const;
 
 export const labelPurchaseReducer = createReducer( defaultState )
@@ -108,6 +112,42 @@ export const labelPurchaseReducer = createReducer( defaultState )
 						} );
 				  } )
 				: state.labels,
+			// If the label is refunded or status is unknown or purchase_error, we need to remove the selected rate from the selectedRates object
+			selectedRates: Object.entries( state.selectedRates ?? {} ).reduce(
+				( acc, [ key, rate ] ) => {
+					// Find the shipment index (0, 1, 2, etc.) using label.labelId
+					const shipmentIndex =
+						( payload?.refund ??
+							[
+								LABEL_PURCHASE_STATUS.PURCHASE_ERROR,
+								LABEL_PURCHASE_STATUS.UNKNOWN,
+							].includes( payload?.status ?? '' ) ) &&
+						typeof state.labels === 'object' &&
+						state.labels
+							? Object.keys( state.labels ).find(
+									( shipmentId ) => {
+										return state.labels![ shipmentId ].some(
+											( label ) =>
+												label.labelId ===
+												payload?.labelId
+										);
+									}
+							  )
+							: null;
+
+					if (
+						shipmentIndex &&
+						key === `shipment_${ shipmentIndex }`
+					) {
+						return acc;
+					}
+
+					// Safe to cast as keyof SelectedRates because we know the key is in the object
+					acc[ key as keyof SelectedRates ] = rate;
+					return acc;
+				},
+				{} as SelectedRates
+			),
 		} )
 	)
 	.on(

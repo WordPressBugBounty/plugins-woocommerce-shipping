@@ -2,7 +2,7 @@ import { RecordValues } from 'types';
 import { removeShipmentFromKeys } from 'utils';
 import { LabelPurchaseState } from '../types';
 import { LABEL_RATE_TYPE } from '../constants';
-import { isEmpty } from 'lodash';
+import { isEmpty, mapKeys } from 'lodash';
 
 export const getRatesForShipment = (
 	state: LabelPurchaseState,
@@ -21,3 +21,8 @@ export const getCustomsInformation = (
 
 export const getOrderStatus = ( state: LabelPurchaseState ) =>
 	state.order?.status;
+
+export const getSelectedRateOptions = ( state: LabelPurchaseState ) =>
+	mapKeys( state.selectedRateOptions, ( value, key ) =>
+		key.replace( 'shipment_', '' )
+	);

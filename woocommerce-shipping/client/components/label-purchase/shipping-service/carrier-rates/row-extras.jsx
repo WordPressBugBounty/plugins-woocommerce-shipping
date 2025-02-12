@@ -6,13 +6,19 @@ import {
 } from '@wordpress/components';
 import { check } from '@wordpress/icons';
 import { __, sprintf } from '@wordpress/i18n';
+import { LABEL_RATE_OPTION } from 'data/constants';
 
 export const RowExtras = ( {
 	extrasText,
 	signatureRequiredRate,
 	adultSignatureRequiredRate,
+	carbonNeutralRate,
+	additionalHandlingRate,
+	saturdayDeliveryRate,
 	rate,
 	formatAmount,
+	selectedRateOptions,
+	selectRateOption,
 	setSelected,
 	selected,
 } ) => (
@@ -36,7 +42,14 @@ export const RowExtras = ( {
 						),
 						formatAmount( signatureRequiredRate.rate - rate.rate )
 					) }
-					onChange={ setSelected( signatureRequiredRate, rate ) }
+					onChange={ ( checked ) => {
+						setSelected( signatureRequiredRate, rate )( checked );
+						selectRateOption(
+							LABEL_RATE_OPTION.SIGNATURE,
+							checked ? 'yes' : 'no',
+							signatureRequiredRate.rate - rate.rate
+						);
+					} }
 					checked={
 						signatureRequiredRate.rateId === selected?.rate?.rateId
 					}
@@ -56,11 +69,98 @@ export const RowExtras = ( {
 							adultSignatureRequiredRate.rate - rate.rate
 						)
 					) }
-					onChange={ setSelected( adultSignatureRequiredRate, rate ) }
+					onChange={ ( checked ) => {
+						setSelected(
+							adultSignatureRequiredRate,
+							rate
+						)( checked );
+						selectRateOption(
+							LABEL_RATE_OPTION.SIGNATURE,
+							checked ? 'adult' : 'no',
+							adultSignatureRequiredRate.rate - rate.rate
+						);
+					} }
 					checked={
 						adultSignatureRequiredRate.rateId ===
 						selected?.rate?.rateId
 					}
+				/>
+			</Flex>
+		) }
+		{ carbonNeutralRate && (
+			<Flex>
+				<CheckboxControl
+					label={ sprintf(
+						// translators: %s the cost of the additional service.
+						__( 'Carbon Neutral ( +%s )', 'woocommerce-shipping' ),
+						formatAmount( carbonNeutralRate.rate - rate.rate )
+					) }
+					onChange={ ( checked ) => {
+						selectRateOption(
+							LABEL_RATE_OPTION.CARBON_NEUTRAL,
+							checked,
+							carbonNeutralRate.rate - rate.rate
+						);
+					} }
+					checked={ Boolean(
+						selectedRateOptions[ LABEL_RATE_OPTION.CARBON_NEUTRAL ]
+					) }
+				/>
+			</Flex>
+		) }
+		{ additionalHandlingRate && (
+			<Flex>
+				<CheckboxControl
+					label={ sprintf(
+						// translators: %s the cost of the additional service.
+						__(
+							'Additional Handling ( +%s )',
+							'woocommerce-shipping'
+						),
+						formatAmount( additionalHandlingRate.rate - rate.rate )
+					) }
+					onChange={ ( checked ) => {
+						selectRateOption(
+							LABEL_RATE_OPTION.ADDITIONAL_HANDLING,
+							checked,
+							additionalHandlingRate.rate - rate.rate
+						);
+					} }
+					checked={ Boolean(
+						selectedRateOptions[
+							LABEL_RATE_OPTION.ADDITIONAL_HANDLING
+						]
+					) }
+				/>
+			</Flex>
+		) }
+		{ saturdayDeliveryRate && (
+			<Flex>
+				<CheckboxControl
+					label={ sprintf(
+						// translators: %s the cost of the additional service.
+						__(
+							'Saturday Delivery ( %s )',
+							'woocommerce-shipping'
+						),
+						saturdayDeliveryRate.rate - rate.rate > 0
+							? `+${ formatAmount(
+									saturdayDeliveryRate.rate - rate.rate
+							  ) }`
+							: __( 'Free', 'woocommerce-shipping' )
+					) }
+					onChange={ ( checked ) =>
+						selectRateOption(
+							LABEL_RATE_OPTION.SATURDAY_DELIVERY,
+							checked,
+							saturdayDeliveryRate.rate - rate.rate
+						)
+					}
+					checked={ Boolean(
+						selectedRateOptions[
+							LABEL_RATE_OPTION.SATURDAY_DELIVERY
+						]
+					) }
 				/>
 			</Flex>
 		) }

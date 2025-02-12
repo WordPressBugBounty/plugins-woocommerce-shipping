@@ -1,4 +1,4 @@
-import { camelCase, mapKeys, snakeCase } from 'lodash';
+import { camelCase, mapKeys, mapValues, snakeCase } from 'lodash';
 import { CamelCaseType, ShipmentRecord } from '../types';
 
 export const camelCaseKeys = <
@@ -43,4 +43,22 @@ export const renderWhenDOMReady = ( callback: () => void ) => {
 	} else {
 		document.addEventListener( 'DOMContentLoaded', callback );
 	}
+};
+
+export const camelCaseKeysRecursive = < T extends object >( obj: T ): T => {
+	if ( Array.isArray( obj ) ) {
+		return obj.map( ( item ) =>
+			typeof item === 'object' && item !== null
+				? camelCaseKeysRecursive( item )
+				: item
+		) as T;
+	}
+
+	const camelCasedObj = camelCaseKeys( obj );
+
+	return mapValues( camelCasedObj, ( value ) =>
+		typeof value === 'object' && value !== null
+			? camelCaseKeysRecursive( value )
+			: value
+	) as T;
 };

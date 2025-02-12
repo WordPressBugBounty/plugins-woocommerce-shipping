@@ -2,7 +2,7 @@ import type { ComponentType, ReactElement, ReactNode } from 'react';
 
 export type RecordValues< T extends Record< string, unknown > > = T[ keyof T ];
 
-type SnakeToCamelCase< S extends string | number | symbol > =
+export type SnakeToCamelCase< S extends string | number | symbol > =
 	S extends `${ infer T }_${ infer U }`
 		? `${ T }${ Capitalize< SnakeToCamelCase< U > > }`
 		: S;

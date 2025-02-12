@@ -1,8 +1,11 @@
+import { isObject, mapValues } from 'lodash';
 import {
 	WCShippingAnalyticsConfig,
 	WCShippingConfig,
 	WCShippingConfigAccountSettings,
 } from 'types';
+import { camelCaseKeys } from 'utils';
+import { ShipmentRecord, RateExtraOptions } from 'types';
 
 export const getConfig = (): WCShippingConfig =>
 	( window.WCShipping_Config || {} ) as WCShippingConfig;
@@ -55,3 +58,15 @@ export const shouldAutomaticallyOpenPrintDialog = ( config = getConfig() ) =>
 // Only set on Analytics page
 export const getAnalyticsConfig = () =>
 	window.WCShipping_Config as WCShippingAnalyticsConfig;
+
+export const getSelectedRateOptions = (
+	config = getConfig()
+): ShipmentRecord< RateExtraOptions > => {
+	const selectedRates = config.shippingLabelData.storedData.selected_rates;
+	if ( isObject( selectedRates ) ) {
+		return mapValues( selectedRates, ( { extra_options } ) =>
+			camelCaseKeys( extra_options )
+		);
+	}
+	return {};
+};

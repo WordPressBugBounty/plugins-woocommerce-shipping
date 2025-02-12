@@ -3,7 +3,14 @@ import { dispatch, select } from '@wordpress/data';
 import apiFetch from '@wordpress/api-fetch';
 import { __ } from '@wordpress/i18n';
 import { mapValues } from 'lodash';
-import { Label, LabelPurchaseError, PDFJson, RateWithParent } from 'types';
+import {
+	Label,
+	LabelPurchaseError,
+	LabelRequestPackages,
+	PDFJson,
+	RateWithParent,
+	RequestPackageWithCustoms,
+} from 'types';
 import { LABEL_PURCHASE_STATUS } from 'data/constants';
 import {
 	getCurrentOrder,
@@ -45,7 +52,13 @@ interface UseLabelsStateProps {
 		typeof useShipmentState
 	>[ 'getShipmentOrigin' ];
 	customs: ReturnType< typeof useCustomsState >;
+	applyHazmatToPackage: ReturnType<
+		typeof useHazmatState
+	>[ 'applyHazmatToPackage' ];
 	shipments: ReturnType< typeof useShipmentState >[ 'shipments' ];
+	getSelectedRateOptions: ReturnType<
+		typeof useRatesState
+	>[ 'getSelectedRateOptions' ];
 }
 
 const handlePurchaseException = ( e: LabelPurchaseError ) =>
@@ -88,7 +101,9 @@ export function useLabelsState( {
 	updateRates,
 	getShipmentOrigin,
 	customs: { maybeApplyCustomsToPackage, getCustomsState },
+	applyHazmatToPackage,
 	shipments,
+	getSelectedRateOptions,
 }: UseLabelsStateProps ) {
 	const order = getCurrentOrder();
 	const getShipmentLabel = useCallback(
@@ -112,11 +127,9 @@ export function useLabelsState( {
 	);
 
 	useEffect( () => {
-		if ( ! currentShipmentLabel ) {
-			return;
-		}
-		setLabels( ( prevState ) => ( {
+		setLabels( ( prevState: typeof labels ) => ( {
 			...prevState,
+			// we want to update the label for the current shipment even if the label turned out to be refunded, in this case currentShipmentLabel will be undefined
 			[ currentShipmentId ]: currentShipmentLabel,
 		} ) );
 	}, [ currentShipmentLabel, currentShipmentId ] );
@@ -337,29 +350,34 @@ export function useLabelsState( {
 				? selectionItems
 				: getShipmentItems().map( ( { product_id } ) => product_id );
 
+			const selectedRateOptions = getSelectedRateOptions();
+
 			const requestPackage = [
-				maybeApplyCustomsToPackage( {
-					id: currentShipmentId,
-					box_id,
-					...dimensions,
-					is_letter: isLetter,
-					shipment_id: shipmentId,
-					service_id: serviceId,
-					carrier_id: carrierId,
-					service_name: serviceName,
-					products: productsIds,
-					weight: totalWeight,
-					rate_id: selectedRate.rate.rateId,
-				} ),
-			];
+				maybeApplyCustomsToPackage(
+					applyHazmatToPackage( {
+						id: currentShipmentId,
+						box_id,
+						...dimensions,
+						is_letter: isLetter,
+						shipment_id: shipmentId,
+						service_id: serviceId,
+						carrier_id: carrierId,
+						service_name: serviceName,
+						products: productsIds,
+						weight: totalWeight,
+						rate_id: selectedRate.rate.rateId,
+						...mapValues( selectedRateOptions, 'value' ),
+					} )
+				),
+			] as RequestPackageWithCustoms< LabelRequestPackages >[];
+
 			try {
 				await dispatch( labelPurchaseStore ).purchaseLabel(
 					orderId,
 					requestPackage,
 					currentShipmentId,
-					{
-						[ `shipment_${ currentShipmentId }` ]: selectedRate,
-					},
+					selectedRate,
+					selectedRateOptions,
 					{
 						[ `shipment_${ currentShipmentId }` ]:
 							getShipmentHazmat(),
@@ -405,6 +423,8 @@ export function useLabelsState( {
 			getShipmentOrigin,
 			maybeApplyCustomsToPackage,
 			getCustomsState,
+			applyHazmatToPackage,
+			getSelectedRateOptions,
 		]
 	);
 

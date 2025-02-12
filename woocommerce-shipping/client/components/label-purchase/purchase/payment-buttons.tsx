@@ -418,8 +418,8 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 		setAccountCompleteOrder( ! lastOrderCompleted );
 	};
 
-	// Reset errors when shipment origin or rate change
-	useEffect( resetErrors, [ shipmentOrigin, selectedRate ] );
+	// Reset errors when shipment origin changes
+	useEffect( resetErrors, [ shipmentOrigin ] );
 
 	const isExtraLabelPurchase = () => {
 		return ! hasMissingPurchase();

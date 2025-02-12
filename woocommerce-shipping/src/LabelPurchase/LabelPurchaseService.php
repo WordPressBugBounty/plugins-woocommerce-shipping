@@ -134,7 +134,8 @@ class LabelPurchaseService {
 	 * @param array $destination Destination address.
 	 * @param array $packages   Packages to purchase labels for.
 	 * @param int   $order_id    WC Order ID.
-	 * @param array $selected_rate Selected rate.
+	 * @param array $selected_rate Selected rate. { rate: array, parent?: array }
+	 * @param array $selected_rate_options Selected rate options.
 	 * @param array $hazmat Selected HAZMAT category and if shipment includes HAZMAT.
 	 * @param array $customs Customs form information.
 	 * @param array $user_meta User meta array.
@@ -147,6 +148,7 @@ class LabelPurchaseService {
 		$packages,
 		$order_id,
 		$selected_rate,
+		$selected_rate_options,
 		$hazmat,
 		$customs,
 		$user_meta = array(),
@@ -202,6 +204,7 @@ class LabelPurchaseService {
 		}
 
 		$purchased_labels_meta = $this->get_labels_meta_from_response( $label_response, $request_packages, $service_names, $order_id );
+
 		if ( is_wp_error( $purchased_labels_meta ) ) {
 			$this->logger->log( $purchased_labels_meta, __CLASS__ );
 			return $purchased_labels_meta;
@@ -209,8 +212,34 @@ class LabelPurchaseService {
 
 		$this->settings_store->add_labels_to_order( $order_id, $purchased_labels_meta );
 
-		$shipment_key = array_keys( $selected_rate )[0];
-		$origin       = array(
+		/**
+		 * $hazmat looks like this:
+		 * [
+		 *   'shipment_0' => [
+		 *     'category' => 'SOMECATEGORY'
+		 *     'is_hazmat' => 'true'
+		 *   ]
+		 * ]
+		 * so we can get the shipment key by getting the first key of the array
+		 *
+		 * @var string
+		 */
+		$shipment_key = array_keys( $hazmat )[0];
+
+		$keyed_selected_rate = array(
+			$shipment_key => array(
+				'rate'          => array_merge(
+					(array) $label_response->rates[0],
+					array(
+						'type' => $selected_rate['rate']['type'] ?? '',
+					)
+				),
+				'parent'        => isset( $selected_rate['parent'] ) ? (array) $selected_rate['parent'] : null,
+				'extra_options' => $selected_rate_options,
+			),
+		);
+
+		$origin      = array(
 			$shipment_key => array_merge(
 				$origin,
 				array(
@@ -219,14 +248,14 @@ class LabelPurchaseService {
 				),
 			),
 		);
-		$destination  = array(
+		$destination = array(
 			$shipment_key => $destination,
 		);
 
 		$selected_meta = $this->store_selected_meta(
 			$order_id,
 			array(
-				self::SELECTED_RATES_KEY       => $selected_rate,
+				self::SELECTED_RATES_KEY       => $keyed_selected_rate,
 				self::SELECTED_HAZMAT_KEY      => $hazmat,
 				self::SELECTED_ORIGIN_KEY      => $origin,
 				self::SELECTED_DESTINATION_KEY => $destination,
@@ -270,6 +299,26 @@ class LabelPurchaseService {
 				);
 				return $error;
 			}
+
+			/*
+			 * Aknowledge the error returned on label level.
+			 * In this case, error is a string and a property of the individual label object.
+			 *
+			 * Example:
+			 * $label_data->label->error = "Rate not found";
+			 */
+			if ( isset( $label_data->label->error ) ) {
+				$error = new WP_Error(
+					'purchase_error',
+					$label_data->label->error,
+					array(
+						'success' => false,
+						'message' => $label_data->label->error,
+					)
+				);
+				return $error;
+			}
+
 			$label_ids[] = $label_data->label->label_id;
 
 			$label_meta = array(

@@ -43,6 +43,7 @@ class ViewService {
 
 	/**
 	 * Remove shipment information stored along the label for labels with PURCHASE_ERROR status based on the shipment id.
+	 * Only removes the meta if there are no other non-error labels with the same shipment id.
 	 *
 	 * @param array $purchased_labels [
 	 *    [ 'id' => {WCS shipment id}, 'status' => 'PURCHASED' ],
@@ -54,12 +55,21 @@ class ViewService {
 	 */
 	public function remove_meta_for_purchase_error( array $purchased_labels, array $shipment_meta ): array {
 		foreach ( $purchased_labels as $purchased_label ) {
-			$shipment_id = $purchased_label['id'];
+			$shipment_id                   = $purchased_label['id'];
+			$shipment_key                  = "shipment_{$shipment_id}";
+			$none_error_label_with_same_id = array_filter(
+				$purchased_labels,
+				function ( $label ) use ( $purchased_label ) {
+					return $label['id'] === $purchased_label['id'] && $label['status'] !== 'PURCHASE_ERROR';
+				}
+			);
+
 			if (
 				$purchased_label['status'] === 'PURCHASE_ERROR' &&
-				isset( $shipment_meta[ "shipment_{$shipment_id}" ] )
+				isset( $shipment_meta[ $shipment_key ] ) &&
+				empty( $none_error_label_with_same_id )
 			) {
-				unset( $shipment_meta[ "shipment_{$shipment_id}" ] );
+				unset( $shipment_meta[ $shipment_key ] );
 			}
 		}
 
@@ -83,11 +93,22 @@ class ViewService {
 	 */
 	public function remove_meta_for_refunds( array $purchased_labels, array $shipment_meta ): array {
 		foreach ( $purchased_labels as $purchased_label ) {
-			$shipment_key = sprintf( 'shipment_%d', $purchased_label['id'] );
+			$shipment_key                     = sprintf( 'shipment_%d', $purchased_label['id'] );
+			$none_refunded_label_with_same_id = array_filter(
+				$purchased_labels,
+				function ( $label ) use ( $purchased_label ) {
+					return $label['id'] === $purchased_label['id'] && empty( $label['refund'] );
+				}
+			);
 
 			if (
 				! empty( $purchased_label['refund'] ) &&
 				isset( $shipment_meta[ $shipment_key ] )
+				/**
+				 * Only remove the meta if there is no none refunded label with the same id (shipment id)
+				 * As once a new purchase is made, the former meta is overwritten with the new one for the same id (shipment id)
+				 */
+				&& empty( $none_refunded_label_with_same_id )
 			) {
 				unset( $shipment_meta[ $shipment_key ] );
 			}

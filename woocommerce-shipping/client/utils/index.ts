@@ -22,3 +22,4 @@ export * from './deferred';
 export * from './weight';
 export * from './analytics';
 export * from './url';
+export * from './api-fetch';

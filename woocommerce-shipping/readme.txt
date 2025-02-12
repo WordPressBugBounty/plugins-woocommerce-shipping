@@ -3,11 +3,11 @@ Contributors: woocommerce, automattic, harriswong, waclawjacek, samnajian, kloon
 Tags: woocommerce, shipping, usps, dhl, labels
 Requires Plugins: woocommerce
 Requires PHP: 7.4
-Requires at least: 6.5
+Requires at least: 6.6
 Tested up to: 6.7
-WC requires at least: 9.3
-WC tested up to: 9.5
-Stable tag: 1.4.1
+WC requires at least: 9.5
+WC tested up to: 9.7
+Stable tag: 1.5.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -127,6 +127,11 @@ Absolutely! You can read our Terms of Service [here](https://wordpress.com/tos).
 6. WooCommerce Shipping address validation at checkout suggestion.
 
 == Changelog ==
+
+= 1.5.0 - 2025-02-12 =
+* Add   - Addtional UPS label options.
+* Tweak - WooCommerce 9.7 Compatibility.
+* Fix   - Prevent race condition when fetching rates.
 
 = 1.4.1 - 2025-02-06 =
 * Tweak - Improve overall frontend performance.
