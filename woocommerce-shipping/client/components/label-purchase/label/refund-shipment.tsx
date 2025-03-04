@@ -2,18 +2,20 @@ import React from 'react';
 import { Button } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { useCallback, useState } from '@wordpress/element';
-import { Label } from 'types';
+import { Label, Rate } from 'types';
 import { canRefundLabel } from 'utils';
 import { RefundConfirmation } from './refund-confirmation';
 
 interface RefundShipmentProps {
 	label?: Label;
+	selectedRate: { rate: Rate; parent: Rate | null } | null | undefined;
 	isBusy: boolean;
 	isDisabled: boolean;
 }
 
 export const RefundShipment = ( {
 	label,
+	selectedRate,
 	isBusy,
 	isDisabled,
 }: RefundShipmentProps ) => {
@@ -24,6 +26,12 @@ export const RefundShipment = ( {
 		},
 		[ setIsRefunding ]
 	);
+
+	const caveats = selectedRate?.rate.caveats ?? [];
+
+	if ( caveats.includes( 'non-refundable' ) ) {
+		return <>{ __( 'Label is non-refundable', 'woocommerce-shipping' ) }</>;
+	}
 
 	if ( ! canRefundLabel( label ) ) {
 		return null;

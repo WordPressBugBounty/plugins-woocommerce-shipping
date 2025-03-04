@@ -12,7 +12,7 @@ import {
 import { getRatesPath, getShipmentsPath, getWCOrdersPath } from 'data/routes';
 import { select } from '@wordpress/data';
 import { AbortedResponse, isAbortError, mapAddressForRequest } from 'utils';
-import { OriginAddress } from 'types';
+import { OriginAddress, RequestExtraOptions } from 'types';
 import {
 	RatesFetchedAction,
 	RatesFetchFailedAction,
@@ -66,6 +66,7 @@ export function* getRates<
 	orderId: string | number;
 	origin: OriginAddress;
 	packages: unknown[];
+	shipment_options?: RequestExtraOptions;
 } ): Generator<
 	ReturnType< typeof abortableApiFetch >,
 	RatesFetchedAction | RatesFetchFailedAction | RatesFetchAbortedAction,

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Notice, RadioControl } from '@wordpress/components';
 import { Link } from '@woocommerce/components';
-import { dispatch, useSelect } from '@wordpress/data';
+import { dispatch, useSelect, select } from '@wordpress/data';
 import { __, sprintf } from '@wordpress/i18n';
 import PaymentMethod from './payment-method';
 import { settingsStore } from 'data/settings';
@@ -10,27 +10,27 @@ import { createInterpolateElement } from '@wordpress/element';
 
 const PaymentCard = () => {
 	const addPaymentMethodURL =
-		useSelect( settingsStore ).getAddPaymentMethodURL();
-	const paymentMethods = useSelect( ( select ) => {
-		const storePaymentMethods = select( settingsStore ).getPaymentMethods();
-		/**
-		 * Decorate the ID to be string so that it works with WP component
-		 * https://developer.wordpress.org/block-editor/reference-guides/components/radio-control/#options-label-string-value-string
-		 */
-		return storePaymentMethods?.map( ( paymentMethod ) => {
+		select( settingsStore ).getAddPaymentMethodURL();
+	const paymentMethods = select( settingsStore )
+		.getPaymentMethods()
+		?.map( ( paymentMethod ) => {
+			/**
+			 * Decorate the ID to be string so that it works with WP component
+			 * https://developer.wordpress.org/block-editor/reference-guides/components/radio-control/#options-label-string-value-string
+			 */
 			return {
 				...paymentMethod,
 				payment_method_id: paymentMethod.payment_method_id.toString(),
 			};
 		} );
-	} );
-	const getSelectedPaymentMethodId = useSelect( ( select ) => {
+
+	const getSelectedPaymentMethodId = useSelect( ( selector ) => {
 		/**
 		 * Decorate the selected payment method ID to be string so that it works with wordpress component.
 		 * https://developer.wordpress.org/block-editor/reference-guides/components/radio-control/#options-label-string-value-string
 		 */
 		const storeSelectedPaymentMethodId =
-			select( settingsStore ).getSelectedPaymentMethod();
+			selector( settingsStore ).getSelectedPaymentMethod();
 		return storeSelectedPaymentMethodId?.toString();
 	} );
 

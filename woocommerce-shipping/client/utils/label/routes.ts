@@ -1,5 +1,9 @@
 import { addQueryArgs } from '@wordpress/url';
-import { getLabelsPrintPath, getLabelTestPrintPath } from 'data/routes';
+import {
+	getLabelsPrintPath,
+	getLabelTestPrintPath,
+	getPackingSlipPrintPath,
+} from 'data/routes';
 import { Label } from 'types';
 import { getPaperSizeWithKey } from 'components/label-purchase/label/utils';
 
@@ -27,3 +31,6 @@ export const getPreviewURL = (
 	paperSize: string,
 	labelId: Label[ 'labelId' ]
 ) => getPDFURL( paperSize, labelId, getLabelTestPrintPath() );
+
+export const getPackingSlipPrintURL = ( labelId: number, orderId: number ) =>
+	getPackingSlipPrintPath( labelId, orderId );

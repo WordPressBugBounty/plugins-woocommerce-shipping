@@ -1,7 +1,7 @@
 import {
 	CUSTOM_BOX_ID_PREFIX,
-	PACKAGE_TYPES,
 } from '../components/label-purchase/packages';
+import { CustomPackageType } from './package-type';
 
 export interface CustomPackage {
 	name: string;
@@ -10,7 +10,7 @@ export interface CustomPackage {
 	height: '';
 	boxWeight: 0;
 	id: CUSTOM_BOX_ID_PREFIX;
-	type: PACKAGE_TYPES;
+	type: CustomPackageType;
 	dimensions: `${ string } x ${ string } x ${ string }`; // L x W x H
 	// Legacy extension saves inner dimensions.
 	innerDimensions?: `${ string } x ${ string } x ${ string }`; // L x W x H

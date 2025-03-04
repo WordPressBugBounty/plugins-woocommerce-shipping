@@ -67,12 +67,31 @@ class PackagesRESTController extends WCShippingRESTController {
 		register_rest_route(
 			$this->namespace,
 			// Accepts alphanumeric, underscores, hyphens, and digits.
-			'/' . $this->rest_base . '/(?P<id>[a-zA-Z0-9_-]+)',
+			'/' . $this->rest_base . '/(?P<type>custom|predefined)/(?P<id>[a-zA-Z0-9_-]+)',
 			array(
 				array(
 					'methods'             => WP_REST_Server::DELETABLE,
 					'callback'            => array( $this, 'delete' ),
 					'permission_callback' => array( $this, 'ensure_rest_permission' ),
+					'args'                => array(
+						'type' => array(
+							'required'          => true,
+							'type'              => 'string',
+							'enum'              => array( 'custom', 'predefined' ),
+							'validate_callback' => function ( $param ) {
+								return in_array( $param, array( 'custom', 'predefined' ), true );
+							},
+							'sanitize_callback' => 'sanitize_text_field',
+						),
+						'id'   => array(
+							'required'          => true,
+							'type'              => 'string',
+							'validate_callback' => function ( $param ) {
+								return (bool) preg_match( '/^[a-zA-Z0-9_-]+$/', $param );
+							},
+							'sanitize_callback' => 'sanitize_text_field',
+						),
+					),
 				),
 			)
 		);
@@ -241,37 +260,87 @@ class PackagesRESTController extends WCShippingRESTController {
 	}
 
 	/**
-	 * Delete a saved template.
+	 * Delete a saved package.
 	 *
-	 * @param  WP_REST_Request $request The request parameters contain the custom package id to delete.
+	 * @param  WP_REST_Request $request The request parameters contain the package type and id to delete.
 	 * @return WP_Error|WP_REST_Response
 	 */
 	public function delete( WP_REST_Request $request ) {
 		try {
-			list( $id ) = $this->get_and_check_request_params( $request, array( 'id' ) );
+			list( $type, $id ) = $this->get_and_check_request_params( $request, array( 'type', 'id' ) );
 		} catch ( RESTRequestException $error ) {
 			return rest_ensure_response( $error->get_error_response() );
 		}
 
-		$packages = $this->settings_store->get_packages();
+		if ( 'custom' === $type ) {
+			$packages = $this->settings_store->get_packages();
+			$found    = false;
 
-		foreach ( $packages as $key => $package ) {
-			if ( $package['id'] === $id ) {
-				unset( $packages[ $key ] );
+			foreach ( $packages as $key => $package ) {
+				if ( $package['id'] === $id ) {
+					unset( $packages[ $key ] );
+					$found = true;
+				}
 			}
-		}
 
-		// Reindex the array since we've just plugged a hole.
-		$packages = array_values( $packages );
+			if ( ! $found ) {
+				return rest_ensure_response(
+					array(
+						'success' => false,
+						'error'   => array(
+							'code'    => 'package_not_found',
+							'message' => __( 'Custom package not found.', 'woocommerce-shipping' ),
+						),
+					)
+				);
+			}
 
-		try {
-			$this->settings_store->update_packages( $packages );
-		} catch ( PackageValidationException $e ) {
-			return $e->get_error_response();
+			// Reindex the array since we've just plugged a hole.
+			$packages = array_values( $packages );
+
+			try {
+				$this->settings_store->update_packages( $packages );
+			} catch ( PackageValidationException $e ) {
+				return $e->get_error_response();
+			}
+		} else {
+			$predefined_packages = $this->settings_store->get_predefined_packages();
+			$found               = false;
+
+			foreach ( $predefined_packages as $carrier => $package_names ) {
+				if ( false !== ( $key = array_search( $id, $package_names, true ) ) ) {
+					unset( $predefined_packages[ $carrier ][ $key ] );
+					$predefined_packages[ $carrier ] = array_values( $predefined_packages[ $carrier ] );
+
+					if ( empty( $predefined_packages[ $carrier ] ) ) {
+						unset( $predefined_packages[ $carrier ] );
+					}
+					$found = true;
+					break;
+				}
+			}
+
+			if ( ! $found ) {
+				return rest_ensure_response(
+					array(
+						'success' => false,
+						'error'   => array(
+							'code'    => 'package_not_found',
+							'message' => __( 'Predefined package not found.', 'woocommerce-shipping' ),
+						),
+					)
+				);
+			}
+			try {
+				$this->settings_store->update_predefined_packages( $predefined_packages );
+			} catch ( PackageValidationException $e ) {
+				return $e->get_error_response();
+			}
 		}
 
 		return rest_ensure_response(
 			array(
+				'success'    => true,
 				'predefined' => $this->settings_store->get_predefined_packages(),
 				'custom'     => $this->settings_store->get_packages(),
 			)

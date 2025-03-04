@@ -125,7 +125,10 @@ export const Packages = () => {
 					className="packages-notice"
 				>
 					<strong>
-						{ __( 'Get shipping rates for your package.' ) }
+						{ __(
+							'Get shipping rates for your package.',
+							'woocommerce-shipping'
+						) }
 					</strong>{ ' ' }
 					{ __(
 						"Enter your package's dimensions or pick a carrier package option to see the available shipping rates.",

@@ -7,6 +7,7 @@ import {
 	Label,
 	LabelPurchaseError,
 	LabelRequestPackages,
+	PaperSize,
 	PDFJson,
 	RateWithParent,
 	RequestPackageWithCustoms,
@@ -18,16 +19,18 @@ import {
 	getPaymentSettings,
 	getPDFFileName,
 	getPrintURL,
+	getPackingSlipPrintURL,
 	printDocument,
 	getLastOrderCompleted,
 	shouldAutomaticallyOpenPrintDialog,
+	printPackingSlipDocument,
 } from 'utils';
 import { labelPurchaseStore } from 'data/label-purchase';
 import { usePackageState } from './packages';
 import { useShipmentState } from './shipment';
 import { useRatesState } from './rates';
 import { TIME_TO_WAIT_TO_CHECK_PURCHASED_LABEL_STATUS_MS } from '../constants';
-import { PACKAGE_TYPES } from '../packages/constants';
+import { CUSTOM_PACKAGE_TYPES } from '../packages/constants';
 import { getPaperSizes } from '../label';
 import { useHazmatState } from './hazmat';
 import { useCustomsState } from './customs';
@@ -59,6 +62,9 @@ interface UseLabelsStateProps {
 	getSelectedRateOptions: ReturnType<
 		typeof useRatesState
 	>[ 'getSelectedRateOptions' ];
+	getCurrentShipmentDate: ReturnType<
+		typeof useShipmentState
+	>[ 'getCurrentShipmentDate' ];
 }
 
 const handlePurchaseException = ( e: LabelPurchaseError ) =>
@@ -104,6 +110,7 @@ export function useLabelsState( {
 	applyHazmatToPackage,
 	shipments,
 	getSelectedRateOptions,
+	getCurrentShipmentDate,
 }: UseLabelsStateProps ) {
 	const order = getCurrentOrder();
 	const getShipmentLabel = useCallback(
@@ -153,6 +160,8 @@ export function useLabelsState( {
 	const [ isPurchasing, setIsPurchasing ] = useState( false );
 	const [ isUpdatingStatus, setIsUpdatingStatus ] = useState( false );
 	const [ isPrinting, setIsPrinting ] = useState( false );
+	const [ isPrintingPackingSlip, setIsPrintingPackingSlip ] =
+		useState( false );
 	const [ isRefunding, setIsRefunding ] = useState( false );
 	const [ showRefundedNotice, setShowRefundedNotice ] = useState( false );
 
@@ -171,7 +180,10 @@ export function useLabelsState( {
 	}, [ currentShipmentLabel, updateRates ] );
 
 	const printLabel = useCallback(
-		async ( isReprint = false ): Promise< void | LabelPurchaseError > => {
+		async (
+			isReprint = false,
+			size: PaperSize | undefined = undefined
+		): Promise< void | LabelPurchaseError > => {
 			setIsPrinting( true );
 			const label =
 				select( labelPurchaseStore ).getPurchasedLabel(
@@ -186,7 +198,13 @@ export function useLabelsState( {
 					],
 				} );
 			}
-			const path = getPrintURL( selectedLabelSize.key, label.labelId );
+
+			let labelSize = selectedLabelSize;
+			// If a size is provided, we'll use that size instead of the selected label size from the store.
+			if ( size ) {
+				labelSize = size;
+			}
+			const path = getPrintURL( labelSize.key, label.labelId );
 			try {
 				const pdfJson = await apiFetch< PDFJson >( {
 					path,
@@ -216,6 +234,47 @@ export function useLabelsState( {
 		},
 		[ order, selectedLabelSize, setIsPrinting, currentShipmentId ]
 	);
+
+	const printPackingSlip = useCallback( async () => {
+		setIsPrintingPackingSlip( true );
+		const label =
+			select( labelPurchaseStore ).getPurchasedLabel( currentShipmentId );
+		if ( ! label ) {
+			return Promise.reject( {
+				cause: 'print_error',
+				message: [
+					__(
+						'No label data found for packing slip.',
+						'woocommerce-shipping'
+					),
+				],
+			} );
+		}
+
+		const path = getPackingSlipPrintURL( label.labelId, order.id );
+		try {
+			const response = await apiFetch< { html: string } >( {
+				path,
+				method: 'GET',
+			} );
+			await printPackingSlipDocument( response.html );
+			/* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+		} catch ( e ) {
+			setIsPrintingPackingSlip( false );
+			return Promise.reject( {
+				cause: 'print_error',
+				message: [
+					__(
+						'Error printing packing list.',
+						'woocommerce-shipping'
+					),
+				],
+			} );
+		}
+
+		setIsPrintingPackingSlip( false );
+		return Promise.resolve();
+	}, [ currentShipmentId, order.id ] );
 
 	/**
 	 * Print label if the setting is enabled
@@ -270,12 +329,11 @@ export function useLabelsState( {
 				return ( reject ?? Promise.reject< LabelPurchaseError > )?.( {
 					cause: 'status_error',
 					message: [
-						label.error
-							? label.error
-							: __(
-									'Error fetching label status. Please check the purchase status later.',
-									'woocommerce-shipping'
-							  ),
+						label.error ??
+							__(
+								'Error fetching label status. Please check the purchase status later.',
+								'woocommerce-shipping'
+							),
 					],
 				} );
 			}
@@ -325,7 +383,7 @@ export function useLabelsState( {
 			setLabelStatusUpdateErrors( [] );
 			const { id: box_id, length, width, height } = pkg;
 			const isLetter = pkg.isUserDefined
-				? pkg.type === PACKAGE_TYPES.ENVELOPE
+				? pkg.type === CUSTOM_PACKAGE_TYPES.ENVELOPE
 				: pkg.isLetter;
 
 			const {
@@ -389,6 +447,10 @@ export function useLabelsState( {
 					},
 					{
 						last_order_completed: getLastOrderCompleted(),
+					},
+					{
+						label_date:
+							getCurrentShipmentDate()?.shippingDate?.toISOString(),
 					}
 				);
 			} catch ( e ) {
@@ -425,6 +487,7 @@ export function useLabelsState( {
 			getCustomsState,
 			applyHazmatToPackage,
 			getSelectedRateOptions,
+			getCurrentShipmentDate,
 		]
 	);
 
@@ -631,9 +694,11 @@ export function useLabelsState( {
 		selectedLabelSize,
 		setLabelSize,
 		printLabel,
+		printPackingSlip,
 		isPurchasing,
 		isUpdatingStatus,
 		isPrinting,
+		isPrintingPackingSlip,
 		isRefunding,
 		showRefundedNotice,
 		paperSizes,

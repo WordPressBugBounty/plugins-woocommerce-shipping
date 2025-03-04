@@ -1,4 +1,3 @@
-import React from 'react';
 import { Icon } from '@wordpress/components';
 import { external } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
@@ -28,7 +27,6 @@ export const SchedulePickup = ( { selectedLabel }: SchedulePickupProps ) => {
 	}
 	return (
 		<Link
-			icon={ external }
 			href={ pickupUrls[ selectedLabel.carrierId ] }
 			type="external"
 			target="_blank"

@@ -11,6 +11,7 @@ use Automattic\WCShipping\Connect\WC_Connect_Service_Settings_Store;
 use Automattic\WCShipping\Connect\WC_Connect_API_Client;
 use Automattic\WCShipping\Connect\WC_Connect_Logger;
 use Automattic\WCShipping\Connect\WC_Connect_Utils;
+use Automattic\WCShipping\Utils;
 use WP_Error;
 
 /**
@@ -80,6 +81,20 @@ class LabelPurchaseService {
 	 */
 	const CUSTOMS_INFORMATION = '_wcshipping_customs_information';
 
+	/**
+	 * Key used to store order shipments in order meta.
+	 *
+	 * @var string
+	 */
+	const ORDER_SHIPMENTS = '_wcshipping-shipments';
+
+
+	/**
+	 * Key used to store shipment dates in order meta.
+	 *
+	 * @var string
+	 */
+	const SHIPMENT_DATES = '_wcshipping_shipment_dates';
 
 	/**
 	 * Class constructor.
@@ -140,6 +155,7 @@ class LabelPurchaseService {
 	 * @param array $customs Customs form information.
 	 * @param array $user_meta User meta array.
 	 * @param array $features_supported_by_client Features supported by client.
+	 * @param array $shipment_options Extra options.
 	 * @return array|WP_Error REST response body.
 	 */
 	public function purchase_labels(
@@ -152,7 +168,8 @@ class LabelPurchaseService {
 		$hazmat,
 		$customs,
 		$user_meta = array(),
-		$features_supported_by_client = array()
+		$features_supported_by_client = array(),
+		$shipment_options = array()
 	) {
 		$settings         = $this->settings_store->get_account_settings();
 		$service_names    = array_column( $packages, 'service_name' );
@@ -176,6 +193,9 @@ class LabelPurchaseService {
 			unset( $origin['is_verified'] );
 		}
 
+		// Extract label_date from shipment_options, default to null if not present
+		$label_date = isset( $shipment_options['label_date'] ) ? $shipment_options['label_date'] : null;
+
 		$label_response = $this->api_client->send_shipping_label_request(
 			array(
 				'async'                        => true,
@@ -186,6 +206,9 @@ class LabelPurchaseService {
 				'order_id'                     => $order_id,
 				'packages'                     => $request_packages,
 				'features_supported_by_client' => $features_supported_by_client ?? array(),
+				'shipment_options'             => array(
+					'label_date' => $label_date,
+				),
 			)
 		);
 
@@ -228,14 +251,14 @@ class LabelPurchaseService {
 
 		$keyed_selected_rate = array(
 			$shipment_key => array(
-				'rate'          => array_merge(
+				'rate'             => array_merge(
 					(array) $label_response->rates[0],
 					array(
 						'type' => $selected_rate['rate']['type'] ?? '',
 					)
 				),
-				'parent'        => isset( $selected_rate['parent'] ) ? (array) $selected_rate['parent'] : null,
-				'extra_options' => $selected_rate_options,
+				'parent'           => isset( $selected_rate['parent'] ) ? (array) $selected_rate['parent'] : null,
+				'shipment_options' => $selected_rate_options,
 			),
 		);
 
@@ -260,6 +283,12 @@ class LabelPurchaseService {
 				self::SELECTED_ORIGIN_KEY      => $origin,
 				self::SELECTED_DESTINATION_KEY => $destination,
 				self::CUSTOMS_INFORMATION      => $customs,
+				self::SHIPMENT_DATES           => array(
+					$shipment_key => array(
+						'shipping_date'           => $label_date,
+						'estimated_delivery_date' => null, // Coming soon
+					),
+				),
 			),
 		);
 
@@ -270,6 +299,7 @@ class LabelPurchaseService {
 			'selected_origin'      => $selected_meta[ self::SELECTED_ORIGIN_KEY ],
 			'selected_destination' => $selected_meta[ self::SELECTED_DESTINATION_KEY ],
 			'customs_information'  => $selected_meta[ self::CUSTOMS_INFORMATION ],
+			'shipment_dates'       => $selected_meta[ self::SHIPMENT_DATES ],
 			'success'              => true,
 		);
 	}
@@ -348,13 +378,13 @@ class LabelPurchaseService {
 			$product_names = array();
 			$product_ids   = array();
 			foreach ( $package['products'] as $product_id ) {
-				$product       = wc_get_product( $product_id );
+				$product       = \wc_get_product( $product_id );
 				$product_ids[] = $product_id;
 
 				if ( $product ) {
 					$product_names[] = $product->get_title();
 				} else {
-					$order           = wc_get_order( $order_id );
+					$order           = \wc_get_order( $order_id );
 					$product_names[] = WC_Connect_Utils::get_product_name_from_order( $product_id, $order );
 				}
 			}
@@ -446,7 +476,7 @@ class LabelPurchaseService {
 	 * @return array
 	 */
 	private function store_selected_meta( $order_id, $selected_meta ): array {
-		$order = wc_get_order( $order_id );
+		$order = \wc_get_order( $order_id );
 		foreach ( $selected_meta as $key => $value ) {
 			$selected_state = $order->get_meta( $key );
 			$selected_state = array_merge( empty( $selected_state ) ? array() : $selected_state, $value );
@@ -483,5 +513,99 @@ class LabelPurchaseService {
 		$this->settings_store->update_label_order_meta_data( $order_id, $label_refund );
 
 		return $response;
+	}
+
+	/**
+	 * Get shipments destinations.
+	 *
+	 * @param int $order_id Order ID.
+	 * @return array Array of destinations by shipment id.
+	 */
+	public function get_shipments_destinations( int $order_id ) {
+		$order = \wc_get_order( $order_id );
+		return $order->get_meta( self::SELECTED_DESTINATION_KEY );
+	}
+
+	/**
+	 * Get shipments origins.
+	 *
+	 * @param int $order_id Order ID.
+	 * @return array Array of origins by shipment id.
+	 */
+	public function get_shipments_origins( int $order_id ) {
+		$order = \wc_get_order( $order_id );
+		return $order->get_meta( self::SELECTED_ORIGIN_KEY );
+	}
+
+	/**
+	 * Build a shipment from order items.
+	 *
+	 * @param WC_Order $order Order object.
+	 * @return array
+	 */
+	private function build_shipment_from_order_items( $order ) {
+		$order_products = array();
+		foreach ( $order->get_items() as $item_id => $item ) {
+			$product = $item->get_product();
+
+			if ( ! $product instanceof \WC_Product ) {
+				continue;
+			}
+
+			if ( ! $product->needs_shipping() ) {
+				continue;
+			}
+
+			$product_meta = array();
+
+			$customs_info = Utils::get_product_customs_data( $product );
+			if ( $customs_info ) {
+				$product_meta['customs_info'] = $customs_info;
+			}
+
+			$line_item = array(
+				'id'           => $item_id,
+				'subtotal'     => wc_format_decimal( $order->get_line_subtotal( $item, false, false ) ),
+				'subtotal_tax' => wc_format_decimal( $item->get_subtotal_tax() ),
+				'total'        => wc_format_decimal( $order->get_line_total( $item, false, false ) ),
+				'total_tax'    => wc_format_decimal( $item->get_total_tax() ),
+				'price'        => wc_format_decimal( $order->get_item_total( $item, false, false ) ),
+				'quantity'     => $item->get_quantity(),
+				'tax_class'    => $item->get_tax_class(),
+				'name'         => $item->get_name(),
+				'product_id'   => $item->get_variation_id() ? $item->get_variation_id() : $item->get_product_id(),
+				'sku'          => is_object( $product ) ? $product->get_sku() : null,
+				'meta'         => (object) $product_meta,
+				'image'        => wp_get_attachment_url( $product->get_image_id() ) ?: wc_placeholder_img_src(),
+				'weight'       => $product->get_weight(),
+				'dimensions'   => array(
+					'length' => $product->get_length(),
+					'width'  => $product->get_width(),
+					'height' => $product->get_height(),
+				),
+				'variation'    => array_values( $item->get_all_formatted_meta_data() ),
+			);
+
+			$order_products[] = $line_item;
+		}
+
+		return $order_products;
+	}
+
+	/**
+	 * Get shipments from order, build it from order items if only 1 shipment is present.
+	 *
+	 * @param int $order_id Order ID.
+	 * @return array Array of shipments.
+	 */
+	public function get_shipments( int $order_id ) {
+		$order     = \wc_get_order( $order_id );
+		$shipments = $order->get_meta( self::ORDER_SHIPMENTS );
+		// Single shipment orders does not have shipments meta set, so we build it from the order items
+		if ( empty( $shipments ) ) {
+			$shipments    = array();
+			$shipments[0] = $this->build_shipment_from_order_items( $order );
+		}
+		return $shipments;
 	}
 }

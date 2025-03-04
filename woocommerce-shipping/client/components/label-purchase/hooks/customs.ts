@@ -10,6 +10,7 @@ import {
 import { select, useSelect } from '@wordpress/data';
 import type { FormErrors } from '@woocommerce/components';
 import { contentTypes } from '../customs/constants';
+import { normalizeITN } from '../customs/validators';
 import {
 	isCountryInEU,
 	isCustomsRequired,
@@ -214,7 +215,7 @@ export function useCustomsState(
 					? { restriction_comments }
 					: {} ),
 				non_delivery_option: isReturnToSender ? 'return' : 'abandon',
-				itn,
+				itn: normalizeITN( itn ),
 				items: items.map(
 					( {
 						description,

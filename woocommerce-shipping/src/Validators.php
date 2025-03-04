@@ -4,6 +4,15 @@ namespace Automattic\WCShipping;
 
 class Validators {
 	/**
+	 * Regular expression pattern for validating ISO 8601 formatted date strings.
+	 * Format: YYYY-MM-DDThh:mm:ss.sssZ or YYYY-MM-DDThh:mm:ss.sss+hh:mm
+	 *
+	 * Pattern is formatted without delimiters for compatibility with WordPress's
+	 * rest_validate_json_schema_pattern() function which adds its own #...#u delimiters.
+	 */
+	const ISO8601_PATTERN = '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})$';
+
+	/**
 	 * Validates if a parameter is a boolean-like value.
 	 * Accepts: 'true', 'false', true, false, '0', '1', 0, 1
 	 *

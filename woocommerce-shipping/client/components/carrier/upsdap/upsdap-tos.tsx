@@ -142,6 +142,7 @@ export const UPSDAPTos = ( {
 					value={ UPSDAP_TOS_TYPES.LEGAL }
 					checked={ selectedItems.includes( UPSDAP_TOS_TYPES.LEGAL ) }
 					onChange={ toggleItem( UPSDAP_TOS_TYPES.LEGAL ) }
+					__nextHasNoMarginBottom={ true }
 				/>
 				<CheckboxControl
 					// @ts-ignore
@@ -170,6 +171,7 @@ export const UPSDAPTos = ( {
 						UPSDAP_TOS_TYPES.PROHIBITED_ITEMS
 					) }
 					onChange={ toggleItem( UPSDAP_TOS_TYPES.PROHIBITED_ITEMS ) }
+					__nextHasNoMarginBottom={ true }
 				/>
 				<CheckboxControl
 					// @ts-ignore
@@ -200,6 +202,7 @@ export const UPSDAPTos = ( {
 					onChange={ toggleItem(
 						UPSDAP_TOS_TYPES.TECHNOLOGY_AGREEMENT
 					) }
+					__nextHasNoMarginBottom={ true }
 				/>
 			</Flex>
 			<Spacer marginTop={ 6 } marginBottom={ 0 } />

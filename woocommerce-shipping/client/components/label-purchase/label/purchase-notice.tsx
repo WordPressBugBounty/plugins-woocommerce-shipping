@@ -13,34 +13,31 @@ import { __ } from '@wordpress/i18n';
 import { hasLabelExpired } from 'utils';
 import { useLabelPurchaseContext } from 'context/label-purchase';
 import { isCallableElement } from 'types';
-import { PaperSizeSelector } from '../paper-size';
 import { SchedulePickup } from './schedule-pickup';
 import { TrackShipment } from './track-shipment';
 import { RefundShipment } from './refund-shipment';
 import { withBoundary } from 'components/HOC';
 import { CommercialInvoice } from './commercial-invoice';
 import { LegacyWarning } from './legacy-warning';
+import { PrintPackingSlipButton } from '../print-packing-slip-button';
+import { PrintLabelButton } from './print-label-button';
 
 export const PurchaseNotice = withBoundary( () => {
 	const {
 		labels: {
-			printLabel,
 			isPurchasing,
 			isUpdatingStatus,
-			isPrinting,
 			isRefunding,
 			hasPurchasedLabel,
 			updatePurchaseStatus,
 			getCurrentShipmentLabel,
 			labelStatusUpdateErrors,
 		},
+		rates: { getSelectedRate },
 	} = useLabelPurchaseContext();
 
-	const initiatePrint = async () => {
-		await printLabel( true );
-	};
-
 	const selectedLabel = getCurrentShipmentLabel();
+	const selectedRate = getSelectedRate();
 	const refreshStatus = async () => {
 		if ( ! selectedLabel ) {
 			return;
@@ -100,43 +97,23 @@ export const PurchaseNotice = withBoundary( () => {
 					</p>
 					<FlexBlock className="purchase-notice-actions">
 						<Flex gap={ 2 } justify="flex-start">
-							<PaperSizeSelector
-								disabled={
-									isPurchasing ||
-									isUpdatingStatus ||
-									isPrinting
-								}
-							/>
 							{ hasPurchasedLabel() && (
-								<Tooltip
-									placement="top"
-									text={
-										hasLabelExpired( selectedLabel )
-											? __(
-													'Label images older than 180 days are deleted by our technology partners for general security and data privacy concerns.',
-													'woocommerce-shipping'
-											  )
-											: ''
-									}
-								>
-									<Button
-										variant="primary"
-										onClick={ initiatePrint }
-										isBusy={ isPrinting }
-										aria-busy={ isPrinting }
-										disabled={
-											isPurchasing ||
-											isUpdatingStatus ||
-											isPrinting ||
+								<>
+									<PrintPackingSlipButton key="print-packing-slip" />
+									<Tooltip
+										placement="top"
+										text={
 											hasLabelExpired( selectedLabel )
+												? __(
+														'Label images older than 180 days are deleted by our technology partners for general security and data privacy concerns.',
+														'woocommerce-shipping'
+												  )
+												: ''
 										}
 									>
-										{ __(
-											'Print shipping label',
-											'woocommerce-shipping'
-										) }
-									</Button>
-								</Tooltip>
+										<PrintLabelButton key="print-label" />
+									</Tooltip>
+								</>
 							) }
 							{ ! hasPurchasedLabel() && (
 								<Button
@@ -163,6 +140,7 @@ export const PurchaseNotice = withBoundary( () => {
 								{ [
 									<TrackShipment
 										key="track-shipment"
+										// @ts-expect-error // Conditional is written in js
 										label={ selectedLabel }
 									/>,
 									<SchedulePickup
@@ -176,6 +154,7 @@ export const PurchaseNotice = withBoundary( () => {
 									<RefundShipment
 										key="refund-shipment"
 										label={ selectedLabel }
+										selectedRate={ selectedRate }
 										isBusy={ isRefunding }
 										isDisabled={
 											isRefunding ||

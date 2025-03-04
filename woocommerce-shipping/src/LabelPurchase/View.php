@@ -232,13 +232,14 @@ class View {
 		 * because the client here is the JS bundled with the store.
 		 */
 		$package_settings = $this->package_settings->get( apply_filters( 'wcshipping_features_supported_by_store', array() ) );
+		$label_data       = $this->get_label_payload( $order->get_id() );
 
 		$payload = apply_filters(
 			'wcshipping_meta_box_payload',
 			array(
-				'order'                   => $this->view_service->get_order_data( $order ),
-				'accountSettings'         => $this->account_settings->get( true ),
-				'packagesSettings'        => array(
+				'order'                      => $this->view_service->get_order_data( $order ),
+				'accountSettings'            => $this->account_settings->get( true ),
+				'packagesSettings'           => array(
 					'schema'   => array(
 						'custom'     => $package_settings['formSchema']['custom'],
 						'predefined' => $package_settings['formSchema']['predefined'],
@@ -248,16 +249,31 @@ class View {
 						'predefined' => $package_settings['formData']['predefined'],
 					),
 				),
-				'shippingLabelData'       => $this->get_label_payload( $order->get_id() ),
-				'continents'              => $this->continents->get(),
-				'eu_countries'            => WC()->countries->get_european_union_countries(),
-				'items'                   => $items_count,
-				'is_destination_verified' => (bool) $this->settings_store->is_destination_address_normalized( $order->get_id() ),
-				'is_origin_verified'      => (bool) $this->settings_store->is_origin_address_normalized(),
-				'shipments'               => $this->shipments_service->get_order_shipments_json( $order->get_id() ),
-				'origin_addresses'        => $this->origin_address_service->get_origin_addresses(),
-				'constants'               => Utils::get_constants_for_js(),
-				'carrier_strategies'      => $this->carrier_service->get_strategies(),
+				'shippingLabelData'          => $label_data,
+				'continents'                 => $this->continents->get(),
+				'eu_countries'               => WC()->countries->get_european_union_countries(),
+				'items'                      => $items_count,
+				'is_destination_verified'    => (bool) $this->settings_store->is_destination_address_normalized( $order->get_id() ),
+				'is_origin_verified'         => (bool) $this->settings_store->is_origin_address_normalized(),
+				'shipments'                  => $this->shipments_service->get_order_shipments_json( $order->get_id() ),
+				'origin_addresses'           => $this->origin_address_service->get_origin_addresses(),
+				'constants'                  => Utils::get_constants_for_js(),
+				'carrier_strategies'         => $this->carrier_service->get_strategies(),
+				/**
+				 * Filter the custom fulfillment summary message displayed in the shipping meta box.
+				 *
+				 * This filter allows modification of the fulfillment summary message that appears in the
+				 * shipping meta box. It can be used to provide a custom message based on the order ID
+				 * and label data.
+				 *
+				 * @since 1.5.1
+				 *
+				 * @param string $default_fulfillment_summary The default fulfillment summary message.
+				 * @param int    $order_id                   The ID of the order.
+				 * @param array  $label_data                 The data related to the shipping label.
+				 * @return string The modified fulfillment summary message.
+				 */
+				'custom_fulfillment_summary' => apply_filters( 'wcshipping_fulfillment_summary', '', $order->get_id(), $label_data ),
 			),
 			$args,
 			$order,
@@ -526,6 +542,7 @@ class View {
 		$selected_origin      = $order->get_meta( LabelPurchaseService::SELECTED_ORIGIN_KEY );
 		$selected_destination = $order->get_meta( LabelPurchaseService::SELECTED_DESTINATION_KEY );
 		$customs_information  = $order->get_meta( LabelPurchaseService::CUSTOMS_INFORMATION );
+		$shipment_dates       = $order->get_meta( LabelPurchaseService::SHIPMENT_DATES );
 		$destination          = $this->get_destination_address( $order );
 
 		if ( ! $destination['country'] ) {
@@ -569,7 +586,8 @@ class View {
 			'selected_hazmat',
 			'selected_origin',
 			'selected_destination',
-			'customs_information'
+			'customs_information',
+			'shipment_dates'
 		);
 
 		$data['order_id'] = $order_id;

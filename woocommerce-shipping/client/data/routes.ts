@@ -1,5 +1,5 @@
 import { NAMESPACE, WC_NAMESPACE } from './constants';
-import { Carrier } from '../types';
+import { Carrier, CustomPackageType } from 'types';
 
 export const getRatesPath = () => `${ NAMESPACE }/label/rate`;
 
@@ -29,6 +29,9 @@ export const getLabelsStatusPath = ( orderId: number, labelId: number ) =>
 export const getLabelsPrintPath = () => `${ NAMESPACE }/label/print`;
 export const getLabelTestPrintPath = () => `${ NAMESPACE }/label/preview`;
 
+export const getPackingSlipPrintPath = ( labelId: number, orderId: number ) =>
+	`${ NAMESPACE }/label/print/packing-list/${ labelId }/${ orderId }`;
+
 export const getWCOrdersPath = ( orderId: string ) =>
 	`${ WC_NAMESPACE }/orders/${ orderId }`;
 
@@ -40,8 +43,8 @@ export const getDeleteOriginAddressPath = ( id: string ) =>
 
 export const getWPCOMConnectionPath = () => `${ NAMESPACE }/wpcom-connection`;
 
-export const getDeleteCustomPackagesPath = ( id: string ) =>
-	`${ NAMESPACE }/packages/${ id }`;
+export const getDeletePackagePath = ( type: CustomPackageType, id: string ) =>
+	`${ NAMESPACE }/packages/${ type }/${ id }`;
 
 export const getCarrierStrategyPath = ( carrierId: Carrier ) =>
 	`${ NAMESPACE }/carrier-strategy/${ carrierId }`;

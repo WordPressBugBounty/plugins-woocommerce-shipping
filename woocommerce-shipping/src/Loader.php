@@ -1310,11 +1310,10 @@ class Loader {
 
 		( new LabelStatusController( $label_purchase_service, $logger ) )->register_routes();
 
-		( new LabelPrintController( $settings_store, $this->api_client, $logger, ) )->register_routes();
-
 		( new LabelRefundRESTController( $label_purchase_service ) )->register_routes();
 
-		$label_print_service           = new LabelPrintService( $this->api_client, $logger );
+		$label_print_service = new LabelPrintService( $this->api_client, $logger, $label_purchase_service );
+		( new LabelPrintController( $settings_store, $this->api_client, $logger, $label_print_service ) )->register_routes();
 		$rest_label_preview_controller = new LabelPreviewRESTController( $label_print_service, $logger );
 		$rest_label_preview_controller->register_routes();
 

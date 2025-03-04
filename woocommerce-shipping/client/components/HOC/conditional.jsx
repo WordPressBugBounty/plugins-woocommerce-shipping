@@ -1,10 +1,14 @@
 /**
+ * @typedef {import('react')} React
+ */
+
+/**
  * Conditionaly render component A or B based on condition
  *
- * @param condition - function or object returning render and props as in {render: true, props: {foo: 'bar'}}
- * @param A React component
- * @param B React component
- * @returns React component
+ * @param {Function|Object}     condition - function or object returning render and props as in {render: true, props: {foo: 'bar'}}
+ * @param {React.ComponentType} A         - React component
+ * @param {React.ComponentType} B         - React component
+ * @return {React.ComponentType} React component
  */
 export const Conditional = ( condition, A, B ) => ( componentProps ) => {
 	/**

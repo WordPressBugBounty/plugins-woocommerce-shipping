@@ -63,6 +63,7 @@ export const ProvideTestState = ( {
 		() => getShipmentOrigin()
 	);
 
+	const getCurrentShipmentDate = jest.fn();
 	const { fetchRates } = useRatesState( {
 		currentShipmentId: '0',
 		getPackageForRequest,
@@ -71,6 +72,7 @@ export const ProvideTestState = ( {
 		customs,
 		getShipmentOrigin,
 		currentPackageTab: TAB_NAMES.CUSTOM_PACKAGE,
+		getCurrentShipmentDate,
 	} );
 
 	const account = {

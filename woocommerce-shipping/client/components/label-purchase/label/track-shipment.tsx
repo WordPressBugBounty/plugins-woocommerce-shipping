@@ -1,4 +1,3 @@
-import React from 'react';
 import { external } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
 import { Icon } from '@wordpress/components';
@@ -29,6 +28,7 @@ export const TrackShipment = Conditional(
 			},
 		};
 	},
+	// @ts-expect-error // Conditional is written in js
 	( { trackingUrl }: { isBusy: boolean; trackingUrl: string } ) => (
 		<Link
 			href={ trackingUrl }

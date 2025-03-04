@@ -217,7 +217,10 @@ export const OriginAddressList = () => {
 							Boolean( selectedOriginAddress?.id )
 								? sprintf(
 										// translators: %s: origin or destination
-										__( 'Edit %s address' ),
+										__(
+											'Edit %s address',
+											'woocommerce-shipping'
+										),
 										isOriginAddress( selectedOriginAddress )
 											? __(
 													'origin',

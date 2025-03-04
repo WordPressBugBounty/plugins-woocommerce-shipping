@@ -376,7 +376,10 @@ export const AddressStep = withBoundary(
 							onRequestClose={ returnFromSuggestion }
 							focusOnMount
 							shouldCloseOnClickOutside={ false }
-							title={ __( 'Confirm address' ) }
+							title={ __(
+								'Confirm address',
+								'woocommerce-shipping'
+							) }
 						>
 							<AddressSuggestion
 								originalAddress={ submittedAddress }

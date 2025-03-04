@@ -16,6 +16,7 @@ export interface Rate {
 	shipmentId: string;
 	title: string;
 	tracking: boolean;
+	caveats?: Array< string >;
 	type?: SnakeToCamelCase< LabelRateType >;
 	extraOptions?: RateExtraOptions; // extra options are the options that are added to the rate, added when saved to the order
 	baseRate?: number; // base rate is the rate without any extra options, added when saved to the order

@@ -3,6 +3,7 @@ import { settingsStore } from 'data/settings';
 
 export const useSettings = () => {
 	// Get "formData"
+	const defaultTaxIdentifiers = {}; // Using the same object as the default prevents exessive re-renders
 	const {
 		paper_size: labelSize,
 		email_receipts: emailReceiptEnabled,
@@ -22,7 +23,7 @@ export const useSettings = () => {
 				use_last_package: '',
 				checkout_address_validation: '',
 				automatically_open_print_dialog: '',
-				tax_identifiers: {},
+				tax_identifiers: defaultTaxIdentifiers,
 			};
 		}
 		return {
@@ -34,7 +35,7 @@ export const useSettings = () => {
 				settings.checkout_address_validation ?? '',
 			automatically_open_print_dialog:
 				settings.automatically_open_print_dialog ?? '',
-			tax_identifiers: settings.tax_identifiers ?? {},
+			tax_identifiers: settings.tax_identifiers ?? defaultTaxIdentifiers,
 		};
 	} );
 

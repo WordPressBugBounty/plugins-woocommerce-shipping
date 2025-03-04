@@ -1,5 +1,5 @@
 import { CustomPackage, Package } from 'types';
-import { PACKAGE_TYPES } from './constants';
+import { CUSTOM_PACKAGE_TYPES } from './constants';
 import { recordEvent } from 'utils';
 
 export const DELETION_EVENTS = {
@@ -15,7 +15,7 @@ export const trackPackageDeletion = (
 	const tracksProperties = {
 		package_id: pkg.id,
 		is_letter: pkg.isUserDefined
-			? pkg.type === PACKAGE_TYPES.ENVELOPE
+			? pkg.type === CUSTOM_PACKAGE_TYPES.ENVELOPE
 			: pkg.isLetter,
 		width: pkg.width,
 		height: pkg.height,

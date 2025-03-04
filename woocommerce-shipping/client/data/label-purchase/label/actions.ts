@@ -27,6 +27,7 @@ import {
 	RateExtraOptions,
 	RateWithParent,
 	RefundResponse,
+	RequestExtraOptions,
 	RequestPackageWithCustoms,
 	ResponseLabel,
 	SelectedDestination,
@@ -54,7 +55,8 @@ export function* purchaseLabel(
 	hazmatState: HazmatState,
 	originAddress: OriginAddress,
 	customsState: ShipmentRecord< CustomsState >,
-	userMeta: Partial< UserMeta >
+	userMeta: Partial< UserMeta >,
+	shipmentOptions?: RequestExtraOptions
 ): Generator<
 	ReturnType< typeof apiFetch >,
 	LabelPurchaseSuccessAction,
@@ -92,6 +94,7 @@ export function* purchaseLabel(
 			user_meta: userMeta,
 			features_supported_by_client: [ 'upsdap' ],
 			selected_rate: selectedRate,
+			shipment_options: shipmentOptions,
 		},
 	} );
 

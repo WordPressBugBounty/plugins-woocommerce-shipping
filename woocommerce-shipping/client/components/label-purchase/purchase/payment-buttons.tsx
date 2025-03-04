@@ -28,7 +28,6 @@ import { CreditCardButton } from './credit-card-button';
 import { settingsPageUrl } from '../constants';
 import { useLabelPurchaseContext } from 'context/label-purchase';
 import { getShipmentTitle } from '../utils';
-import { PaperSizeSelector } from '../paper-size';
 import {
 	Label,
 	LabelPurchaseError,
@@ -395,7 +394,7 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 						purchaseLabel( switchedRate );
 					}
 				}
-			} catch ( error ) {
+			} catch {
 				setErrors( {
 					cause: 'carrier_error',
 					message: [
@@ -441,9 +440,6 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 				{ canPurchase() && (
 					<>
 						<Flex>
-							<PaperSizeSelector
-								disabled={ hasPurchasedLabel( false ) }
-							/>
 							<Button
 								variant="primary"
 								disabled={
@@ -494,6 +490,7 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 										disabled={ isPurchasing }
 										aria-disabled={ isPurchasing }
 										className="purchase-label-mark-order-complete"
+										__nextHasNoMarginBottom={ true }
 									/>
 								</Flex>
 							) }

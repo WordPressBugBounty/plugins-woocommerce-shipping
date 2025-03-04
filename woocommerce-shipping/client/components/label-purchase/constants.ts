@@ -1,4 +1,7 @@
-import { CUSTOM_BOX_ID_PREFIX, PACKAGE_TYPES } from './packages/constants';
+import {
+	CUSTOM_BOX_ID_PREFIX,
+	CUSTOM_PACKAGE_TYPES,
+} from './packages/constants';
 import { CustomPackage } from 'types';
 
 export const mainModalContentSelector =
@@ -11,7 +14,7 @@ export const defaultCustomPackageData: CustomPackage & { isLetter: boolean } = {
 	height: '',
 	boxWeight: 0,
 	id: CUSTOM_BOX_ID_PREFIX,
-	type: PACKAGE_TYPES.BOX,
+	type: CUSTOM_PACKAGE_TYPES.BOX,
 	isLetter: false,
 	dimensions: '10 x 10 x 10',
 	isUserDefined: true,

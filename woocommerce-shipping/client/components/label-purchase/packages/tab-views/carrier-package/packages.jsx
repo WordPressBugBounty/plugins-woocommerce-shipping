@@ -16,6 +16,7 @@ import { getDimensionsUnit, getWeightUnit } from 'utils';
 import { labelPurchaseStore } from 'data/label-purchase';
 import { useLabelPurchaseContext } from 'context/label-purchase';
 import { recordEvent } from 'utils/tracks';
+import { PACKAGE_CATEGORIES } from 'components/label-purchase/packages';
 
 export const Packages = ( {
 	packages,
@@ -38,11 +39,10 @@ export const Packages = ( {
 			setIsUpdating( true );
 
 			if ( shouldRemove ) {
-				await dispatch( labelPurchaseStore ).updateFavoritePackages( {
-					[ carrierId ]: predefinedPackages.filter(
-						( p ) => p !== packageId
-					),
-				} );
+				await dispatch( labelPurchaseStore ).deletePackage(
+					packageId,
+					PACKAGE_CATEGORIES.PREDEFINED
+				);
 			} else {
 				await dispatch( labelPurchaseStore ).saveFavoritePackage( {
 					[ carrierId ]: [ packageId ],
@@ -51,6 +51,7 @@ export const Packages = ( {
 
 			setIsUpdating( false );
 		},
+		/* eslint-disable-next-line react-hooks/exhaustive-deps */
 		[ predefinedPackages, carrierId ]
 	);
 

@@ -31,7 +31,7 @@ export const AddressVerifiedIcon = ( {
 			select( addressStore ).getIsAddressVerificationInProgress(
 				addressType
 			),
-		[]
+		[ addressType ]
 	);
 
 	if ( isVerified && ! isFormChanged && isFormValid && ! isBusyVerifying ) {

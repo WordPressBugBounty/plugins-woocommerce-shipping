@@ -153,6 +153,10 @@ export const LabelsSettingsComponent = () => {
 								SETTINGS_KEYS.PAPER_SIZE
 							) }
 							options={ getLabelSizeOptions() }
+							// Opt in to the new size for consistency with other form fields.
+							__next40pxDefaultSize={ true }
+							// Opt in to the new bottom margin for consistency with other form fields.
+							__nextHasNoMarginBottom={ true }
 						/>
 						<PaymentCard />
 						<ExternalInfo />
@@ -178,8 +182,10 @@ export const LabelsSettingsComponent = () => {
 							onChange={ updateFormData(
 								SETTINGS_KEYS.EMAIL_RECEIPTS
 							) }
+							// Opt in to the new bottom margin for consistency with other form fields.
+							__nextHasNoMarginBottom={ true }
 						/>
-
+						<Spacer marginTop={ 0 } marginBottom={ 3 } />
 						<CheckboxControl
 							label={ __(
 								'Remember service selection',
@@ -193,8 +199,10 @@ export const LabelsSettingsComponent = () => {
 							onChange={ updateFormData(
 								SETTINGS_KEYS.USE_LAST_SERVICE
 							) }
+							// Opt in to the new bottom margin for consistency with other form fields.
+							__nextHasNoMarginBottom={ true }
 						/>
-
+						<Spacer marginTop={ 0 } marginBottom={ 3 } />
 						<CheckboxControl
 							label={ __(
 								'Remember package selection',
@@ -208,8 +216,10 @@ export const LabelsSettingsComponent = () => {
 							onChange={ updateFormData(
 								SETTINGS_KEYS.USE_LAST_PACKAGE
 							) }
+							// Opt in to the new bottom margin for consistency with other form fields.
+							__nextHasNoMarginBottom={ true }
 						/>
-
+						<Spacer marginTop={ 0 } marginBottom={ 3 } />
 						<CheckboxControl
 							label={ __(
 								'Enable address validation at checkout',
@@ -223,7 +233,10 @@ export const LabelsSettingsComponent = () => {
 							onChange={ updateFormData(
 								SETTINGS_KEYS.CHECKOUT_ADDRESS_VALIDATION
 							) }
+							// Opt in to the new bottom margin for consistency with other form fields.
+							__nextHasNoMarginBottom={ true }
 						/>
+						<Spacer marginTop={ 0 } marginBottom={ 3 } />
 						<CheckboxControl
 							label={ __(
 								'Open print dialog after successful label purchase',
@@ -237,6 +250,8 @@ export const LabelsSettingsComponent = () => {
 							onChange={ updateFormData(
 								SETTINGS_KEYS.AUTOMATICALLY_OPEN_PRINT_DIALOG
 							) }
+							// Opt in to the new bottom margin for consistency with other form fields.
+							__nextHasNoMarginBottom={ true }
 						/>
 
 						<h4>
@@ -268,6 +283,8 @@ export const LabelsSettingsComponent = () => {
 								SETTINGS_KEYS.TAX_IDENTIFIER_IOSS
 							) }
 							value={ taxIdentifiers?.ioss ?? '' }
+							// Opt in to the new size for consistency with other form fields.
+							__next40pxDefaultSize={ true }
 						/>
 
 						<Spacer marginTop={ 0 } marginBottom={ 3 } />
@@ -297,6 +314,8 @@ export const LabelsSettingsComponent = () => {
 								SETTINGS_KEYS.TAX_IDENTIFIER_VOEC
 							) }
 							value={ taxIdentifiers?.voec ?? '' }
+							// Opt in to the new size for consistency with other form fields.
+							__next40pxDefaultSize={ true }
 						/>
 
 						<Spacer marginTop={ 0 } marginBottom={ 3 } />
@@ -326,6 +345,8 @@ export const LabelsSettingsComponent = () => {
 								SETTINGS_KEYS.TAX_IDENTIFIER_PVA
 							) }
 							value={ taxIdentifiers?.pva ?? '' }
+							// Opt in to the new size for consistency with other form fields.
+							__next40pxDefaultSize={ true }
 						/>
 					</CardBody>
 				</Card>

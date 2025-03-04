@@ -11,6 +11,7 @@ use Automattic\WCShipping\WCShippingRESTController;
 use Automattic\WCShipping\Connect\WC_Connect_Functions;
 use Automattic\WCShipping\Exceptions\RESTRequestException;
 use Automattic\WCShipping\Shipment\Address;
+use Automattic\WCShipping\Validators;
 use WC_Validation;
 use WP_Error;
 use WP_REST_Request;
@@ -71,12 +72,12 @@ class LabelRateRESTController extends WCShippingRESTController {
 	 */
 	private function get_label_rate_properties() {
 		return array(
-			'order_id'    => array(
+			'order_id'         => array(
 				'required'    => true,
 				'description' => __( 'Order ID for this shipping label.', 'woocommerce-shipping' ),
 				'type'        => 'integer',
 			),
-			'origin'      => array(
+			'origin'           => array(
 				'required'          => true,
 				'description'       => __( 'Ship from address', 'woocommerce-shipping' ),
 				'type'              => 'object',
@@ -84,7 +85,7 @@ class LabelRateRESTController extends WCShippingRESTController {
 				'validate_callback' => array( $this, 'validate_address' ),
 				'sanitize_callback' => array( $this, 'sanitize_address' ),
 			),
-			'destination' => array(
+			'destination'      => array(
 				'required'          => true,
 				'description'       => __( 'Ship to address', 'woocommerce-shipping' ),
 				'type'              => 'object',
@@ -92,7 +93,7 @@ class LabelRateRESTController extends WCShippingRESTController {
 				'validate_callback' => array( $this, 'validate_address' ),
 				'sanitize_callback' => array( $this, 'sanitize_address' ),
 			),
-			'packages'    => array(
+			'packages'         => array(
 				'required'    => true,
 				'description' => __( 'The package object that describe how the shipment is packed.', 'woocommerce-shipping' ),
 				'type'        => 'array',
@@ -100,6 +101,19 @@ class LabelRateRESTController extends WCShippingRESTController {
 					'type'       => 'object',
 					'required'   => true,
 					'properties' => $this->get_package_properties(),
+				),
+			),
+			'shipment_options' => array(
+				'required'    => false, // Provide backward compatibility for clients ( mobile app ) not setting this field.
+				'description' => __( 'Extra options for the shipment', 'woocommerce-shipping' ),
+				'type'        => 'object',
+				'properties'  => array(
+					'label_date' => array(
+						'type'        => 'string',
+						'description' => __( 'ISO 8601 formatted date string for the shipping label', 'woocommerce-shipping' ),
+						'format'      => 'date-time',
+						'pattern'     => Validators::ISO8601_PATTERN,
+					),
 				),
 			),
 		);

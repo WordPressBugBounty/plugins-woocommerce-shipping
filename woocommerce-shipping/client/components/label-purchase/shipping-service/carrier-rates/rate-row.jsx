@@ -34,6 +34,7 @@ export const RateRow = withBoundary(
 			deliveryDateGuaranteed,
 			deliveryDate,
 			deliveryDays,
+			caveats,
 		} = rate;
 		const {
 			storeCurrency: { formatAmount },
@@ -84,23 +85,44 @@ export const RateRow = withBoundary(
 			);
 		}
 
-		const rateCaveat =
-			rate.serviceId === 'MediaMail'
-				? createInterpolateElement(
-						__(
-							'Books and <a>other media</a> only',
-							'woocommerce-shipping'
+		const rateCaveat = [];
+
+		if (
+			typeof caveats === 'object' &&
+			caveats.includes( 'book-media-only' )
+		) {
+			if ( carrierId === 'usps' ) {
+				rateCaveat.push(
+					__(
+						'Books and <auspsmedia>other media</auspsmedia> only',
+						'woocommerce-shipping'
+					)
+				);
+			} else {
+				rateCaveat.push(
+					__( 'Books and other media only', 'woocommerce-shipping' )
+				);
+			}
+		}
+
+		if (
+			typeof caveats === 'object' &&
+			caveats.includes( 'non-refundable' )
+		) {
+			rateCaveat.push( __( 'Non-refundable', 'woocommerce-shipping' ) );
+		}
+
+		const rateCaveatText =
+			rateCaveat.length > 0
+				? createInterpolateElement( rateCaveat.join( ', ' ), {
+						auspsmedia: (
+							// eslint-disable-next-line jsx-a11y/anchor-has-content
+							<a
+								target="__blank"
+								href="https://pe.usps.com/text/DMM300/273.htm#a_3_0"
+							/>
 						),
-						{
-							a: (
-								// eslint-disable-next-line jsx-a11y/anchor-has-content
-								<a
-									target="__blank"
-									href="https://pe.usps.com/text/DMM300/273.htm#a_3_0"
-								/>
-							),
-						}
-				  )
+				  } )
 				: '';
 
 		return (
@@ -119,7 +141,7 @@ export const RateRow = withBoundary(
 					htmlFor={ rateId }
 					className={ clsx(
 						[ isSelected && 'selected' ],
-						[ rateCaveat && 'has-rate-caveat' ]
+						[ rateCaveatText && 'has-rate-caveat' ]
 					) }
 				>
 					<CarrierIcon
@@ -133,12 +155,12 @@ export const RateRow = withBoundary(
 							<Text size={ 14 } weight={ 400 }>
 								{ title }
 							</Text>
-							{ rateCaveat && (
+							{ rateCaveatText && (
 								<Text className="rate-caveat">
-									{ rateCaveat }
+									{ rateCaveatText }
 								</Text>
 							) }
-							{ ! isSelected && (
+							{ ! isSelected && extrasText.length > 0 && (
 								<Text className="rate-extras">
 									{ sprintf(
 										// translators: %s: list of extras

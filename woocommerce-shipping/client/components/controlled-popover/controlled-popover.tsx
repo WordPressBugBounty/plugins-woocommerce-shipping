@@ -1,6 +1,8 @@
-import React, { JSX, ReactNode } from 'react';
+import { JSX, ReactNode } from 'react';
 import { useCallback, useRef, useState } from '@wordpress/element';
 import { Button, Icon, type IconType, Popover } from '@wordpress/components';
+import clsx from 'clsx';
+import type { PopoverProps } from '@wordpress/components/build-types/popover/types';
 
 interface ControlledPopoverProps {
 	children: ReactNode;
@@ -8,6 +10,7 @@ interface ControlledPopoverProps {
 	buttonText?: string;
 	trigger?: 'click' | 'hover' | 'focus';
 	withArrow?: boolean;
+	popoverOptions?: Partial< PopoverProps & { className?: string } >;
 }
 
 export const ControlledPopover = ( {
@@ -16,7 +19,10 @@ export const ControlledPopover = ( {
 	buttonText,
 	trigger = 'click',
 	withArrow = true,
+	popoverOptions,
 }: ControlledPopoverProps ): JSX.Element => {
+	const { className: popoverClassName = '', ...restPopoverOptions } =
+		popoverOptions ?? {};
 	const [ show, setShow ] = useState( false );
 	const toggle = useCallback(
 		() => setShow( ( prev ) => ! prev ),
@@ -54,6 +60,9 @@ export const ControlledPopover = ( {
 					ref={ ! buttonText ? btnRef?.current : undefined }
 					aria-haspopup={ true }
 					aria-expanded={ show }
+					style={
+						trigger === 'click' ? { cursor: 'pointer' } : undefined
+					}
 					{ ...triggerProps }
 				/>
 			) }
@@ -70,7 +79,11 @@ export const ControlledPopover = ( {
 			) }
 			{ show && (
 				<Popover
-					className="label-purchase-form-tooltip"
+					{ ...restPopoverOptions }
+					className={ clsx(
+						'label-purchase-form-tooltip',
+						popoverClassName
+					) }
 					onFocusOutside={ toggle }
 					noArrow={ withArrow ? false : true }
 					inline={ true }

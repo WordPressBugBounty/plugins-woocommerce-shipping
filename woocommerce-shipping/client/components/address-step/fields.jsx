@@ -6,6 +6,7 @@ import {
 	FlexItem,
 	SelectControl,
 	TextControl,
+	__experimentalSpacer as Spacer,
 } from '@wordpress/components';
 import { useFormContext } from '@woocommerce/components';
 import { __ } from '@wordpress/i18n';
@@ -65,21 +66,27 @@ export const AddressFields = withBoundary(
 		return (
 			<div>
 				<Flex direction="column">
-					<FlexItem>
-						<TextControl
-							{ ...getProps( 'name' ) }
-							label={ __( 'Name', 'woocommerce-shipping' ) }
-							required={ ! values.company || values.name }
-						/>
-					</FlexItem>
-					<FlexItem>
-						<TextControl
-							{ ...getProps( 'company' ) }
-							label={ __( 'Company', 'woocommerce-shipping' ) }
-							required={ ! values.name }
-							disabled={ isUpdating }
-						/>
-					</FlexItem>
+					<TextControl
+						{ ...getProps( 'name' ) }
+						label={ __( 'Name', 'woocommerce-shipping' ) }
+						required={ ! values.company || values.name }
+						// Opting into the new styles for margin bottom
+						__nextHasNoMarginBottom={ true }
+						// Opting into the new styles for height
+						__next40pxDefaultSize={ true }
+					/>
+					<Spacer marginTop={ 0 } marginBottom={ 1 } />
+					<TextControl
+						{ ...getProps( 'company' ) }
+						label={ __( 'Company', 'woocommerce-shipping' ) }
+						required={ ! values.name }
+						disabled={ isUpdating }
+						// Opting into the new styles for margin bottom
+						__nextHasNoMarginBottom={ true }
+						// Opting into the new styles for height
+						__next40pxDefaultSize={ true }
+					/>
+					<Spacer marginTop={ 0 } marginBottom={ 1 } />
 					<FlexItem>
 						<Flex>
 							<FlexBlock>
@@ -98,6 +105,10 @@ export const AddressFields = withBoundary(
 									}
 									disabled={ isUpdating }
 									required={ isPhoneAndEmailRequired }
+									// Opting into the new styles for margin bottom
+									__nextHasNoMarginBottom={ true }
+									// Opting into the new styles for height
+									__next40pxDefaultSize={ true }
 								/>
 							</FlexBlock>
 							<FlexBlock>
@@ -116,38 +127,52 @@ export const AddressFields = withBoundary(
 									}
 									disabled={ isUpdating }
 									required={ isPhoneAndEmailRequired }
+									// Opting into the new styles for margin bottom
+									__nextHasNoMarginBottom={ true }
+									// Opting into the new styles for height
+									__next40pxDefaultSize={ true }
 								/>
 							</FlexBlock>
 						</Flex>
 					</FlexItem>
-					<FlexItem>
-						<SelectControl
-							label={ __( 'Country', 'woocommerce-shipping' ) }
-							options={ countryNames }
-							{ ...getProps(
-								'country',
-								getSelectControlProps( 'country' )
-							) }
-							disabled={ isUpdating || ! allowChangeCountry }
-							required
-						/>
-					</FlexItem>
-					<FlexItem>
-						<TextControl
-							label={ __( 'Address', 'woocommerce-shipping' ) }
-							{ ...getProps( 'address' ) }
-							disabled={ isUpdating }
-							required
-						/>
-					</FlexItem>
-					<FlexItem>
-						<TextControl
-							label={ __( 'City', 'woocommerce-shipping' ) }
-							{ ...getProps( 'city' ) }
-							disabled={ isUpdating }
-							required
-						/>
-					</FlexItem>
+					<Spacer marginTop={ 0 } marginBottom={ 1 } />
+					<SelectControl
+						label={ __( 'Country', 'woocommerce-shipping' ) }
+						options={ countryNames }
+						{ ...getProps(
+							'country',
+							getSelectControlProps( 'country' )
+						) }
+						disabled={ isUpdating || ! allowChangeCountry }
+						required
+						// Opting into the new styles for margin bottom
+						__nextHasNoMarginBottom={ true }
+						// Opting out of the new styles for height
+						__next40pxDefaultSize={ true }
+					/>
+					<Spacer marginTop={ 0 } marginBottom={ 1 } />
+					<TextControl
+						label={ __( 'Address', 'woocommerce-shipping' ) }
+						{ ...getProps( 'address' ) }
+						disabled={ isUpdating }
+						required
+						// Opting into the new styles for margin bottom
+						__nextHasNoMarginBottom={ true }
+						// Opting into the new styles for height
+						__next40pxDefaultSize={ true }
+					/>
+					<Spacer marginTop={ 0 } marginBottom={ 1 } />
+					<TextControl
+						label={ __( 'City', 'woocommerce-shipping' ) }
+						{ ...getProps( 'city' ) }
+						disabled={ isUpdating }
+						required
+						// Opting into the new styles for margin bottom
+						__nextHasNoMarginBottom={ true }
+						// Opting into the new styles for height
+						__next40pxDefaultSize={ true }
+					/>
+					<Spacer marginTop={ 0 } marginBottom={ 1 } />
 					<FlexItem direction="column">
 						<Flex>
 							<FlexBlock>
@@ -162,6 +187,10 @@ export const AddressFields = withBoundary(
 									) }
 									disabled={ isUpdating }
 									required={ stateNames.length > 0 }
+									// Opting into the new styles for margin bottom
+									__nextHasNoMarginBottom={ true }
+									// Opting into the new styles for height
+									__next40pxDefaultSize={ true }
 								/>
 							</FlexBlock>
 							<FlexBlock>
@@ -173,6 +202,10 @@ export const AddressFields = withBoundary(
 									{ ...getProps( 'postcode' ) }
 									disabled={ isUpdating }
 									required
+									// Opting into the new styles for margin bottom
+									__nextHasNoMarginBottom={ true }
+									// Opting into the new styles for height
+									__next40pxDefaultSize={ true }
 								/>
 							</FlexBlock>
 						</Flex>
@@ -191,6 +224,7 @@ export const AddressFields = withBoundary(
 												'defaultAddress'
 											)
 										) }
+										__nextHasNoMarginBottom={ true }
 									/>
 								</FlexBlock>
 							</Flex>

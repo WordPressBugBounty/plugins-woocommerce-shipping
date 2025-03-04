@@ -10,7 +10,11 @@ import {
 } from 'utils';
 import { CustomPackage, Package, ShipmentItem } from 'types';
 import { defaultCustomPackageData } from '../constants';
-import { CUSTOM_BOX_ID_PREFIX, PACKAGE_TYPES, TAB_NAMES } from '../packages';
+import {
+	CUSTOM_BOX_ID_PREFIX,
+	CUSTOM_PACKAGE_TYPES,
+	TAB_NAMES,
+} from '../packages';
 
 export const getInitialPackageAndTab = (
 	savedPackages: Package[]
@@ -66,6 +70,7 @@ export function usePackageState(
 ) {
 	const savedPackages = useSelect(
 		( select ) => select( labelPurchaseStore ).getSavedPackages(),
+		// eslint-disable-next-line react-hooks/exhaustive-deps -- we want this to update when the shipmentId changes
 		[ currentShipmentId ]
 	);
 	const { initialTab, initialPackage } = useMemo(
@@ -129,7 +134,7 @@ export function usePackageState(
 				...customPackageData[ currentShipmentId ],
 				isLetter:
 					customPackageData[ currentShipmentId ].type ===
-					PACKAGE_TYPES.ENVELOPE,
+					CUSTOM_PACKAGE_TYPES.ENVELOPE,
 			};
 		}
 		return defaultCustomPackageData;

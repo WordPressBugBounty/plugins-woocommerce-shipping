@@ -191,7 +191,8 @@ export const ShipmentContent = ( {
 							<Notice status="info" isDismissible={ false }>
 								<strong>
 									{ __(
-										'Select the items you want to include in the new shipment.'
+										'Select the items you want to include in the new shipment.',
+										'woocommerce-shipping'
 									) }
 								</strong>{ ' ' }
 								{ __(

@@ -159,6 +159,8 @@ export const SelectableItems = ( {
 								)
 							)
 						}
+						// Opting into the new styles for margin bottom
+						__nextHasNoMarginBottom={ true }
 					/>
 				);
 			} }

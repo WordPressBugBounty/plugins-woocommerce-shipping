@@ -40,17 +40,30 @@ export const useThrottledStateChange = < T >(
 		ReturnType< typeof debounce > | undefined
 	>();
 
+	// Store the callback in a ref to maintain reference stability
+	const callbackRef = useRef( callback );
+
+	// Update the callback ref when callback changes
+	useEffect( () => {
+		callbackRef.current = callback;
+	}, [ callback ] );
+
 	// Create a memoized throttled callback
 	const getThrottledCallback = useCallback( () => {
-		throttledCallbackRef.current =
-			throttledCallbackRef.current ??
-			debounce( callback, delay, {
-				trailing,
-				leading,
-				...optionsRest,
-			} );
+		// If the throttled callback doesn't exist or needs to be recreated
+		if ( ! throttledCallbackRef.current ) {
+			throttledCallbackRef.current = debounce(
+				() => callbackRef.current(),
+				delay,
+				{
+					trailing,
+					leading,
+					...optionsRest,
+				}
+			);
+		}
 		return throttledCallbackRef.current;
-	}, [ callback, delay, trailing, leading, optionsRest ] );
+	}, [ delay, trailing, leading, optionsRest ] );
 
 	// Cleanup the throttled callback on unmount, should only be registered once
 	useEffect( () => {
@@ -61,6 +74,7 @@ export const useThrottledStateChange = < T >(
 
 	// Check if state has changed and invoke the throttled callback
 	useEffect( () => {
+		// Only check for changes if we have a previous state
 		if ( prevState !== undefined && hasChanged( prevState, state ) ) {
 			getThrottledCallback()();
 		}

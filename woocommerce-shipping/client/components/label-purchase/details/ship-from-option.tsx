@@ -1,4 +1,4 @@
-import React from 'react';
+import { type MouseEvent } from 'react';
 import {
 	__experimentalText as Text,
 	Flex,
@@ -66,7 +66,7 @@ export const ShipFromOption = ( {
 						  ) }
 				</sub>
 				<Text truncate={ false }>{ addressToString( address ) }</Text>
-				<Link onClick={ onEditClick } type="button" href="#">
+				<Link onClick={ onEditClick } type="wp-admin" href="#">
 					{ __( 'Edit', 'woocommerce-shipping' ) }
 				</Link>
 				{ Boolean( address.isVerified ) === false && (

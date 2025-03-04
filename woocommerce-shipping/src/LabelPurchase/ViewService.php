@@ -235,6 +235,18 @@ class ViewService {
 				$product_meta['customs_info'] = $customs_info;
 			}
 
+			$variations = array_map(
+				function ( $item_meta ) {
+					$new_meta = new \stdClass();
+					foreach ( $item_meta as $property => $value ) {
+						$new_meta->{ $property } = wp_kses( $value, array() );
+					}
+
+					return $new_meta;
+				},
+				array_values( $item->get_all_formatted_meta_data() )
+			);
+
 			$line_item = array(
 				'id'           => $item_id,
 				'subtotal'     => wc_format_decimal( $order->get_line_subtotal( $item, false, false ), $decimal_point ),
@@ -244,7 +256,7 @@ class ViewService {
 				'price'        => wc_format_decimal( $order->get_item_total( $item, false, false ), $decimal_point ),
 				'quantity'     => $item->get_quantity(),
 				'tax_class'    => $item->get_tax_class(),
-				'name'         => $item->get_name(),
+				'name'         => wp_kses( $item->get_name(), array() ),
 				'product_id'   => $item->get_variation_id() ? $item->get_variation_id() : $item->get_product_id(),
 				'sku'          => is_object( $product ) ? $product->get_sku() : null,
 				'meta'         => (object) $product_meta,
@@ -255,7 +267,7 @@ class ViewService {
 					'width'  => $product->get_width(),
 					'height' => $product->get_height(),
 				),
-				'variation'    => array_values( $item->get_all_formatted_meta_data() ),
+				'variation'    => $variations,
 			);
 
 			$order_data['line_items'][] = $line_item;

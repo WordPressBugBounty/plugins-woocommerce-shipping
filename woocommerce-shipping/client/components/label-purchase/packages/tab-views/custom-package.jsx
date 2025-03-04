@@ -21,7 +21,7 @@ import { __ } from '@wordpress/i18n';
 import { dispatch, useSelect } from '@wordpress/data';
 import { getDimensionsUnit, getWeightUnit } from 'utils';
 import { FetchNotice } from './fetch-notice';
-import { TAB_NAMES, PACKAGE_TYPES } from '../constants';
+import { TAB_NAMES, CUSTOM_PACKAGE_TYPES } from '../constants';
 import { labelPurchaseStore } from 'data/label-purchase';
 import { useLabelPurchaseContext } from 'context/label-purchase';
 import { TotalWeight } from '../../total-weight';
@@ -95,27 +95,40 @@ export const CustomPackage = withBoundary(
 			}
 		};
 
-		useEffect( () => {
-			if (
-				currentPackageTab === TAB_NAMES.CUSTOM_PACKAGE &&
-				essentialDetailsFocusArea === PACKAGE_SECTION
-			) {
-				// Show probable errors for the dimensions.
-				setErrorForInvalidDimension( rawPackageData.width, 'width' );
-				setErrorForInvalidDimension( rawPackageData.height, 'height' );
-				setErrorForInvalidDimension( rawPackageData.length, 'length' );
+		useEffect(
+			() => {
+				if (
+					currentPackageTab === TAB_NAMES.CUSTOM_PACKAGE &&
+					essentialDetailsFocusArea === PACKAGE_SECTION
+				) {
+					// Show probable errors for the dimensions.
+					setErrorForInvalidDimension(
+						rawPackageData.width,
+						'width'
+					);
+					setErrorForInvalidDimension(
+						rawPackageData.height,
+						'height'
+					);
+					setErrorForInvalidDimension(
+						rawPackageData.length,
+						'length'
+					);
 
-				// Scroll to the container so the user can see probable errors.
-				window.scrollTo( {
-					left: 0,
-					top: containerRef.current.offsetTop,
-					behavior: 'smooth',
-				} );
+					// Scroll to the container so the user can see probable errors.
+					window.scrollTo( {
+						left: 0,
+						top: containerRef.current.offsetTop,
+						behavior: 'smooth',
+					} );
 
-				// Reset the focus area so that the next setting of the focus area will work.
-				resetEssentialDetailsFocusArea();
-			}
-		}, [ currentPackageTab, essentialDetailsFocusArea, setErrors ] );
+					// Reset the focus area so that the next setting of the focus area will work.
+					resetEssentialDetailsFocusArea();
+				}
+			},
+			// eslint-disable-next-line react-hooks/exhaustive-deps -- we want this to only update when the currentPackageTab, essentialDetailsFocusArea, setErrors change
+			[ currentPackageTab, essentialDetailsFocusArea, setErrors ]
+		);
 
 		const hasFormErrors = useCallback( () => {
 			// eslint-disable-next-line no-unused-vars
@@ -194,7 +207,6 @@ export const CustomPackage = withBoundary(
 			hasFormErrors,
 			setErrors,
 			isAnyFieldEmpty,
-			setTab,
 			setSelectedPackage,
 		] );
 
@@ -230,7 +242,8 @@ export const CustomPackage = withBoundary(
 		const getRates = useCallback( async () => {
 			const tracksProperties = {
 				package_id: rawPackageData?.id,
-				is_letter: rawPackageData?.type === PACKAGE_TYPES.ENVELOPE,
+				is_letter:
+					rawPackageData?.type === CUSTOM_PACKAGE_TYPES.ENVELOPE,
 				width: rawPackageData?.width,
 				height: rawPackageData?.height,
 				length: rawPackageData?.length,
@@ -240,9 +253,9 @@ export const CustomPackage = withBoundary(
 			fetchRates( rawPackageData );
 		}, [ rawPackageData, fetchRates ] );
 
-		const isExtraLabelPurchase = () => {
+		const isExtraLabelPurchase = useCallback( () => {
 			return ! hasMissingPurchase();
-		};
+		}, [ hasMissingPurchase ] );
 
 		const disableFetchButton = useMemo( () => {
 			return (
@@ -304,14 +317,14 @@ export const CustomPackage = withBoundary(
 												'Box',
 												'woocommerce-shipping'
 											),
-											value: PACKAGE_TYPES.BOX,
+											value: CUSTOM_PACKAGE_TYPES.BOX,
 										},
 										{
 											label: __(
 												'Envelope',
 												'woocommerce-shipping'
 											),
-											value: PACKAGE_TYPES.ENVELOPE,
+											value: CUSTOM_PACKAGE_TYPES.ENVELOPE,
 										},
 									] }
 									label={ __(
@@ -319,13 +332,14 @@ export const CustomPackage = withBoundary(
 										'woocommerce-shipping'
 									) }
 									style={ { flex: 2 } }
-									__nextHasNoMarginBottom
 									onChange={ ( type ) =>
 										setData( {
 											...rawPackageData,
 											type,
 										} )
 									}
+									__nextHasNoMarginBottom={ true }
+									__next40pxDefaultSize={ true }
 								></SelectControl>
 							</FlexBlock>
 						</Flex>
@@ -341,6 +355,7 @@ export const CustomPackage = withBoundary(
 								type="number"
 								min={ 0 }
 								{ ...getControlProps( 'length' ) }
+								__next40pxDefaultSize={ true }
 							/>
 							<Spacer
 								direction="vertical"
@@ -356,6 +371,7 @@ export const CustomPackage = withBoundary(
 								suffix={ dimensionsUnit }
 								min={ 0 }
 								{ ...getControlProps( 'width' ) }
+								__next40pxDefaultSize={ true }
 							/>
 							<Spacer
 								direction="vertical"
@@ -371,6 +387,7 @@ export const CustomPackage = withBoundary(
 								type="number"
 								min={ 0 }
 								{ ...getControlProps( 'height' ) }
+								__next40pxDefaultSize={ true }
 							/>
 						</Flex>
 					</Flex>
@@ -393,6 +410,7 @@ export const CustomPackage = withBoundary(
 									setSaveAsTemplate( ! saveAsTemplate )
 								}
 								checked={ saveAsTemplate }
+								__nextHasNoMarginBottom={ true }
 							/>
 							{ isSaved && ! saveAsTemplate && (
 								<Notice
@@ -407,48 +425,64 @@ export const CustomPackage = withBoundary(
 								</Notice>
 							) }
 							{ saveAsTemplate && (
-								<Flex
-									className="save-template-form"
-									gap={ 6 }
-									direction="row"
-									justify="space-between"
-									align="flex-start"
-								>
-									<InputControl
-										label={ __(
-											'Template name',
-											'woocommerce-shipping'
-										) }
-										placeholder={ __(
-											'Enter a unique package name',
-											'woocommerce-shipping'
-										) }
-										{ ...getControlProps(
-											'name',
-											'save-template-form__name'
-										) }
+								<>
+									<Spacer
+										marginTop={ 3 }
+										marginBottom={ 0 }
 									/>
-									<InputControl
-										label={ __(
-											'Package weight',
-											'woocommerce-shipping'
-										) }
-										suffix={ weightUnit }
-										type="number"
-										min={ 0 }
-										{ ...getControlProps( 'boxWeight' ) }
-									/>
-									<Button
-										isSecondary
-										className="save-template-form__save-button"
-										type="submit"
-										isBusy={ isSaving }
-										onClick={ () => saveCustomPackage() }
-										disabled={ disableTemplateSaveButton() }
+
+									<Flex
+										className="save-template-form"
+										gap={ 6 }
+										direction="row"
+										justify="space-between"
+										align="flex-start"
 									>
-										{ __( 'Save', 'woocommerce-shipping' ) }
-									</Button>
-								</Flex>
+										<InputControl
+											label={ __(
+												'Template name',
+												'woocommerce-shipping'
+											) }
+											placeholder={ __(
+												'Enter a unique package name',
+												'woocommerce-shipping'
+											) }
+											{ ...getControlProps(
+												'name',
+												'save-template-form__name'
+											) }
+											__next40pxDefaultSize={ true }
+										/>
+										<InputControl
+											label={ __(
+												'Package weight',
+												'woocommerce-shipping'
+											) }
+											suffix={ weightUnit }
+											type="number"
+											min={ 0 }
+											{ ...getControlProps(
+												'boxWeight'
+											) }
+											__next40pxDefaultSize={ true }
+										/>
+										<Button
+											isSecondary
+											className="save-template-form__save-button"
+											type="submit"
+											isBusy={ isSaving }
+											onClick={ () =>
+												saveCustomPackage()
+											}
+											disabled={ disableTemplateSaveButton() }
+										>
+											{ __(
+												'Save',
+												'woocommerce-shipping'
+											) }
+										</Button>
+									</Flex>
+								</>
 							) }
 						</FlexItem>
 					</Flex>

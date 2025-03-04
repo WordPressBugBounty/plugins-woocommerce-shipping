@@ -49,5 +49,11 @@ export const restrictionTypes = [
 	},
 ];
 
+// Validates AES/ITN (International Transaction Number) or NOEEI (No EEI) exemption codes
+// Accepts formats like:
+// - AES ITN: X12345678901234, AES 12345678901234 or AES ITN: 12345678901234
+// - NOEEI exemptions: NOEEI 30.36 or NOEEI 30.36(a) or NOEEI 30.36(a)(1)
+// AES/ITN numbers which are 14 digits long, optionally prefixed with 'X', 'AES', and/or 'ITN'
+// NOEEI exemption codes in the format "NOEEI 30.XX" with optional subsection letters and numbers
 export const itnMatchingRegex =
-	/^(?:(?:AES X\d{14})|(?:NOEEI 30\.\d{1,2}(?:\([a-z]\)(?:\(\d\))?)?))$/;
+	/^(?:(?:AES\s*ITN:?\s*)?(?:AES\s*)?X?\d{14}|(?:NOEEI\s+30\.\d{1,2}(?:\([a-z]\)(?:\(\d\))?)?))$/i;

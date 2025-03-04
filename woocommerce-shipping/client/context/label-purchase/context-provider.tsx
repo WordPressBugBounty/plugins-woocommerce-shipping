@@ -45,6 +45,8 @@ export const LabelPurchaseContextProvider = ( {
 		hasMultipleShipments,
 		isExtraLabelPurchaseValid,
 		resetShipmentAndSelection,
+		setCurrentShipmentDate,
+		getCurrentShipmentDate,
 	} = useShipmentState();
 
 	const { getShipmentTotalWeight, setShipmentTotalWeight } = useTotalWeight( {
@@ -103,6 +105,7 @@ export const LabelPurchaseContextProvider = ( {
 		totalWeight,
 		customs,
 		getShipmentOrigin,
+		getCurrentShipmentDate,
 	} );
 
 	const labels = useLabelsState( {
@@ -118,6 +121,7 @@ export const LabelPurchaseContextProvider = ( {
 		shipments,
 		applyHazmatToPackage,
 		getSelectedRateOptions,
+		getCurrentShipmentDate,
 	} );
 
 	const account = useAccountState();
@@ -145,6 +149,8 @@ export const LabelPurchaseContextProvider = ( {
 			hasMultipleShipments,
 			isExtraLabelPurchaseValid,
 			resetShipmentAndSelection,
+			setCurrentShipmentDate,
+			getCurrentShipmentDate,
 		},
 		hazmat: {
 			getShipmentHazmat,

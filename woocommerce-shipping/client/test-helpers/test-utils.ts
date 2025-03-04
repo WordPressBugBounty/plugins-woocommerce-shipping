@@ -207,6 +207,12 @@ export const mockUtils = ( overrides?: object ) => {
 		getLabelOrigins: jest.fn().mockReturnValue( [] ),
 		getCurrentOrderItems: jest.fn().mockReturnValue( [] ),
 		getSelectedRateOptions: jest.fn().mockReturnValue( [] ),
+		getCustomFulfillmentSummary: jest.fn().mockReturnValue( '' ),
+		getCurrentOrderShipments: jest.fn().mockReturnValue( [] ),
+		getShipmentDefaultDates: jest.fn().mockReturnValue( {
+			shippingDate: new Date( '2025-02-26' ),
+			estimatedDeliveryDate: new Date( '2025-02-30' ),
+		} ),
 		...( overrides ?? {} ),
 	};
 };

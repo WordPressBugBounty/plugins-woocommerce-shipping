@@ -31,6 +31,8 @@ export const StaticHeader = ( {
 				style={ {
 					visibility: ! hasMultipleShipments ? 'visible' : 'hidden',
 				} }
+				// Opting into the new styles for margin bottom
+				__nextHasNoMarginBottom={ true }
 			/>
 		) }
 		<dt className="item-name">

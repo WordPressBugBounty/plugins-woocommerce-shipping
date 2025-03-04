@@ -58,6 +58,7 @@ export const Labels = ( { query, path, currency }: LabelReportProps ) => {
 				offset: `${ ( pagination.paged - 1 ) * pagination.perPage }`,
 			} );
 		},
+		// eslint-disable-next-line react-hooks/exhaustive-deps -- query, path, pagination are dependencies
 		[ query, path, pagination ]
 	);
 
@@ -91,7 +92,8 @@ export const Labels = ( { query, path, currency }: LabelReportProps ) => {
 	const isLoading = data === undefined;
 
 	const onQueryChange =
-		( key: 'page_size' | 'paged' | 'sort' ) => ( value: string ) => {
+		( key: 'page_size' | 'paged' | 'sort' | string ) =>
+		( value: string ) => {
 			if ( key === 'page_size' || key === 'paged' ) {
 				setPagination( {
 					...pagination,
@@ -123,7 +125,7 @@ export const Labels = ( { query, path, currency }: LabelReportProps ) => {
 				rows = result.rows
 					.map( camelCaseKeys )
 					.map( mapRowToTableData( currency ) );
-			} catch ( error ) {
+			} catch {
 				setErrors( [
 					...errors,
 					__(
@@ -146,7 +148,7 @@ export const Labels = ( { query, path, currency }: LabelReportProps ) => {
 				),
 				generateCSVDataFromTable( tableHeaders, rows )
 			);
-		} catch ( error ) {
+		} catch {
 			setErrors( [
 				...errors,
 				__(

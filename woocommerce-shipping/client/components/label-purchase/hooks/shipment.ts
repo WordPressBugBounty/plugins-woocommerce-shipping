@@ -8,10 +8,16 @@ import {
 	getFirstSelectableOriginAddress,
 	getSubItems,
 } from 'utils';
-import { LabelShipmentIdMap, OriginAddress, ShipmentItem } from 'types';
+import {
+	LabelShipmentIdMap,
+	OriginAddress,
+	ShipmentItem,
+	ShipmentDate,
+} from 'types';
 import { addressStore } from 'data/address';
 import { labelPurchaseStore } from 'data/label-purchase';
 import { LABEL_PURCHASE_STATUS } from 'data/constants';
+import { getShipmentDefaultDates } from 'utils';
 
 export function useShipmentState() {
 	const [ currentShipmentId, setCurrentShipmentId ] = useState( '0' );
@@ -28,6 +34,16 @@ export function useShipmentState() {
 		Record< string, OriginAddress | undefined >
 	>( {
 		0: getFirstSelectableOriginAddress(),
+	} );
+
+	// The most recently purchased label, that has not been refunded.
+	const activePurchasedLabel =
+		selectData( labelPurchaseStore ).getPurchasedLabel( currentShipmentId );
+
+	const [ shipmentDates, setShipmentDates ] = useState<
+		Record< string, ShipmentDate< Date > >
+	>( {
+		0: getShipmentDefaultDates( '0', activePurchasedLabel ),
 	} );
 
 	const findOriginAddressById = ( originId: string ) => {
@@ -55,14 +71,10 @@ export function useShipmentState() {
 		[ currentShipmentId, shipmentOrigins ]
 	);
 
-	// The most recently purchased label, that has not been refunded.
-	const activePurchasedLabel =
-		selectData( labelPurchaseStore ).getPurchasedLabel( currentShipmentId );
-
 	const purchasedLabelOrigin = useSelect(
 		( select ) =>
 			select( labelPurchaseStore ).getLabelOrigins( currentShipmentId ),
-		[ currentShipmentId, activePurchasedLabel ]
+		[ currentShipmentId ]
 	);
 
 	const purchasedLabelDestination = useSelect(
@@ -70,12 +82,14 @@ export function useShipmentState() {
 			select( labelPurchaseStore ).getLabelDestinations(
 				currentShipmentId
 			),
+		// eslint-disable-next-line react-hooks/exhaustive-deps -- we want this to update when the shipmentId or activePurchasedLabel changes
 		[ currentShipmentId, activePurchasedLabel ]
 	);
 
 	const orderDestination = useSelect(
 		( select ) => select( addressStore ).getOrderDestination(),
-		[ currentShipmentId, activePurchasedLabel ]
+		// order destination is not dependent on the shipmentId or activePurchasedLabel changes
+		[]
 	);
 
 	useEffect( () => {
@@ -254,6 +268,37 @@ export function useShipmentState() {
 		} );
 	}, [ currentShipmentId, selections, shipments ] );
 
+	const setCurrentShipmentDate = useCallback(
+		( shippingDate: Date, estimatedDeliveryDate?: Date ) => {
+			setShipmentDates( ( prevState ) => ( {
+				...prevState,
+				[ currentShipmentId ]: { shippingDate, estimatedDeliveryDate },
+			} ) );
+		},
+		[ currentShipmentId ]
+	);
+
+	const getCurrentShipmentDate = useCallback( () => {
+		return shipmentDates[ currentShipmentId ];
+	}, [ currentShipmentId, shipmentDates ] );
+
+	// Only set default dates if the current shipment doesn't have dates defined
+	useEffect( () => {
+		if (
+			shipmentDates[ currentShipmentId ]?.shippingDate ||
+			shipmentDates[ currentShipmentId ]?.estimatedDeliveryDate
+		) {
+			return;
+		}
+		setShipmentDates( ( prevState ) => ( {
+			...prevState,
+			[ currentShipmentId ]: getShipmentDefaultDates(
+				currentShipmentId,
+				activePurchasedLabel
+			),
+		} ) );
+	}, [ currentShipmentId, shipmentDates, activePurchasedLabel ] );
+
 	return {
 		shipments,
 		setShipments,
@@ -275,5 +320,7 @@ export function useShipmentState() {
 		hasMultipleShipments,
 		isExtraLabelPurchaseValid,
 		resetShipmentAndSelection,
+		setCurrentShipmentDate,
+		getCurrentShipmentDate,
 	};
 }

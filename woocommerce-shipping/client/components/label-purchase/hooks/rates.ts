@@ -17,7 +17,7 @@ import {
 } from 'types';
 import { getAccountSettings, getCurrentOrder, setAccountSettings } from 'utils';
 import { labelPurchaseStore } from 'data/label-purchase';
-import { CUSTOM_BOX_ID_PREFIX, PACKAGE_TYPES } from '../packages';
+import { CUSTOM_BOX_ID_PREFIX, CUSTOM_PACKAGE_TYPES } from '../packages';
 import type { usePackageState } from './packages';
 import { useHazmatState } from './hazmat';
 import { useCustomsState } from './customs';
@@ -42,6 +42,9 @@ interface UseRatesStateProps {
 	getShipmentOrigin: ReturnType<
 		typeof useShipmentState
 	>[ 'getShipmentOrigin' ];
+	getCurrentShipmentDate: ReturnType<
+		typeof useShipmentState
+	>[ 'getCurrentShipmentDate' ];
 }
 
 /**
@@ -104,9 +107,8 @@ const maybeReformatInvalidParamError = ( payload: WPErrorRESTResponse ) => {
 			const sectionName =
 				ratesEndpointArgToSectionNameMap[ erroneousSection ] ?? '';
 
-			const regexpMatch = paramErrorMessage.match(
-				restInvalidParamErrorMessageRegexp
-			);
+			const regexpMatch =
+				restInvalidParamErrorMessageRegexp.exec( paramErrorMessage );
 
 			if ( regexpMatch === null ) {
 				return maybePrependSectionName(
@@ -139,6 +141,7 @@ export function useRatesState( {
 	totalWeight,
 	customs: { maybeApplyCustomsToPackage },
 	getShipmentOrigin,
+	getCurrentShipmentDate,
 }: UseRatesStateProps ) {
 	const accountSettings = useMemo( getAccountSettings, [] );
 	const allShipmentRates = select( labelPurchaseStore ).getSelectedRates();
@@ -355,7 +358,7 @@ export function useRatesState( {
 				...dimensions,
 				weight: totalWeight,
 				is_letter: type
-					? type === PACKAGE_TYPES.ENVELOPE
+					? type === CUSTOM_PACKAGE_TYPES.ENVELOPE
 					: isLetter ?? false,
 			};
 
@@ -370,6 +373,10 @@ export function useRatesState( {
 				],
 				orderId: getCurrentOrder().id,
 				origin: getShipmentOrigin(),
+				shipment_options: {
+					label_date:
+						getCurrentShipmentDate()?.shippingDate?.toISOString(),
+				},
 			} );
 
 			if ( responseType === RATES_FETCH_ABORTED ) {
@@ -424,6 +431,7 @@ export function useRatesState( {
 			applyHazmatToPackage,
 			getShipmentOrigin,
 			preselectRateBasedOnLastSelections,
+			getCurrentShipmentDate,
 		]
 	);
 

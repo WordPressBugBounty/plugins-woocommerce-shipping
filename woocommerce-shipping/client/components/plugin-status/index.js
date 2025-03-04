@@ -9,6 +9,7 @@ import {
 	SelectControl,
 	Spinner,
 	Notice,
+	__experimentalSpacer as Spacer,
 } from '@wordpress/components';
 import { StatusCard } from './status-card';
 import { useSelect, dispatch } from '@wordpress/data';
@@ -293,6 +294,7 @@ const PluginStatus = ( props ) => {
 						help={ 'Last ' + logs.shipping.count + ' entries' }
 						value={ logs.shipping.tail }
 						rows={ 10 }
+						__nextHasNoMarginBottom={ true }
 					/>
 				</CardBody>
 
@@ -312,6 +314,7 @@ const PluginStatus = ( props ) => {
 						) }
 						value={ logs.other.tail }
 						rows={ 10 }
+						__nextHasNoMarginBottom={ true }
 					/>
 				</CardBody>
 
@@ -368,7 +371,12 @@ const PluginStatus = ( props ) => {
 						onChange={ ( value ) =>
 							paperSizeSelectHandler( value )
 						}
+						// Opting into the new styles for height
+						__next40pxDefaultSize={ true }
+						// Opting into the new styles for margin bottom
+						__nextHasNoMarginBottom={ true }
 					/>
+					<Spacer marginTop={ 0 } marginBottom={ 3 } />
 					<Button
 						variant="primary"
 						onClick={ () => printTestLabel() }

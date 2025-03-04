@@ -32,6 +32,7 @@ import { ControlledPopover } from 'components/controlled-popover';
 import { withBoundary } from 'components/HOC';
 import { ShipFromSelect } from './ship-from-select';
 import { ShipmentCosts } from './shipment-costs';
+import { ShippingDate } from './shipping-date';
 
 export const ShipmentDetails = withBoundary(
 	( { order, destinationAddress } ) => {
@@ -54,11 +55,17 @@ export const ShipmentDetails = withBoundary(
 		const {
 			storeCurrency,
 			rates: { getSelectedRate, updateRates, getSelectedRateOptions },
-			labels: { hasPurchasedLabel, getCurrentShipmentLabel },
+			labels: {
+				hasPurchasedLabel,
+				getCurrentShipmentLabel,
+				isPurchasing,
+			},
 			shipment: {
 				getShipmentOrigin,
 				getShipmentDestination,
 				getShipmentPurchaseOrigin,
+				getCurrentShipmentDate,
+				setCurrentShipmentDate,
 			},
 		} = useLabelPurchaseContext();
 
@@ -73,66 +80,73 @@ export const ShipmentDetails = withBoundary(
 		 */
 		const hasAutoVerificationRunOnce = useRef( false );
 
-		useEffect( () => {
-			if ( hasAutoVerificationRunOnce.current || isAddressModalOpen ) {
-				return;
-			}
+		useEffect(
+			() => {
+				if (
+					hasAutoVerificationRunOnce.current ||
+					isAddressModalOpen
+				) {
+					return;
+				}
 
-			// Check if the destination address is verified, if not, run it through the normalization process and then through areAddressesClose to determine if it's close enough to auto verify the address.
-			const verifyShippingAddress = async () => {
-				if ( isDestinationAddressVerified ) {
+				// Check if the destination address is verified, if not, run it through the normalization process and then through areAddressesClose to determine if it's close enough to auto verify the address.
+				const verifyShippingAddress = async () => {
+					if ( isDestinationAddressVerified ) {
+						return Promise.resolve();
+					}
+
+					await dispatch( addressStore ).verifyOrderShippingAddress( {
+						orderId: order.id,
+					} );
+
+					// If destination address is not verified, lets normalize it and check if it's close to the verified address and then auto verify it.
+					if ( ! isDestinationAddressVerified ) {
+						if ( ! normalisedDestinationAddress ) {
+							return Promise.resolve();
+						}
+
+						// Set the flag to true so that the auto verification process runs only once.
+						hasAutoVerificationRunOnce.current = true;
+
+						const transformedNormalisedAddress = {
+							...normalisedDestinationAddress,
+							address1: normalisedDestinationAddress.address_1,
+							address2: normalisedDestinationAddress.address_2,
+						};
+
+						const shouldAutoVerify = areAddressesClose(
+							transformedNormalisedAddress,
+							destinationAddress
+						);
+
+						if ( ! shouldAutoVerify ) {
+							return Promise.resolve();
+						}
+
+						// If made it till here, verify the address.
+						await dispatch( addressStore ).updateShipmentAddress(
+							{
+								orderId: order.id ?? '',
+								address: transformedNormalisedAddress,
+								isVerified: true, // Either the address is verified or the normalized address is selected
+							},
+							ADDRESS_TYPES.DESTINATION
+						);
+					}
+
 					return Promise.resolve();
-				}
+				};
 
-				await dispatch( addressStore ).verifyOrderShippingAddress( {
-					orderId: order.id,
-				} );
-
-				// If destination address is not verified, lets normalize it and check if it's close to the verified address and then auto verify it.
-				if ( ! isDestinationAddressVerified ) {
-					if ( ! normalisedDestinationAddress ) {
-						return Promise.resolve();
-					}
-
-					// Set the flag to true so that the auto verification process runs only once.
-					hasAutoVerificationRunOnce.current = true;
-
-					const transformedNormalisedAddress = {
-						...normalisedDestinationAddress,
-						address1: normalisedDestinationAddress.address_1,
-						address2: normalisedDestinationAddress.address_2,
-					};
-
-					const shouldAutoVerify = areAddressesClose(
-						transformedNormalisedAddress,
-						destinationAddress
-					);
-
-					if ( ! shouldAutoVerify ) {
-						return Promise.resolve();
-					}
-
-					// If made it till here, verify the address.
-					await dispatch( addressStore ).updateShipmentAddress(
-						{
-							orderId: order.id ?? '',
-							address: transformedNormalisedAddress,
-							isVerified: true, // Either the address is verified or the normalized address is selected
-						},
-						ADDRESS_TYPES.DESTINATION
-					);
-				}
-
-				return Promise.resolve();
-			};
-
-			verifyShippingAddress();
-		}, [
-			order,
-			destinationAddress,
-			isDestinationAddressVerified,
-			normalisedDestinationAddress,
-		] );
+				verifyShippingAddress();
+			},
+			// eslint-disable-next-line react-hooks/exhaustive-deps -- isAddressModalOpen is not a dependency
+			[
+				order,
+				destinationAddress,
+				isDestinationAddressVerified,
+				normalisedDestinationAddress,
+			]
+		);
 
 		const selectedRate = getSelectedRate();
 
@@ -149,6 +163,17 @@ export const ShipmentDetails = withBoundary(
 
 		const selectedRateOptions = getSelectedRateOptions() ?? {};
 
+		const rateDiscountText = hasPurchasedLabel( false )
+			? // translators: %s is the discount amount
+			  __(
+					'You saved %s with WooCommerce Shipping. <i/>',
+					'woocommerce-shipping'
+			  )
+			: // translators: %s is the discount amount
+			  __(
+					'You save %s with WooCommerce Shipping. <i/>',
+					'woocommerce-shipping'
+			  );
 		return (
 			<div className="shipment-details">
 				<Heading level={ 3 }>
@@ -158,6 +183,8 @@ export const ShipmentDetails = withBoundary(
 				<BaseControl
 					id="ship-from"
 					label={ __( 'Ship from', 'woocommerce-shipping' ) }
+					// Opting into the new styles for margin bottom
+					__nextHasNoMarginBottom={ true }
 				>
 					{ ! hasPurchasedLabel( false ) && (
 						<ShipFromSelect
@@ -182,6 +209,8 @@ export const ShipmentDetails = withBoundary(
 					id="ship-to"
 					label={ __( 'Ship to', 'woocommerce-shipping' ) }
 					className="purchase-label__ship-to"
+					// Opting into the new styles for margin bottom
+					__nextHasNoMarginBottom={ true }
 				>
 					{ ! hasPurchasedLabel( false ) && (
 						<Text display="flex">
@@ -210,6 +239,8 @@ export const ShipmentDetails = withBoundary(
 				<BaseControl
 					id="no-of-items"
 					label={ __( 'Number of items', 'woocommerce-shipping' ) }
+					// Opting into the new styles for margin bottom
+					__nextHasNoMarginBottom={ true }
 				>
 					<Text>{ order.total_line_items_quantity }</Text>
 				</BaseControl>
@@ -217,6 +248,8 @@ export const ShipmentDetails = withBoundary(
 				<BaseControl
 					id="order-value"
 					label={ __( 'Order value', 'woocommerce-shipping' ) }
+					// Opting into the new styles for margin bottom
+					__nextHasNoMarginBottom={ true }
 				>
 					<Text>{ storeCurrency.formatAmount( order.total ) }</Text>
 				</BaseControl>
@@ -224,6 +257,8 @@ export const ShipmentDetails = withBoundary(
 				<BaseControl
 					id="shipping-type"
 					label={ __( 'Shipping type', 'woocommerce-shipping' ) }
+					// Opting into the new styles for margin bottom
+					__nextHasNoMarginBottom={ true }
 				>
 					<Text>{ shippingType }</Text>
 				</BaseControl>
@@ -231,6 +266,8 @@ export const ShipmentDetails = withBoundary(
 				<BaseControl
 					id="shipping-costs"
 					label={ __( 'Shipping costs', 'woocommerce-shipping' ) }
+					// Opting into the new styles for margin bottom
+					__nextHasNoMarginBottom={ true }
 				>
 					<Text>
 						{ storeCurrency.formatAmount( order.total_shipping ) }
@@ -242,11 +279,27 @@ export const ShipmentDetails = withBoundary(
 						selectedRate ?? currentLabel?.rate ? ' has-rates' : ''
 					}` }
 				>
-					<Divider margin="8" />
+					<Divider margin="4" />
 					<Heading level={ 3 }>
-						{ __( 'Shipment Costs', 'woocommerce-shipping' ) }
+						{ __( 'Shipment details', 'woocommerce-shipping' ) }
 					</Heading>
 
+					{ ( ! hasPurchasedLabel( false ) ||
+						Boolean( getCurrentShipmentDate()?.shippingDate ) ) && (
+						<>
+							<ShippingDate
+								canSelectDate={
+									! hasPurchasedLabel( false ) &&
+									! isPurchasing
+								}
+								shippingDate={
+									getCurrentShipmentDate()?.shippingDate
+								}
+								setShippingDate={ setCurrentShipmentDate }
+							/>
+							<Divider margin="4" />
+						</>
+					) }
 					<ShipmentCosts
 						selectedRate={ selectedRate }
 						label={ returnPurchasedLabel( currentLabel ) }
@@ -266,15 +319,7 @@ export const ShipmentDetails = withBoundary(
 							>
 								{ createInterpolateElement(
 									sprintf(
-										hasPurchasedLabel( false ) // translators: %s is the discount amount
-											? __(
-													'You saved %s with WooCommerce Shipping. <i/>',
-													'woocommerce-shipping'
-											  ) // translators: %s is the discount amount
-											: __(
-													'You save %s with WooCommerce Shipping. <i/>',
-													'woocommerce-shipping'
-											  ),
+										rateDiscountText,
 										storeCurrency.formatAmount( discount )
 									),
 									{

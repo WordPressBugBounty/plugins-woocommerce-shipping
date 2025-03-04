@@ -10,6 +10,7 @@ namespace Automattic\WCShipping\LabelPurchase;
 use Automattic\WCShipping\Connect\WC_Connect_Functions;
 use Automattic\WCShipping\WCShippingRESTController;
 use Automattic\WCShipping\Exceptions\RESTRequestException;
+use Automattic\WCShipping\Validators;
 use WP_REST_Request;
 use WP_REST_Response;
 use WP_REST_Server;
@@ -69,6 +70,21 @@ class LabelPurchaseRESTController extends WCShippingRESTController {
 					'methods'             => WP_REST_Server::CREATABLE,
 					'callback'            => array( $this, 'purchase_labels' ),
 					'permission_callback' => array( WC_Connect_Functions::class, 'user_can_manage_labels' ),
+					'args'                => array(
+						'shipment_options' => array(
+							'required'    => false, // Provide backward compatibility for clients ( mobile app ) not setting this field.
+							'description' => __( 'Extra options for the shipment', 'woocommerce-shipping' ),
+							'type'        => 'object',
+							'properties'  => array(
+								'label_date' => array(
+									'type'        => 'string',
+									'description' => __( 'ISO 8601 formatted date string for the shipping label', 'woocommerce-shipping' ),
+									'format'      => 'date-time',
+									'pattern'     => Validators::ISO8601_PATTERN,
+								),
+							),
+						),
+					),
 				),
 			)
 		);
@@ -108,6 +124,7 @@ class LabelPurchaseRESTController extends WCShippingRESTController {
 				$hazmat,
 				$customs,
 				$features_supported_by_client,
+				$shipment_options,
 			)                 = $this->get_and_check_body_params(
 				$request,
 				array(
@@ -119,6 +136,7 @@ class LabelPurchaseRESTController extends WCShippingRESTController {
 					'hazmat',
 					'customs',
 					'?features_supported_by_client', // Optional parameter.
+					'?shipment_options', // Optional parameter.
 				)
 			);
 			list( $order_id ) = $this->get_and_check_request_params( $request, array( 'order_id' ) );
@@ -141,6 +159,7 @@ class LabelPurchaseRESTController extends WCShippingRESTController {
 				$customs,
 				$user_meta,
 				$features_supported_by_client,
+				$shipment_options,
 			)
 		);
 	}

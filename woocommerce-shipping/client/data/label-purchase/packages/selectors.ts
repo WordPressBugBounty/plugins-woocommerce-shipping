@@ -1,3 +1,4 @@
+import { createSelector } from '@wordpress/data';
 import { uniqBy } from 'lodash';
 import { camelCaseKeys, getCarrierPackages } from 'utils';
 import { LabelPurchaseState } from '../../types';
@@ -23,14 +24,17 @@ const getCustomPackages = ( state: LabelPurchaseState ) => {
 	return ( state.packages.custom ?? [] ).map( camelCaseKeys );
 };
 
-export const getSavedPackages = ( state: LabelPurchaseState ): Package[] => {
-	return [
-		...uniqBy(
-			Object.values(
-				getCarrierPackages( getPredefinedPackages( state ) )
-			).flat(),
-			'id'
-		),
-		...getCustomPackages( state ),
-	];
-};
+export const getSavedPackages = createSelector(
+	( state: LabelPurchaseState ): Package[] => {
+		return [
+			...uniqBy(
+				Object.values(
+					getCarrierPackages( getPredefinedPackages( state ) )
+				).flat(),
+				'id'
+			),
+			...getCustomPackages( state ),
+		];
+	},
+	( state ) => [ state.packages.predefined, state.packages.custom ]
+);

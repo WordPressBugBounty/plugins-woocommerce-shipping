@@ -80,7 +80,7 @@ export function* verifyOrderShippingAddress( {
 				addressType: 'destination',
 			},
 		};
-	} catch ( error ) {
+	} catch {
 		return {
 			type: VERIFY_ORDER_SHIPPING_ADDRESS_FAILED,
 			payload: {

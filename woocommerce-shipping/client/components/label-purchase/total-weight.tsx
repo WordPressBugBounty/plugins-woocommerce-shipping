@@ -165,6 +165,7 @@ export const TotalWeight = ( { packageWeight = 0 } ) => {
 					step={ [ 'g', 'oz' ].includes( weightUnit ) ? 1 : 0.1 }
 					min={ minValue }
 					{ ...props }
+					__next40pxDefaultSize={ true }
 				/>
 				<SelectControl
 					label={
@@ -176,7 +177,10 @@ export const TotalWeight = ( { packageWeight = 0 } ) => {
 					options={ weightUnitOptions }
 					disabled={ isFetching }
 					onChange={ onUnitChange }
-					__nextHasNoMarginBottom
+					// Opting into the new styles for margin bottom
+					__nextHasNoMarginBottom={ true }
+					// Opting into the new styles for height
+					__next40pxDefaultSize={ true }
 				/>
 			</Flex>
 		</FlexBlock>

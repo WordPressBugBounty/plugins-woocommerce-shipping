@@ -70,3 +70,7 @@ export const getSelectedRateOptions = (
 	}
 	return {};
 };
+
+export const getCustomFulfillmentSummary = (
+	{ custom_fulfillment_summary } = getConfig()
+) => custom_fulfillment_summary;

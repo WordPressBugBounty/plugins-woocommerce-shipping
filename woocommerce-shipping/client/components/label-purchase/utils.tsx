@@ -1,5 +1,6 @@
 import { __, _n, sprintf } from '@wordpress/i18n';
 import React from 'react';
+import { getCustomFulfillmentSummary } from 'utils';
 
 export const getShipmentTitle = (
 	index: string | number,
@@ -7,7 +8,7 @@ export const getShipmentTitle = (
 ) =>
 	sprintf(
 		// translators: %1$d is the shipment number, %2$d is the total number of shipments
-		__( 'Shipment %1$d/%2$d' ),
+		__( 'Shipment %1$d/%2$d', 'woocommerce-shipping' ),
 		parseInt( `${ index }`, 10 ) + 1,
 		totalCount
 	);
@@ -18,6 +19,15 @@ export const getShipmentSummaryText = (
 	totalProductCount: number
 ) => {
 	const classNames = 'wcshipping-shipping-label-meta-box__summary';
+
+	// If there is a custom message, display that instead.
+	if ( getCustomFulfillmentSummary() ) {
+		return (
+			<span className={ classNames }>
+				{ getCustomFulfillmentSummary() }
+			</span>
+		);
+	}
 
 	if ( orderFulfilled ) {
 		return (

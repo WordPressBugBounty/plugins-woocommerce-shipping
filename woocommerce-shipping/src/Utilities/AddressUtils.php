@@ -303,4 +303,43 @@ class AddressUtils {
 
 		return $fields_for_country;
 	}
+
+	/**
+	 * Format an address array into a single string for HTML.
+	 *
+	 * @param array $address_data Address data array.
+	 * @return string Formatted address.
+	 */
+	public static function address_array_to_formatted_html_string( array $address_data ) {
+		$parts = array();
+		if ( ! empty( $address_data['company'] ) ) {
+			$parts[] = $address_data['company'];
+		}
+		if ( ! empty( $address_data['name'] ) ) {
+			$parts[] = $address_data['name'];
+		}
+		if ( ! empty( $address_data['address'] ) ) {
+			$parts[] = $address_data['address'];
+		}
+
+		$city_line = array_filter(
+			array(
+				$address_data['city'] ?? '',
+				$address_data['state'] ?? '',
+				$address_data['postcode'] ?? '',
+			)
+		);
+		if ( ! empty( $city_line ) ) {
+			$parts[] = implode( ', ', $city_line );
+		}
+
+		if ( ! empty( $address_data['country'] ) ) {
+			$parts[] = $address_data['country'];
+		}
+		if ( ! empty( $address_data['phone'] ) ) {
+			$parts[] = 'Phone: ' . $address_data['phone'];
+		}
+
+		return implode( '<br/>', $parts );
+	}
 }

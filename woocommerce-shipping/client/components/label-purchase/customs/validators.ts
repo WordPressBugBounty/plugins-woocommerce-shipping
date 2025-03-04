@@ -18,6 +18,42 @@ export const createLocalErrors = (
 		.fill( 0 )
 		.map( () => ( {} as FormErrors< CustomsItem > ) ),
 } );
+
+/**
+ * Normalize the ITN to a consistent format, be sure to run through the itnMatchingRegex first.
+ *
+ * @param {string} itn - The ITN to normalize.
+ * @return {string} The normalized ITN.
+ */
+export const normalizeITN = ( itn: string ): string => {
+	// Trim whitespace and convert to uppercase for standardization
+	const cleanITN = itn
+		.trim()
+		.toUpperCase()
+		.replace( /^(?:AES\s*ITN:?\s*)?(?:AES\s*)?/, '' );
+
+	// Check if the ITN is a 14-digit number, optionally prefixed with 'X'
+	if ( /^X?\d{14}$/.test( cleanITN.replace( /\s+/g, '' ) ) ) {
+		// Extract digits and format as 'AES X{14 digits}'
+		const digits = cleanITN.replace( /[^0-9]/g, '' );
+		return `AES X${ digits }`;
+	}
+
+	// If the ITN starts with 'NOEEI', normalize spacing and lowercase text within brackets
+	if ( cleanITN.startsWith( 'NOEEI' ) ) {
+		// Convert text within brackets to lowercase
+		return cleanITN
+			.replace( /\s+/g, ' ' )
+			.replace(
+				/\(([^)]+)\)/g,
+				( match, p1 ) => `(${ p1.toLowerCase() })`
+			);
+	}
+
+	// Return the cleaned ITN if no specific format is matched
+	return cleanITN;
+};
+
 export const validateContentTypes = ( {
 	values: { contentsType, contentsExplanation, items, ...rest },
 	errors,
@@ -64,6 +100,61 @@ export const validateRestrictionType = ( {
 	};
 };
 
+export const calculateTotalPrice = (
+	orderItems: { total: string }[]
+): number => {
+	return orderItems.reduce(
+		( accu: number, curr: { total: string } ) =>
+			accu + parseFloat( curr.total ),
+		0
+	);
+};
+
+export const calculateValuesByProductId = (
+	items: { product_id: number; price: string; quantity: number }[]
+): Record< number, number > => {
+	return items.reduce(
+		( acc: Record< number, number >, { product_id, price, quantity } ) => {
+			acc[ product_id ] = parseFloat( `${ price }` ) * quantity;
+			return acc;
+		},
+		{}
+	);
+};
+
+export const calculateValuesByTariffNumber = (
+	items: { product_id: number; hsTariffNumber: string }[],
+	valuesByProductId: Record< number, number >
+): Record< string, number > => {
+	return items.reduce(
+		( acc: Record< string, number >, { product_id, hsTariffNumber } ) => {
+			if ( hsTariffNumber && hsTariffNumber.length === 6 ) {
+				if ( ! acc[ hsTariffNumber ] ) {
+					acc[ hsTariffNumber ] = 0;
+				}
+				acc[ hsTariffNumber ] += valuesByProductId[ product_id ];
+			}
+			return acc;
+		},
+		{}
+	);
+};
+
+export const findClassesAbove2500usd = (
+	items: { product_id: number; hsTariffNumber: string }[],
+	valuesByTariffNumber: Record< string, number >
+): Set< string > => {
+	return items.reduce( ( acc: Set< string >, { hsTariffNumber } ) => {
+		if (
+			hsTariffNumber !== '' &&
+			valuesByTariffNumber[ hsTariffNumber ] > 2500
+		) {
+			acc.add( hsTariffNumber );
+		}
+		return acc;
+	}, new Set< string >() );
+};
+
 export const validateITN =
 	( {
 		country,
@@ -77,12 +168,8 @@ export const validateITN =
 		errors,
 	}: CustomsValidationInput ): CustomsValidationInput => {
 		const localErrors = createLocalErrors( items );
-
 		const orderItems = getCurrentOrderItems();
-		const totalPrice = orderItems.reduce(
-			( accu, curr ) => accu + parseFloat( curr.total ),
-			0
-		);
+		const totalPrice = calculateTotalPrice( orderItems );
 
 		if ( ! itn && totalPrice > 2500 ) {
 			localErrors.itn = __(
@@ -91,56 +178,20 @@ export const validateITN =
 			);
 		}
 
-		if (
-			itn &&
-			! /^(?:(?:AES X\d{14})|(?:NOEEI 30\.\d{1,2}(?:\([a-z]\)(?:\(\d\))?)?))$/.test(
-				itn
-			)
-		) {
-			localErrors.itn = __(
-				'Please enter a valid ITN.',
-				'woocommerce-shipping'
-			);
-		}
-
-		const valuesByProductId = items.reduce(
-			( acc, { product_id, price, quantity } ) => {
-				acc[ product_id ] = parseFloat( `${ price }` ) * quantity;
-				return acc;
-			},
-			{} as Record< number, number >
+		const valuesByProductId = calculateValuesByProductId( items );
+		const valuesByTariffNumber = calculateValuesByTariffNumber(
+			items,
+			valuesByProductId
 		);
-
-		const valuesByTariffNumber = items.reduce(
-			( acc, { product_id, hsTariffNumber } ) => {
-				if ( hsTariffNumber && hsTariffNumber.length === 6 ) {
-					if ( ! acc[ hsTariffNumber ] ) {
-						acc[ hsTariffNumber ] = 0;
-					}
-					acc[ hsTariffNumber ] += valuesByProductId[ product_id ];
-				}
-				return acc;
-			},
-			{} as Record< string, number >
+		const classesAbove2500usd = findClassesAbove2500usd(
+			items,
+			valuesByTariffNumber
 		);
-
-		const classesAbove2500usd = items.reduce( ( acc, { product_id } ) => {
-			const { hsTariffNumber } = items.find(
-				( { product_id: id } ) => id === product_id
-			) ?? { hsTariffNumber: '' };
-			if (
-				hsTariffNumber !== '' &&
-				valuesByTariffNumber[ hsTariffNumber ] > 2500
-			) {
-				acc.add( hsTariffNumber );
-			}
-			return acc;
-		}, new Set() );
 
 		if ( itn && itn.length > 0 ) {
-			if ( ! new RegExp( itnMatchingRegex ).test( itn ) ) {
+			if ( ! itnMatchingRegex.test( itn.trim() ) ) {
 				localErrors.itn = __(
-					'Please enter a valid ITN.',
+					'Please enter a valid ITN in one of these formats: X12345678901234, AES X12345678901234, or NOEEI 30.37(a)',
 					'woocommerce-shipping'
 				);
 			}
@@ -159,7 +210,8 @@ export const validateITN =
 				localErrors.itn = sprintf(
 					// translators: %s is the country name
 					__(
-						'International Transaction Number is required for shipments to %s'
+						'International Transaction Number is required for shipments to %s',
+						'woocommerce-shipping'
 					),
 					countryName
 				);
@@ -171,7 +223,12 @@ export const validateITN =
 				...errors,
 				...localErrors,
 			},
-			values: { itn, items, ...rest },
+			values: {
+				...rest,
+				items,
+				// Normalize the ITN before sending to the API
+				itn: itn ? normalizeITN( itn ) : itn,
+			},
 		};
 	};
 

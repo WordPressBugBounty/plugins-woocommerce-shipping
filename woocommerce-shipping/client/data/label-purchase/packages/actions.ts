@@ -1,6 +1,6 @@
 import { apiFetch } from '@wordpress/data-controls';
-import { getDeleteCustomPackagesPath, getPackagesPath } from 'data/routes';
-import { CustomPackage, CustomPackageResponse } from 'types';
+import { getDeletePackagePath, getPackagesPath } from 'data/routes';
+import { CustomPackage, CustomPackageResponse, CustomPackageType } from 'types';
 import { camelCasePackageResponse } from 'utils';
 import { PACKAGES_UPDATE, PACKAGES_UPDATE_ERROR } from './action-types';
 import { PackageUpdateAction, PackageUpdateFailedAction } from '../types.d';
@@ -102,7 +102,10 @@ export function* saveCustomPackage( payload: CustomPackage ): Generator<
 	}
 }
 
-export function* deleteCustomPackage( id: string ): Generator<
+export function* deletePackage(
+	id: string,
+	type: CustomPackageType
+): Generator<
 	ReturnType< typeof apiFetch >,
 	| PackageUpdateAction
 	| PackageUpdateFailedAction< {
@@ -115,7 +118,7 @@ export function* deleteCustomPackage( id: string ): Generator<
 > {
 	try {
 		const result = yield apiFetch( {
-			path: getDeleteCustomPackagesPath( id ),
+			path: getDeletePackagePath( type, id ),
 			method: 'DELETE',
 		} );
 		return {

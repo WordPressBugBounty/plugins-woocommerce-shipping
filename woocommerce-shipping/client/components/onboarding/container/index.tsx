@@ -36,14 +36,12 @@ const Container: React.FC< ContainerProps > = ( {
 					display="flex"
 					className="wcshipping-onboarding-container__media"
 					style={ {
-						background: imageBackground
-							? imageBackground
-							: '#F2EDFF',
+						background: imageBackground ?? '#F2EDFF',
 					} }
 				>
 					<img
 						className="wcshipping-onboarding-container__image"
-						src={ imageSrc ? imageSrc : fallbackImage }
+						src={ imageSrc ?? fallbackImage }
 						alt=""
 					/>
 				</FlexItem>

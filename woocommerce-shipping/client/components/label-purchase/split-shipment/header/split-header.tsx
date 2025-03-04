@@ -131,6 +131,8 @@ export const SplitHeader = ( {
 					'Select all items in this shipment',
 					'woocommerce-shipping'
 				) }
+				// Opting into the new styles for margin bottom
+				__nextHasNoMarginBottom={ true }
 			/>
 			<SelectionHeader
 				selectAll={ selectAll }

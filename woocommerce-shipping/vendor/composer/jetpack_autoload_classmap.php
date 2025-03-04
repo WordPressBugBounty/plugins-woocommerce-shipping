@@ -562,6 +562,10 @@ return array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/tests/php/LabelPurchase/EligibilityRESTControllerTest.php'
 	),
+	'Automattic\\WCShipping\\Tests\\php\\LabelPurchase\\LabelPrintControllerTest' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/tests/php/LabelPurchase/LabelPrintControllerTest.php'
+	),
 	'Automattic\\WCShipping\\Tests\\php\\LabelPurchase\\LabelPrintServiceTest' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/tests/php/LabelPurchase/LabelPrintServiceTest.php'

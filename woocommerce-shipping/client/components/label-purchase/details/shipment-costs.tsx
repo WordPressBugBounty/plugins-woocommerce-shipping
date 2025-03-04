@@ -91,7 +91,12 @@ export const ShipmentCosts = ( {
 
 	return (
 		<>
-			<BaseControl id="sub-total" label={ subTotalLabel }>
+			<BaseControl
+				id="sub-total"
+				label={ subTotalLabel }
+				// Opting into the new styles for margin bottom
+				__nextHasNoMarginBottom={ true }
+			>
 				{ Boolean( subTotal ) && (
 					<Text align="right">
 						{ storeCurrency.formatAmount( subTotal! ) }
@@ -123,6 +128,8 @@ export const ShipmentCosts = ( {
 							) }
 						</>
 					}
+					// Opting into the new styles for margin bottom
+					__nextHasNoMarginBottom={ true }
 				>
 					<Flex direction="column" gap={ 1 }>
 						{ selectedRate?.parent && (
@@ -146,6 +153,8 @@ export const ShipmentCosts = ( {
 				label={
 					<strong>{ __( 'Total', 'woocommerce-shipping' ) }</strong>
 				}
+				// Opting into the new styles for margin bottom
+				__nextHasNoMarginBottom={ true }
 			>
 				{ ( ! isEmpty( selectedRate ) || ! isEmpty( label ) ) && (
 					<Text weight={ 600 } align="right">

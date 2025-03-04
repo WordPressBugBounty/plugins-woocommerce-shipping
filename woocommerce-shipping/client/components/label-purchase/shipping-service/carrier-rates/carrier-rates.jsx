@@ -33,7 +33,11 @@ export const CarrierRates = withBoundary( ( { rates } ) => {
 				selectRate( parent );
 			}
 		},
-		[ selectRate ]
+		[
+			selectRate,
+			setShippingServiceCompleted,
+			resetEssentialDetailsFocusArea,
+		]
 	);
 
 	useEffect( () => {

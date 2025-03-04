@@ -3,7 +3,7 @@ import { get, includes, memoize } from 'lodash';
 const getActiveXObject = ( name: string ) => {
 	try {
 		return new ActiveXObject( name );
-	} catch ( e ) {
+	} catch {
 		// Ignore
 	}
 };

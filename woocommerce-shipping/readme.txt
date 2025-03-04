@@ -7,7 +7,7 @@ Requires at least: 6.6
 Tested up to: 6.7
 WC requires at least: 9.5
 WC tested up to: 9.7
-Stable tag: 1.5.0
+Stable tag: 1.6.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -127,6 +127,18 @@ Absolutely! You can read our Terms of Service [here](https://wordpress.com/tos).
 6. WooCommerce Shipping address validation at checkout suggestion.
 
 == Changelog ==
+
+= 1.6.0 - 2025-03-04 =
+* Add   - New "Print packing slip" option on purchased labels.
+* Add   - Add a new "wcshipping_fulfillment_summary" filter to allow third party to modify the fulfillment metabox message.
+* Add   - Display a "Non-refundable" note in the rate for non-refundable services.
+* Add   - Functionality to specify shipping date of the label.
+* Fix   - Sanitize order line item name and variation on shipping label creation form.
+* Fix   - Selecting a label size on the "Print label" button would update the default label size.
+* Tweak - Remove the paper size selector next to the "Purchase Shipment" button, add a new size selector to the "Print label" button.
+* Tweak - ITN format improvements.
+* Tweak - Update the package deletion API endpoint to support predefined packages deletion.
+* Dev   - Update JS dependencies.
 
 = 1.5.0 - 2025-02-12 =
 * Add   - Addtional UPS label options.

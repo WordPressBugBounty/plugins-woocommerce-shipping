@@ -66,7 +66,8 @@ export const CustomsForm = (): JSX.Element => {
 	const getProps = < T extends CustomsState[ keyof CustomsState ] >(
 		key: keyof CustomsState | keyof CustomsItem,
 		productId?: number,
-		defaultValue: T = '' as T
+		defaultValue: T = '' as T,
+		options?: { help: string }
 	): Omit< InputProps< CustomsState, T >, 'onBlur' > => {
 		if ( productId ) {
 			const existingOrderItem =
@@ -126,6 +127,7 @@ export const CustomsForm = (): JSX.Element => {
 			  }
 			: {
 					...props,
+					help: options?.help,
 					onChange: ( value ) => {
 						props.onChange( value );
 					},
@@ -148,6 +150,10 @@ export const CustomsForm = (): JSX.Element => {
 						disabled={ disable }
 						required={ true }
 						ref={ contentTypeRef }
+						// Opting into the new styles for margin bottom
+						__nextHasNoMarginBottom={ true }
+						// Opting into the new styles for height
+						__next40pxDefaultSize={ true }
 					/>
 					{ showOtherContentsType && (
 						<TextControl
@@ -158,6 +164,10 @@ export const CustomsForm = (): JSX.Element => {
 							required={ true }
 							{ ...getProps< string >( 'contentsExplanation' ) }
 							disabled={ disable }
+							// Opting into the new styles for margin bottom
+							__nextHasNoMarginBottom={ true }
+							// Opting into the new styles for height
+							__next40pxDefaultSize={ true }
 						/>
 					) }
 				</FlexBlock>
@@ -171,6 +181,10 @@ export const CustomsForm = (): JSX.Element => {
 						{ ...getSelectControlProps( 'restrictionType' ) }
 						disabled={ disable }
 						required={ true }
+						// Opting into the new styles for margin bottom
+						__nextHasNoMarginBottom={ true }
+						// Opting into the new styles for height
+						__next40pxDefaultSize={ true }
 					/>
 					{ showOtherRestrictionType && (
 						<TextControl
@@ -181,6 +195,10 @@ export const CustomsForm = (): JSX.Element => {
 							required={ true }
 							{ ...getProps< string >( 'restrictionComments' ) }
 							disabled={ disable }
+							// Opting into the new styles for margin bottom
+							__nextHasNoMarginBottom={ true }
+							// Opting into the new styles for height
+							__next40pxDefaultSize={ true }
 						/>
 					) }
 				</FlexBlock>
@@ -205,8 +223,17 @@ export const CustomsForm = (): JSX.Element => {
 							),
 						}
 					) }
-					{ ...getProps< string >( 'itn' ) }
+					{ ...getProps< string >( 'itn', undefined, '', {
+						help: __(
+							'Please enter a valid ITN in one of these formats: X12345678901234, AES X12345678901234, or NOEEI 30.37(a)',
+							'woocommerce-shipping'
+						),
+					} ) }
 					disabled={ disable }
+					// Opting into the new styles for margin bottom
+					__nextHasNoMarginBottom={ true }
+					// Opting into the new styles for height
+					__next40pxDefaultSize={ true }
 				/>
 			</Flex>
 			<Flex>
@@ -219,6 +246,8 @@ export const CustomsForm = (): JSX.Element => {
 						'isReturnToSender'
 					) }
 					disabled={ disable }
+					// Opting into the new styles for height
+					__nextHasNoMarginBottom={ true }
 				/>
 			</Flex>
 			<Flex>
@@ -273,6 +302,10 @@ export const CustomsForm = (): JSX.Element => {
 									>( 'description', id ) }
 									disabled={ disable }
 									required={ true }
+									// Opting into the new styles for margin bottom
+									__nextHasNoMarginBottom={ true }
+									// Opting into the new styles for height
+									__next40pxDefaultSize={ true }
 								/>
 								<TextControl
 									label={ createInterpolateElement(
@@ -308,6 +341,10 @@ export const CustomsForm = (): JSX.Element => {
 									}
 									required={ isHSTariffNumberRequired() }
 									disabled={ disable }
+									// Opting into the new styles for height
+									__next40pxDefaultSize={ true }
+									// Opting into the new styles for margin bottom
+									__nextHasNoMarginBottom={ true }
 								/>
 								<InputControl
 									label={ __(
@@ -321,6 +358,8 @@ export const CustomsForm = (): JSX.Element => {
 									{ ...symbolProp }
 									{ ...getProps( 'price', id ) }
 									disabled={ disable }
+									// Opting into the new styles for height
+									__next40pxDefaultSize={ true }
 								/>
 								<InputControl
 									label={ __(
@@ -335,6 +374,8 @@ export const CustomsForm = (): JSX.Element => {
 									{ ...getProps( 'weight', id ) }
 									disabled={ disable }
 									required={ true }
+									// Opting into the new styles for height
+									__next40pxDefaultSize={ true }
 								/>
 								<SelectControl
 									label={
@@ -356,6 +397,10 @@ export const CustomsForm = (): JSX.Element => {
 									{ ...getProps( 'originCountry', id ) }
 									disabled={ disable }
 									required={ true }
+									// Opting into the new styles for margin bottom
+									__nextHasNoMarginBottom={ true }
+									// Opting into the new styles for height
+									__next40pxDefaultSize={ true }
 								/>
 							</Flex>
 						</FlexBlock>

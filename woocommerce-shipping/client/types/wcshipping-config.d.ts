@@ -17,6 +17,7 @@ import { ShipmentRecord } from './helpers';
 import { UserMeta } from './user-meta';
 import { PurchaseSettings } from './purchase-settings';
 import { PurchaseMeta } from './purchase-meta';
+import { ShipmentDate } from './shipment-date';
 
 export interface WCShippingConfigAccountSettings {
 	purchaseSettings: PurchaseSettings;
@@ -52,6 +53,7 @@ export interface WCShippingConfig {
 			selected_origin: SelectedOrigin | '';
 			selected_destination: SelectedDestination | '';
 			customs_information: ShipmentRecord< CustomsState > | '';
+			shipment_dates: ShipmentRecord< ShipmentDate< string > > | '';
 		};
 	};
 	origin_addresses: LocationResponse[];
@@ -67,4 +69,5 @@ export interface WCShippingConfig {
 			>;
 		};
 	};
+	custom_fulfillment_summary: string;
 }

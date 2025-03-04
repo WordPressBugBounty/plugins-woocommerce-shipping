@@ -53,6 +53,8 @@ export const RowExtras = ( {
 					checked={
 						signatureRequiredRate.rateId === selected?.rate?.rateId
 					}
+					// Opting into the new styles for margin bottom
+					__nextHasNoMarginBottom={ true }
 				/>
 			</Flex>
 		) }
@@ -84,6 +86,8 @@ export const RowExtras = ( {
 						adultSignatureRequiredRate.rateId ===
 						selected?.rate?.rateId
 					}
+					// Opting into the new styles for margin bottom
+					__nextHasNoMarginBottom={ true }
 				/>
 			</Flex>
 		) }
@@ -105,6 +109,7 @@ export const RowExtras = ( {
 					checked={ Boolean(
 						selectedRateOptions[ LABEL_RATE_OPTION.CARBON_NEUTRAL ]
 					) }
+					__nextHasNoMarginBottom={ true }
 				/>
 			</Flex>
 		) }
@@ -131,6 +136,7 @@ export const RowExtras = ( {
 							LABEL_RATE_OPTION.ADDITIONAL_HANDLING
 						]
 					) }
+					__nextHasNoMarginBottom={ true }
 				/>
 			</Flex>
 		) }
@@ -161,6 +167,7 @@ export const RowExtras = ( {
 							LABEL_RATE_OPTION.SATURDAY_DELIVERY
 						]
 					) }
+					__nextHasNoMarginBottom={ true }
 				/>
 			</Flex>
 		) }

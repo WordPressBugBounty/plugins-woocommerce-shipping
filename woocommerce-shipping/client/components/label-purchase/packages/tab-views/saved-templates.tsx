@@ -9,7 +9,7 @@ import {
 import { chevronDown } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
 import { memo, useCallback, useEffect, useState } from '@wordpress/element';
-import { dispatch, select as selectData, useSelect } from '@wordpress/data';
+import { dispatch, useSelect } from '@wordpress/data';
 import { labelPurchaseStore } from 'data/label-purchase';
 import { Conditional } from 'components/HOC';
 import { CustomPackage, Package } from 'types';
@@ -19,16 +19,13 @@ import { useLabelPurchaseContext } from 'context/label-purchase';
 import { FetchNotice } from './fetch-notice';
 import { TotalWeight } from '../../total-weight';
 import { GetRatesButton } from '../../get-rates-button';
-import {
-	getAvailableCarrierPackages,
-	getSelectedCarrierIdFromPackage,
-	recordEvent,
-} from 'utils';
+import { recordEvent } from 'utils';
 import { withBoundary } from 'components/HOC/error-boundary';
 import { usePackageState } from '../../hooks';
 import { ConfirmPackageDeletion } from './saved-templates/confirm-package-deletion';
 import { DELETION_EVENTS, trackPackageDeletion } from '../utils';
-import { PACKAGE_TYPES } from '../constants';
+import { CUSTOM_PACKAGE_TYPES, PACKAGE_CATEGORIES } from '../constants';
+
 interface SavedTemplatesProps {
 	savedPackages: Package[] | CustomPackage[];
 	selectedPackage:
@@ -55,6 +52,7 @@ export const SavedTemplates = withBoundary(
 			};
 		},
 		NoSavedTemplates,
+		// @ts-expect-error // Conditional is writen in js
 		memo(
 			( {
 				savedPackages,
@@ -98,41 +96,11 @@ export const SavedTemplates = withBoundary(
 					setIsDeletingPackage( true );
 					trackPackageDeletion( DELETION_EVENTS.CONFIRMED, pkg );
 
-					if ( pkg.isUserDefined ) {
-						await dispatch(
-							labelPurchaseStore
-						).deleteCustomPackage( pkg.id );
-						setIsDeletingPackage( false );
-						setDeletablePackage( false );
-						return;
-					}
-
-					const carrierId = getSelectedCarrierIdFromPackage(
-						getAvailableCarrierPackages(),
-						pkg.id
-					);
-
-					if ( ! carrierId ) {
-						setIsDeletingPackage( false );
-						return;
-					}
-
-					const allPredefinedPackages =
-						selectData(
-							labelPurchaseStore
-						).getPredefinedPackages();
-
-					const predefinedPackages = selectData(
-						labelPurchaseStore
-					).getPredefinedPackages( carrierId ) as string[];
-
-					await dispatch( labelPurchaseStore ).updateFavoritePackages(
-						{
-							...allPredefinedPackages,
-							[ carrierId ]: predefinedPackages.filter(
-								( p ) => p !== pkg.id
-							),
-						}
+					await dispatch( labelPurchaseStore ).deletePackage(
+						pkg.id,
+						pkg.isUserDefined
+							? PACKAGE_CATEGORIES.CUSTOM
+							: PACKAGE_CATEGORIES.PREDEFINED
 					);
 
 					setIsDeletingPackage( false );
@@ -190,7 +158,7 @@ export const SavedTemplates = withBoundary(
 						package_id: selectedPackageForTracks?.id,
 						is_letter:
 							selectedPackageForTracks?.type ===
-							PACKAGE_TYPES.ENVELOPE,
+							CUSTOM_PACKAGE_TYPES.ENVELOPE,
 						width: selectedPackageForTracks?.width,
 						height: selectedPackageForTracks?.height,
 						length: selectedPackageForTracks?.length,

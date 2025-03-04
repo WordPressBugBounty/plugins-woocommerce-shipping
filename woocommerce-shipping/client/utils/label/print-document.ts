@@ -80,7 +80,7 @@ export const printDocument = (
 				// The empty iframe content will not catch any error. Thus we dont call the print() and let the browser open the PDF using another program.
 				try {
 					( () => iframe?.contentDocument!.body.innerText )();
-				} catch ( e ) {
+				} catch {
 					iframe?.contentWindow?.print();
 				}
 
@@ -110,4 +110,41 @@ export const printDocument = (
 			setTimeout( () => URL.revokeObjectURL( blobUrl ), 0 );
 			return Promise.resolve();
 	}
+};
+
+/**
+ * Opens the browser's print dialog to print HTML content as a packing slip document.
+ * Uses an invisible iframe to load the content and triggers the print dialog.
+ *
+ * @param {string} content - The HTML content to be printed
+ * @return {Promise<void>} Resolves when printing is initiated
+ */
+export const printPackingSlipDocument = (
+	content: string
+): Promise< void > => {
+	// Add print-specific styles to remove headers and footers
+	const printStyles = `
+		<style>
+			@media print {
+				@page {
+					margin: 0;
+					size: auto;
+				}
+				body {
+					margin: 1cm;
+				}
+			}
+		</style>
+	`;
+	const contentWithStyles = content.includes( '</head>' )
+		? content.replace( '</head>', `${ printStyles }</head>` )
+		: `<html><head>${ printStyles }</head><body>${ content }</body></html>`;
+
+	const blob = new Blob( [ contentWithStyles ], { type: 'text/html' } );
+	const blobUrl = URL.createObjectURL( blob );
+
+	return loadDocumentInFrame( blobUrl ).then( () => {
+		iframe?.contentWindow?.print();
+		URL.revokeObjectURL( blobUrl );
+	} );
 };
