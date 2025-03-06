@@ -69,12 +69,18 @@ class CheckoutController {
 			return;
 		}
 
-		wp_enqueue_style( 'wcshipping-checkout', WCSHIPPING_PLUGIN_DIST_URL . '/woocommerce-shipping-checkout-address-validation.css', array(), Utils::get_wcshipping_version() );
+		wp_enqueue_style(
+			'wcshipping-checkout',
+			WCSHIPPING_PLUGIN_DIST_URL . '/woocommerce-shipping-checkout-address-validation-' . Utils::get_wcshipping_version() . '.css',
+			array(),
+			Utils::get_wcshipping_version()
+		);
 
 		$handle = 'wcshipping-checkout';
 
 		wp_register_script(
 			$handle,
+			// Files under javascript folder are not built by webpack, so no need to add the version to the filename.
 			WCSHIPPING_ASSETS_URL . 'javascript/checkout.js',
 			array( 'wp-i18n' ),
 			Utils::get_wcshipping_version(),

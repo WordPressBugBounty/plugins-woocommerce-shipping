@@ -70,13 +70,17 @@ export const ShippingDateSpotlight = ( {
 			effects: {
 				spotlight: {
 					interactivity: {
-						enabled: false,
+						// Allow interactions with the reference element in case the overlay is not closable.
+						// This is useful when the CSS rule that brings the spotlight in the view is not working.
+						enabled: true,
 					},
 					styles: {
 						height: '52px',
 						boxSizing: 'border-box',
 					},
 				},
+				overlay: false, // Disable overlay to allow interactions with the reference element.
+				autoScroll: true, // Automatically scroll the page to the reference element, it makes the spotlight more accurate in our case.
 			},
 			popperModifiers: [
 				{

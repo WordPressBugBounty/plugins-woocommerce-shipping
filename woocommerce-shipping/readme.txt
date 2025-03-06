@@ -7,7 +7,7 @@ Requires at least: 6.6
 Tested up to: 6.7
 WC requires at least: 9.5
 WC tested up to: 9.7
-Stable tag: 1.6.0
+Stable tag: 1.6.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -127,6 +127,9 @@ Absolutely! You can read our Terms of Service [here](https://wordpress.com/tos).
 6. WooCommerce Shipping address validation at checkout suggestion.
 
 == Changelog ==
+
+= 1.6.1 - 2025-03-06 =
+* Tweak - Force browser to download assets of the new release.
 
 = 1.6.0 - 2025-03-04 =
 * Add   - New "Print packing slip" option on purchased labels.

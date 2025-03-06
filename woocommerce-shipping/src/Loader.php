@@ -1821,18 +1821,18 @@ class Loader {
 				'woocommerce-shipping-shipment-tracking',
 				'woocommerce-shipping-analytics',
 			);
-			$deps_file_path = plugin_dir_path( __FILE__ ) . "dist/$root_view.asset.php";
+			$deps_file_path = plugin_dir_path( __FILE__ ) . "dist/$root_view-" . Utils::get_wcshipping_version() . '.asset.php';
 			if ( in_array( $root_view, $allowed_views ) && file_exists( $deps_file_path ) ) {
 				$dependencies = require $deps_file_path;// nosemgrep
 			}
 		}
 
-		$asset_version = ! empty( $dependencies['version'] ) ? wp_hash( WCSHIPPING_VERSION . '.' . $dependencies['version'] ) : WCSHIPPING_VERSION;
+		$asset_version = ! empty( $dependencies['version'] ) ? wp_hash( Utils::get_wcshipping_version() . '.' . $dependencies['version'] ) : Utils::get_wcshipping_version();
 
 		// Enqueue the stylesheet.
 		wp_enqueue_style(
 			$root_view,
-			$this->wc_connect_base_url . "style-$root_view.css",
+			$this->wc_connect_base_url . "style-$root_view-" . Utils::get_wcshipping_version() . '.css',
 			array(),
 			$asset_version
 		);
@@ -1845,7 +1845,7 @@ class Loader {
 		// Enqueue the entry point script.
 		wp_enqueue_script(
 			$root_view,
-			$this->wc_connect_base_url . "$root_view.js",
+			$this->wc_connect_base_url . "$root_view-" . Utils::get_wcshipping_version() . '.js',
 			$deps,
 			$asset_version,
 			array(
