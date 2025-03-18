@@ -27,4 +27,5 @@ export const SETTINGS_KEYS = {
 	TAX_IDENTIFIER_IOSS: 'tax_identifier_ioss',
 	TAX_IDENTIFIER_VOEC: 'tax_identifier_voec',
 	TAX_IDENTIFIER_PVA: 'tax_identifier_pva',
+	REMEMBER_LAST_USED_SHIPPING_DATE: 'remember_last_used_shipping_date',
 } as const;

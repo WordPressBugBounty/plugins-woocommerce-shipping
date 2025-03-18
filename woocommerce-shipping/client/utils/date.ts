@@ -63,3 +63,12 @@ export const getDisplayDate = ( date: Date ) => {
 	}
 	return formattedDate;
 };
+
+/**
+ * Check if a date is valid
+ *
+ */
+export const isDateValid = ( date: string ): boolean => {
+	const dateObject = new Date( date );
+	return ! isNaN( dateObject.getTime() );
+};

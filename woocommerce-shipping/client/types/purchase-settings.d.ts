@@ -7,4 +7,5 @@ export interface PurchaseSettings {
 	use_last_service: boolean;
 	checkout_address_validation: boolean;
 	automatically_open_print_dialog: boolean;
+	remember_last_used_shipping_date: boolean;
 }

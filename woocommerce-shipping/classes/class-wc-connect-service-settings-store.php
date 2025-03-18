@@ -99,7 +99,15 @@ class WC_Connect_Service_Settings_Store {
 			$result['checkout_address_validation'] = false;
 		}
 
+		if ( ! isset( $result['automatically_open_print_dialog'] ) ) {
+			$result['automatically_open_print_dialog'] = false;
+		}
+
 		$result['tax_identifiers'] = $this->get_tax_identifiers();
+
+		if ( ! isset( $result['remember_last_used_shipping_date'] ) ) {
+			$result['remember_last_used_shipping_date'] = true;
+		}
 
 		return $result;
 	}
@@ -149,6 +157,7 @@ class WC_Connect_Service_Settings_Store {
 			'use_last_service',
 			'checkout_address_validation',
 			'automatically_open_print_dialog',
+			'remember_last_used_shipping_date',
 		);
 
 		$validated_settings = array();
@@ -158,14 +167,14 @@ class WC_Connect_Service_Settings_Store {
 			}
 			$validated_settings[ $settings_key ] = $settings_value;
 		}
-		$validated_settings['selected_payment_method_id']      = intval( $validated_settings['selected_payment_method_id'] );
-		$validated_settings['email_receipts']                  = $validated_settings['email_receipts'] ? true : false;
-		$validated_settings['enabled']                         = $validated_settings['enabled'] ? true : false;
-		$validated_settings['use_last_package']                = $validated_settings['use_last_package'] ? true : false;
-		$validated_settings['use_last_service']                = $validated_settings['use_last_service'] ? true : false;
-		$validated_settings['checkout_address_validation']     = $validated_settings['checkout_address_validation'] ? true : false;
-		$validated_settings['automatically_open_print_dialog'] = $validated_settings['automatically_open_print_dialog'] ? true : false;
-
+		$validated_settings['selected_payment_method_id']       = isset( $validated_settings['selected_payment_method_id'] ) ? intval( $validated_settings['selected_payment_method_id'] ) : 0;
+		$validated_settings['email_receipts']                   = isset( $validated_settings['email_receipts'] ) && $validated_settings['email_receipts'] ? true : false;
+		$validated_settings['enabled']                          = isset( $validated_settings['enabled'] ) && $validated_settings['enabled'] ? true : false;
+		$validated_settings['use_last_package']                 = isset( $validated_settings['use_last_package'] ) && $validated_settings['use_last_package'] ? true : false;
+		$validated_settings['use_last_service']                 = isset( $validated_settings['use_last_service'] ) && $validated_settings['use_last_service'] ? true : false;
+		$validated_settings['checkout_address_validation']      = isset( $validated_settings['checkout_address_validation'] ) && $validated_settings['checkout_address_validation'] ? true : false;
+		$validated_settings['automatically_open_print_dialog']  = isset( $validated_settings['automatically_open_print_dialog'] ) && $validated_settings['automatically_open_print_dialog'] ? true : false;
+		$validated_settings['remember_last_used_shipping_date'] = isset( $validated_settings['remember_last_used_shipping_date'] ) && $validated_settings['remember_last_used_shipping_date'] ? true : false;
 		$saved = WC_Connect_Options::update_option( 'account_settings', $validated_settings );
 
 		/**

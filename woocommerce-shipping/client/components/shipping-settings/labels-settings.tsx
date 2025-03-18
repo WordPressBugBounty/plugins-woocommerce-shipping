@@ -40,6 +40,7 @@ export const LabelsSettingsComponent = () => {
 		storeOwnerLogin,
 		storeOwnerEmail,
 		automaticallyOpenPrintDialog,
+		rememberLastUsedShippingDate,
 	} = useSettings();
 
 	const maybeConfirmExit = ( isChanged: boolean ) => {
@@ -249,6 +250,23 @@ export const LabelsSettingsComponent = () => {
 							checked={ automaticallyOpenPrintDialog }
 							onChange={ updateFormData(
 								SETTINGS_KEYS.AUTOMATICALLY_OPEN_PRINT_DIALOG
+							) }
+							// Opt in to the new bottom margin for consistency with other form fields.
+							__nextHasNoMarginBottom={ true }
+						/>
+						<Spacer marginTop={ 0 } marginBottom={ 3 } />
+						<CheckboxControl
+							label={ __(
+								'Remember last shipping date',
+								'woocommerce-shipping'
+							) }
+							help={ __(
+								'Remember the last shipping date used to purchase a label.',
+								'woocommerce-shipping'
+							) }
+							checked={ rememberLastUsedShippingDate }
+							onChange={ updateFormData(
+								SETTINGS_KEYS.REMEMBER_LAST_USED_SHIPPING_DATE
 							) }
 							// Opt in to the new bottom margin for consistency with other form fields.
 							__nextHasNoMarginBottom={ true }

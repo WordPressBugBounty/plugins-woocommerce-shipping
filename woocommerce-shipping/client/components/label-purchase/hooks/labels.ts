@@ -429,6 +429,9 @@ export function useLabelsState( {
 				),
 			] as RequestPackageWithCustoms< LabelRequestPackages >[];
 
+			const shippingDate =
+				getCurrentShipmentDate()?.shippingDate?.toISOString();
+
 			try {
 				await dispatch( labelPurchaseStore ).purchaseLabel(
 					orderId,
@@ -447,10 +450,10 @@ export function useLabelsState( {
 					},
 					{
 						last_order_completed: getLastOrderCompleted(),
+						last_shipping_date: shippingDate,
 					},
 					{
-						label_date:
-							getCurrentShipmentDate()?.shippingDate?.toISOString(),
+						label_date: shippingDate,
 					}
 				);
 			} catch ( e ) {

@@ -12,6 +12,7 @@ export const useSettings = () => {
 		checkout_address_validation: checkoutAddressValidation,
 		automatically_open_print_dialog: automaticallyOpenPrintDialog,
 		tax_identifiers: taxIdentifiers,
+		remember_last_used_shipping_date: rememberLastUsedShippingDate,
 	} = useSelect( ( select ) => {
 		const settings = select( settingsStore ).getConfigSettings();
 		if ( ! settings ) {
@@ -24,6 +25,7 @@ export const useSettings = () => {
 				checkout_address_validation: '',
 				automatically_open_print_dialog: '',
 				tax_identifiers: defaultTaxIdentifiers,
+				remember_last_shipping_date: '',
 			};
 		}
 		return {
@@ -36,6 +38,8 @@ export const useSettings = () => {
 			automatically_open_print_dialog:
 				settings.automatically_open_print_dialog ?? '',
 			tax_identifiers: settings.tax_identifiers ?? defaultTaxIdentifiers,
+			remember_last_used_shipping_date:
+				settings.remember_last_used_shipping_date ?? '',
 		};
 	} );
 
@@ -81,5 +85,6 @@ export const useSettings = () => {
 		storeOwnerWpcomLogin,
 		automaticallyOpenPrintDialog,
 		canManagePayments,
+		rememberLastUsedShippingDate,
 	};
 };

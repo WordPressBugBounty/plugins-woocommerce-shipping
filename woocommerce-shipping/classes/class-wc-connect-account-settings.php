@@ -36,6 +36,7 @@ class WC_Connect_Account_Settings {
 		$last_service_id      = get_user_meta( get_current_user_id(), 'wcshipping_last_service_id', true );
 		$last_carrier_id      = get_user_meta( get_current_user_id(), 'wcshipping_last_carrier_id', true );
 		$last_order_completed = (bool) get_user_meta( get_current_user_id(), 'wcshipping_last_order_completed', true );
+		$last_shipping_date   = get_user_meta( get_current_user_id(), 'wcshipping_last_shipping_date', true );
 
 		$purchaseSettingsKey     = $isWCShipping ? 'purchaseSettings' : 'formData';
 		$purchaseSettingsMetaKey = $isWCShipping ? 'purchaseMeta' : 'formMeta';
@@ -59,6 +60,7 @@ class WC_Connect_Account_Settings {
 				'last_service_id'      => $last_service_id,
 				'last_carrier_id'      => $last_carrier_id,
 				'last_order_completed' => $last_order_completed,
+				'last_shipping_date'   => $last_shipping_date,
 			),
 			// Make sure there's an active WCS&T installation that supports parallel loading.
 			'enabledServices'        => WCST::is_wcst_active( '2.8.2' ) ? $this->settings_store->get_enabled_services() : array(),

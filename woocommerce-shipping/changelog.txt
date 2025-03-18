@@ -1,5 +1,8 @@
 *** WooCommerce Shipping Changelog ***
 
+= 1.6.2 - 2025-03-17 =
+* Fix   - Notice PHP error "Undefined index" on the settings page after fresh install.
+
 = 1.6.1 - 2025-03-06 =
 * Tweak - Force browser to download assets of the new release.
 

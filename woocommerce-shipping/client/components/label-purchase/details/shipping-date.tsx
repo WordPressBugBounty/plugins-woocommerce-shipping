@@ -34,9 +34,6 @@ export const ShippingDate = ( {
 
 	// Use ISO string format for date storage
 	const today = getDateTS( null, true );
-	const [ displayDate, setDisplayDate ] = useState< string >(
-		getDisplayDate( shippingDate ?? today )
-	);
 
 	const datePickerRef = useRef< HTMLDivElement >( null );
 
@@ -116,8 +113,6 @@ export const ShippingDate = ( {
 
 		setShippingDate( dateObj );
 
-		// Format the date for display
-		setDisplayDate( getDisplayDate( dateObj ) );
 		setValidationError( null );
 
 		// Close the popover after selecting a date
@@ -222,7 +217,7 @@ export const ShippingDate = ( {
 						icon={ canSelectDate ? 'calendar-alt' : null }
 						disabled={ ! canSelectDate }
 					>
-						{ displayDate }
+						{ getDisplayDate( shippingDate ?? today ) }
 					</Button>
 
 					{ isPopoverOpen && (
