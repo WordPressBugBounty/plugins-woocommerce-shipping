@@ -52,7 +52,8 @@ class ShipmentsRESTController extends WCShippingRESTController {
 		return rest_ensure_response(
 			array(
 				'success' => true,
-				'data'    => $this->service->get_order_shipments_json( $order_id ),
+				// Casting to object ensures the root remains an object, not an array even if the the only key is `0`;
+				'data'    => wp_json_encode( (object) $this->service->get_order_shipments_data( $order_id )['shipments'] ?? new \stdClass() ),
 			)
 		);
 	}

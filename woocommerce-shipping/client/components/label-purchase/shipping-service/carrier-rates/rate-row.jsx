@@ -144,11 +144,7 @@ export const RateRow = withBoundary(
 						[ rateCaveatText && 'has-rate-caveat' ]
 					) }
 				>
-					<CarrierIcon
-						carrier={ carrierId }
-						positionY="top"
-						size="xLarge"
-					/>
+					<CarrierIcon carrier={ carrierId } size="xLarge" />
 
 					<FlexBlock>
 						<Flex direction="column" gap={ 2 }>

@@ -123,6 +123,7 @@ return array(
     'Automattic\\WCShipping\\Packages\\PackagesAsArraysSanitizer' => $baseDir . '/src/Packages/PackagesAsArraysSanitizer.php',
     'Automattic\\WCShipping\\Packages\\PackagesRESTController' => $baseDir . '/src/Packages/PackagesRESTController.php',
     'Automattic\\WCShipping\\Shipment\\Address' => $baseDir . '/src/Shipment/Address.php',
+    'Automattic\\WCShipping\\Shipment\\ShipmentFromLabelGenerator' => $baseDir . '/src/Shipment/ShipmentFromLabelGenerator.php',
     'Automattic\\WCShipping\\Shipments\\ShipmentsRESTController' => $baseDir . '/src/Shipments/ShipmentsRESTController.php',
     'Automattic\\WCShipping\\Shipments\\ShipmentsService' => $baseDir . '/src/Shipments/ShipmentsService.php',
     'Automattic\\WCShipping\\StoreApi\\AbstractStoreApiExtension' => $baseDir . '/src/StoreApi/AbstractStoreApiExtension.php',

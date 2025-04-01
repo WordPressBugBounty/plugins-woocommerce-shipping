@@ -95,16 +95,21 @@ export const ShipmentContent = ( {
 			if ( ! itemsRef.current ) {
 				return;
 			}
-			document.querySelector( mainModalContentSelector )?.scrollTo( {
+			const modalContent = document.querySelector(
+				mainModalContentSelector
+			);
+			const header = modalContent?.querySelector( '.items-header' );
+			const headerHeight = header
+				? header.getBoundingClientRect().height
+				: 0;
+			const tabs = modalContent?.querySelector( '.shipment-tabs' );
+			const tabsHeight =
+				Object.keys( shipments ).length > 1 && tabs
+					? tabs.getBoundingClientRect().height
+					: 0;
+			modalContent?.scrollTo( {
 				left: 0,
-				// We have to offset the height of the header, so it doesn't overlap our message.
-				// If there's more than one shipment being created, then we also have to take the
-				// "Shipment tabs" component into account.
-				// @todo We could make this smarter by finding the height with JS, but the heights
-				//       are a fixed size, so we're keeping it dumb for now for simplicity.
-				top:
-					itemsRef.current.offsetTop -
-					( Object.keys( shipments ).length > 1 ? 140 : 72 ),
+				top: itemsRef.current.offsetTop - ( headerHeight + tabsHeight ),
 				behavior: 'smooth',
 			} );
 		}

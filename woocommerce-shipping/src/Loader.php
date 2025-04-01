@@ -1084,13 +1084,26 @@ class Loader {
 			);
 		}
 
-		// Changing the postcode, currency, weight or dimension units affect the returned schema from the server.
-		// Make sure to update the service schemas when these options change.
-		// TODO: Add other options that change the schema here, or figure out a way to do it automatically.
-		add_action( 'update_option_woocommerce_store_postcode', array( $this, 'queue_service_schema_refresh' ) );
-		add_action( 'update_option_woocommerce_currency', array( $this, 'queue_service_schema_refresh' ) );
-		add_action( 'update_option_woocommerce_weight_unit', array( $this, 'queue_service_schema_refresh' ) );
-		add_action( 'update_option_woocommerce_dimension_unit', array( $this, 'queue_service_schema_refresh' ) );
+		/**
+		 * Queue a cron job to refetch the schema data from the WooCommerce Connect Server.
+		 *
+		 * The schema data fetched from the WooCommerce Connect Server varies based on configuration options.
+		 * Updating these options requires that the schema data be refetched to reflect the new configuration.
+		 *
+		 * @since 1.6.1
+		 */
+		$options = apply_filters(
+			'wcshipping_schema_dependent_options',
+			array(
+				'woocommerce_store_postcode',
+				'woocommerce_currency',
+				'woocommerce_weight_unit',
+				'woocommerce_dimension_unit',
+			)
+		);
+		foreach ( $options as $option ) {
+			add_action( "update_option_{$option}", array( $this, 'queue_service_schema_refresh' ) );
+		}
 
 		$address_options = array(
 			'woocommerce_store_address',

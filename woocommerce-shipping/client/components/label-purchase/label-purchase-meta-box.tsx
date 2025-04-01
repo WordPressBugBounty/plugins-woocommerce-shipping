@@ -19,12 +19,12 @@ export const LabelPurchaseMetaBox = ( {
 	setIsOpen,
 }: LabelPurchaseMetaBoxProps ) => {
 	const {
-		labels: { hasMissingPurchase, purchasedLabelsProductIds },
+		labels: { purchasedLabelsProductIds, getShipmentsWithoutLabel },
 	} = useLabelPurchaseContext();
 
 	const order = getCurrentOrder();
 	const count = order.total_line_items_quantity;
-	const orderFulfilled = ! hasMissingPurchase();
+	const orderFulfilled = getShipmentsWithoutLabel().length === 0;
 
 	const openLabelsModal = () => {
 		setIsOpen( true );

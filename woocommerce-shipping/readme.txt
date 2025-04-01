@@ -7,7 +7,7 @@ Requires at least: 6.6
 Tested up to: 6.7
 WC requires at least: 9.5
 WC tested up to: 9.7
-Stable tag: 1.6.2
+Stable tag: 1.6.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -127,6 +127,9 @@ Absolutely! You can read our Terms of Service [here](https://wordpress.com/tos).
 6. WooCommerce Shipping address validation at checkout suggestion.
 
 == Changelog ==
+
+= 1.6.3 - 2025-04-01 =
+* Fix   - Labels created in the mobile apps are not visible in the web view.
 
 = 1.6.2 - 2025-03-17 =
 * Fix   - Notice PHP error "Undefined index" on the settings page after fresh install.

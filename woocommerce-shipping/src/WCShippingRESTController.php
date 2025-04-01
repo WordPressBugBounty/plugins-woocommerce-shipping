@@ -91,6 +91,14 @@ abstract class WCShippingRESTController extends WC_REST_Controller {
 		return $params_list;
 	}
 
+	/**
+	 * Get the route for the controller.
+	 *
+	 * @return string
+	 */
+	public function get_rest_base() {
+		return $this->rest_base;
+	}
 
 	/**
 	 * @param WP_REST_Request $request

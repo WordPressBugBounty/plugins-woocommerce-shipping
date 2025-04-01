@@ -1,5 +1,8 @@
 *** WooCommerce Shipping Changelog ***
 
+= 1.6.3 - 2025-04-01 =
+* Fix   - Labels created in the mobile apps are not visible in the web view.
+
 = 1.6.2 - 2025-03-17 =
 * Fix   - Notice PHP error "Undefined index" on the settings page after fresh install.
 

@@ -490,6 +490,10 @@ return array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/src/Shipment/Address.php'
 	),
+	'Automattic\\WCShipping\\Shipment\\ShipmentFromLabelGenerator' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/src/Shipment/ShipmentFromLabelGenerator.php'
+	),
 	'Automattic\\WCShipping\\Shipments\\ShipmentsRESTController' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/src/Shipments/ShipmentsRESTController.php'
@@ -550,6 +554,10 @@ return array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/tests/php/Carrier/UPSDAP/UPSDAPCarrierStrategyRESTControllerTest.php'
 	),
+	'Automattic\\WCShipping\\Tests\\php\\DummyServiceSchemasStore' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/tests/php/LoaderTest.php'
+	),
 	'Automattic\\WCShipping\\Tests\\php\\FeatureFlags\\FeatureFlagsTest' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/tests/php/FeatureFlags/FeatureFlagsTest.php'
@@ -582,7 +590,7 @@ return array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/tests/php/LabelPurchase/LabelRefundRESTControllerTest.php'
 	),
-	'Automattic\\WCShipping\\Tests\\php\\LabelPurchase\\ViewTest' => array(
+	'Automattic\\WCShipping\\Tests\\php\\LabelPurchase\\TestableView' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/tests/php/LabelPurchase/ViewTest.php'
 	),
@@ -593,6 +601,10 @@ return array(
 	'Automattic\\WCShipping\\Tests\\php\\LabelRate\\LabelRateServiceTest' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/tests/php/LabelRate/LabelRateServiceTest.php'
+	),
+	'Automattic\\WCShipping\\Tests\\php\\Loader_Test' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/tests/php/LoaderTest.php'
 	),
 	'Automattic\\WCShipping\\Tests\\php\\Migration\\LegacyLabelMigratorTest' => array(
 		'version' => 'dev-trunk',
@@ -609,6 +621,10 @@ return array(
 	'Automattic\\WCShipping\\Tests\\php\\Shipments\\ShipmentsServiceTest' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/tests/php/Shipments/ShipmentsServiceTest.php'
+	),
+	'Automattic\\WCShipping\\Tests\\php\\TestLoader' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/tests/php/LoaderTest.php'
 	),
 	'Automattic\\WCShipping\\Tests\\php\\Utils\\ProductCustomsDataTest' => array(
 		'version' => 'dev-trunk',
@@ -661,6 +677,10 @@ return array(
 	'Container' => array(
 		'version' => '5.0.0',
 		'path'    => $vendorDir . '/automattic/jetpack-autoloader/src/class-container.php'
+	),
+	'DummyOrderItem' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/tests/php/Shipment/ShipmentFromLabelGeneratorTest.php'
 	),
 	'Hook_Manager' => array(
 		'version' => '5.0.0',
@@ -730,6 +750,10 @@ return array(
 		'version' => '5.0.0',
 		'path'    => $vendorDir . '/automattic/jetpack-autoloader/src/class-plugins-handler.php'
 	),
+	'ShipmentFromLabelGeneratorTest' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/tests/php/Shipment/ShipmentFromLabelGeneratorTest.php'
+	),
 	'Shipping_Sample_test' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/tests/php/test-sample.php'
@@ -745,6 +769,14 @@ return array(
 	'StoreNoticeTest' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/tests/php/Checkout/StoreNoticeTest.php'
+	),
+	'TestLabelPreviewRESTController' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/tests/php/LabelPurchase/LabelPreviewRESTControllerTest.php'
+	),
+	'TestableShipmentFromLabelGenerator' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/tests/php/Shipment/ShipmentFromLabelGeneratorTest.php'
 	),
 	'UPSDAPCarrierStrategyServiceTest' => array(
 		'version' => 'dev-trunk',
