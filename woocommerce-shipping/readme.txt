@@ -5,9 +5,9 @@ Requires Plugins: woocommerce
 Requires PHP: 7.4
 Requires at least: 6.6
 Tested up to: 6.7
-WC requires at least: 9.5
-WC tested up to: 9.7
-Stable tag: 1.6.3
+WC requires at least: 9.6
+WC tested up to: 9.8
+Stable tag: 1.6.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -127,6 +127,9 @@ Absolutely! You can read our Terms of Service [here](https://wordpress.com/tos).
 6. WooCommerce Shipping address validation at checkout suggestion.
 
 == Changelog ==
+
+= 1.6.4 - 2025-04-07 =
+* Tweak - WooCommerce 9.8 Compatibility.
 
 = 1.6.3 - 2025-04-01 =
 * Fix   - Labels created in the mobile apps are not visible in the web view.

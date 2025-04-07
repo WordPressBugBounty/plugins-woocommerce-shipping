@@ -85,7 +85,7 @@ class WooCommerceBlocksIntegration implements IntegrationInterface {
 	 */
 	protected function register_script( string $handle ) {
 		$script_path = $handle . '-' . Utils::get_wcshipping_version() . '.js';
-		$script_url  = ( defined( 'WOOCOMMERCE_SHIPPING_DEV_SERVER_URL' ) ? WOOCOMMERCE_SHIPPING_DEV_SERVER_URL : WCSHIPPING_PLUGIN_DIST_URL ) . $script_path;
+		$script_url  = Utils::get_enqueue_base_url() . $script_path;
 
 		$script_asset_path = WCSHIPPING_PLUGIN_DIST_DIR . $handle . '.asset.php';
 		$script_asset      = file_exists( $script_asset_path )

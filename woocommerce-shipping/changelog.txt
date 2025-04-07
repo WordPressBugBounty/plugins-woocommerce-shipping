@@ -1,5 +1,8 @@
 *** WooCommerce Shipping Changelog ***
 
+= 1.6.4 - 2025-04-07 =
+* Tweak - WooCommerce 9.8 Compatibility.
+
 = 1.6.3 - 2025-04-01 =
 * Fix   - Labels created in the mobile apps are not visible in the web view.
 

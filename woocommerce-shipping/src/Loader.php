@@ -397,7 +397,7 @@ class Loader {
 	 * @return string
 	 */
 	private static function get_wc_connect_base_url() {
-		return trailingslashit( defined( 'WOOCOMMERCE_SHIPPING_DEV_SERVER_URL' ) ? WOOCOMMERCE_SHIPPING_DEV_SERVER_URL : plugins_url( 'dist/', WCSHIPPING_PLUGIN_FILE ) );
+		return WCShippingUtils::get_enqueue_base_url();
 	}
 
 	/**

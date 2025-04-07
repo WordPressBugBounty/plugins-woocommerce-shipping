@@ -85,6 +85,17 @@ class Utils {
 	}
 
 	/**
+	 * Get the base URL for enqueuing assets.
+	 *
+	 * @since 1.6.3
+	 *
+	 * @return string
+	 */
+	public static function get_enqueue_base_url() {
+		return trailingslashit( defined( 'WOOCOMMERCE_SHIPPING_DEV_SERVER_URL' ) ? WOOCOMMERCE_SHIPPING_DEV_SERVER_URL : WCSHIPPING_PLUGIN_DIST_URL );
+	}
+
+	/**
 	 * Get the plugin directory path.
 	 * This is a helper function to get the plugin directory path for either the main plugin or the WooCommerce plugin.
 	 *
