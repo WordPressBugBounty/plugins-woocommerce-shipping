@@ -112,7 +112,7 @@ export const UPSDAPTos = ( {
 					</Flex>
 					<p>
 						{ __(
-							'To start shipping from this address with UPS®, we need you to agree to the following terms and conditions::',
+							'To start shipping from this address with UPS®, we need you to agree to the following terms and conditions:',
 							'woocommerce-shipping'
 						) }
 					</p>
@@ -127,7 +127,7 @@ export const UPSDAPTos = ( {
 						{
 							a: (
 								<a
-									href="https://www.ups.com/us/en/help-center/legal-terms-conditions/service.page"
+									href="https://www.ups.com/assets/resources/webcontent/en_US/ups_dap_supplemental_tc.pdf"
 									target="_blank"
 									rel="noreferrer"
 								>
