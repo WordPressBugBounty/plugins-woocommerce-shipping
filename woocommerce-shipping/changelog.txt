@@ -1,5 +1,8 @@
 *** WooCommerce Shipping Changelog ***
 
+= 1.6.6 - 2025-04-22 =
+* Add   - Display "Tracking is not available" note in the rate for untrackable services.
+
 = 1.6.5 - 2025-04-14 =
 * Tweak - Update the link for UPS Terms of Service.
 

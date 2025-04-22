@@ -7,7 +7,7 @@ Requires at least: 6.6
 Tested up to: 6.7
 WC requires at least: 9.6
 WC tested up to: 9.8
-Stable tag: 1.6.5
+Stable tag: 1.6.6
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -127,6 +127,9 @@ Absolutely! You can read our Terms of Service [here](https://wordpress.com/tos).
 6. WooCommerce Shipping address validation at checkout suggestion.
 
 == Changelog ==
+
+= 1.6.6 - 2025-04-22 =
+* Add   - Display "Tracking is not available" note in the rate for untrackable services.
 
 = 1.6.5 - 2025-04-14 =
 * Tweak - Update the link for UPS Terms of Service.

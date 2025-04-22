@@ -112,6 +112,15 @@ export const RateRow = withBoundary(
 			rateCaveat.push( __( 'Non-refundable', 'woocommerce-shipping' ) );
 		}
 
+		if (
+			typeof caveats === 'object' &&
+			caveats.includes( 'tracking-unavailable' )
+		) {
+			rateCaveat.push(
+				__( 'Tracking is not available', 'woocommerce-shipping' )
+			);
+		}
+
 		const rateCaveatText =
 			rateCaveat.length > 0
 				? createInterpolateElement( rateCaveat.join( ', ' ), {
