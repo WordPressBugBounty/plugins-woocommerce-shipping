@@ -446,7 +446,7 @@ class Loader {
 		);
 
 		add_action( 'plugins_loaded', array( $this, 'on_plugins_loaded' ) );
-		add_action( 'plugins_loaded', array( $this, 'jetpack_on_plugins_loaded' ), 1 );
+		add_action( 'init', array( $this, 'jetpack_on_plugins_loaded' ), 1 );
 
 		add_action( 'after_setup_theme', array( $this, 'load_textdomain' ) );
 	}

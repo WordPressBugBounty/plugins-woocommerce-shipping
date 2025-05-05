@@ -193,7 +193,11 @@ export function useShipmentState() {
 			: null;
 
 	const getShipmentDestination = useCallback( () => {
-		if ( activePurchasedLabel && purchasedLabelDestination ) {
+		if (
+			activePurchasedLabel &&
+			activePurchasedLabel.status === LABEL_PURCHASE_STATUS.PURCHASED &&
+			purchasedLabelDestination
+		) {
 			return purchasedLabelDestination;
 		}
 

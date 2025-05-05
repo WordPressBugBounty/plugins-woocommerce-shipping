@@ -82,7 +82,7 @@ class LabelRateService {
 	 * that are defined in self::EXTRA_RATES.
 	 *
 	 * @param array $payload Request payload.
-	 * @return WP_Error|array
+	 * @return WP_Error|stdClass
 	 */
 	public function get_all_rates( $payload ) {
 		// Find and add payment method to payload.
@@ -119,7 +119,7 @@ class LabelRateService {
 		if ( property_exists( $response, 'rates' ) ) {
 			return $this->merge_extra_rates( $response->rates, $original_package_ids );
 		}
-		return array();
+		return new stdClass();
 	}
 
 	/**
@@ -138,7 +138,7 @@ class LabelRateService {
 	/**
 	 * Go through the extra rates and append it to the list of packages.
 	 *
-	 * @param array $payload Request payload.
+	 * @param array $payload_packages Request payload.
 	 * @return array
 	 */
 	public function get_packages_with_signature_required_options( $payload_packages ) {
@@ -171,14 +171,19 @@ class LabelRateService {
 	 * @param stdClass $rates Rate response for server.
 	 * @param array    $original_package_ids Package IDs.
 	 *
-	 * @return array Rates
+	 * @return stdClass Rates
 	 */
 	public function merge_extra_rates( $rates, $original_package_ids ) {
-		$parsed_rates = array();
+		/**
+		 * Using stdClass to avoid unnecessary array allocations.
+		 * Using an array can result in `0` used as key be removed when doing a JSON encoding which
+		 * will yield an array and no object.
+		 */
+		$parsed_rates = new stdClass();
 
 		foreach ( $original_package_ids as $name ) {
 			// Add a 'default' entry for the rate with no special options.
-			$parsed_rates[ $name ] = array(
+			$parsed_rates->$name = (object) array(
 				'default' => $rates->{ $name },
 			);
 
@@ -186,7 +191,7 @@ class LabelRateService {
 			foreach ( self::EXTRA_RATES as $extra_rate_name => $option ) {
 				$extra_rate_package_name = $name . self::SPECIAL_RATE_PREFIX . $extra_rate_name;
 				if ( isset( $rates->{ $extra_rate_package_name } ) ) {
-					$parsed_rates[ $name ][ $extra_rate_name ] = $rates->{ $extra_rate_package_name };
+					$parsed_rates->$name->$extra_rate_name = $rates->{ $extra_rate_package_name };
 				}
 			}
 
@@ -194,7 +199,7 @@ class LabelRateService {
 			foreach ( self::UPSDAP_EXTRA_RATES as $extra_rate_name => $option ) {
 				$extra_rate_package_name = $name . self::SPECIAL_RATE_PREFIX . $extra_rate_name;
 				if ( isset( $rates->{ $extra_rate_package_name } ) ) {
-					$parsed_rates[ $name ][ $extra_rate_name ] = $rates->{ $extra_rate_package_name };
+					$parsed_rates->$name->$extra_rate_name = $rates->{ $extra_rate_package_name };
 				}
 			}
 		}
