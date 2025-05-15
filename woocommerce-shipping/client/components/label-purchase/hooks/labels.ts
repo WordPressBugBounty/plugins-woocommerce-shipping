@@ -80,6 +80,7 @@ const handlePurchaseException = ( e: LabelPurchaseError ) =>
 		],
 		code: e?.code,
 		actions: [ ...( e.actions ?? [] ) ],
+		data: e?.data,
 	} );
 
 const defaultErrorMessage = __(

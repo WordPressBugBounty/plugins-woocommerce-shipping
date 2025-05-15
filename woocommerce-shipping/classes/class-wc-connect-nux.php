@@ -642,17 +642,15 @@ class WC_Connect_Nux {
 	public function load_scripts_and_styles() {
 		wp_register_style(
 			'wcshipping_connect_banner',
-			// Files under stylesheets folder are not built by webpack, so no need to add the version to the filename.
 			WCSHIPPING_STYLESHEETS_URL . 'connect-banner.css',
 			array(),
-			Utils::get_wcshipping_version()
+			Utils::get_file_version( WCSHIPPING_STYLESHEETS_DIR . 'connect-banner.css' )
 		);
 		wp_register_script(
 			'wcshipping-connect-banner',
-			// Files under javascript folder are not built by webpack, so no need to add the version to the filename.
 			WCSHIPPING_JAVASCRIPT_URL . 'wc-connect-nux.js',
 			array( 'jquery', 'wp-util' ),
-			Utils::get_wcshipping_version(),
+			Utils::get_file_version( WCSHIPPING_JAVASCRIPT_DIR . 'wc-connect-nux.js' ),
 			array( 'in_footer' => true )
 		);
 		$banner_info = wp_json_encode(

@@ -1,5 +1,8 @@
 *** WooCommerce Shipping Changelog ***
 
+= 1.7.0 - 2025-05-15 =
+* Add   - Introduce UPS Ground Saver shipping service with dedicated Terms of Service acceptance flow.
+
 = 1.6.7 - 2025-05-05 =
 * Fix   - A failed purchase prevents updating destination address.
 * Fix   - Rates response for shipment_id = 0 is now correctly being returned as an object instead of an array.

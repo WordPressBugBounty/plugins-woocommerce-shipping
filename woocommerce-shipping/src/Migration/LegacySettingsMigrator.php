@@ -58,6 +58,7 @@ class LegacySettingsMigrator {
 		// page before doing a migration.
 		'pm_url' => 'add_payment_method_url',
 		'pms'    => 'payment_methods',
+		'smm'    => 'shipping_methods_migrated',
 	);
 
 	public const WCST_PACKAGE_COMPATIBILITY_CLASS_FQN = 'WC_Connect_Compatibility_WCShipping_Packages';

@@ -1,4 +1,4 @@
-import React, { MouseEventHandler } from 'react';
+import { MouseEventHandler } from 'react';
 import {
 	__experimentalSpacer as Spacer,
 	Button,
@@ -43,7 +43,10 @@ import { LABEL_PURCHASE_STATUS } from 'data/constants';
 import { UPSDAPTos } from 'components/carrier/upsdap/upsdap-tos';
 import apiFetch from '@wordpress/api-fetch';
 import { getCarrierStrategyPath } from 'data/routes';
-import { mapAddressForRequest } from 'utils';
+import {
+	mapAddressForRequest,
+	getUPSDAPTosApprovedVersionsFromError,
+} from 'utils';
 
 interface PaymentButtonsProps {
 	order: Order;
@@ -86,7 +89,8 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 	const shipmentOrigin = getShipmentOrigin();
 
 	const selectedRate = getSelectedRate();
-	const [ showUPSDAPTos, setShowUPSDAPTos ] = useState( false );
+	const [ UPSDAPTosError, setUPSDAPTosError ] =
+		useState< LabelPurchaseError | null >( null );
 	const [ isTOSConfirming, setIsTOSConfirming ] = useState( false );
 	const canManagePayments = canManagePaymentsUtil( { accountSettings } );
 
@@ -328,7 +332,7 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 				LabelPurchaseError;
 
 			if ( error.code === 'missing_upsdap_terms_of_service_acceptance' ) {
-				setShowUPSDAPTos( true );
+				setUPSDAPTosError( error );
 				return;
 			}
 
@@ -344,7 +348,7 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 	// Add handler for UPS DAP TOS.
 	const handleUPSDAPTos = {
 		close: () => {
-			setShowUPSDAPTos( false );
+			setUPSDAPTosError( null );
 			setErrors( {
 				cause: 'carrier_error',
 				message: [
@@ -382,7 +386,7 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 				// We do this to re-create shipments using the newly created carrier account.
 				await fetchRates( getPackageForRequest() );
 
-				setShowUPSDAPTos( false );
+				setUPSDAPTosError( null );
 
 				/**
 				 * Now that we've refetched rates, we need to reselect the rate that was previously selected.
@@ -426,12 +430,14 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 
 	return (
 		<>
-			{ showUPSDAPTos && (
+			{ UPSDAPTosError && (
 				<UPSDAPTos
 					close={ handleUPSDAPTos.close }
 					confirm={ handleUPSDAPTos.confirm }
 					shipmentOrigin={ shipmentOrigin }
-					error={ errors }
+					acceptedVersions={ getUPSDAPTosApprovedVersionsFromError(
+						UPSDAPTosError
+					) }
 					isConfirming={ isTOSConfirming }
 					setIsConfirming={ setIsTOSConfirming }
 				/>

@@ -7,13 +7,13 @@
  * Author URI: https://woocommerce.com/
  * Text Domain: woocommerce-shipping
  * Domain Path: /languages/
- * Version: 1.6.7
+ * Version: 1.7.0
  * Requires Plugins: woocommerce
  * Requires PHP: 7.4
  * Requires at least: 6.6
- * Tested up to: 6.7
+ * Tested up to: 6.8.1
  * WC requires at least: 9.6
- * WC tested up to: 9.8
+ * WC tested up to: 9.8.5
  * License: GPL v2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  *
@@ -39,7 +39,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'WCSHIPPING_VERSION', '1.6.7' ); // WRCS: DEFINED_VERSION.
+define( 'WCSHIPPING_VERSION', '1.7.0' ); // WRCS: DEFINED_VERSION.
 define( 'WCSHIPPING_PLUGIN_FILE', __FILE__ );
 define( 'WCSHIPPING_PLUGIN_DIR', __DIR__ );
 define( 'WCSHIPPING_PLUGIN_DIST_DIR', WCSHIPPING_PLUGIN_DIR . '/dist/' );
@@ -48,6 +48,9 @@ define( 'WCSHIPPING_PLUGIN_DIST_URL', plugin_dir_url( WCSHIPPING_PLUGIN_FILE ) .
 define( 'WCSHIPPING_ASSETS_URL', WCSHIPPING_PLUGIN_URL . 'assets/' );
 define( 'WCSHIPPING_STYLESHEETS_URL', WCSHIPPING_ASSETS_URL . 'stylesheets/' );
 define( 'WCSHIPPING_JAVASCRIPT_URL', WCSHIPPING_ASSETS_URL . 'javascript/' );
+define( 'WCSHIPPING_ASSETS_DIR', WCSHIPPING_PLUGIN_DIR . '/assets/' );
+define( 'WCSHIPPING_STYLESHEETS_DIR', WCSHIPPING_ASSETS_DIR . 'stylesheets/' );
+define( 'WCSHIPPING_JAVASCRIPT_DIR', WCSHIPPING_ASSETS_URL . 'javascript/' );
 
 // Load autoloader.
 require_once __DIR__ . '/src/Autoloader.php';

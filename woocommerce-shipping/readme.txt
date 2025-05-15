@@ -4,10 +4,10 @@ Tags: woocommerce, shipping, usps, dhl, labels
 Requires Plugins: woocommerce
 Requires PHP: 7.4
 Requires at least: 6.6
-Tested up to: 6.7
+Tested up to: 6.8.1
 WC requires at least: 9.6
-WC tested up to: 9.8
-Stable tag: 1.6.7
+WC tested up to: 9.8.5
+Stable tag: 1.7.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -127,6 +127,9 @@ Absolutely! You can read our Terms of Service [here](https://wordpress.com/tos).
 6. WooCommerce Shipping address validation at checkout suggestion.
 
 == Changelog ==
+
+= 1.7.0 - 2025-05-15 =
+* Add   - Introduce UPS Ground Saver shipping service with dedicated Terms of Service acceptance flow.
 
 = 1.6.7 - 2025-05-05 =
 * Fix   - A failed purchase prevents updating destination address.

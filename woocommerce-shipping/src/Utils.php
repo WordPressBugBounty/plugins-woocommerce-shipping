@@ -140,4 +140,19 @@ class Utils {
 			'WC_PLUGIN_RELATIVE_DIR'         => self::get_relative_plugin_path( true ),
 		);
 	}
+
+	/**
+	 * Get the file modified time as a cache buster if we're in dev mode.
+	 *
+	 * @param string $file Local path to the file.
+	 *
+	 * @return string The cache buster value to use for the given file.
+	 */
+	public static function get_file_version( string $file ): string {
+		if ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG && file_exists( $file ) ) {
+			return (string) filemtime( $file );
+		}
+
+		return self::get_wcshipping_version();
+	}
 }

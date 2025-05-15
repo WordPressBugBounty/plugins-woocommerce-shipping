@@ -1814,60 +1814,42 @@ class Loader {
 	 * Remember to call Automattic\WCShipping\DOM\Manipulation::create_root_script_element before calling do_action( 'enqueue_woocommerce_shipping_script' )
 	 * in your calling function.
 	 *
-	 * @param string $root_view  The name of the entry point script to enqueue.
+	 * @param string $handle The name of the entry point script to enqueue.
 	 * @param array  $extra_args Extra data to pass to the entry point script, this gets added as localised data.
 	 *
 	 * @return void
 	 */
-	public function enqueue_woocommerce_shipping_script( $root_view, $extra_args = array() ) {
-
-		$dependencies = array();
-		// Fetch dependencies from generated files, only if files requested from dist folder.
-		if ( strpos( $this->wc_connect_base_url, '/dist/' ) !== false ) {
-			$allowed_views  = array(
-				'wcshipping-service-settings',
-				'woocommerce-shipping-admin-status',
-				'wcshipping-admin-test-print',
-				'woocommerce-shipping-settings',
-				'woocommerce-shipping-onboarding',
-				'woocommerce-shipping-create-shipping-label',
-				'woocommerce-shipping-shipment-tracking',
-				'woocommerce-shipping-analytics',
-			);
-			$deps_file_path = plugin_dir_path( __FILE__ ) . "dist/$root_view-" . Utils::get_wcshipping_version() . '.asset.php';
-			if ( in_array( $root_view, $allowed_views ) && file_exists( $deps_file_path ) ) {
-				$dependencies = require $deps_file_path;// nosemgrep
-			}
-		}
-
-		$asset_version = ! empty( $dependencies['version'] ) ? wp_hash( Utils::get_wcshipping_version() . '.' . $dependencies['version'] ) : Utils::get_wcshipping_version();
-
-		// Enqueue the stylesheet.
-		wp_enqueue_style(
-			$root_view,
-			$this->wc_connect_base_url . "style-$root_view-" . Utils::get_wcshipping_version() . '.css',
-			array(),
-			$asset_version
-		);
-
-		// We always need wp-element as a dependency for the entry point scripts.
-		$deps = isset( $dependencies['dependencies'] )
-		? array_merge( $dependencies['dependencies'], array( 'wp-element' ) )
-		: array( 'wp-element' );
+	public function enqueue_woocommerce_shipping_script( $handle, $extra_args = array() ) {
+		$script_path         = "$handle.js";
+		$script_asset_path   = WCSHIPPING_PLUGIN_DIST_DIR . $handle . '.asset.php';
+		$script_asset        = file_exists( $script_asset_path )
+			? require $script_asset_path : array();  // nosemgrep: audit.php.lang.security.file.inclusion-arg --- This is a safe file inclusion.
+		$script_dependencies = $script_asset['dependencies'] ?? array();
+		$script_version      = $script_asset['version'] ?? Utils::get_file_version( $script_path );
 
 		// Enqueue the entry point script.
 		wp_enqueue_script(
-			$root_view,
-			$this->wc_connect_base_url . "$root_view-" . Utils::get_wcshipping_version() . '.js',
-			$deps,
-			$asset_version,
+			$handle,
+			Utils::get_enqueue_base_url() . $script_path,
+			$script_dependencies,
+			$script_version,
 			array(
 				'in_footer' => true,
 			)
 		);
+
+		// Enqueue the stylesheet.
+		$style_path = "style-$handle.css";
+		wp_enqueue_style(
+			$handle,
+			Utils::get_enqueue_base_url() . $style_path,
+			array(),
+			Utils::get_file_version( $style_path ),
+		);
+
 		$encoded_extras = wp_json_encode( $extra_args );
 		wp_add_inline_script(
-			$root_view,
+			$handle,
 			"var WCShipping_Config = Object.assign({}, WCShipping_Config, $encoded_extras);",
 			'before'
 		);
@@ -1875,7 +1857,7 @@ class Loader {
 		// Declare a wcShippingSettings object containing all the important settings for the plugin accessible via JS.
 		$wcshipping_settings = wp_json_encode( WCShippingUtils::get_settings_object() );
 		wp_add_inline_script(
-			$root_view,
+			$handle,
 			"var wcShippingSettings = Object.assign({}, wcShippingSettings, $wcshipping_settings);",
 			'before'
 		);

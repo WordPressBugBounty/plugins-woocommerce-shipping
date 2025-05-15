@@ -80,10 +80,9 @@ class CheckoutController {
 
 		wp_register_script(
 			$handle,
-			// Files under javascript folder are not built by webpack, so no need to add the version to the filename.
-			WCSHIPPING_ASSETS_URL . 'javascript/checkout.js',
+			WCSHIPPING_JAVASCRIPT_URL . 'checkout.js',
 			array( 'wp-i18n' ),
-			Utils::get_wcshipping_version(),
+			Utils::get_file_version( WCSHIPPING_JAVASCRIPT_DIR . 'checkout.js' ),
 			true
 		);
 

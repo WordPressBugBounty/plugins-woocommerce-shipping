@@ -5,4 +5,7 @@ export interface LabelPurchaseError {
 	code?: string;
 	message: string[];
 	actions?: NoticeAction[];
+	data?: {
+		acceptedVersions: string[];
+	};
 }

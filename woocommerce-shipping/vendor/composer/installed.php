@@ -3,7 +3,7 @@
         'name' => 'woocommerce/woocommerce-shipping',
         'pretty_version' => 'dev-trunk',
         'version' => 'dev-trunk',
-        'reference' => '0f67a1eb349cbe90ce471d88c7b31bd4950d6744',
+        'reference' => 'ca7a7160105739e3ae08a2056442b4bd730a9c6b',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -103,7 +103,7 @@
         'woocommerce/woocommerce-shipping' => array(
             'pretty_version' => 'dev-trunk',
             'version' => 'dev-trunk',
-            'reference' => '0f67a1eb349cbe90ce471d88c7b31bd4950d6744',
+            'reference' => 'ca7a7160105739e3ae08a2056442b4bd730a9c6b',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

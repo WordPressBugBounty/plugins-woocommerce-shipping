@@ -55,6 +55,7 @@ export const UPSDAPStrategy = ( {
 					close={ onClose }
 					confirm={ onConfirm }
 					shipmentOrigin={ shipmentOrigin }
+					acceptedVersions={ [] } // The strategy is not used anymore, but I'm adding it here to avoid breaking changes.
 				/>
 			),
 	};
