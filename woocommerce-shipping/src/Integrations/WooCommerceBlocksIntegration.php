@@ -84,22 +84,20 @@ class WooCommerceBlocksIntegration implements IntegrationInterface {
 	 * @param string $handle Script handle.
 	 */
 	protected function register_script( string $handle ) {
-		$script_path = $handle . '-' . Utils::get_wcshipping_version() . '.js';
-		$script_url  = Utils::get_enqueue_base_url() . $script_path;
-
-		$script_asset_path = WCSHIPPING_PLUGIN_DIST_DIR . $handle . '.asset.php';
-		$script_asset      = file_exists( $script_asset_path )
-			? require $script_asset_path // nosemgrep: audit.php.lang.security.file.inclusion-arg --- This is a safe file inclusion.
-			: array(
-				'dependencies' => array(),
-				'version'      => Utils::get_file_version( WCSHIPPING_PLUGIN_DIST_DIR . $script_path ),
-			);
+		$script_name         = "$handle.js";
+		$script_path         = WCSHIPPING_PLUGIN_DIST_DIR . $script_name;
+		$script_url          = Utils::get_enqueue_base_url() . $script_name;
+		$script_asset_path   = WCSHIPPING_PLUGIN_DIST_DIR . $handle . '.asset.php';
+		$script_asset        = file_exists( $script_asset_path )
+		? require $script_asset_path : array();  // nosemgrep: audit.php.lang.security.file.inclusion-arg --- This is a safe file inclusion.
+		$script_dependencies = $script_asset['dependencies'] ?? array();
+		$script_version      = $script_asset['version'] ?? Utils::get_file_version( $script_path );
 
 		wp_register_script(
 			$handle,
 			$script_url,
-			$script_asset['dependencies'],
-			$script_asset['version'],
+			$script_dependencies,
+			$script_version,
 			true
 		);
 	}

@@ -68,11 +68,20 @@ class AccountSettingsRestController extends WCShippingRESTController {
 			// Ignore the user-provided payment method ID if they don't have permission to change it
 			$old_settings                           = $this->settings_store->get_account_settings();
 			$settings['selected_payment_method_id'] = $old_settings['selected_payment_method_id'];
+			// Preserve the enabled setting if it's not being explicitly updated
+			if ( ! isset( $settings['enabled'] ) ) {
+				$settings['enabled'] = $old_settings['enabled'];
+			}
 		}
 
 		$result = $this->settings_store->update_account_settings( $settings );
 
 		if ( is_wp_error( $result ) ) {
+			$error_data = $result->get_error_data();
+			if ( ! is_array( $error_data ) ) {
+				$error_data = array();
+			}
+
 			$error = new WP_Error(
 				'save_failed',
 				sprintf(
@@ -82,7 +91,7 @@ class AccountSettingsRestController extends WCShippingRESTController {
 				),
 				array_merge(
 					array( 'status' => 400 ),
-					$result->get_error_data()
+					$error_data
 				)
 			);
 			$this->logger->log( $error, __CLASS__ );

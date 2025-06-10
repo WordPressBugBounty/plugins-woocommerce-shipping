@@ -1,5 +1,13 @@
 *** WooCommerce Shipping Changelog ***
 
+= 1.7.2 - 2025-06-10 =
+* Tweak - WooCommerce 9.9 Compatibility.
+* Fix   - Prevent account from being unintentionally disabled via API when settings are updated
+* Fix   - Create shipping label modal style issues.
+
+= 1.7.1 - 2025-05-22 =
+* Fix   - Address validation assets not loading.
+
 = 1.7.0 - 2025-05-15 =
 * Add   - Introduce UPS Ground Saver shipping service with dedicated Terms of Service acceptance flow.
 

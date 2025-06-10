@@ -1820,7 +1820,9 @@ class Loader {
 	 * @return void
 	 */
 	public function enqueue_woocommerce_shipping_script( $handle, $extra_args = array() ) {
-		$script_path         = "$handle.js";
+		$script_name         = "$handle.js";
+		$script_path         = WCSHIPPING_PLUGIN_DIST_DIR . $script_name;
+		$script_url          = Utils::get_enqueue_base_url() . $script_name;
 		$script_asset_path   = WCSHIPPING_PLUGIN_DIST_DIR . $handle . '.asset.php';
 		$script_asset        = file_exists( $script_asset_path )
 			? require $script_asset_path : array();  // nosemgrep: audit.php.lang.security.file.inclusion-arg --- This is a safe file inclusion.
@@ -1830,7 +1832,7 @@ class Loader {
 		// Enqueue the entry point script.
 		wp_enqueue_script(
 			$handle,
-			Utils::get_enqueue_base_url() . $script_path,
+			$script_url,
 			$script_dependencies,
 			$script_version,
 			array(
@@ -1839,12 +1841,12 @@ class Loader {
 		);
 
 		// Enqueue the stylesheet.
-		$style_path = "style-$handle.css";
+		$style_name = "style-$handle.css";
 		wp_enqueue_style(
 			$handle,
-			Utils::get_enqueue_base_url() . $style_path,
+			Utils::get_enqueue_base_url() . $style_name,
 			array(),
-			Utils::get_file_version( $style_path ),
+			Utils::get_file_version( WCSHIPPING_PLUGIN_DIST_DIR . $style_name ),
 		);
 
 		$encoded_extras = wp_json_encode( $extra_args );

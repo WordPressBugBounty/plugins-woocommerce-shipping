@@ -71,9 +71,9 @@ class CheckoutController {
 
 		wp_enqueue_style(
 			'wcshipping-checkout',
-			Utils::get_enqueue_base_url() . 'woocommerce-shipping-checkout-address-validation-' . Utils::get_wcshipping_version() . '.css',
+			Utils::get_enqueue_base_url() . 'woocommerce-shipping-checkout-address-validation.css',
 			array(),
-			Utils::get_wcshipping_version()
+			Utils::get_file_version( WCSHIPPING_PLUGIN_DIST_DIR . 'woocommerce-shipping-checkout-address-validation.css' )
 		);
 
 		$handle = 'wcshipping-checkout';

@@ -602,6 +602,10 @@ return array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/tests/php/LabelRate/LabelRateServiceTest.php'
 	),
+	'Automattic\\WCShipping\\Tests\\php\\LabelSettings\\AccountSettingsRestControllerTest' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/tests/php/LabelSettings/AccountSettingsRestControllerTest.php'
+	),
 	'Automattic\\WCShipping\\Tests\\php\\Loader_Test' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/tests/php/LoaderTest.php'
