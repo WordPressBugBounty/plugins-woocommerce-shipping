@@ -1,5 +1,8 @@
 *** WooCommerce Shipping Changelog ***
 
+= 1.7.3 - 2025-06-11 =
+* Fix   - Fixed a UI-only issue causing purchased labels to display under incorrect shipments while the data remained accurate.
+
 = 1.7.2 - 2025-06-10 =
 * Tweak - WooCommerce 9.9 Compatibility.
 * Fix   - Prevent account from being unintentionally disabled via API when settings are updated

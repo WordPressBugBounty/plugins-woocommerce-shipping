@@ -132,7 +132,7 @@ class View {
 		}
 
 		$order_id         = $order->get_id();
-		$purchased_labels = $this->sort_labels_by_date_and_reindex(
+		$purchased_labels = $this->ensure_purchased_labels_have_shipment_ids(
 			$this->settings_store->get_label_order_meta_data( $order_id )
 		);
 
@@ -617,25 +617,25 @@ class View {
 	}
 
 	/**
-	 * Sort label data by creation time and reassign IDs.
+	 * Reassign IDs to purchased labels if needed.
+	 * Assignment only happens if the label doesn't already have an id.
 	 *
 	 * @param array $label_data Array of label data to process.
-	 * @return array Sorted label data with reassigned IDs.
+	 * @return array Label data with assigned IDs.
 	 */
-	private function sort_labels_by_date_and_reindex( $label_data ) {
-		// Sort the array by the "created" field (ascending order).
-		usort(
-			$label_data,
-			function ( $a, $b ) {
-				return $a['created'] <=> $b['created'];
+	private function ensure_purchased_labels_have_shipment_ids( $label_data ) {
+		$used_ids = array_column( $label_data, 'id' );
+		$next_id  = 0;
+
+		foreach ( $label_data as &$item ) {
+			if ( ! isset( $item['id'] ) ) {
+				while ( in_array( $next_id, $used_ids ) ) {
+					++$next_id;
+				}
+				$item['id'] = $next_id;
+				$used_ids[] = $next_id;
 			}
-		);
-
-		// Reassign the 'id' field for each item starting at 0.
-		foreach ( $label_data as $index => &$item ) {
-			$item['id'] = $index;
 		}
-
 		return $label_data;
 	}
 }
