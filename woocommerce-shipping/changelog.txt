@@ -1,5 +1,8 @@
 *** WooCommerce Shipping Changelog ***
 
+= 1.7.4 - 2025-06-23 =
+* Fix   - Resolved the issue of duplicate shipments by ensuring refunded labels are ignored during shipment generation.
+
 = 1.7.3 - 2025-06-11 =
 * Fix   - Fixed a UI-only issue causing purchased labels to display under incorrect shipments while the data remained accurate.
 

@@ -2,16 +2,16 @@
 # This file is distributed under the GPL v2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: WooCommerce Shipping 1.7.0\n"
+"Project-Id-Version: WooCommerce Shipping 1.7.4\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/woocommerce-shipping\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2025-05-15T14:05:06+00:00\n"
+"POT-Creation-Date: 2025-06-23T10:13:43+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"X-Generator: WP-CLI 2.11.0\n"
+"X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: woocommerce-shipping\n"
 
 #. Plugin Name of the plugin
@@ -63,16 +63,19 @@ msgstr ""
 
 #. translators: %d: HTTP response code
 #: classes/class-wc-connect-api-client-live.php:90
+#, php-format
 msgid "Error: The WooCommerce Shipping server returned HTTP code: %d"
 msgstr ""
 
 #. translators: %d: HTTP response code
 #: classes/class-wc-connect-api-client-live.php:112
+#, php-format
 msgid "Error: The WooCommerce Shipping server returned ( %d ) and an empty response body."
 msgstr ""
 
 #. translators: %1$s: error code, %2$s: error message, %3$d: HTTP response code
 #: classes/class-wc-connect-api-client-live.php:143
+#, php-format
 msgid "Error: The WooCommerce Shipping server returned: %1$s %2$s ( %3$d )"
 msgstr ""
 
@@ -82,11 +85,13 @@ msgstr ""
 
 #. translators: %d: Product ID.
 #: classes/class-wc-connect-api-client.php:105
+#, php-format
 msgid "Product ( ID: %d ) did not include a weight. Shipping rates cannot be calculated."
 msgstr ""
 
 #. translators: %d: Product ID.
 #: classes/class-wc-connect-api-client.php:121
+#, php-format
 msgid "Product ( ID: %d ) is missing a dimension value. Shipping rates cannot be calculated."
 msgstr ""
 
@@ -128,11 +133,12 @@ msgstr ""
 
 #. translators: %1$s: link to product edit page, %2$s: product name
 #: classes/class-wc-connect-error-notice.php:85
+#, php-format
 msgid "<strong>\"%2$s\" is missing weight, length, width, or height.</strong><br />Shipping rates cannot be calculated. <a href=\"%1$s\">Enter dimensions and weight for %2$s</a> so your customers can purchase this item."
 msgstr ""
 
 #: classes/class-wc-connect-error-notice.php:102
-#: src/Loader.php:1911
+#: src/Loader.php:1913
 msgid "Dismiss this notice"
 msgstr ""
 
@@ -142,6 +148,7 @@ msgstr ""
 
 #. translators: %1$s: minimum WooCommerce version, %2$s: current WooCommerce version
 #: classes/class-wc-connect-help-view.php:60
+#, php-format
 msgid "WooCommerce %1$s or higher is required (You are running %2$s)"
 msgstr ""
 
@@ -151,6 +158,7 @@ msgstr ""
 
 #. translators: %s: current WooCommerce version
 #: classes/class-wc-connect-help-view.php:75
+#, php-format
 msgid "WooCommerce %s is configured correctly"
 msgstr ""
 
@@ -180,6 +188,7 @@ msgstr ""
 
 #. translators: %s: shipping zone name
 #: classes/class-wc-connect-help-view.php:159
+#, php-format
 msgid "%s Shipping Zone"
 msgstr ""
 
@@ -220,6 +229,7 @@ msgstr ""
 #. translators: %s: list of features, potentially comma separated
 #: classes/class-wc-connect-nux.php:404
 #: classes/class-wc-connect-nux.php:509
+#, php-format
 msgid "Connect your store to activate <strong>WooCommerce Shipping</strong>. Once you connect your store to WordPress.com, you'll have access to %s."
 msgstr ""
 
@@ -230,6 +240,7 @@ msgstr ""
 
 #. translators: %s: list of features, potentially comma separated
 #: classes/class-wc-connect-nux.php:448
+#, php-format
 msgid "You can now enjoy %s."
 msgstr ""
 
@@ -239,11 +250,13 @@ msgstr ""
 
 #. translators: %1$s: "Terms of Service", %2$s: "https://wordpress.com/tos/", %3$s: "https://automattic.com/privacy/"
 #: classes/class-wc-connect-nux.php:570
+#, php-format
 msgid "By clicking \"%1$s\", you agree to the <a href=\"%2$s\">Terms of Service</a> and have read our <a href=\"%3$s\">Privacy Policy</a>"
 msgstr ""
 
 #. translators: %s: link to privacy policy
 #: classes/class-wc-connect-privacy.php:39
+#, php-format
 msgid "By using this extension, you may be storing personal data or sharing data with external services. <a href=\"%s\" target=\"_blank\">Learn more about how this works, including what you may want to include in your privacy policy.</a>"
 msgstr ""
 
@@ -259,56 +272,56 @@ msgstr ""
 msgid "Shipping label tracking number"
 msgstr ""
 
-#: classes/class-wc-connect-service-settings-store.php:565
+#: classes/class-wc-connect-service-settings-store.php:566
 msgctxt "A service with an unknown title and unknown method_title"
 msgid "Unknown"
 msgstr ""
 
-#: classes/class-wc-connect-service-settings-store.php:569
+#: classes/class-wc-connect-service-settings-store.php:570
 msgid "Rest of the World"
 msgstr ""
 
-#: classes/class-wc-connect-service-settings-store.php:601
+#: classes/class-wc-connect-service-settings-store.php:602
 msgid "An invalid service instance was received."
 msgstr ""
 
-#: classes/class-wc-connect-service-settings-store.php:606
+#: classes/class-wc-connect-service-settings-store.php:607
 msgid "An invalid service ID was received."
 msgstr ""
 
-#: classes/class-wc-connect-service-settings-store.php:742
+#: classes/class-wc-connect-service-settings-store.php:743
 msgid "kg"
 msgstr ""
 
-#: classes/class-wc-connect-service-settings-store.php:744
+#: classes/class-wc-connect-service-settings-store.php:745
 msgid "g"
 msgstr ""
 
-#: classes/class-wc-connect-service-settings-store.php:746
+#: classes/class-wc-connect-service-settings-store.php:747
 msgid "lbs"
 msgstr ""
 
-#: classes/class-wc-connect-service-settings-store.php:748
+#: classes/class-wc-connect-service-settings-store.php:749
 msgid "oz"
 msgstr ""
 
-#: classes/class-wc-connect-service-settings-store.php:750
+#: classes/class-wc-connect-service-settings-store.php:751
 msgid "m"
 msgstr ""
 
-#: classes/class-wc-connect-service-settings-store.php:752
+#: classes/class-wc-connect-service-settings-store.php:753
 msgid "cm"
 msgstr ""
 
-#: classes/class-wc-connect-service-settings-store.php:754
+#: classes/class-wc-connect-service-settings-store.php:755
 msgid "mm"
 msgstr ""
 
-#: classes/class-wc-connect-service-settings-store.php:756
+#: classes/class-wc-connect-service-settings-store.php:757
 msgid "in"
 msgstr ""
 
-#: classes/class-wc-connect-service-settings-store.php:758
+#: classes/class-wc-connect-service-settings-store.php:759
 msgid "yd"
 msgstr ""
 
@@ -322,17 +335,20 @@ msgstr ""
 
 #. translators: %d: Deleted Product ID
 #: classes/class-wc-connect-utils.php:34
+#, php-format
 msgid "#%d - [Deleted product]"
 msgstr ""
 
 #. translators: %1$d: Product ID, %2$s: Product Name
 #: classes/class-wc-connect-utils.php:38
+#, php-format
 msgid "#%1$d - %2$s"
 msgstr ""
 
 #. translators: %s: error message
 #: classes/legacy-api-controllers/class-wc-rest-connect-account-settings-controller.php:66
-#: src/LabelSettings/AccountSettingsRestController.php:80
+#: src/LabelSettings/AccountSettingsRestController.php:89
+#, php-format
 msgid "Unable to update settings. %s"
 msgstr ""
 
@@ -373,6 +389,7 @@ msgstr ""
 
 #. translators: %s: error message
 #: classes/legacy-api-controllers/class-wc-rest-connect-services-controller.php:97
+#, php-format
 msgid "Unable to update service settings. Validation failed. %s"
 msgstr ""
 
@@ -522,11 +539,13 @@ msgstr ""
 
 #. translators: 1: address, 2: button
 #: src/Checkout/CheckoutService.php:397
+#, php-format
 msgid "We couldn't verify your shipping address. Did you mean %1$s? %2$s"
 msgstr ""
 
 #. translators: %s is a link to the status page.
 #: src/DOM/Manipulation.php:34
+#, php-format
 msgid "Section not loading? Visit the <a href=\"%s\">status page</a> for troubleshooting steps."
 msgstr ""
 
@@ -565,10 +584,12 @@ msgid "Packing Slip"
 msgstr ""
 
 #: src/LabelPurchase/LabelPrintService.php:202
+#, php-format
 msgid "Order #%s"
 msgstr ""
 
 #: src/LabelPurchase/LabelPrintService.php:203
+#, php-format
 msgid "Shipment #%1$s of %2$s"
 msgstr ""
 
@@ -577,14 +598,17 @@ msgid "Shipping Label Details"
 msgstr ""
 
 #: src/LabelPurchase/LabelPrintService.php:210
+#, php-format
 msgid "Service: %s"
 msgstr ""
 
 #: src/LabelPurchase/LabelPrintService.php:211
+#, php-format
 msgid "Tracking #: %s"
 msgstr ""
 
 #: src/LabelPurchase/LabelPrintService.php:212
+#, php-format
 msgid "Package: %s"
 msgstr ""
 
@@ -793,6 +817,7 @@ msgstr ""
 
 #. translators: %s WC download URL link.
 #: src/Loader.php:687
+#, php-format
 msgid "WooCommerce Shipping requires the WooCommerce plugin to be installed and active. You can download %s here."
 msgstr ""
 
@@ -836,7 +861,7 @@ msgstr ""
 msgid "Phone"
 msgstr ""
 
-#: src/Loader.php:1940
+#: src/Loader.php:1942
 msgid "WooCommerce Shipping & Tax has been deactivated. Your data and settings have been carried over to the dedicated WooCommerce Shipping and WooCommerce Tax extensions.<br />For support, please <a href=\"https://woocommerce.com/my-account/create-a-ticket/\">contact our Happiness Engineers</a>."
 msgstr ""
 
@@ -874,6 +899,7 @@ msgstr ""
 
 #. translators: %d=count of labels pending migration
 #: src/Migration/MigrationController.php:94
+#, php-format
 msgid "This will stop the background process that migrates purchased labels. There are currently <strong>%d label</strong> that can be migrated."
 msgid_plural "This will stop the background process that migrates purchased labels. There are currently <strong>%d labels</strong> that can be migrated."
 msgstr[0] ""
@@ -884,6 +910,7 @@ msgid "The WooCommerce Shipping & Tax shipping label migration has been stopped.
 msgstr ""
 
 #: src/Migration/MigrationController.php:114
+#, php-format
 msgid "There are currently <strong>%d label</strong> that can be migrated."
 msgid_plural "There are currently <strong>%d labels</strong> that can be migrated."
 msgstr[0] ""
@@ -985,6 +1012,7 @@ msgstr ""
 
 #. translators: %s valid country codes
 #: src/Shipment/Address.php:182
+#, php-format
 msgid "Invalid country code provided. Must be one of: %s"
 msgstr ""
 
@@ -1002,11 +1030,13 @@ msgstr ""
 
 #. translators: %s: The missing query parameter.
 #: src/WCShippingRESTController.php:40
+#, php-format
 msgid "Required body parameter is missing: %s"
 msgstr ""
 
 #. translators: %s: The missing query parameter.
 #: src/WCShippingRESTController.php:78
+#, php-format
 msgid "Required parameter is missing: %s"
 msgstr ""
 
@@ -1057,6 +1087,7 @@ msgstr ""
 
 #. translators: %d is the cache expiration in minutes
 #: dist/947.js:4
+#, js-format
 msgid "To improve performance, the data shown here may be up to %d minutes old."
 msgstr ""
 
@@ -1112,6 +1143,7 @@ msgstr ""
 
 #. translators: %s is last update time.
 #: dist/woocommerce-shipping-admin-status.js:11
+#, js-format
 msgid "Last update on %s"
 msgstr ""
 
@@ -1145,6 +1177,7 @@ msgstr ""
 
 #. translators: %d is the number of entries to show.
 #: dist/woocommerce-shipping-admin-status.js:14
+#, js-format
 msgid "Last %d entry"
 msgid_plural "Last %d entries"
 msgstr[0] ""
@@ -1229,11 +1262,13 @@ msgstr ""
 
 #. translators: %s is the formatted date
 #: dist/woocommerce-shipping-create-shipping-label.js:4
+#, js-format
 msgid "Today (%s)"
 msgstr ""
 
 #. translators: %s is the formatted date
 #: dist/woocommerce-shipping-create-shipping-label.js:7
+#, js-format
 msgid "Tomorrow (%s)"
 msgstr ""
 
@@ -1254,6 +1289,7 @@ msgstr[1] ""
 
 #. translators: %s: order ID
 #: dist/woocommerce-shipping-create-shipping-label.js:8
+#, js-format
 msgid "Order %d"
 msgstr ""
 
@@ -1287,6 +1323,7 @@ msgstr ""
 
 #. translators: %s: minimum weight, %s: weight unit
 #: dist/woocommerce-shipping-create-shipping-label.js:11
+#, js-format
 msgid "Weight must be greater than or equal to %1$s %2$s"
 msgstr ""
 
@@ -1378,11 +1415,13 @@ msgstr ""
 
 #. translators: %s: package name
 #: dist/woocommerce-shipping-create-shipping-label.js:21
+#, js-format
 msgid "Delete %s"
 msgstr ""
 
 #. translators: %s: package name
 #: dist/woocommerce-shipping-create-shipping-label.js:24
+#, js-format
 msgid "Remove %s"
 msgstr ""
 
@@ -1462,11 +1501,13 @@ msgstr ""
 
 #. translators: %1$s The name of the form section containing the erroneous form field, %2$s is the error message.
 #: dist/woocommerce-shipping-create-shipping-label.js:27
+#, js-format
 msgid "%1$s: %2$s"
 msgstr ""
 
 #. translators: %1$s The name of the form field that has an error (origin address or destination), %2$s is the error message, e.g. "must be greater than 0".
 #: dist/woocommerce-shipping-create-shipping-label.js:30
+#, js-format
 msgid "%1$s %2$s."
 msgstr ""
 
@@ -1532,6 +1573,7 @@ msgstr ""
 
 #. translators: %s: refundable amount
 #: dist/woocommerce-shipping-create-shipping-label.js:33
+#, js-format
 msgid "Refund label (-%s)"
 msgstr ""
 
@@ -1541,6 +1583,7 @@ msgstr ""
 
 #. translators: %s: number of days
 #: dist/woocommerce-shipping-create-shipping-label.js:36
+#, js-format
 msgid "Request a refund for your unused shipping label. The refund process for the shipping label will begin immediately and is typically completed within %s business days."
 msgstr ""
 
@@ -1574,6 +1617,7 @@ msgstr ""
 
 #. translators: %s is filled with `and customs form`, if label has customs form
 #: dist/woocommerce-shipping-create-shipping-label.js:39
+#, js-format
 msgid "The \"WooCommerce Shipping & Tax\" plugin doesn't store as much information about labels as WooCommerce Shipping. Please refer to the label %s for more details. This affects the following label information:"
 msgstr ""
 
@@ -1704,6 +1748,7 @@ msgstr ""
 
 #. translators: %d: number of items
 #: dist/woocommerce-shipping-create-shipping-label.js:42
+#, js-format
 msgid "Select all (%d)"
 msgstr ""
 
@@ -1713,11 +1758,13 @@ msgstr ""
 
 #. translators: %1$d is the shipment number, %2$d is the total number of shipments
 #: dist/woocommerce-shipping-create-shipping-label.js:45
+#, js-format
 msgid "Shipment %1$d/%2$d"
 msgstr ""
 
 #. translators: %1$d: number of items
 #: dist/woocommerce-shipping-create-shipping-label.js:48
+#, js-format
 msgid "%1$d item was fulfilled."
 msgid_plural "%1$d items were fulfilled."
 msgstr[0] ""
@@ -1725,6 +1772,7 @@ msgstr[1] ""
 
 #. translators: %1$d: number of items fulfilled
 #: dist/woocommerce-shipping-create-shipping-label.js:51
+#, js-format
 msgid "%1$d item was fulfilled, "
 msgid_plural "%1$d items were fulfilled, "
 msgstr[0] ""
@@ -1732,6 +1780,7 @@ msgstr[1] ""
 
 #. translators: %1$d: number of items to be fulfilled
 #: dist/woocommerce-shipping-create-shipping-label.js:54
+#, js-format
 msgid "%d item still requires fulfillment."
 msgid_plural "%d items still require fulfillment."
 msgstr[0] ""
@@ -1739,6 +1788,7 @@ msgstr[1] ""
 
 #. translators: %d: number of items
 #: dist/woocommerce-shipping-create-shipping-label.js:57
+#, js-format
 msgid "%d item is ready to be fulfilled"
 msgid_plural "%d items are ready to be fulfilled"
 msgstr[0] ""
@@ -1766,6 +1816,7 @@ msgstr ""
 
 #. translators: %s: error message
 #: dist/woocommerce-shipping-create-shipping-label.js:60
+#, js-format
 msgid "There was an error while updating the shipments. %s"
 msgstr ""
 
@@ -1923,6 +1974,7 @@ msgstr ""
 
 #. translators: %1$s a user defined name for the address.
 #: dist/woocommerce-shipping-create-shipping-label.js:63
+#, js-format
 msgctxt "Origin address"
 msgid "%1$s (Default)"
 msgstr ""
@@ -1977,6 +2029,7 @@ msgstr ""
 
 #. translators: %s is the parent rate title
 #: dist/woocommerce-shipping-create-shipping-label.js:66
+#, js-format
 msgid "%s (base fee)"
 msgstr ""
 
@@ -2015,11 +2068,13 @@ msgstr ""
 
 #. translators: %s is the discount amount
 #: dist/woocommerce-shipping-create-shipping-label.js:78
+#, js-format
 msgid "You saved %s with WooCommerce Shipping. <i/>"
 msgstr ""
 
 #. translators: %s is the discount amount
 #: dist/woocommerce-shipping-create-shipping-label.js:81
+#, js-format
 msgid "You save %s with WooCommerce Shipping. <i/>"
 msgstr ""
 
@@ -2193,26 +2248,31 @@ msgstr ""
 
 #. translators: %s the cost of the additional service.
 #: dist/woocommerce-shipping-create-shipping-label.js:84
+#, js-format
 msgid "Signature Required ( +%s )"
 msgstr ""
 
 #. translators: %s the cost of the additional service.
 #: dist/woocommerce-shipping-create-shipping-label.js:87
+#, js-format
 msgid "Adult Signature Required ( +%s )"
 msgstr ""
 
 #. translators: %s the cost of the additional service.
 #: dist/woocommerce-shipping-create-shipping-label.js:90
+#, js-format
 msgid "Carbon Neutral ( +%s )"
 msgstr ""
 
 #. translators: %s the cost of the additional service.
 #: dist/woocommerce-shipping-create-shipping-label.js:93
+#, js-format
 msgid "Additional Handling ( +%s )"
 msgstr ""
 
 #. translators: %s the cost of the additional service.
 #: dist/woocommerce-shipping-create-shipping-label.js:96
+#, js-format
 msgid "Saturday Delivery ( %s )"
 msgstr ""
 
@@ -2226,6 +2286,7 @@ msgstr ""
 
 #. translators: %s: insurance amount
 #: dist/woocommerce-shipping-create-shipping-label.js:99
+#, js-format
 msgid "insurance (up to %s)"
 msgstr ""
 
@@ -2235,6 +2296,7 @@ msgstr ""
 
 #. translators: %s: number of days
 #: dist/woocommerce-shipping-create-shipping-label.js:102
+#, js-format
 msgid "%s business day"
 msgid_plural "%s business days"
 msgstr[0] ""
@@ -2258,6 +2320,7 @@ msgstr ""
 
 #. translators: %s: list of extras
 #: dist/woocommerce-shipping-create-shipping-label.js:105
+#, js-format
 msgid "includes %s"
 msgstr ""
 
@@ -2363,11 +2426,13 @@ msgstr ""
 
 #. translators: %s is the country name
 #: dist/woocommerce-shipping-create-shipping-label.js:108
+#, js-format
 msgid "International Transaction Number is required for shipments to %s"
 msgstr ""
 
 #. translators: %s is the tariff number
 #: dist/woocommerce-shipping-create-shipping-label.js:111
+#, js-format
 msgid "International Transaction Number is required for shipping items valued over $2,500 per tariff number. Products with tariff number %s add up to more than $2,500."
 msgstr ""
 
@@ -2465,6 +2530,7 @@ msgstr ""
 
 #. translators: %s is the shipment title as Shipment 1/2, Shipment 2/2, etc.
 #: dist/woocommerce-shipping-create-shipping-label.js:114
+#, js-format
 msgid "Purchase %s"
 msgstr ""
 
@@ -2546,6 +2612,7 @@ msgstr ""
 
 #. translators: %1$s: HAZMAT part, %2$s: package part
 #: dist/woocommerce-shipping-create-shipping-label.js:117
+#, js-format
 msgid "No shipping rates were found based on the combination of %1$s%2$s and the total shipment weight."
 msgstr ""
 
@@ -2565,6 +2632,7 @@ msgstr ""
 
 #. translators: %1$s: HAZMAT part, %2$s: package part
 #: dist/woocommerce-shipping-create-shipping-label.js:120
+#, js-format
 msgid "We couldn't find a shipping service for the combination of %1$s%2$s and the total shipment weight. Please adjust your input and try again."
 msgstr ""
 
@@ -2596,11 +2664,13 @@ msgstr ""
 
 #. translators: %s The full country name of the store's address.
 #: dist/woocommerce-shipping-onboarding.js:4
+#, js-format
 msgid "Your country, <strong>%s</strong>, is not supported yet."
 msgstr ""
 
 #. translators: %s The store's selected currency in short-form (e.g. USD).
 #: dist/woocommerce-shipping-onboarding.js:7
+#, js-format
 msgid "Your currency, <strong>%s</strong>, is not supported yet."
 msgstr ""
 
@@ -2630,6 +2700,7 @@ msgstr ""
 
 #. translators: %s: the status of the refund (e.g. "pending").
 #: dist/woocommerce-shipping-shipment-tracking.js:4
+#, js-format
 msgid "[ Refund - %s ]"
 msgstr ""
 
