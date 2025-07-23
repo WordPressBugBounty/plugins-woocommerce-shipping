@@ -30,7 +30,10 @@ import { labelPurchaseStore } from 'data/label-purchase';
 import { usePackageState } from './packages';
 import { useShipmentState } from './shipment';
 import { useRatesState } from './rates';
-import { TIME_TO_WAIT_TO_CHECK_PURCHASED_LABEL_STATUS_MS } from '../constants';
+import {
+	TIME_TO_WAIT_TO_CHECK_PURCHASED_LABEL_STATUS_MS,
+	MAX_LABEL_STATUS_RETRIES,
+} from '../constants';
 import { CUSTOM_PACKAGE_TYPES } from '../packages/constants';
 import { getPaperSizes } from '../label';
 import { useHazmatState } from './hazmat';
@@ -171,6 +174,22 @@ export function useLabelsState( {
 		string[]
 	>( [] );
 
+	// Track retry count for label status polling
+	const [ labelStatusRetryCount, setLabelStatusRetryCount ] = useState<
+		Record< number, number >
+	>( {} );
+
+	// Helper function to reset retry count for a specific label
+	const resetLabelRetryCount = useCallback(
+		( labelId: number ) => {
+			setLabelStatusRetryCount( ( prev ) => {
+				const { [ labelId ]: _, ...rest } = prev;
+				return rest;
+			} );
+		},
+		[ setLabelStatusRetryCount ]
+	);
+
 	const maybeUpdateRates = useCallback( () => {
 		if (
 			! currentShipmentLabel ||
@@ -300,6 +319,27 @@ export function useLabelsState( {
 		): Promise< void | LabelPurchaseError > => {
 			const { resolve, reject } = resolvers ?? {};
 			setIsUpdatingStatus( true );
+
+			// Get current retry count for this label
+			const currentRetryCount = labelStatusRetryCount[ labelId ] || 0;
+
+			// Check if we've exceeded max retries
+			if ( currentRetryCount >= MAX_LABEL_STATUS_RETRIES ) {
+				setIsUpdatingStatus( false );
+				maybeUpdateRates();
+				// Reset retry count for this label
+				resetLabelRetryCount( labelId );
+				return ( reject ?? Promise.reject< LabelPurchaseError > )?.( {
+					cause: 'status_error',
+					message: [
+						__(
+							'Label purchase is taking longer than expected. The purchase may still be processing. Please try refreshing the status in a few minutes or contact support if the issue persists.',
+							'woocommerce-shipping'
+						),
+					],
+				} );
+			}
+
 			try {
 				await dispatch( labelPurchaseStore ).fetchLabelStatus(
 					order.id,
@@ -308,6 +348,8 @@ export function useLabelsState( {
 			} catch ( e ) {
 				setIsUpdatingStatus( false );
 				maybeUpdateRates();
+				// Reset retry count on error
+				resetLabelRetryCount( labelId );
 				const message = getLabelStatusErrorMessage( e as Error );
 				return ( reject ?? Promise.reject< LabelPurchaseError > )?.( {
 					cause: 'status_error',
@@ -322,12 +364,16 @@ export function useLabelsState( {
 
 			if ( ! label ) {
 				setIsUpdatingStatus( false );
+				// Reset retry count
+				resetLabelRetryCount( labelId );
 				return ( resolve ?? Promise.resolve )();
 			}
 
 			if ( label.status === LABEL_PURCHASE_STATUS.PURCHASE_ERROR ) {
 				setIsUpdatingStatus( false );
 				maybeUpdateRates();
+				// Reset retry count
+				resetLabelRetryCount( labelId );
 				return ( reject ?? Promise.reject< LabelPurchaseError > )?.( {
 					cause: 'status_error',
 					message: [
@@ -341,6 +387,12 @@ export function useLabelsState( {
 			}
 
 			if ( label.status === LABEL_PURCHASE_STATUS.PURCHASE_IN_PROGRESS ) {
+				// Increment retry count
+				setLabelStatusRetryCount( ( prev ) => ( {
+					...prev,
+					[ labelId ]: currentRetryCount + 1,
+				} ) );
+
 				setTimeout( () => {
 					try {
 						fetchLabelStatus( labelId, resolvers );
@@ -353,6 +405,8 @@ export function useLabelsState( {
 					}
 				}, TIME_TO_WAIT_TO_CHECK_PURCHASED_LABEL_STATUS_MS );
 			} else {
+				// Success - reset retry count
+				resetLabelRetryCount( labelId );
 				setLabels( ( prevLabels ) => ( {
 					...prevLabels,
 					[ currentShipmentId ]: label,
@@ -370,6 +424,8 @@ export function useLabelsState( {
 			setLabels,
 			maybeUpdateRates,
 			maybePrintLabel,
+			labelStatusRetryCount,
+			resetLabelRetryCount,
 		]
 	);
 

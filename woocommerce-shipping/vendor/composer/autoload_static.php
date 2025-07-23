@@ -98,6 +98,7 @@ class ComposerStaticInit644a80e4b25560037acd97262c6185ae
         'Automattic\\WCShipping\\Analytics\\ShippingLabel' => __DIR__ . '/../..' . '/src/Analytics/ShippingLabel.php',
         'Automattic\\WCShipping\\Analytics\\ShippingLabelRESTController' => __DIR__ . '/../..' . '/src/Analytics/ShippingLabelRESTController.php',
         'Automattic\\WCShipping\\Autoloader' => __DIR__ . '/../..' . '/src/Autoloader.php',
+        'Automattic\\WCShipping\\Banners\\Banners' => __DIR__ . '/../..' . '/src/Banners/Banners.php',
         'Automattic\\WCShipping\\Carrier\\CarrierStrategyService' => __DIR__ . '/../..' . '/src/Carrier/CarrierStrategyService.php',
         'Automattic\\WCShipping\\Carrier\\CarrierStrategyServiceInterface' => __DIR__ . '/../..' . '/src/Carrier/CarrierStrategyServiceInterface.php',
         'Automattic\\WCShipping\\Carrier\\UPSDAP\\UPSDAPCarrierStrategyRESTController' => __DIR__ . '/../..' . '/src/Carrier/UPSDAP/UPSDAPCarrierStrategyRESTController.php',

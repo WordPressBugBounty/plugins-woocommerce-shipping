@@ -73,6 +73,7 @@ return array(
     'Automattic\\WCShipping\\Analytics\\ShippingLabel' => $baseDir . '/src/Analytics/ShippingLabel.php',
     'Automattic\\WCShipping\\Analytics\\ShippingLabelRESTController' => $baseDir . '/src/Analytics/ShippingLabelRESTController.php',
     'Automattic\\WCShipping\\Autoloader' => $baseDir . '/src/Autoloader.php',
+    'Automattic\\WCShipping\\Banners\\Banners' => $baseDir . '/src/Banners/Banners.php',
     'Automattic\\WCShipping\\Carrier\\CarrierStrategyService' => $baseDir . '/src/Carrier/CarrierStrategyService.php',
     'Automattic\\WCShipping\\Carrier\\CarrierStrategyServiceInterface' => $baseDir . '/src/Carrier/CarrierStrategyServiceInterface.php',
     'Automattic\\WCShipping\\Carrier\\UPSDAP\\UPSDAPCarrierStrategyRESTController' => $baseDir . '/src/Carrier/UPSDAP/UPSDAPCarrierStrategyRESTController.php',

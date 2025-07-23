@@ -443,4 +443,51 @@ class Tracks extends WC_Tracks {
 			)
 		);
 	}
+
+	/**
+	 * Record a feature banner viewed event.
+	 *
+	 * @param string $banner_id The ID of the feature banner that was viewed.
+	 * @return void
+	 */
+	public static function feature_banner_viewed( string $banner_id ) {
+		self::record_event(
+			'banner_view',
+			array(
+				'banner_id' => $banner_id,
+			)
+		);
+	}
+
+	/**
+	 * Record a feature banner dismissed event.
+	 *
+	 * @param string $banner_id The ID of the feature banner that was dismissed.
+	 * @return void
+	 */
+	public static function feature_banner_dismissed( string $banner_id ) {
+		self::record_event(
+			'banner_dismiss',
+			array(
+				'banner_id' => $banner_id,
+			)
+		);
+	}
+
+	/**
+	 * Record a feature banner button clicked event.
+	 *
+	 * @param string $banner_id The ID of the feature banner.
+	 * @param string $button_action The action/title of the button that was clicked.
+	 * @return void
+	 */
+	public static function feature_banner_button_clicked( string $banner_id, string $button_action ) {
+		self::record_event(
+			'banner_button_click',
+			array(
+				'banner_id'     => $banner_id,
+				'button_action' => $button_action,
+			)
+		);
+	}
 }

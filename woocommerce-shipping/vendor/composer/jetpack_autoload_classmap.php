@@ -290,6 +290,10 @@ return array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/src/Autoloader.php'
 	),
+	'Automattic\\WCShipping\\Banners\\Banners' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/src/Banners/Banners.php'
+	),
 	'Automattic\\WCShipping\\Carrier\\CarrierStrategyService' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/src/Carrier/CarrierStrategyService.php'
@@ -538,6 +542,10 @@ return array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/tests/php/Integrations/AssetsRESTControllerTest.php'
 	),
+	'Automattic\\WCShipping\\Tests\\Banners\\BannersTest' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/tests/php/Banners/BannersTest.php'
+	),
 	'Automattic\\WCShipping\\Tests\\ConfigRESTControllerTest' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/tests/php/Integrations/ConfigRESTControllerTest.php'
@@ -557,6 +565,10 @@ return array(
 	'Automattic\\WCShipping\\Tests\\TosRESTControllerTest' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/tests/php/Integrations/TosRESTControllerTest.php'
+	),
+	'Automattic\\WCShipping\\Tests\\TracksTest' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/tests/php/TracksTest.php'
 	),
 	'Automattic\\WCShipping\\Tests\\WooCommerceShipmentTrackingTest' => array(
 		'version' => 'dev-trunk',

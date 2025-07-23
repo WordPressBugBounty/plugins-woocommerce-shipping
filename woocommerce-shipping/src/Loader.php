@@ -91,6 +91,7 @@ use Automattic\WCShipping\WCShippingRESTController;
 use Automattic\WCShipping\Analytics\ShippingLabel;
 use Automattic\WCShipping\Analytics\ShippingLabelRESTController;
 use Automattic\WCShipping\Analytics\LabelsService;
+use Automattic\WCShipping\Banners\Banners;
 use Automattic\WCShipping\LabelPurchase\EligibilityRESTController;
 use Automattic\WCShipping\Promo\PromoRESTController;
 use Automattic\WCShipping\Promo\PromoService;
@@ -230,6 +231,11 @@ class Loader {
 	 * @var WC_Connect_Nux
 	 */
 	protected $nux;
+
+	/**
+	 * @var Banners
+	 */
+	protected $feature_banners;
 
 	/**
 	 * @var WC_REST_Connect_Tos_Controller
@@ -658,6 +664,14 @@ class Loader {
 		$this->nux = $nux;
 	}
 
+	public function set_feature_banners( Banners $feature_banners ) {
+		$this->feature_banners = $feature_banners;
+	}
+
+	public function get_feature_banners() {
+		return $this->feature_banners;
+	}
+
 	/**
 	 * Get the checkout service instance.
 	 *
@@ -983,6 +997,7 @@ class Loader {
 			$payment_methods_store,
 		);
 		$nux                   = new WC_Connect_Nux( $this->view_service );
+		$feature_banners       = new Banners( $schemas_store, $logger );
 		$label_rate_service    = new LabelRateService( $api_client, $logger, $settings_store );
 
 		new WC_Connect_Privacy( $settings_store, $api_client );
@@ -997,6 +1012,7 @@ class Loader {
 		$this->set_shipping_label( $shipping_label );
 		$this->set_legacy_shipping_label( $legacy_shipping_label );
 		$this->set_nux( $nux );
+		$this->set_feature_banners( $feature_banners );
 		$this->label_rate_service = $label_rate_service;
 		$this->promo_service      = $promo_service;
 
