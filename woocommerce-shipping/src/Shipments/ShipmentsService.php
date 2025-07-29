@@ -94,17 +94,18 @@ class ShipmentsService {
 
 		$labels = $this->settings_store->get_label_order_meta_data( $order->get_id() );
 
-		// Filter out refunded labels when auto-generating shipments to prevent
+		// Filter labels that are refunded or ones that errored while purchase
+		// when auto-generating shipments to prevent
 		// creation of extra shipments from refunded labels.
-		$non_refunded_labels = array_filter(
+		$valid_labels = array_filter(
 			$labels,
 			function ( $label ) {
-				return empty( $label['refund'] );
+				return empty( $label['refund'] ) && $label['status'] !== 'PURCHASE_ERROR';
 			}
 		);
 
 		$generator = new ShipmentFromLabelGenerator( $order );
 
-		return $generator->generate_shipments( $non_refunded_labels );
+		return $generator->generate_shipments( $valid_labels );
 	}
 }

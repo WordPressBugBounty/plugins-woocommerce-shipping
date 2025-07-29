@@ -1,5 +1,8 @@
 *** WooCommerce Shipping Changelog ***
 
+= 1.8.2 - 2025-07-29 =
+* Fix   - Prevent erroneous shipment creation from labels with purchase errors.
+
 = 1.8.1 - 2025-07-22 =
 * Fix   - Prevent shipping labels from getting stuck in purchase state by adding retry limits and improving error handling.
 * Add   - Introduce new feature banners system controllable via the connect server.
