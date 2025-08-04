@@ -9,5 +9,5 @@ import { Rate, RateExtraOptions } from './rate';
 export interface RateWithParent {
     rate: Rate;
     parent: Rate | null;
-    extraOptions?: RateExtraOptions; // only added when the label is purchased and the rate has extra options
+	shipmentOptions?: RateExtraOptions; // only added when the label is purchased and the rate has extra options
 }

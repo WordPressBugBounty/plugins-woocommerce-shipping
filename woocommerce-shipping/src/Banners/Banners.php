@@ -244,16 +244,17 @@ class Banners {
 	 * called by the rendered banner
 	 */
 	public function dismiss_feature_banner() {
-		try {
-			check_ajax_referer( 'wcshipping_dismiss_feature_banner', 'nonce' );
-		} catch ( Exception $e ) {
+		// Verify nonce
+		if ( ! $this->verify_dismiss_nonce() ) {
 			wp_send_json_error( array( 'message' => 'Nonce verification failed' ) );
+			return; // Ensure we exit after sending error
 		}
 
 		$banner_id = sanitize_text_field( wp_unslash( $_POST['banner_id'] ?? '' ) );
 
 		if ( empty( $banner_id ) ) {
 			wp_send_json_error( array( 'message' => 'Invalid banner ID' ) );
+			return; // Ensure we exit after sending error
 		}
 
 		$result = $this->on_banner_dismissed( $banner_id );
@@ -263,6 +264,21 @@ class Banners {
 			wp_send_json_success( array( 'message' => 'Banner dismissed successfully' ) );
 		} else {
 			wp_send_json_error( array( 'message' => 'Failed to dismiss banner' ) );
+		}
+	}
+
+	/**
+	 * Verify the nonce for banner dismissal
+	 * Separated into its own method for testability
+	 *
+	 * @return bool
+	 */
+	protected function verify_dismiss_nonce() {
+		try {
+			$nonce = sanitize_text_field( wp_unslash( $_POST['nonce'] ?? '' ) );
+			return wp_verify_nonce( $nonce, 'wcshipping_dismiss_feature_banner' ) !== false;
+		} catch ( Exception $e ) {
+			return false;
 		}
 	}
 

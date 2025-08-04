@@ -42,8 +42,9 @@ export const ShipmentCosts = ( {
 	rateOptions,
 }: ShipmentCostsProps ) => {
 	const { storeCurrency } = useLabelPurchaseContext();
-	const nonSignatureRateOptions =
-		filterToNonSignatureExtraOptions( rateOptions );
+	const nonSignatureRateOptions = filterToNonSignatureExtraOptions(
+		selectedRate?.shipmentOptions ?? rateOptions
+	);
 
 	let subTotal = selectedRate?.parent
 		? selectedRate?.parent?.rate
@@ -66,6 +67,8 @@ export const ShipmentCosts = ( {
 	const signatureCost =
 		// If signature surcharge is persisted, use it
 		rateOptions?.signature?.surcharge ??
+		// If selected rate has a signature surcharge, use it
+		selectedRate?.shipmentOptions?.signature?.surcharge ??
 		// If selected rate is a signature rate, deduct the parent rate from the rate to get the signature cost
 		( ( selectedRate?.rate?.type ?? '' )
 			.toLowerCase()

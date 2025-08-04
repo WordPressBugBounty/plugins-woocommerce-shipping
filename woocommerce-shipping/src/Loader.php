@@ -460,8 +460,6 @@ class Loader {
 
 		add_action( 'plugins_loaded', array( $this, 'on_plugins_loaded' ) );
 		add_action( 'init', array( $this, 'jetpack_on_plugins_loaded' ), 1 );
-
-		add_action( 'after_setup_theme', array( $this, 'load_textdomain' ) );
 	}
 
 	public function get_logger() {
@@ -690,14 +688,6 @@ class Loader {
 		$this->checkout_service = $checkout_service;
 	}
 
-	/**
-	 * Load our textdomain
-	 *
-	 * @codeCoverageIgnore
-	 */
-	public function load_textdomain() {
-		load_plugin_textdomain( 'woocommerce-shipping', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
-	}
 
 	public function on_plugins_loaded() {
 		if ( ! class_exists( 'WooCommerce' ) ) {

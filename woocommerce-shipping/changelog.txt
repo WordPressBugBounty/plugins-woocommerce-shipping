@@ -1,5 +1,9 @@
 *** WooCommerce Shipping Changelog ***
 
+= 1.8.3 - 2025-08-04 =
+* Fix   - Printing on Android based browser doesn't work.
+* Fix   - Remove deprecated load_plugin_textdomain() call to fix WordPress.org plugin check.
+
 = 1.8.2 - 2025-07-29 =
 * Fix   - Prevent erroneous shipment creation from labels with purchase errors.
 
