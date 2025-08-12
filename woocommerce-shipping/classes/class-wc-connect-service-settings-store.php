@@ -458,7 +458,6 @@ class WC_Connect_Service_Settings_Store {
 			$order->set_billing_email( $new_address['email'] );
 		}
 
-		$order->update_meta_data( self::IS_DESTINATION_NORMALIZED_KEY, true );
 		$order->save();
 		return true;
 	}
@@ -468,20 +467,8 @@ class WC_Connect_Service_Settings_Store {
 		return is_null( $is_normalized ) ? false : $is_normalized;
 	}
 
-	public function is_destination_address_normalized( $order_id ) {
-		$order         = wc_get_order( $order_id );
-		$is_normalized = $order->get_meta( self::IS_DESTINATION_NORMALIZED_KEY, true );
-		return is_null( $is_normalized ) ? false : (bool) $is_normalized;
-	}
-
 	public function set_is_origin_address_normalized( $value ) {
 		WC_Connect_Options::update_option( self::IS_ORIGIN_NORMALIZED_KEY, $value );
-	}
-
-	public function set_is_destination_address_normalized( $order_id, $value ) {
-		$order = wc_get_order( $order_id );
-		$order->update_meta_data( self::IS_DESTINATION_NORMALIZED_KEY, $value );
-		$order->save();
 	}
 
 	protected function sort_services( $a, $b ) {

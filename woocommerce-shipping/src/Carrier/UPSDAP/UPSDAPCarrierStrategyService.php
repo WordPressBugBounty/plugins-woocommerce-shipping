@@ -73,7 +73,11 @@ class UPSDAPCarrierStrategyService implements CarrierStrategyServiceInterface {
 				);
 			}
 
-			$this->update_strategies( $upsdap_strategies );
+			/*
+			* Stop this from being called on every page load.
+			* TODO: Decide between removing the strategies pattern or adding it back.
+			*/
+			// $this->update_strategies( $upsdap_strategies );
 		}
 
 		return $upsdap_strategies;

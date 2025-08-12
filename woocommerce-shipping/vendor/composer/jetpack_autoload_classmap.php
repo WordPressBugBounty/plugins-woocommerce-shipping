@@ -550,6 +550,10 @@ return array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/tests/php/Integrations/ConfigRESTControllerTest.php'
 	),
+	'Automattic\\WCShipping\\Tests\\LabelPurchase\\AddressNormalizationServiceTest' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/tests/php/LabelPurchase/AddressNormalizationServiceTest.php'
+	),
 	'Automattic\\WCShipping\\Tests\\Packages\\PackageRepositoryTest' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/tests/php/Packages/PackageRepositoryTest.php'

@@ -22,6 +22,7 @@ import {
 	getCurrentOrder,
 	areAddressesClose,
 	returnPurchasedLabel,
+	getPromoDiscount,
 } from 'utils';
 import { addressStore } from 'data/address';
 import { useLabelPurchaseContext } from 'context/label-purchase';
@@ -150,7 +151,7 @@ export const ShipmentDetails = withBoundary(
 
 		const selectedRate = getSelectedRate();
 
-		const discount = selectedRate?.rate
+		let discount = selectedRate?.rate
 			? selectedRate.rate.retailRate - selectedRate.rate.rate
 			: 0;
 
@@ -174,6 +175,22 @@ export const ShipmentDetails = withBoundary(
 					'You save %s with WooCommerce Shipping. <i/>',
 					'woocommerce-shipping'
 			  );
+
+		const purchasedLabel = returnPurchasedLabel( currentLabel );
+
+		if ( discount ) {
+			const promoDiscount = purchasedLabel
+				? purchasedLabel.promoDiscount
+				: getPromoDiscount(
+						selectedRate.rate.rate,
+						selectedRate.rate.promoId
+				  );
+
+			if ( promoDiscount ) {
+				discount += promoDiscount;
+			}
+		}
+
 		return (
 			<div className="shipment-details">
 				<Heading level={ 3 }>
@@ -302,7 +319,7 @@ export const ShipmentDetails = withBoundary(
 					) }
 					<ShipmentCosts
 						selectedRate={ selectedRate }
-						label={ returnPurchasedLabel( currentLabel ) }
+						label={ purchasedLabel }
 						rateOptions={ selectedRateOptions }
 					/>
 

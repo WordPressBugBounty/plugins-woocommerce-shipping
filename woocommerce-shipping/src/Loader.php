@@ -294,6 +294,11 @@ class Loader {
 	protected $wc_connect_base_url;
 
 	/**
+	 * @var AddressNormalizationService
+	 */
+	protected $address_normalization_service;
+
+	/**
 	 * @var ViewService
 	 */
 	protected $view_service;
@@ -903,10 +908,9 @@ class Loader {
 	 * Extend WC Checkout.
 	 */
 	public function extend_checkout() {
-		$address_normalization_service = new AddressNormalizationService( $this->get_service_settings_store(), $this->api_client, $this->get_logger(), new OriginAddressService() );
-		$this->set_checkout_service( new CheckoutService( $address_normalization_service, $this->get_service_settings_store() ) );
+		$this->set_checkout_service( new CheckoutService( $this->address_normalization_service ) );
 
-		new CheckoutController( $this->get_logger(), $this->get_checkout_service(), $this->get_service_settings_store() );
+		new CheckoutController( $this->get_logger(), $this->get_checkout_service(), $this->get_service_settings_store(), $this->address_normalization_service );
 	}
 
 	/**
@@ -967,6 +971,7 @@ class Loader {
 		$this->upsdap_carrier_strategy_service = new UPSDAPCarrierStrategyService( $origin_addresses_service, $api_client );
 		$carrier_strategy_service              = new CarrierStrategyService( $this->upsdap_carrier_strategy_service );
 		$promo_service                         = new PromoService( $schemas_store, $settings_store );
+		$this->address_normalization_service   = new AddressNormalizationService( $settings_store, $api_client, $logger, $origin_addresses_service );
 		$shipping_label                        = new View(
 			$api_client,
 			$settings_store,
@@ -977,7 +982,8 @@ class Loader {
 			$this->view_service,
 			$carrier_strategy_service,
 			$account_settings,
-			$promo_service
+			$promo_service,
+			$this->address_normalization_service
 		);
 
 		$legacy_shipping_label = new WC_Connect_Shipping_Label(
@@ -1316,9 +1322,8 @@ class Loader {
 		$rest_account_settings_controller->register_routes();
 		$origin_addresses_service = new OriginAddressService();
 
-		$address_normalization_service = new AddressNormalizationService( $settings_store, $this->api_client, $logger, $origin_addresses_service );
 		( new AddressRESTController(
-			$address_normalization_service,
+			$this->address_normalization_service,
 			$origin_addresses_service,
 			$this->upsdap_carrier_strategy_service
 		) )->register_routes();
@@ -1718,6 +1723,7 @@ class Loader {
 			array(
 				'wcshipping_labels',
 				WC_Connect_Service_Settings_Store::IS_DESTINATION_NORMALIZED_KEY,
+				AddressNormalizationService::DESTINATION_NORMALIZED_HASH_KEY,
 			),
 			true
 		) ) {
