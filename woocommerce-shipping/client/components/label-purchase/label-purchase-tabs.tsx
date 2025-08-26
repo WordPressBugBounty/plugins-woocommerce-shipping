@@ -93,6 +93,10 @@ export const LabelPurchaseTabs = forwardRef(
 			];
 		};
 
+		/**
+		 * Create shipment for extra label.
+		 * This function is creating or initiating the shipment data for the first time when "Add Shipment" button is clicked.
+		 */
 		const createShipmentForExtraLabel = async () => {
 			const newShipmentId = Object.keys( shipments ).length;
 			const newShipment = orderItems.map( ( orderItem ) => ( {
@@ -104,6 +108,7 @@ export const LabelPurchaseTabs = forwardRef(
 				[ newShipmentId ]: newShipment,
 			};
 
+			// The first initiation data when "Add Shipment" button is clicked.
 			setShipments( updatedShipments );
 			setSelection( {
 				...selections,

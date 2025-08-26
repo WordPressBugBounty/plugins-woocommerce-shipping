@@ -108,9 +108,7 @@ export const AddressStep = withBoundary(
 							validatable
 						);
 					}
-					return [ validatable ]
-						.map( validateEmail )
-						.map( validatePhone )[ 0 ];
+					return validatePhone( validatable );
 				} );
 
 			return validatables[ 0 ].errors;

@@ -231,10 +231,10 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 		// Only proceed if there are selections for the current shipment
 		if ( selections[ currentShipmentId ]?.length > 0 ) {
 			const selection = selections[ currentShipmentId ];
-			const shipment = shipments[ currentShipmentId ];
+			const currentShipment = shipments[ currentShipmentId ];
 
 			// Map through current shipment items and update based on selection
-			const updatedShipment = shipment
+			const updatedShipment = currentShipment
 				.map( ( item ) => {
 					// Handle items without sub-items
 					if ( ! item.subItems || item.subItems.length === 0 ) {
@@ -271,7 +271,8 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 				} )
 				// Remove null items from the shipment
 				.filter(
-					( item ): item is ( typeof shipment )[ 0 ] => item !== null
+					( item ): item is ( typeof currentShipment )[ 0 ] =>
+						item !== null
 				);
 
 			// Create new shipments object with updated shipment
@@ -280,10 +281,27 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 				[ currentShipmentId ]: updatedShipment,
 			};
 
+			// Simplifying the shipment to remove unnecessary data into database.
+			// This is the continuation process from `createShipmentForExtraLabel()` function.
+			const simplifiedShipments = Object.entries(
+				updatedShipments
+			).reduce(
+				( acc, [ key, shipment ] ) => ( {
+					...acc,
+					[ key ]: shipment.map( ( { id, subItems } ) => ( {
+						id,
+						subItems: subItems.map(
+							( { id: subItemId } ) => subItemId
+						),
+					} ) ),
+				} ),
+				{}
+			);
+
 			// Update local state and dispatch to store
 			setShipments( updatedShipments );
 			dispatch( labelPurchaseStore ).updateShipments( {
-				shipments: updatedShipments,
+				shipments: simplifiedShipments,
 				orderId: `${ order?.id }`,
 				shipmentIdsToUpdate: {},
 			} );

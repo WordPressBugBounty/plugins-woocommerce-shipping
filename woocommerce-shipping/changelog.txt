@@ -1,5 +1,9 @@
 *** WooCommerce Shipping Changelog ***
 
+= 1.8.5 - 2025-08-26 =
+* Fix   - Added data models to ensure consistent formatting of shipment data.
+* Fix   - Simplify the saved shipment object on order meta data.
+
 = 1.8.4 - 2025-08-12 =
 * Fix   - Stop calling update strategies on every page.
 
