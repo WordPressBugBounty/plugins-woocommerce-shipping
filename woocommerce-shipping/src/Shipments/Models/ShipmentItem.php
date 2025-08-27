@@ -9,14 +9,14 @@ use Automattic\WCShipping\Utilities\BaseModel;
  */
 class ShipmentItem extends BaseModel {
 	/**
-	 * Item identifier - can be numeric or string like "20-sub-0"
+	 * Item identifier
 	 *
-	 * @var string|int
+	 * @var int
 	 */
-	public string $id;
+	public int $id;
 
 	/**
-	 * Array of sub-item IDs - MUST be strings for storage
+	 * Array of sub-item IDs in the shape: [12-sub-0, 12-sub-1, ...]
 	 *
 	 * @var string[]
 	 */
@@ -27,7 +27,8 @@ class ShipmentItem extends BaseModel {
 		if ( ! isset( $data['id'] ) ) {
 			throw new \InvalidArgumentException( 'ShipmentItem requires an id' );
 		}
-		$this->id = $data['id'];
+
+		$this->id = (int) $data['id'];
 
 		// Optional field - subItems (MUST be normalized to strings)
 		if ( isset( $data['subItems'] ) && is_array( $data['subItems'] ) ) {

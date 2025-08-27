@@ -1,5 +1,8 @@
 *** WooCommerce Shipping Changelog ***
 
+= 1.8.6 - 2025-08-27 =
+* Fix   - Retrieval and rendering of created shipments on multi-shipment orders
+
 = 1.8.5 - 2025-08-26 =
 * Fix   - Added data models to ensure consistent formatting of shipment data.
 * Fix   - Simplify the saved shipment object on order meta data.
