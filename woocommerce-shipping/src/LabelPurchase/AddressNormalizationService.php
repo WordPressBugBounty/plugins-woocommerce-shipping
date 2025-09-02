@@ -212,6 +212,7 @@ class AddressNormalizationService {
 				'errors'                 => $response->field_errors,
 				'isTrivialNormalization' => false,
 				'address'                => $address,
+				'warnings'               => $response->warnings,
 			);
 		}
 
@@ -220,6 +221,7 @@ class AddressNormalizationService {
 			'normalizedAddress'      => $response->normalized,
 			'isTrivialNormalization' => isset( $response->is_trivial_normalization ) ? $response->is_trivial_normalization : false,
 			'address'                => $address,
+			'warnings'               => $response->warnings,
 		);
 	}
 
@@ -311,6 +313,10 @@ class AddressNormalizationService {
 
 		if ( isset( $response->normalized ) ) {
 			$response->normalized = $this->format_address_for_client( $response->normalized, $address );
+		}
+
+		if ( ! isset( $response->warnings ) ) {
+			$response->warnings = array();
 		}
 
 		return $response;

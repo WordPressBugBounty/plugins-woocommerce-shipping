@@ -18,6 +18,13 @@ export const getIsAddressVerified = (
 	return state[ type ]?.isVerified ?? false;
 };
 
+export const getAddressVerifcationWarnings = (
+	state: AddressState,
+	type: AddressTypes
+) => {
+	return state[ type ]?.warnings ?? [];
+};
+
 export const getFormErrors = ( state: AddressState, type: AddressTypes ) => {
 	return state[ type ]?.formErrors ?? {};
 };

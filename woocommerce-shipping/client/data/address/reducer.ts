@@ -76,6 +76,7 @@ export const getReducer = ( withDestination: boolean ) => {
 						normalizedAddress,
 						isTrivialNormalization,
 						addressType,
+						warnings,
 					},
 				}: NormalizationAddressAction
 			) => ( {
@@ -88,6 +89,7 @@ export const getReducer = ( withDestination: boolean ) => {
 					submittedAddress: address,
 					formErrors: {},
 					isAddressVerificationInProgress: false,
+					warnings,
 				},
 			} )
 		)

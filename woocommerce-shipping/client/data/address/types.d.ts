@@ -45,6 +45,7 @@ export interface NormalizationAddressAction extends Action {
 		isTrivialNormalization: boolean;
 		address: Destination | OriginAddress;
 		normalizedAddress: Destination | OriginAddress;
+		warnings?: Array<Record<string, string>>;
 	};
 }
 
@@ -53,7 +54,7 @@ export interface NormalizationAddressFailedAction extends Action {
 	payload: {
 		addressType: AddressTypes;
 		address: Destination | OriginAddress;
-		errors?: Record< string, string > & {
+		errors?: Record<string, string> & {
 			general?: string;
 		};
 		message?: string;
@@ -104,7 +105,7 @@ export type AddressActions =
 	| ShippingAddressVerifyAction
 	| ShippingAddressVerifyFailedAction
 	| NormalizationAddressFailedAction
-	| ReturnType< typeof resetAddressNormalizationResponse >
+	| ReturnType<typeof resetAddressNormalizationResponse>
 	| UpdateShipmentAddressAction
 	| UpdateShipmentAddressFailedAction
 	| NormalizationAddressAction

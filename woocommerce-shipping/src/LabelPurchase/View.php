@@ -299,6 +299,7 @@ class View {
 				 * @return string The modified fulfillment summary message.
 				 */
 				'custom_fulfillment_summary'          => apply_filters( 'wcshipping_fulfillment_summary', '', $order->get_id(), $label_data ),
+				'should_use_fulfillment_api'          => Utils::should_use_fulfillment_api(),
 			),
 			$args,
 			$order,

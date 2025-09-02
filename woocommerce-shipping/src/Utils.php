@@ -10,6 +10,7 @@
 namespace Automattic\WCShipping;
 
 use Automattic\WCShipping\Connect\WC_Connect_Jetpack;
+use Automattic\WooCommerce\Utilities\FeaturesUtil;
 
 /**
  * Automattic\WCShipping utils class.
@@ -154,5 +155,15 @@ class Utils {
 		}
 
 		return self::get_wcshipping_version();
+	}
+
+	/**
+	 * Whether to use the fulfillment API.
+	 * It's currently only based on the feature flag managed by WooCommerce.
+	 *
+	 * @return bool
+	 */
+	public static function should_use_fulfillment_api(): bool {
+		return apply_filters( 'wcshipping_should_use_fulfillment_api', FeaturesUtil::feature_is_enabled( 'fulfillments' ) );
 	}
 }

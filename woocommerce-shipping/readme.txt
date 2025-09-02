@@ -7,7 +7,7 @@ Requires at least: 6.7
 Tested up to: 6.8
 WC requires at least: 9.8
 WC tested up to: 10.0
-Stable tag: 1.8.6
+Stable tag: 1.8.7
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -127,6 +127,9 @@ Absolutely! You can read our Terms of Service [here](https://wordpress.com/tos).
 6. WooCommerce Shipping address validation at checkout suggestion.
 
 == Changelog ==
+
+= 1.8.7 - 2025-09-02 =
+* Add   - Notice to show warnings generated while address verification
 
 = 1.8.6 - 2025-08-27 =
 * Fix   - Retrieval and rendering of created shipments on multi-shipment orders

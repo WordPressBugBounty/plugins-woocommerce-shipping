@@ -86,3 +86,7 @@ export const getPromotion = () => {
 	}
 	return promo;
 };
+
+export const shouldUseFulfillmentApi = (
+	{ should_use_fulfillment_api } = getConfig()
+) => should_use_fulfillment_api;

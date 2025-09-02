@@ -73,4 +73,5 @@ export interface WCShippingConfig {
 	};
 	custom_fulfillment_summary: string;
 	promotion?: Promotion;
+	should_use_fulfillment_api: boolean;
 }

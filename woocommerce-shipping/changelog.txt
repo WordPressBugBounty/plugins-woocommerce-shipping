@@ -1,5 +1,8 @@
 *** WooCommerce Shipping Changelog ***
 
+= 1.8.7 - 2025-09-02 =
+* Add   - Notice to show warnings generated while address verification
+
 = 1.8.6 - 2025-08-27 =
 * Fix   - Retrieval and rendering of created shipments on multi-shipment orders
 
