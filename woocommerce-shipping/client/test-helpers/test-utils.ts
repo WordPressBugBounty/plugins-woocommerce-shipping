@@ -213,7 +213,8 @@ export const mockUtils = ( overrides?: object ) => {
 			shippingDate: new Date( '2025-02-26' ),
 			estimatedDeliveryDate: new Date( '2025-02-30' ),
 		} ),
-		...( overrides ?? {} ),
 		getPromotion: jest.fn(),
+		getPromoDiscount: jest.fn(),
+		...( overrides ?? {} ), // this overrides should remain at the end
 	};
 };

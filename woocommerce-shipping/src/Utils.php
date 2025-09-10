@@ -164,6 +164,6 @@ class Utils {
 	 * @return bool
 	 */
 	public static function should_use_fulfillment_api(): bool {
-		return apply_filters( 'wcshipping_should_use_fulfillment_api', FeaturesUtil::feature_is_enabled( 'fulfillments' ) );
+		return apply_filters( 'wcshipping_should_use_fulfillment_api', false );
 	}
 }

@@ -12,7 +12,9 @@ use Automattic\WCShipping\Connect\WC_Connect_API_Client;
 use Automattic\WCShipping\Connect\WC_Connect_Logger;
 use Automattic\WCShipping\Connect\WC_Connect_Utils;
 use Automattic\WCShipping\Promo\PromoService;
+use Automattic\WCShipping\Fulfillments\FulfillmentsService;
 use Automattic\WCShipping\Utils;
+use Automattic\WCShipping\Shipments\ShipmentsService;
 use WP_Error;
 
 /**
@@ -54,6 +56,13 @@ class LabelPurchaseService {
 	 * @var PromoService
 	 */
 	private $promo_service;
+
+	/**
+	 * Fulfillments service.
+	 *
+	 * @var FulfillmentsService
+	 */
+	private $fulfillments_service;
 
 	/**
 	 * Selected rates key used to store selected rates in order meta.
@@ -112,19 +121,22 @@ class LabelPurchaseService {
 	 * @param View                              $connect_label_service Connect Label Service instance.
 	 * @param WC_Connect_Logger                 $logger                Server API client instance.
 	 * @param PromoService                      $promo_service         Promo service instance.
+	 * @param FulfillmentsService               $fulfillments_service  Fulfillments service instance.
 	 */
 	public function __construct(
 		WC_Connect_Service_Settings_Store $settings_store,
 		WC_Connect_API_Client $api_client,
 		View $connect_label_service,
 		WC_Connect_Logger $logger,
-		PromoService $promo_service
+		PromoService $promo_service,
+		FulfillmentsService $fulfillments_service
 	) {
 		$this->settings_store        = $settings_store;
 		$this->api_client            = $api_client;
 		$this->connect_label_service = $connect_label_service;
 		$this->logger                = $logger;
 		$this->promo_service         = $promo_service;
+		$this->fulfillments_service  = $fulfillments_service;
 	}
 
 	/**
@@ -184,10 +196,20 @@ class LabelPurchaseService {
 	) {
 		$settings         = $this->settings_store->get_account_settings();
 		$service_names    = array_column( $packages, 'service_name' );
-		$request_packages = $this->prepare_packages_for_purchase( $packages, $user_meta );
+		$request_packages = $this->prepare_packages_for_purchase( $packages );
 
 		if ( ! empty( $user_meta ) ) {
 			$this->update_user_meta( $user_meta );
+		}
+
+		if ( Utils::should_use_fulfillment_api() ) {
+			$this->fulfillments_service->ensure_order_has_fulfillment( $order_id );
+		} else {
+			/**
+			 * Ensure the order has shipments.
+			 * This will create data consistency between the shipments and the labels.
+			 */
+			$this->ensure_order_has_shipments( $order_id );
 		}
 
 		$origin_address_id = 'UNKNOWN_ORIGIN_ID';
@@ -235,6 +257,10 @@ class LabelPurchaseService {
 			);
 			$this->logger->log( $error, __CLASS__ );
 			return $error;
+		}
+
+		if ( Utils::should_use_fulfillment_api() ) {
+			// Todo: WOOSHIP-1595 - set fulfillment status to fulfilled
 		}
 
 		$purchased_labels_meta = $this->get_labels_meta_from_response( $label_response, $request_packages, $service_names, $order_id );
@@ -554,75 +580,47 @@ class LabelPurchaseService {
 		return $order->get_meta( self::SELECTED_ORIGIN_KEY );
 	}
 
-	/**
-	 * Build a shipment from order items.
-	 *
-	 * @param WC_Order $order Order object.
-	 * @return array
-	 */
-	private function build_shipment_from_order_items( $order ) {
-		$order_products = array();
-		foreach ( $order->get_items() as $item_id => $item ) {
-			$product = $item->get_product();
-
-			if ( ! $product instanceof \WC_Product ) {
-				continue;
-			}
-
-			if ( ! $product->needs_shipping() ) {
-				continue;
-			}
-
-			$product_meta = array();
-
-			$customs_info = Utils::get_product_customs_data( $product );
-			if ( $customs_info ) {
-				$product_meta['customs_info'] = $customs_info;
-			}
-
-			$line_item = array(
-				'id'           => $item_id,
-				'subtotal'     => wc_format_decimal( $order->get_line_subtotal( $item, false, false ) ),
-				'subtotal_tax' => wc_format_decimal( $item->get_subtotal_tax() ),
-				'total'        => wc_format_decimal( $order->get_line_total( $item, false, false ) ),
-				'total_tax'    => wc_format_decimal( $item->get_total_tax() ),
-				'price'        => wc_format_decimal( $order->get_item_total( $item, false, false ) ),
-				'quantity'     => $item->get_quantity(),
-				'tax_class'    => $item->get_tax_class(),
-				'name'         => $item->get_name(),
-				'product_id'   => $item->get_variation_id() ? $item->get_variation_id() : $item->get_product_id(),
-				'sku'          => is_object( $product ) ? $product->get_sku() : null,
-				'meta'         => (object) $product_meta,
-				'image'        => wp_get_attachment_url( $product->get_image_id() ) ?: wc_placeholder_img_src(),
-				'weight'       => $product->get_weight(),
-				'dimensions'   => array(
-					'length' => $product->get_length(),
-					'width'  => $product->get_width(),
-					'height' => $product->get_height(),
-				),
-				'variation'    => array_values( $item->get_all_formatted_meta_data() ),
-			);
-
-			$order_products[] = $line_item;
-		}
-
-		return $order_products;
-	}
 
 	/**
 	 * Get shipments from order, build it from order items if only 1 shipment is present.
+	 *
+	 * Todo: refactor in  WOOSHIP-1603
 	 *
 	 * @param int $order_id Order ID.
 	 * @return array Array of shipments.
 	 */
 	public function get_shipments( int $order_id ) {
-		$order     = \wc_get_order( $order_id );
+		$order = \wc_get_order( $order_id );
+		if ( ! $order instanceof \WC_Order ) {
+			return array();
+		}
+
 		$shipments = $order->get_meta( self::ORDER_SHIPMENTS );
 		// Single shipment orders does not have shipments meta set, so we build it from the order items
 		if ( empty( $shipments ) ) {
 			$shipments    = array();
-			$shipments[0] = $this->build_shipment_from_order_items( $order );
+			$shipments[0] = ShipmentsService::build_shipment_from_order_items( $order );
 		}
 		return $shipments;
+	}
+
+	/**
+	 * Ensure the order has shipments.
+	 *
+	 * @param int $order_id Order ID.
+	 * @return void
+	 */
+	private function ensure_order_has_shipments( $order_id ) {
+		// If the order doesn't have shipments, create and store it
+		$order = \wc_get_order( $order_id );
+		if ( $order instanceof \WC_Order ) {
+			$shipments = $order->get_meta( self::ORDER_SHIPMENTS );
+			if ( empty( $shipments ) ) {
+				$shipments    = array();
+				$shipments[0] = ShipmentsService::build_shipment_from_order_items( $order );
+				$order->update_meta_data( self::ORDER_SHIPMENTS, $shipments );
+				$order->save();
+			}
+		}
 	}
 }

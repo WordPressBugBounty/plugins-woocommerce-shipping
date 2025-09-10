@@ -111,6 +111,7 @@ class ComposerStaticInit644a80e4b25560037acd97262c6185ae
         'Automattic\\WCShipping\\DOM\\Manipulation' => __DIR__ . '/../..' . '/src/DOM/Manipulation.php',
         'Automattic\\WCShipping\\Exceptions\\RESTRequestException' => __DIR__ . '/../..' . '/src/Exceptions/RESTRequestException.php',
         'Automattic\\WCShipping\\FeatureFlags\\FeatureFlags' => __DIR__ . '/../..' . '/src/FeatureFlags/FeatureFlags.php',
+        'Automattic\\WCShipping\\Fulfillments\\FulfillmentsService' => __DIR__ . '/../..' . '/src/Fulfillments/FulfillmentsService.php',
         'Automattic\\WCShipping\\Integrations\\AssetsRESTController' => __DIR__ . '/../..' . '/src/Integrations/AssetsRESTController.php',
         'Automattic\\WCShipping\\Integrations\\ConfigRESTController' => __DIR__ . '/../..' . '/src/Integrations/ConfigRESTController.php',
         'Automattic\\WCShipping\\Integrations\\TosRESTController' => __DIR__ . '/../..' . '/src/Integrations/TosRESTController.php',

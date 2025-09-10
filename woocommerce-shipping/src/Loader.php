@@ -95,6 +95,7 @@ use Automattic\WCShipping\Banners\Banners;
 use Automattic\WCShipping\LabelPurchase\EligibilityRESTController;
 use Automattic\WCShipping\Promo\PromoRESTController;
 use Automattic\WCShipping\Promo\PromoService;
+use Automattic\WCShipping\Fulfillments\FulfillmentsService;
 
 use Exception;
 use WC_Connect_API_Client_Local_Test_Mock;
@@ -972,6 +973,7 @@ class Loader {
 		$carrier_strategy_service              = new CarrierStrategyService( $this->upsdap_carrier_strategy_service );
 		$promo_service                         = new PromoService( $schemas_store, $settings_store );
 		$this->address_normalization_service   = new AddressNormalizationService( $settings_store, $api_client, $logger, $origin_addresses_service );
+		$fulfillments_service                  = new FulfillmentsService();
 		$shipping_label                        = new View(
 			$api_client,
 			$settings_store,
@@ -983,7 +985,8 @@ class Loader {
 			$carrier_strategy_service,
 			$account_settings,
 			$promo_service,
-			$this->address_normalization_service
+			$this->address_normalization_service,
+			$fulfillments_service
 		);
 
 		$legacy_shipping_label = new WC_Connect_Shipping_Label(
@@ -1336,11 +1339,11 @@ class Loader {
 		);
 		( new PackagesRESTController( $settings_store, $package_settings ) )->register_routes();
 
-		$label_purchase_service = new LabelPurchaseService( $settings_store, $this->api_client, $this->shipping_label, $logger, $this->promo_service );
+		$shipments_service      = new ShipmentsService( $settings_store );
+		$fulfillments_service   = new FulfillmentsService();
+		$label_purchase_service = new LabelPurchaseService( $settings_store, $this->api_client, $this->shipping_label, $logger, $this->promo_service, $fulfillments_service );
 		( new LabelPurchaseRESTController( $label_purchase_service ) )->register_routes();
-
-		$shipments_service = new ShipmentsService( $settings_store );
-		( new ShipmentsRESTController( $shipments_service ) )->register_routes();
+		( new ShipmentsRESTController( $shipments_service, $fulfillments_service ) )->register_routes();
 
 		( new LabelStatusController( $label_purchase_service, $logger ) )->register_routes();
 

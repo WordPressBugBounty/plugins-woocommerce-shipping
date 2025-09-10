@@ -86,6 +86,7 @@ return array(
     'Automattic\\WCShipping\\DOM\\Manipulation' => $baseDir . '/src/DOM/Manipulation.php',
     'Automattic\\WCShipping\\Exceptions\\RESTRequestException' => $baseDir . '/src/Exceptions/RESTRequestException.php',
     'Automattic\\WCShipping\\FeatureFlags\\FeatureFlags' => $baseDir . '/src/FeatureFlags/FeatureFlags.php',
+    'Automattic\\WCShipping\\Fulfillments\\FulfillmentsService' => $baseDir . '/src/Fulfillments/FulfillmentsService.php',
     'Automattic\\WCShipping\\Integrations\\AssetsRESTController' => $baseDir . '/src/Integrations/AssetsRESTController.php',
     'Automattic\\WCShipping\\Integrations\\ConfigRESTController' => $baseDir . '/src/Integrations/ConfigRESTController.php',
     'Automattic\\WCShipping\\Integrations\\TosRESTController' => $baseDir . '/src/Integrations/TosRESTController.php',

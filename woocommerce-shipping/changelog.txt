@@ -1,5 +1,12 @@
 *** WooCommerce Shipping Changelog ***
 
+= 1.8.8 - 2025-09-10 =
+* Tweak - WooCommerce 10.2 Compatibility.
+* Fix   - Packaging slip creation for orders with multiple shipments.
+* Fix   - Broken rendering of shipment sub items in split shipment view for items with variations.
+* Fix   - Shipment item quantity changing in view after extra label is purchased.
+
+
 = 1.8.7 - 2025-09-02 =
 * Add   - Notice to show warnings generated while address verification
 

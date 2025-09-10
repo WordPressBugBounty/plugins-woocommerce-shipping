@@ -67,3 +67,4 @@ export * from './custom-package-type.d';
 export * from './shipment-date.d';
 export * from './request-extra-options.d';
 export * from './promotion.d';
+export * from './shipments.d';

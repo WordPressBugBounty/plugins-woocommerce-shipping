@@ -342,6 +342,10 @@ return array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/src/FeatureFlags/FeatureFlags.php'
 	),
+	'Automattic\\WCShipping\\Fulfillments\\FulfillmentsService' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/src/Fulfillments/FulfillmentsService.php'
+	),
 	'Automattic\\WCShipping\\Integrations\\AssetsRESTController' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/src/Integrations/AssetsRESTController.php'
@@ -605,6 +609,10 @@ return array(
 	'Automattic\\WCShipping\\Tests\\php\\FeatureFlags\\FeatureFlagsTest' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/tests/php/FeatureFlags/FeatureFlagsTest.php'
+	),
+	'Automattic\\WCShipping\\Tests\\php\\Fulfillments\\FulfillmentsServiceTest' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/tests/php/Fulfillments/FulfillmentsServiceTest.php'
 	),
 	'Automattic\\WCShipping\\Tests\\php\\LabelPurchase\\AddressRESTControllerTest' => array(
 		'version' => 'dev-trunk',

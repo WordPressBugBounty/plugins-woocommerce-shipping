@@ -299,7 +299,7 @@ export const CustomsForm = (): JSX.Element => {
 									hideLabelFromVision={ index !== 0 }
 									{ ...getProps<
 										CustomsItem[ 'description' ]
-									>( 'description', id ) }
+									>( 'description', Number( id ) ) }
 									disabled={ disable }
 									required={ true }
 									// Opting into the new styles for margin bottom
@@ -329,7 +329,7 @@ export const CustomsForm = (): JSX.Element => {
 									hideLabelFromVision={ index !== 0 }
 									{ ...getProps< string >(
 										'hsTariffNumber',
-										id
+										Number( id )
 									) }
 									placeholder={
 										isHSTariffNumberRequired()
@@ -356,7 +356,7 @@ export const CustomsForm = (): JSX.Element => {
 									min={ 0 }
 									step={ 0.01 }
 									{ ...symbolProp }
-									{ ...getProps( 'price', id ) }
+									{ ...getProps( 'price', Number( id ) ) }
 									disabled={ disable }
 									// Opting into the new styles for height
 									__next40pxDefaultSize={ true }
@@ -371,7 +371,7 @@ export const CustomsForm = (): JSX.Element => {
 									min={ 0 }
 									step={ 0.01 }
 									suffix={ weightUnit }
-									{ ...getProps( 'weight', id ) }
+									{ ...getProps( 'weight', Number( id ) ) }
 									disabled={ disable }
 									required={ true }
 									// Opting into the new styles for height
@@ -394,7 +394,10 @@ export const CustomsForm = (): JSX.Element => {
 									}
 									hideLabelFromVision={ index !== 0 }
 									options={ countryNames }
-									{ ...getProps( 'originCountry', id ) }
+									{ ...getProps(
+										'originCountry',
+										Number( id )
+									) }
 									disabled={ disable }
 									required={ true }
 									// Opting into the new styles for margin bottom

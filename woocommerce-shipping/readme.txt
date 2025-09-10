@@ -6,8 +6,8 @@ Requires PHP: 7.4
 Requires at least: 6.7
 Tested up to: 6.8
 WC requires at least: 9.8
-WC tested up to: 10.0
-Stable tag: 1.8.7
+WC tested up to: 10.2
+Stable tag: 1.8.8
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -127,6 +127,12 @@ Absolutely! You can read our Terms of Service [here](https://wordpress.com/tos).
 6. WooCommerce Shipping address validation at checkout suggestion.
 
 == Changelog ==
+
+= 1.8.8 - 2025-09-10 =
+* Tweak - WooCommerce 10.2 Compatibility.
+* Fix   - Packaging slip creation for orders with multiple shipments.
+* Fix   - Broken rendering of shipment sub items in split shipment view for items with variations.
+* Fix   - Shipment item quantity changing in view after extra label is purchased.
 
 = 1.8.7 - 2025-09-02 =
 * Add   - Notice to show warnings generated while address verification

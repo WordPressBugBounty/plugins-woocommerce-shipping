@@ -23,6 +23,7 @@ import {
 	hasPaymentMethod,
 	hasSelectedPaymentMethod,
 	canManagePayments as canManagePaymentsUtil,
+	getParentIdFromSubItemId,
 } from 'utils';
 import { CreditCardButton } from './credit-card-button';
 import { settingsPageUrl } from '../constants';
@@ -246,7 +247,13 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 					// Find selected sub-items for current item
 					const selectedSubItems = item.subItems.filter(
 						( subItem ) =>
-							selection.some( ( s ) => s.id === subItem.id )
+							selection.some(
+								( s ) =>
+									s.id ===
+										getParentIdFromSubItemId(
+											subItem.id
+										) || s.id === subItem.id
+							)
 					);
 
 					// An item with all subitems selected

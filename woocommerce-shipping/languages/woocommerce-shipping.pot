@@ -2,14 +2,14 @@
 # This file is distributed under the GPL v2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: WooCommerce Shipping 1.8.4\n"
+"Project-Id-Version: WooCommerce Shipping 1.8.8\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/woocommerce-shipping\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2025-08-12T07:04:45+00:00\n"
+"POT-Creation-Date: 2025-09-10T10:44:32+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.11.0\n"
 "X-Domain: woocommerce-shipping\n"
@@ -132,7 +132,7 @@ msgid "<strong>\"%2$s\" is missing weight, length, width, or height.</strong><br
 msgstr ""
 
 #: classes/class-wc-connect-error-notice.php:102
-#: src/Loader.php:1937
+#: src/Loader.php:1940
 #: src/Promo/PromoService.php:139
 msgid "Dismiss this notice"
 msgstr ""
@@ -190,7 +190,7 @@ msgstr ""
 
 #: classes/class-wc-connect-help-view.php:249
 #: classes/class-wc-connect-settings-pages.php:52
-#: src/Loader.php:849
+#: src/Loader.php:850
 #: src/Onboarding/SettingsPage.php:73
 msgctxt "The WooCommerce Shipping brandname"
 msgid "WooCommerce Shipping"
@@ -380,17 +380,17 @@ msgstr ""
 #: classes/legacy-api-controllers/class-wc-rest-connect-shipping-label-controller.php:58
 #: src/Integrations/ConfigRESTController.php:50
 #: src/LabelPurchase/LabelPrintService.php:99
-#: src/LabelPurchase/LabelPurchaseService.php:139
+#: src/LabelPurchase/LabelPurchaseService.php:151
 msgid "Order not found"
 msgstr ""
 
 #: classes/legacy-api-controllers/class-wc-rest-connect-shipping-label-controller.php:151
-#: src/LabelPurchase/LabelPurchaseService.php:380
+#: src/LabelPurchase/LabelPurchaseService.php:406
 msgid "Individual packaging"
 msgstr ""
 
 #: classes/legacy-api-controllers/class-wc-rest-connect-shipping-label-controller.php:155
-#: src/LabelPurchase/LabelPurchaseService.php:384
+#: src/LabelPurchase/LabelPurchaseService.php:410
 msgid "Unknown package"
 msgstr ""
 
@@ -506,7 +506,7 @@ msgid "Requested"
 msgstr ""
 
 #: src/Analytics/ShippingLabel.php:29
-#: dist/472.js:4
+#: dist/409.js:4
 #: dist/woocommerce-shipping-analytics.js:1
 #: dist/woocommerce-shipping-analytics.js:118
 msgid "Shipping Labels"
@@ -560,70 +560,74 @@ msgstr ""
 msgid "Label not found"
 msgstr ""
 
-#: src/LabelPurchase/LabelPrintService.php:178
-#: src/LabelPurchase/LabelPrintService.php:200
+#: src/LabelPurchase/LabelPrintService.php:167
+#: src/LabelPurchase/LabelPrintService.php:189
 msgid "Packing Slip"
 msgstr ""
 
 #. translators: %s is the order number.
-#: src/LabelPurchase/LabelPrintService.php:204
+#: src/LabelPurchase/LabelPrintService.php:193
 msgid "Order #%s"
 msgstr ""
 
 #. translators: %1$s is the shipment number, %2$s is the total shipments.
-#: src/LabelPurchase/LabelPrintService.php:209
+#: src/LabelPurchase/LabelPrintService.php:198
 msgid "Shipment #%1$s of %2$s"
 msgstr ""
 
-#: src/LabelPurchase/LabelPrintService.php:215
+#: src/LabelPurchase/LabelPrintService.php:204
 msgid "Shipping Label Details"
 msgstr ""
 
 #. translators: %s is the service name.
-#: src/LabelPurchase/LabelPrintService.php:219
+#: src/LabelPurchase/LabelPrintService.php:208
 msgid "Service: %s"
 msgstr ""
 
 #. translators: %s is the tracking number.
-#: src/LabelPurchase/LabelPrintService.php:224
+#: src/LabelPurchase/LabelPrintService.php:213
 msgid "Tracking #: %s"
 msgstr ""
 
 #. translators: %s is the package name.
-#: src/LabelPurchase/LabelPrintService.php:229
+#: src/LabelPurchase/LabelPrintService.php:218
 msgid "Package: %s"
 msgstr ""
 
-#: src/LabelPurchase/LabelPrintService.php:236
+#: src/LabelPurchase/LabelPrintService.php:225
 msgid "From:"
 msgstr ""
 
-#: src/LabelPurchase/LabelPrintService.php:240
+#: src/LabelPurchase/LabelPrintService.php:229
 msgid "Ship To:"
 msgstr ""
 
-#: src/LabelPurchase/LabelPrintService.php:250
+#: src/LabelPurchase/LabelPrintService.php:239
 msgid "Item"
 msgstr ""
 
-#: src/LabelPurchase/LabelPrintService.php:251
+#: src/LabelPurchase/LabelPrintService.php:240
 msgid "SKU"
 msgstr ""
 
-#: src/LabelPurchase/LabelPrintService.php:252
+#: src/LabelPurchase/LabelPrintService.php:241
+msgid "Variant"
+msgstr ""
+
+#: src/LabelPurchase/LabelPrintService.php:242
 msgid "Quantity"
 msgstr ""
 
-#: src/LabelPurchase/LabelPrintService.php:253
+#: src/LabelPurchase/LabelPrintService.php:243
 #: dist/woocommerce-shipping-create-shipping-label.js:48
 msgid "Weight"
 msgstr ""
 
-#: src/LabelPurchase/LabelPrintService.php:254
+#: src/LabelPurchase/LabelPrintService.php:244
 msgid "Dimensions"
 msgstr ""
 
-#: src/LabelPurchase/LabelPrintService.php:255
+#: src/LabelPurchase/LabelPrintService.php:245
 msgid "Picked"
 msgstr ""
 
@@ -637,27 +641,27 @@ msgstr ""
 msgid "ISO 8601 formatted date string for the shipping label"
 msgstr ""
 
-#: src/LabelPurchase/View.php:177
+#: src/LabelPurchase/View.php:185
 msgid "You do not have permission to view this banner, please contact your administrator."
 msgstr ""
 
-#: src/LabelPurchase/View.php:184
+#: src/LabelPurchase/View.php:192
 msgid "Order not found."
 msgstr ""
 
-#: src/LabelPurchase/View.php:192
+#: src/LabelPurchase/View.php:200
 msgid "Unable to retrieve WordPress connection data. Please try reconnecting your WordPress connection."
 msgstr ""
 
-#: src/LabelPurchase/View.php:201
+#: src/LabelPurchase/View.php:209
 msgid "Shipping labels has been disabled for your account."
 msgstr ""
 
-#: src/LabelPurchase/View.php:214
+#: src/LabelPurchase/View.php:222
 msgid "The origin country of this store is not supported by WooCommerce Shipping yet."
 msgstr ""
 
-#: src/LabelPurchase/View.php:233
+#: src/LabelPurchase/View.php:241
 msgid "The order does not contain any shippable products."
 msgstr ""
 
@@ -798,51 +802,51 @@ msgid "The provided phone number is not valid"
 msgstr ""
 
 #. translators: %s WC download URL link.
-#: src/Loader.php:703
+#: src/Loader.php:704
 msgid "WooCommerce Shipping requires the WooCommerce plugin to be installed and active. You can download %s here."
 msgstr ""
 
-#: src/Loader.php:1027
+#: src/Loader.php:1030
 msgid "Settings"
 msgstr ""
 
-#: src/Loader.php:1034
+#: src/Loader.php:1037
 msgid "Documentation"
 msgstr ""
 
-#: src/Loader.php:1035
+#: src/Loader.php:1038
 #: dist/woocommerce-shipping-admin-status.js:14
 msgid "Support"
 msgstr ""
 
-#: src/Loader.php:1528
-#: src/Loader.php:1536
+#: src/Loader.php:1531
+#: src/Loader.php:1539
 msgid "Tracking"
 msgstr ""
 
-#: src/Loader.php:1540
+#: src/Loader.php:1543
 msgid "Provider"
 msgstr ""
 
-#: src/Loader.php:1542
+#: src/Loader.php:1545
 msgid "Tracking number"
 msgstr ""
 
-#: src/Loader.php:1671
+#: src/Loader.php:1674
 msgid "Shipping Label"
 msgstr ""
 
-#: src/Loader.php:1683
+#: src/Loader.php:1686
 msgid "Shipment Tracking"
 msgstr ""
 
-#: src/Loader.php:1738
-#: src/Loader.php:1767
+#: src/Loader.php:1741
+#: src/Loader.php:1770
 #: dist/woocommerce-shipping-create-shipping-label.js:69
 msgid "Phone"
 msgstr ""
 
-#: src/Loader.php:1966
+#: src/Loader.php:1969
 msgid "WooCommerce Shipping & Tax has been deactivated. Your data and settings have been carried over to the dedicated WooCommerce Shipping and WooCommerce Tax extensions.<br />For support, please <a href=\"https://woocommerce.com/my-account/create-a-ticket/\">contact our Happiness Engineers</a>."
 msgstr ""
 
@@ -999,8 +1003,14 @@ msgstr ""
 msgid "The provided postal code / ZIP is not valid"
 msgstr ""
 
-#: src/Shipments/ShipmentsService.php:44
+#: src/Shipments/ShipmentsService.php:47
 msgid "Order not found when updating order shipments "
+msgstr ""
+
+#. translators: %s: Reason for the failure in creating the data model
+#: src/Shipments/ShipmentsService.php:58
+#: src/Shipments/ShipmentsService.php:114
+msgid "Shipment model creation failed with error: %s"
 msgstr ""
 
 #: src/StoreApi/Extensions/BlocksCheckoutAddressValidationExtension.php:109
@@ -1025,65 +1035,65 @@ msgstr ""
 msgid "A string representative of where the connection was initiated."
 msgstr ""
 
-#: dist/472.js:1
+#: dist/409.js:1
 msgid "Date"
 msgstr ""
 
-#: dist/472.js:1
+#: dist/409.js:1
 msgid "Order"
 msgstr ""
 
-#: dist/472.js:1
+#: dist/409.js:1
 #: dist/woocommerce-shipping-create-shipping-label.js:48
 msgid "Price"
 msgstr ""
 
-#: dist/472.js:1
+#: dist/409.js:1
 msgid "Service"
 msgstr ""
 
-#: dist/472.js:1
+#: dist/409.js:1
 msgid "Tracking Number"
 msgstr ""
 
-#: dist/472.js:1
+#: dist/409.js:1
 msgid "Refund status"
 msgstr ""
 
-#: dist/472.js:1
+#: dist/409.js:1
 msgid "Labels purchased in this period"
 msgstr ""
 
-#: dist/472.js:1
+#: dist/409.js:1
 msgid "Total label cost in this period"
 msgstr ""
 
-#: dist/472.js:1
+#: dist/409.js:1
 msgid "Refund in this period"
 msgstr ""
 
 #. translators: %d is the cache expiration in minutes
-#: dist/472.js:4
+#: dist/409.js:4
 msgid "To improve performance, the data shown here may be up to %d minutes old."
 msgstr ""
 
-#: dist/472.js:4
+#: dist/409.js:4
 msgid "Labels in this period"
 msgstr ""
 
-#: dist/472.js:4
+#: dist/409.js:4
 msgid "Failed to fetch data for export."
 msgstr ""
 
-#: dist/472.js:4
+#: dist/409.js:4
 msgid "Failed to request download of CSV file."
 msgstr ""
 
-#: dist/472.js:4
+#: dist/409.js:4
 msgid "Export CSV"
 msgstr ""
 
-#: dist/472.js:4
+#: dist/409.js:4
 msgid "Download"
 msgstr ""
 

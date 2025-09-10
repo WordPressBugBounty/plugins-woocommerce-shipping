@@ -34,7 +34,7 @@ class LabelPrintService {
 	/**
 	 * Labels service.
 	 *
-	 * @var LabelsService
+	 * @var LabelPurchaseService
 	 */
 	private $label_purchase_service;
 
@@ -155,18 +155,7 @@ class LabelPrintService {
 
 		$shipment_items = $shipments[ $shipment_id ];
 
-		$label_items = array();
-		foreach ( $shipment_items as $item ) {
-			$label_items[] = array(
-				'name'       => $item['name'],
-				'sku'        => $item['sku'],
-				'quantity'   => $item['quantity'],
-				'weight'     => $item['weight'],
-				'dimensions' => $item['dimensions'],
-				'variation'  => $item['variation'],
-				'image'      => $item['image'],
-			);
-		}
+		$label_items = $this->create_rows_from_shipment_items( $shipment_items, $order );
 
 		// Generate HTML
 		ob_start();
@@ -249,6 +238,7 @@ class LabelPrintService {
 						<tr>
 							<th><?php echo esc_html( __( 'Item', 'woocommerce-shipping' ) ); ?></th>
 							<th><?php echo esc_html( __( 'SKU', 'woocommerce-shipping' ) ); ?></th>
+							<th><?php echo esc_html( __( 'Variant', 'woocommerce-shipping' ) ); ?></th>
 							<th><?php echo esc_html( __( 'Quantity', 'woocommerce-shipping' ) ); ?></th>
 							<th><?php echo esc_html( __( 'Weight', 'woocommerce-shipping' ) ); ?></th>
 							<th><?php echo esc_html( __( 'Dimensions', 'woocommerce-shipping' ) ); ?></th>
@@ -257,35 +247,36 @@ class LabelPrintService {
 					</thead>
 					<tbody>
 						<?php foreach ( $label_items as $item ) : ?>
-							<tr>
-								<td>
-									<div class="item-cell">
-										<img class="item-image" src="<?php echo esc_url( $item['image'] ); ?>" alt="<?php echo esc_attr( $item['name'] ); ?>" />
-										<?php echo esc_html( $item['name'] ); ?>
-									</div>
-								</td>
-								<td><?php echo esc_html( $item['sku'] ); ?></td>
-								<td><?php echo esc_html( $item['quantity'] ); ?></td>
-								<td><?php echo esc_html( $item['weight'] ? $item['weight'] . ' ' . get_option( 'woocommerce_weight_unit' ) : '-' ); ?></td>
-								<td>
+						<tr>
+							<td>
+								<div class="item-cell">
 									<?php
-									if ( $item['dimensions']['length'] && $item['dimensions']['width'] && $item['dimensions']['height'] ) {
-										echo esc_html(
-											sprintf(
-												'%s x %s x %s %s',
-												$item['dimensions']['length'],
-												$item['dimensions']['width'],
-												$item['dimensions']['height'],
-												get_option( 'woocommerce_dimension_unit' )
-											)
-										);
-									} else {
-										echo '-';
-									}
+									echo wp_kses(
+										$item['image'],
+										array(
+											'img' => array(
+												'src'    => true,
+												'alt'    => true,
+												'class'  => true,
+												'width'  => true,
+												'height' => true,
+												'sizes'  => true,
+											),
+										)
+									);
 									?>
-								</td>
-								<td><div class="checkbox-cell"></div></td>
-							</tr>
+									<?php echo esc_html( $item['name'] ); ?>
+								</div>
+							</td>
+							<td><?php echo esc_html( $item['sku'] ); ?></td>
+							<td><?php echo esc_html( $item['variation'] ? $item['variation'] : '-' ); ?></td>
+							<td><?php echo esc_html( $item['quantity'] ); ?></td>
+							<td><?php echo esc_html( $item['weight'] ? $item['weight'] . ' ' . get_option( 'woocommerce_weight_unit' ) : '-' ); ?></td>
+							<td>
+								<?php echo esc_html( $item['dimensions'] ); ?>
+							</td>
+							<td><div class="checkbox-cell"></div></td>
+						</tr>
 						<?php endforeach; ?>
 					</tbody>
 				</table>
@@ -302,5 +293,67 @@ class LabelPrintService {
 			'success' => true,
 			'html'    => $html,
 		);
+	}
+
+	/**
+	 * Create label items array from shipment items.
+	 *
+	 * @param array     $shipment_items Array of shipment items.
+	 * @param \WC_Order $order         WooCommerce order object.
+	 * @return array                   Array of formatted label items.
+	 */
+	private function create_rows_from_shipment_items( array $shipment_items, \WC_Order $order ): array {
+		$label_items = array();
+
+		foreach ( $shipment_items as $item ) {
+			/**
+			 * @var \WC_Order_Item_Product $order_item
+			 */
+			$order_item = $order->get_item( $item['id'] );
+			if ( ! $order_item || ! $order_item->get_product() ) {
+				continue;
+			}
+
+			$variation_text = wc_display_item_meta(
+				$order_item,
+				array(
+					'before'       => '',
+					'after'        => '',
+					'separator'    => ', ',
+					'echo'         => false,
+					'label_before' => '',
+					'label_after'  => ': ',
+					'autop'        => false,
+				)
+			);
+
+			// Strip any remaining HTML tags for clean table display
+			$variation_text = wp_strip_all_tags( $variation_text );
+
+			// Default to order item quantity, when it's a single shipment, the order acuatlly doesn't have a shipment meta set.
+			$quantity = $order_item->get_quantity();
+
+			// Determine quantity: use count of subItems if present
+			if ( isset( $item['subItems'] ) && is_array( $item['subItems'] ) ) {
+				$quantity = max( count( $item['subItems'] ), 1 );
+			}
+
+			$label_items[] = array(
+				'name'       => $order_item->get_name(),
+				'sku'        => $order_item->get_product()->get_sku(),
+				'quantity'   => $quantity,
+				'weight'     => $order_item->get_product()->get_weight(),
+				'dimensions' => wc_format_dimensions( $order_item->get_product()->get_dimensions( false ) ?? array() ),
+				'variation'  => $variation_text,
+				'image'      => $order_item->get_product()->get_image(
+					'woocommerce_thumbnail',
+					array(
+						'class' => 'item-image',
+					)
+				),
+			);
+		}
+
+		return $label_items;
 	}
 }
