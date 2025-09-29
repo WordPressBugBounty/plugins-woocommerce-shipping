@@ -46,6 +46,7 @@ export const CarrierPackage = withBoundary(
 				labels: { hasMissingPurchase },
 				shipment: { isExtraLabelPurchaseValid },
 				packages: { initialCarrierTab },
+				nextDesign,
 			} = useLabelPurchaseContext();
 
 			const tabs = Object.keys( availablePackages ).map(
@@ -112,7 +113,11 @@ export const CarrierPackage = withBoundary(
 				// eslint-disable-next-line react-hooks/exhaustive-deps
 			}, [ isGetRatesButtonDisabled, availableRates ] );
 
-			return (
+			return nextDesign ? (
+				<TotalWeight
+					packageWeight={ selectedPackage?.boxWeight ?? 0 }
+				/>
+			) : (
 				<TabPanel
 					className="carrier-package-tabs"
 					tabs={ tabs }

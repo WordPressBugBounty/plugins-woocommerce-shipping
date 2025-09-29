@@ -20,6 +20,9 @@ use Automattic\WCShipping\DOM\Manipulation as DOM_Manipilation;
 use Automattic\WCShipping\Promo\PromoService;
 use Automattic\WCShipping\Utils;
 use Automattic\WCShipping\Fulfillments\FulfillmentsService;
+use Automattic\WCShipping\Fulfillments\ShippingFulfillmentsDataStore;
+
+
 use WC_Order;
 use WC_Order_Item;
 use WC_Order_Item_Shipping;
@@ -93,6 +96,11 @@ class View {
 	 */
 	private $fulfillments_service;
 
+	/**
+	 * @var ShippingFulfillmentsDataStore
+	 */
+	private $shipping_fulfillments_data_store;
+
 	public function __construct(
 		WC_Connect_API_Client $api_client,
 		WC_Connect_Service_Settings_Store $settings_store,
@@ -105,24 +113,26 @@ class View {
 		WC_Connect_Account_Settings $account_settings,
 		PromoService $promo_service,
 		AddressNormalizationService $address_normalization_service,
-		FulfillmentsService $fulfillments_service
+		FulfillmentsService $fulfillments_service,
+		ShippingFulfillmentsDataStore $shipping_fulfillments_data_store
 	) {
-		$this->api_client                    = $api_client;
-		$this->settings_store                = $settings_store;
-		$this->service_schemas_store         = $service_schemas_store;
-		$this->account_settings              = $account_settings;
-		$this->package_settings              = new WC_Connect_Package_Settings(
+		$this->api_client                       = $api_client;
+		$this->settings_store                   = $settings_store;
+		$this->service_schemas_store            = $service_schemas_store;
+		$this->account_settings                 = $account_settings;
+		$this->package_settings                 = new WC_Connect_Package_Settings(
 			$settings_store,
 			$service_schemas_store
 		);
-		$this->continents                    = new WC_Connect_Continents();
-		$this->shipments_service             = $shipments_service;
-		$this->origin_address_service        = $origin_address_service;
-		$this->view_service                  = $view_service;
-		$this->carrier_service               = $carrier_service;
-		$this->promo_service                 = $promo_service;
-		$this->address_normalization_service = $address_normalization_service;
-		$this->fulfillments_service          = $fulfillments_service;
+		$this->continents                       = new WC_Connect_Continents();
+		$this->shipments_service                = $shipments_service;
+		$this->origin_address_service           = $origin_address_service;
+		$this->view_service                     = $view_service;
+		$this->carrier_service                  = $carrier_service;
+		$this->promo_service                    = $promo_service;
+		$this->address_normalization_service    = $address_normalization_service;
+		$this->fulfillments_service             = $fulfillments_service;
+		$this->shipping_fulfillments_data_store = $shipping_fulfillments_data_store;
 	}
 
 	public function is_order_dhl_express_eligible(): bool {
@@ -154,10 +164,19 @@ class View {
 			return array();
 		}
 
-		$order_id         = $order->get_id();
-		$purchased_labels = $this->ensure_purchased_labels_have_shipment_ids(
-			$this->settings_store->get_label_order_meta_data( $order_id )
-		);
+		$order_id = $order->get_id();
+
+		if ( Utils::should_use_fulfillment_api() ) {
+			$existing_fulfillments = $this->shipping_fulfillments_data_store->read_fulfillments( WC_Order::class, "$order_id" );
+			$purchased_labels      = array();
+			foreach ( $existing_fulfillments as $fulfillment ) {
+				$purchased_labels = array_merge( $purchased_labels, $fulfillment->get_labels() );
+			}
+		} else {
+			$purchased_labels = $this->ensure_purchased_labels_have_shipment_ids(
+				$this->settings_store->get_label_order_meta_data( $order_id )
+			);
+		}
 
 		return array(
 			'orderId'            => $order_id,

@@ -5,9 +5,9 @@ Requires Plugins: woocommerce
 Requires PHP: 7.4
 Requires at least: 6.7
 Tested up to: 6.8
-WC requires at least: 9.8
+WC requires at least: 10.0
 WC tested up to: 10.2
-Stable tag: 1.8.8
+Stable tag: 1.8.9
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -127,6 +127,9 @@ Absolutely! You can read our Terms of Service [here](https://wordpress.com/tos).
 6. WooCommerce Shipping address validation at checkout suggestion.
 
 == Changelog ==
+
+= 1.8.9 - 2025-09-29 =
+* Fix   - Show correct refund status in Analytics → Shipping Labels and fix PHP warnings.
 
 = 1.8.8 - 2025-09-10 =
 * Tweak - WooCommerce 10.2 Compatibility.

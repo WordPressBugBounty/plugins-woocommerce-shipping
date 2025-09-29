@@ -9,6 +9,7 @@ import { getShipmentTitle } from './utils';
 import { __ } from '@wordpress/i18n';
 import { check } from '@wordpress/icons';
 import { Icon } from '@wordpress/components';
+import { ShipmentContentV2 } from './design-next/shipment-content-v2';
 
 interface LabelPurchaseTabsProps {
 	setStartSplitShipment: ( startSplitShipment: boolean ) => void;
@@ -37,6 +38,7 @@ export const LabelPurchaseTabs = forwardRef(
 				getShipmentsWithoutLabel,
 				hasPurchasedLabel,
 			},
+			nextDesign,
 		} = useLabelPurchaseContext();
 		const orderFulfilled = ! hasMissingPurchase();
 
@@ -123,7 +125,9 @@ export const LabelPurchaseTabs = forwardRef(
 
 			updateCustomsItems();
 		};
-		return (
+		return nextDesign ? (
+			<ShipmentContentV2 items={ shipments[ currentShipmentId ] } />
+		) : (
 			<TabPanel
 				ref={ ref }
 				selectOnMove={ true }

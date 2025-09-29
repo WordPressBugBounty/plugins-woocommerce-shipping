@@ -34,6 +34,7 @@ import { withBoundary } from 'components/HOC';
 import { ShipFromSelect } from './ship-from-select';
 import { ShipmentCosts } from './shipment-costs';
 import { ShippingDate } from './shipping-date';
+import { ShippingSummary } from '../design-next/internal/shipping-summary';
 
 export const ShipmentDetails = withBoundary(
 	( { order, destinationAddress } ) => {
@@ -68,6 +69,7 @@ export const ShipmentDetails = withBoundary(
 				getCurrentShipmentDate,
 				setCurrentShipmentDate,
 			},
+			nextDesign,
 		} = useLabelPurchaseContext();
 
 		/**
@@ -191,7 +193,12 @@ export const ShipmentDetails = withBoundary(
 			}
 		}
 
-		return (
+		return nextDesign ? (
+			<ShippingSummary
+				order={ order }
+				destinationAddress={ destinationAddress }
+			/>
+		) : (
 			<div className="shipment-details">
 				<Heading level={ 3 }>
 					{ __( 'Order details', 'woocommerce-shipping' ) }

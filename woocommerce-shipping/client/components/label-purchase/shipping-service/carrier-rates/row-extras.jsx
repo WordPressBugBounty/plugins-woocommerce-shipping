@@ -7,6 +7,7 @@ import {
 import { check } from '@wordpress/icons';
 import { __, sprintf } from '@wordpress/i18n';
 import { LABEL_RATE_OPTION } from 'data/constants';
+import { capitalize } from 'lodash';
 
 export const RowExtras = ( {
 	extrasText,
@@ -21,13 +22,21 @@ export const RowExtras = ( {
 	selectRateOption,
 	setSelected,
 	selected,
+	nextDesign = false,
 } ) => (
-	<Flex direction="column" className="rate-extras">
+	<Flex
+		direction="column"
+		className={ nextDesign ? undefined : 'rate-extras' }
+	>
 		{ extrasText.map( ( text ) => (
-			<Flex key={ text } justify="flex-start" gap={ 2 }>
-				<Icon icon={ check } size={ 20 } />
-				<Text key={ text } weight={ 400 }>
-					{ text }
+			<Flex key={ text } justify="flex-start">
+				<Icon icon={ check } size={ 16 } />
+				<Text
+					key={ text }
+					weight={ 400 }
+					variant={ nextDesign ? 'muted' : undefined }
+				>
+					{ capitalize( text ) }
 				</Text>
 			</Flex>
 		) ) }

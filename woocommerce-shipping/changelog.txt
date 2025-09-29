@@ -1,5 +1,8 @@
 *** WooCommerce Shipping Changelog ***
 
+= 1.8.9 - 2025-09-29 =
+* Fix   - Show correct refund status in Analytics → Shipping Labels and fix PHP warnings.
+
 = 1.8.8 - 2025-09-10 =
 * Tweak - WooCommerce 10.2 Compatibility.
 * Fix   - Packaging slip creation for orders with multiple shipments.

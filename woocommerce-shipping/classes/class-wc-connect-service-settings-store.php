@@ -3,8 +3,10 @@
 namespace Automattic\WCShipping\Connect;
 
 use Automattic\WCShipping\Packages\PackageRepository;
-use Automattic\WCShipping\Packages\PackagesAsArraysSanitizer;
 use Automattic\WCShipping\Packages\PackageValidationException;
+use Automattic\WCShipping\Fulfillments\ShippingFulfillmentsDataStore;
+use Automattic\WCShipping\Utils;
+
 use WC_Order;
 use WC_Cache_Helper;
 use WP_Error;
@@ -42,11 +44,22 @@ class WC_Connect_Service_Settings_Store {
 
 	private PackageRepository $package_repository;
 
-	public function __construct( WC_Connect_Service_Schemas_Store $service_schemas_store, WC_Connect_API_Client $api_client, WC_Connect_Logger $logger ) {
-		$this->service_schemas_store = $service_schemas_store;
-		$this->api_client            = $api_client;
-		$this->logger                = $logger;
-		$this->package_repository    = new PackageRepository();
+	/**
+	 * @var ShippingFulfillmentsDataStore
+	 */
+	private $shipping_fulfillments_data_store;
+
+	public function __construct(
+		WC_Connect_Service_Schemas_Store $service_schemas_store,
+		WC_Connect_API_Client $api_client,
+		WC_Connect_Logger $logger,
+		ShippingFulfillmentsDataStore $shipping_fulfillments_data_store
+	) {
+		$this->service_schemas_store            = $service_schemas_store;
+		$this->api_client                       = $api_client;
+		$this->logger                           = $logger;
+		$this->package_repository               = new PackageRepository();
+		$this->shipping_fulfillments_data_store = $shipping_fulfillments_data_store;
 	}
 
 	/**
@@ -394,8 +407,20 @@ class WC_Connect_Service_Settings_Store {
 	 * @return array updated label info
 	 */
 	public function update_label_order_meta_data( $order_id, $new_label_data ) {
+
+		if ( Utils::should_use_fulfillment_api() ) {
+			$label_as_array       = (array) $new_label_data;
+			$shipping_fulfillment = $this->shipping_fulfillments_data_store->get_by_label_id( $label_as_array['label_id'] );
+			if ( $shipping_fulfillment ) {
+				$shipping_fulfillment->update_label( $label_as_array['label_id'], $label_as_array );
+				$shipping_fulfillment->save();
+				return $shipping_fulfillment->get_label_by_id( $label_as_array['label_id'] ) ?? $label_as_array;
+			}
+			wc_get_logger()->error( 'Label not found in fulfillment' . print_r( $label_as_array, true ) );
+			return $label_as_array;
+		}
+
 		$result      = $new_label_data;
-		$order       = wc_get_order( $order_id );
 		$labels_data = $this->get_label_order_meta_data( $order_id );
 		foreach ( $labels_data as $index => $label_data ) {
 			if ( $label_data['label_id'] === $new_label_data->label_id ) {
@@ -411,8 +436,11 @@ class WC_Connect_Service_Settings_Store {
 				}
 			}
 		}
+
+		$order = wc_get_order( $order_id );
 		$order->update_meta_data( 'wcshipping_labels', $labels_data );
 		$order->save();
+
 		return $result;
 	}
 

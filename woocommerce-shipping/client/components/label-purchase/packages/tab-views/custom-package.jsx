@@ -8,6 +8,7 @@ import {
 } from '@wordpress/element';
 import {
 	__experimentalInputControl as InputControl,
+	__experimentalInputControlSuffixWrapper as InputControlSuffixWrapper,
 	__experimentalSpacer as Spacer,
 	Button,
 	CheckboxControl,
@@ -16,6 +17,7 @@ import {
 	FlexItem,
 	Notice,
 	SelectControl,
+	RadioControl,
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { dispatch, useSelect } from '@wordpress/data';
@@ -51,6 +53,7 @@ export const CustomPackage = withBoundary(
 			weight: { getShipmentTotalWeight },
 			labels: { hasMissingPurchase },
 			shipment: { isExtraLabelPurchaseValid },
+			nextDesign,
 		} = useLabelPurchaseContext();
 		const setData = useCallback(
 			( newData ) => {
@@ -298,92 +301,176 @@ export const CustomPackage = withBoundary(
 			hasFormErrors,
 		] );
 
+		const packageWeight = getShipmentTotalWeight();
+
+		// Fetch rates automatically when dimensions or weight changes and we have no errors.
+		useEffect( () => {
+			if ( ! nextDesign ) {
+				return;
+			}
+			const dimensions = [
+				rawPackageData.width,
+				rawPackageData.height,
+				rawPackageData.length,
+			];
+			if (
+				dimensions.some( ( dim ) => dim <= 0 ) ||
+				packageWeight <= 0
+			) {
+				return;
+			}
+			if ( hasFormErrors() || hasCustomsErrors() ) {
+				return;
+			}
+			getRates();
+		}, [
+			nextDesign,
+			rawPackageData.type,
+			rawPackageData.width,
+			rawPackageData.height,
+			rawPackageData.length,
+			packageWeight,
+		] ); // eslint-disable-line react-hooks/exhaustive-deps
+
 		return (
-			<Flex direction="column" gap={ 6 } ref={ containerRef }>
+			<Flex
+				direction="column"
+				gap={ nextDesign ? 4 : 6 }
+				ref={ containerRef }
+			>
 				<FlexItem>
 					<Flex
 						direction="column"
 						className="custom-package__details"
 						expanded
-						gap={ 8 }
+						gap={ nextDesign ? 4 : 8 }
 						justify="space-between"
 					>
 						<Flex justify="space-between" gap={ 8 }>
 							<FlexBlock>
-								<SelectControl
-									options={ [
-										{
-											label: __(
-												'Box',
-												'woocommerce-shipping'
-											),
-											value: CUSTOM_PACKAGE_TYPES.BOX,
-										},
-										{
-											label: __(
-												'Envelope',
-												'woocommerce-shipping'
-											),
-											value: CUSTOM_PACKAGE_TYPES.ENVELOPE,
-										},
-									] }
-									label={ __(
-										'Package type',
-										'woocommerce-shipping'
-									) }
-									style={ { flex: 2 } }
-									onChange={ ( type ) =>
-										setData( {
-											...rawPackageData,
-											type,
-										} )
-									}
-									__nextHasNoMarginBottom={ true }
-									__next40pxDefaultSize={ true }
-								></SelectControl>
+								{ nextDesign ? (
+									<RadioControl
+										label={ __(
+											'Package type',
+											'woocommerce-shipping'
+										) }
+										selected={ rawPackageData.type }
+										options={ [
+											{
+												label: __(
+													'Box',
+													'woocommerce-shipping'
+												),
+												value: CUSTOM_PACKAGE_TYPES.BOX,
+											},
+											{
+												label: __(
+													'Poly mailer',
+													'woocommerce-shipping'
+												),
+												value: CUSTOM_PACKAGE_TYPES.ENVELOPE,
+											},
+										] }
+										onChange={ ( type ) =>
+											setData( {
+												...rawPackageData,
+												type,
+											} )
+										}
+									/>
+								) : (
+									<SelectControl
+										options={ [
+											{
+												label: __(
+													'Box',
+													'woocommerce-shipping'
+												),
+												value: CUSTOM_PACKAGE_TYPES.BOX,
+											},
+											{
+												label: __(
+													'Envelope',
+													'woocommerce-shipping'
+												),
+												value: CUSTOM_PACKAGE_TYPES.ENVELOPE,
+											},
+										] }
+										label={ __(
+											'Package type',
+											'woocommerce-shipping'
+										) }
+										style={ { flex: 2 } }
+										onChange={ ( type ) =>
+											setData( {
+												...rawPackageData,
+												type,
+											} )
+										}
+										__nextHasNoMarginBottom={ true }
+										__next40pxDefaultSize={ true }
+									></SelectControl>
+								) }
 							</FlexBlock>
 						</Flex>
 						<Flex
 							direction="row"
 							justify="space-between"
-							align="center"
-							gap={ 0 }
+							align="flex-start"
+							gap={ nextDesign ? 4 : 0 }
+							style={ { width: nextDesign ? '497px' : 'auto' } }
 						>
 							<InputControl
 								label={ __( 'Length', 'woocommerce-shipping' ) }
-								suffix={ dimensionsUnit }
+								suffix={
+									<InputControlSuffixWrapper>
+										{ dimensionsUnit }
+									</InputControlSuffixWrapper>
+								}
 								type="number"
 								min={ 0 }
 								{ ...getControlProps( 'length' ) }
 								__next40pxDefaultSize={ true }
 							/>
-							<Spacer
-								direction="vertical"
-								marginLeft={ 3 }
-								marginRight={ 3 }
-								paddingTop={ 8 }
-							>
-								{ 'x' }
-							</Spacer>
+							{ nextDesign ? null : (
+								<Spacer
+									direction="vertical"
+									marginLeft={ 3 }
+									marginRight={ 3 }
+									paddingTop={ 8 }
+								>
+									{ 'x' }
+								</Spacer>
+							) }
 							<InputControl
 								label={ __( 'Width', 'woocommerce-shipping' ) }
 								type="number"
-								suffix={ dimensionsUnit }
+								suffix={
+									<InputControlSuffixWrapper>
+										{ dimensionsUnit }
+									</InputControlSuffixWrapper>
+								}
 								min={ 0 }
 								{ ...getControlProps( 'width' ) }
 								__next40pxDefaultSize={ true }
 							/>
-							<Spacer
-								direction="vertical"
-								marginLeft={ 3 }
-								marginRight={ 3 }
-								paddingTop={ 8 }
-							>
-								{ 'x' }
-							</Spacer>
+							{ nextDesign ? null : (
+								<Spacer
+									direction="vertical"
+									marginLeft={ 3 }
+									marginRight={ 3 }
+									paddingTop={ 8 }
+								>
+									{ 'x' }
+								</Spacer>
+							) }
 							<InputControl
 								label={ __( 'Height', 'woocommerce-shipping' ) }
-								suffix={ dimensionsUnit }
+								suffix={
+									<InputControlSuffixWrapper>
+										{ dimensionsUnit }
+									</InputControlSuffixWrapper>
+								}
 								type="number"
 								min={ 0 }
 								{ ...getControlProps( 'height' ) }
@@ -392,113 +479,118 @@ export const CustomPackage = withBoundary(
 						</Flex>
 					</Flex>
 				</FlexItem>
-				<FlexItem className="save-custom-template">
-					<Flex
-						direction="row"
-						gap={ 12 }
-						justify="space-between"
-						align="flex-start"
-					>
-						<FlexItem isBlock>
-							<CheckboxControl
-								className="save-custom-template__toggle"
-								label={ __(
-									'Save this as a new package template',
-									'woocommerce-shipping'
-								) }
-								onChange={ () =>
-									setSaveAsTemplate( ! saveAsTemplate )
-								}
-								checked={ saveAsTemplate }
-								__nextHasNoMarginBottom={ true }
-							/>
-							{ isSaved && ! saveAsTemplate && (
-								<Notice
-									status={ 'success' }
-									politeness="polite"
-									isDismissible={ false }
-								>
-									{ __(
-										'Successfully saved to Saved templates.',
+				{ ! nextDesign && (
+					<FlexItem className="save-custom-template">
+						<Flex
+							direction="row"
+							gap={ 12 }
+							justify="space-between"
+							align="flex-start"
+						>
+							<FlexItem isBlock>
+								<CheckboxControl
+									className="save-custom-template__toggle"
+									label={ __(
+										'Save this as a new package template',
 										'woocommerce-shipping'
 									) }
-								</Notice>
-							) }
-							{ saveAsTemplate && (
-								<>
-									<Spacer
-										marginTop={ 3 }
-										marginBottom={ 0 }
-									/>
-
-									<Flex
-										className="save-template-form"
-										gap={ 6 }
-										direction="row"
-										justify="space-between"
-										align="flex-start"
+									onChange={ () =>
+										setSaveAsTemplate( ! saveAsTemplate )
+									}
+									checked={ saveAsTemplate }
+									__nextHasNoMarginBottom={ true }
+								/>
+								{ isSaved && ! saveAsTemplate && (
+									<Notice
+										status={ 'success' }
+										politeness="polite"
+										isDismissible={ false }
 									>
-										<InputControl
-											label={ __(
-												'Template name',
-												'woocommerce-shipping'
-											) }
-											placeholder={ __(
-												'Enter a unique package name',
-												'woocommerce-shipping'
-											) }
-											{ ...getControlProps(
-												'name',
-												'save-template-form__name'
-											) }
-											__next40pxDefaultSize={ true }
+										{ __(
+											'Successfully saved to Saved templates.',
+											'woocommerce-shipping'
+										) }
+									</Notice>
+								) }
+								{ saveAsTemplate && (
+									<>
+										<Spacer
+											marginTop={ 3 }
+											marginBottom={ 0 }
 										/>
-										<InputControl
-											label={ __(
-												'Package weight',
-												'woocommerce-shipping'
-											) }
-											suffix={ weightUnit }
-											type="number"
-											min={ 0 }
-											{ ...getControlProps(
-												'boxWeight'
-											) }
-											__next40pxDefaultSize={ true }
-										/>
-										<Button
-											isSecondary
-											className="save-template-form__save-button"
-											type="submit"
-											isBusy={ isSaving }
-											onClick={ () =>
-												saveCustomPackage()
-											}
-											disabled={ disableTemplateSaveButton() }
+
+										<Flex
+											className="save-template-form"
+											gap={ 6 }
+											direction="row"
+											justify="space-between"
+											align="flex-start"
 										>
-											{ __(
-												'Save',
-												'woocommerce-shipping'
-											) }
-										</Button>
-									</Flex>
-								</>
-							) }
-						</FlexItem>
-					</Flex>
-				</FlexItem>
+											<InputControl
+												label={ __(
+													'Template name',
+													'woocommerce-shipping'
+												) }
+												placeholder={ __(
+													'Enter a unique package name',
+													'woocommerce-shipping'
+												) }
+												{ ...getControlProps(
+													'name',
+													'save-template-form__name'
+												) }
+												__next40pxDefaultSize={ true }
+											/>
+											<InputControl
+												label={ __(
+													'Package weight',
+													'woocommerce-shipping'
+												) }
+												suffix={ weightUnit }
+												type="number"
+												min={ 0 }
+												{ ...getControlProps(
+													'boxWeight'
+												) }
+												__next40pxDefaultSize={ true }
+											/>
+											<Button
+												isSecondary
+												className="save-template-form__save-button"
+												type="submit"
+												isBusy={ isSaving }
+												onClick={ () =>
+													saveCustomPackage()
+												}
+												disabled={ disableTemplateSaveButton() }
+											>
+												{ __(
+													'Save',
+													'woocommerce-shipping'
+												) }
+											</Button>
+										</Flex>
+									</>
+								) }
+							</FlexItem>
+						</Flex>
+					</FlexItem>
+				) }
 				<FlexItem>
-					<Flex align="flex-end" gap={ 6 }>
+					<Flex align="flex-end" gap={ nextDesign ? 0 : 6 }>
 						<TotalWeight
 							packageWeight={ rawPackageData?.boxWeight || 0 }
 						/>
-						<GetRatesButton
-							onClick={ getRates }
-							isBusy={ isFetching }
-							disabled={
-								disableFetchButton || ! getShipmentTotalWeight()
-							}
-						/>
+						{ ! nextDesign && (
+							<GetRatesButton
+								onClick={ getRates }
+								isBusy={ isFetching }
+								disabled={
+									disableFetchButton ||
+									! getShipmentTotalWeight()
+								}
+							/>
+						) }
 					</Flex>
 					<FetchNotice margin="before" />
 				</FlexItem>

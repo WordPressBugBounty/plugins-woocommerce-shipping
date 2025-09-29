@@ -80,6 +80,7 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 			setAccountCompleteOrder,
 			getAccountCompleteOrder,
 		},
+		nextDesign,
 	} = useLabelPurchaseContext();
 	const lastOrderCompleted = getAccountCompleteOrder();
 	const [ errors, setErrors ] = useState< LabelPurchaseError | null >( null );
@@ -130,7 +131,7 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 	}, [ isPurchasing ] );
 
 	const shipmentsCount = Object.keys( shipments ).length;
-	const purchaseButtonLabel =
+	const purchaseButtonLabelDefault =
 		shipmentsCount > 1
 			? sprintf(
 					// translators: %s is the shipment title as Shipment 1/2, Shipment 2/2, etc.
@@ -138,6 +139,9 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 					getShipmentTitle( currentShipmentId, shipmentsCount )
 			  )
 			: __( 'Purchase label', 'woocommerce-shipping' );
+	const purchaseButtonLabel = nextDesign
+		? __( 'Buy label', 'woocommerce-shipping' )
+		: purchaseButtonLabelDefault;
 
 	const addCardButtonDescription = (
 		onAddCard: MouseEventHandler< HTMLAnchorElement >
@@ -453,7 +457,111 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 		return ! hasMissingPurchase();
 	};
 
-	return (
+	return nextDesign ? (
+		<>
+			{ UPSDAPTosError && (
+				<UPSDAPTos
+					close={ handleUPSDAPTos.close }
+					confirm={ handleUPSDAPTos.confirm }
+					shipmentOrigin={ shipmentOrigin }
+					acceptedVersions={ getUPSDAPTosApprovedVersionsFromError(
+						UPSDAPTosError
+					) }
+					isConfirming={ isTOSConfirming }
+					setIsConfirming={ setIsTOSConfirming }
+				/>
+			) }
+			{ canPurchase() && (
+				<Button
+					variant="primary"
+					disabled={
+						! selectedRate ||
+						isPurchasing ||
+						isFetching ||
+						isUpdatingStatus ||
+						hasPurchasedLabel( false ) ||
+						! shipmentOrigin.isVerified ||
+						( isExtraLabelPurchase() &&
+							! isExtraLabelPurchaseValid() )
+					}
+					onClick={ () => {
+						const rate = getSelectedRate();
+						if ( rate ) {
+							purchaseLabel( rate );
+						}
+					} }
+					isBusy={ isPurchasing }
+					aria-disabled={
+						! selectedRate ||
+						isPurchasing ||
+						isFetching ||
+						hasPurchasedLabel( false ) ||
+						! shipmentOrigin.isVerified ||
+						( isExtraLabelPurchase() &&
+							! isExtraLabelPurchaseValid() )
+					}
+				>
+					{ purchaseButtonLabel }
+				</Button>
+			) }
+			{ ! hasPaymentMethod( { accountSettings } ) && (
+				<>
+					{ canManagePayments ? (
+						<CreditCardButton
+							url={ getAddPaymentMethodURL() }
+							buttonLabel={ __(
+								'Add credit card',
+								'woocommerce-shipping'
+							) }
+							buttonDescription={ addCardButtonDescription }
+						/>
+					) : (
+						<Notice status="warning" isDismissible={ false }>
+							{ __(
+								'Please contact your site administrator to add a payment method.',
+								'woocommerce-shipping'
+							) }
+						</Notice>
+					) }
+				</>
+			) }
+			{ hasPaymentMethod( { accountSettings } ) &&
+				! hasSelectedPaymentMethod( { accountSettings } ) && (
+					<>
+						{ canManagePayments ? (
+							<CreditCardButton
+								url={ settingsPageUrl }
+								buttonLabel={ __(
+									'Choose credit card',
+									'woocommerce-shipping'
+								) }
+								buttonDescription={
+									chooseCardButtonDescription
+								}
+							/>
+						) : (
+							<Notice status="warning" isDismissible={ false }>
+								{ __(
+									'Please contact your site administrator to set a default payment method.',
+									'woocommerce-shipping'
+								) }
+							</Notice>
+						) }
+					</>
+				) }
+			{ errors && Object.keys( errors ).length > 0 && (
+				<Notice
+					status="error"
+					actions={ uniq( errors.actions ) }
+					onDismiss={ resetErrors }
+				>
+					{ uniq( errors.message ).map( ( m, index ) => (
+						<p key={ index }>{ m }</p>
+					) ) }
+				</Notice>
+			) }
+		</>
+	) : (
 		<>
 			{ UPSDAPTosError && (
 				<UPSDAPTos

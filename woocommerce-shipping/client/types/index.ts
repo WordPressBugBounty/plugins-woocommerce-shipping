@@ -11,6 +11,8 @@ declare global {
 		wcTracks: WCTracks;
 		wcShippingSettings: WCShippingSettings;
 		wc?: WC;
+		// For UMD build of the shipping plugin
+		WCShipping_Plugin?: React.ComponentType;
 	}
 }
 

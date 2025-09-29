@@ -15,6 +15,7 @@ use Automattic\WCShipping\Promo\PromoService;
 use Automattic\WCShipping\Fulfillments\FulfillmentsService;
 use Automattic\WCShipping\Utils;
 use Automattic\WCShipping\Shipments\ShipmentsService;
+use Automattic\WCShipping\Fulfillments\ShippingFulfillment;
 use WP_Error;
 
 /**
@@ -203,7 +204,12 @@ class LabelPurchaseService {
 		}
 
 		if ( Utils::should_use_fulfillment_api() ) {
-			$this->fulfillments_service->ensure_order_has_fulfillment( $order_id );
+			$fulfillment = $this->fulfillments_service->ensure_order_has_fulfillment( $order_id );
+			// If there is only one fulfillment, we can use it directly
+			if ( is_array( $fulfillment ) && count( $fulfillment ) === 1 ) {
+				$fulfillment = $fulfillment[0];
+			}
+			// Todo: Take care of cases where there are multiple fulfillments.
 		} else {
 			/**
 			 * Ensure the order has shipments.
@@ -259,10 +265,6 @@ class LabelPurchaseService {
 			return $error;
 		}
 
-		if ( Utils::should_use_fulfillment_api() ) {
-			// Todo: WOOSHIP-1595 - set fulfillment status to fulfilled
-		}
-
 		$purchased_labels_meta = $this->get_labels_meta_from_response( $label_response, $request_packages, $service_names, $order_id );
 
 		if ( is_wp_error( $purchased_labels_meta ) ) {
@@ -270,7 +272,48 @@ class LabelPurchaseService {
 			return $purchased_labels_meta;
 		}
 
-		$this->settings_store->add_labels_to_order( $order_id, $purchased_labels_meta );
+		$selected_rate = array(
+			'rate'             => array_merge(
+				(array) $label_response->rates[0],
+				array(
+					'type' => $selected_rate['rate']['type'] ?? '',
+				)
+			),
+			'parent'           => isset( $selected_rate['parent'] ) ? (array) $selected_rate['parent'] : null,
+			'shipment_options' => $selected_rate_options,
+		);
+
+		$origin_address = array_merge(
+			$origin,
+			array(
+				'id'          => $origin_address_id,
+				'is_verified' => $is_origin_address_verified,
+			),
+		);
+
+		$shipment_dates = array(
+			'shipping_date'           => $label_date,
+			'estimated_delivery_date' => null, // Coming soon
+		);
+
+		$hazmat_data = array_values( $hazmat )[0];
+
+		$customs_data = array_values( $customs )[0];
+
+		if ( Utils::should_use_fulfillment_api() && $fulfillment ) {
+			return $this->store_purchased_label_to_fulfillment(
+				$fulfillment,
+				$purchased_labels_meta,
+				$selected_rate,
+				$hazmat_data,
+				$origin_address,
+				$destination,
+				$customs_data,
+				$shipment_dates
+			);
+		} else {
+			$this->settings_store->add_labels_to_order( $order_id, $purchased_labels_meta );
+		}
 
 		/**
 		 * $hazmat looks like this:
@@ -287,26 +330,11 @@ class LabelPurchaseService {
 		$shipment_key = array_keys( $hazmat )[0];
 
 		$keyed_selected_rate = array(
-			$shipment_key => array(
-				'rate'             => array_merge(
-					(array) $label_response->rates[0],
-					array(
-						'type' => $selected_rate['rate']['type'] ?? '',
-					)
-				),
-				'parent'           => isset( $selected_rate['parent'] ) ? (array) $selected_rate['parent'] : null,
-				'shipment_options' => $selected_rate_options,
-			),
+			$shipment_key => $selected_rate,
 		);
 
 		$origin      = array(
-			$shipment_key => array_merge(
-				$origin,
-				array(
-					'id'          => $origin_address_id,
-					'is_verified' => $is_origin_address_verified,
-				),
-			),
+			$shipment_key => $origin_address,
 		);
 		$destination = array(
 			$shipment_key => $destination,
@@ -320,12 +348,7 @@ class LabelPurchaseService {
 				self::SELECTED_ORIGIN_KEY      => $origin,
 				self::SELECTED_DESTINATION_KEY => $destination,
 				self::CUSTOMS_INFORMATION      => $customs,
-				self::SHIPMENT_DATES           => array(
-					$shipment_key => array(
-						'shipping_date'           => $label_date,
-						'estimated_delivery_date' => null, // Coming soon
-					),
-				),
+				self::SHIPMENT_DATES           => array( $shipment_key => $shipment_dates ),
 			),
 		);
 
@@ -622,5 +645,127 @@ class LabelPurchaseService {
 				$order->save();
 			}
 		}
+	}
+
+	/**
+	 * Store purchased label data to fulfillment.
+	 *
+	 * @param ShippingFulfillment $fulfillment Fulfillment object instance.
+	 * @param array               $purchased_labels_meta Array of purchased label metadata.
+	 *                            Structure: [
+	 *                                [
+	 *                                    'label_id' => string,
+	 *                                    'tracking' => string,
+	 *                                    'refundable_amount' => float,
+	 *                                    'created' => string (timestamp),
+	 *                                    'carrier_id' => string,
+	 *                                    'service_name' => string,
+	 *                                    'status' => string,
+	 *                                    'commercial_invoice_url' => string,
+	 *                                    'is_commercial_invoice_submitted_electronically' => bool,
+	 *                                    'package_name' => string,
+	 *                                    'is_letter' => bool,
+	 *                                    'product_names' => array of strings,
+	 *                                    'product_ids' => array of integers,
+	 *                                    'id' => string (internal shipment id)
+	 *                                ],
+	 *                                ...
+	 *                            ]
+	 * @param array               $selected_rate Selected shipping rate data.
+	 *                            Structure: [
+	 *                                'rate' => [
+	 *                                    'id' => string,
+	 *                                    'carrier_id' => string,
+	 *                                    'service_id' => string,
+	 *                                    'rate' => float,
+	 *                                    'currency' => string,
+	 *                                    'type' => string,
+	 *                                    ...additional rate properties from API response
+	 *                                ],
+	 *                                'parent' => array|null (parent rate data if applicable),
+	 *                                'shipment_options' => array (selected rate options)
+	 *                            ]
+	 * @param array               $hazmat_config HAZMAT configuration.
+	 *                            Structure: [
+	 *                                'category' => string (HAZMAT category),
+	 *                                'is_hazmat' => string ('true'|'false')
+	 *                            ]
+	 * @param array               $origin_address Origin address data.
+	 *                            Structure: [
+	 *                                'id' => string (address ID),
+	 *                                'is_verified' => bool,
+	 *                                'name' => string,
+	 *                                'company' => string,
+	 *                                'address' => string,
+	 *                                'address_2' => string,
+	 *                                'city' => string,
+	 *                                'state' => string,
+	 *                                'postcode' => string,
+	 *                                'country' => string,
+	 *                                'phone' => string
+	 *                            ]
+	 * @param array               $destination Destination address data.
+	 *                            Structure: [
+	 *                                'name' => string,
+	 *                                'company' => string,
+	 *                                'address' => string,
+	 *                                'address_2' => string,
+	 *                                'city' => string,
+	 *                                'state' => string,
+	 *                                'postcode' => string,
+	 *                                'country' => string,
+	 *                                'phone' => string
+	 *                            ]
+	 * @param array               $customs Customs form information.
+	 *                            Structure: [
+	 *                                'contents_type' => string,
+	 *                                'restriction_type' => string,
+	 *                                'restriction_comments' => string,
+	 *                                'non_delivery_option' => string,
+	 *                                'customs_items' => [
+	 *                                    [
+	 *                                        'description' => string,
+	 *                                        'quantity' => int,
+	 *                                        'value' => float,
+	 *                                        'weight' => float,
+	 *                                        'hs_tariff_number' => string,
+	 *                                        'origin_country' => string
+	 *                                    ],
+	 *                                    ...
+	 *                                ]
+	 *                            ]
+	 * @param array               $shipment_dates Shipment date information.
+	 *                            Structure: [
+	 *                                'shipping_date' => string|null (label date),
+	 *                                'estimated_delivery_date' => string|null (estimated delivery)
+	 *                            ]
+	 * @return array Response array with success status and stored data.
+	 */
+	private function store_purchased_label_to_fulfillment(
+		$fulfillment,
+		$purchased_labels_meta,
+		$selected_rate,
+		$hazmat_config,
+		$origin_address,
+		$destination,
+		$customs,
+		$shipment_dates
+	) {
+		$fulfillment->set_status( 'fulfilled' );
+		$fulfillment->set_labels( $purchased_labels_meta );
+		$fulfillment->set_shipping_label_rate( $selected_rate );
+		$fulfillment->set_shipping_label_hazmat( $hazmat_config );
+		$fulfillment->set_selected_origin( $origin_address );
+		$fulfillment->set_shipping_label_destination( $destination );
+		$fulfillment->set_shipping_label_customs( $customs );
+		$fulfillment->set_shipping_label_dates( $shipment_dates );
+		$fulfillment->save();
+
+		return array_merge(
+			$fulfillment->get_shipping_data(),
+			array(
+				'success' => true,
+			)
+		);
 	}
 }

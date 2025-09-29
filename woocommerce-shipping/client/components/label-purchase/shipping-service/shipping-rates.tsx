@@ -46,6 +46,7 @@ export const ShippingRates = ( {
 		shipment: { shipments },
 		essentialDetails: { focusArea: essentialDetailsFocusArea },
 		rates: { sortRates },
+		nextDesign,
 	} = useLabelPurchaseContext();
 
 	const [ selectedCarriers, setSelectedCarriers ] = useState< Carrier[] >(
@@ -139,10 +140,15 @@ export const ShippingRates = ( {
 			direction="column"
 			ref={ wrapperRef }
 		>
-			<Heading level={ 3 }>
-				{ __( 'Shipping service', 'woocommerce-shipping' ) }
-			</Heading>
-			<Spacer marginBottom="6" />
+			{ ! nextDesign && (
+				<>
+					<Heading level={ 3 }>
+						{ __( 'Shipping service', 'woocommerce-shipping' ) }
+					</Heading>
+					<Spacer marginBottom="6" />
+				</>
+			) }
+
 			{ essentialDetailsFocusArea === SHIPPING_SERVICE_SECTION && (
 				<Notice
 					status="error"
@@ -155,23 +161,28 @@ export const ShippingRates = ( {
 					) }
 				</Notice>
 			) }
-			<Flex align="flex-start" direction="column" gap={ 4 }>
-				<Flex>
-					{
-						carriers.length > 1 ? (
-							<CarrierFilter
-								carriers={ carriers }
-								selectedCarriers={ selectedCarriers }
-								filterToCarriers={ onFilterToCarriers }
-							/>
-						) : (
-							<div></div>
-						) // Empty div to keep the layout consistent when there's only one carrier.
-					}
+			<Flex
+				align={ nextDesign ? 'stretch' : 'flex-start' }
+				direction="column"
+				gap={ 4 }
+			>
+				<Flex
+					justify={ nextDesign ? 'flex-start' : 'space-between' }
+					gap={ nextDesign ? 4 : 2 }
+				>
+					{ carriers.length > 1 ? (
+						<CarrierFilter
+							carriers={ carriers }
+							selectedCarriers={ selectedCarriers }
+							filterToCarriers={ onFilterToCarriers }
+							nextDesign={ nextDesign }
+						/>
+					) : null }
 					<RatesSorter
 						canSortByDelivery={ canSortByDelivery() }
 						setSortBy={ setSortBy }
 						sortingBy={ sortingBy }
+						nextDesign={ nextDesign }
 					/>
 				</Flex>
 				<CarrierRates rates={ sortRates( getRates(), sortingBy ) } />

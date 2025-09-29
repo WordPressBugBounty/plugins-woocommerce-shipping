@@ -96,6 +96,7 @@ use Automattic\WCShipping\LabelPurchase\EligibilityRESTController;
 use Automattic\WCShipping\Promo\PromoRESTController;
 use Automattic\WCShipping\Promo\PromoService;
 use Automattic\WCShipping\Fulfillments\FulfillmentsService;
+use Automattic\WCShipping\Fulfillments\ShippingFulfillmentsDataStore;
 
 use Exception;
 use WC_Connect_API_Client_Local_Test_Mock;
@@ -313,6 +314,17 @@ class Loader {
 	 * @var UPSDAPCarrierStrategyService
 	 */
 	protected $upsdap_carrier_strategy_service;
+
+	/**
+	 * @var FulfillmentsService
+	 */
+	protected $fulfillments_service;
+
+	/**
+	 * @var ShippingFulfillmentsDataStore
+	 */
+	protected $shipping_fulfillments_data_store;
+
 	/**
 	 * Plugin deactivation hook.
 	 */
@@ -962,19 +974,20 @@ class Loader {
 			require_once WCSHIPPING_PLUGIN_DIR . '/classes/class-wc-connect-api-client-live.php';
 			$api_client = new WC_Connect_API_Client_Live( $validator, $this );
 		}
-		$schemas_store                         = new WC_Connect_Service_Schemas_Store( $api_client, $logger );
-		$settings_store                        = new WC_Connect_Service_Settings_Store( $schemas_store, $api_client, $logger );
-		$payment_methods_store                 = new WC_Connect_Payment_Methods_Store( $settings_store, $api_client, $logger );
-		$account_settings                      = new WC_Connect_Account_Settings( $settings_store, $payment_methods_store );
-		$shipments_service                     = new ShipmentsService( $settings_store );
-		$origin_addresses_service              = new OriginAddressService();
-		$this->view_service                    = new ViewService( $account_settings, $schemas_store );
-		$this->upsdap_carrier_strategy_service = new UPSDAPCarrierStrategyService( $origin_addresses_service, $api_client );
-		$carrier_strategy_service              = new CarrierStrategyService( $this->upsdap_carrier_strategy_service );
-		$promo_service                         = new PromoService( $schemas_store, $settings_store );
-		$this->address_normalization_service   = new AddressNormalizationService( $settings_store, $api_client, $logger, $origin_addresses_service );
-		$fulfillments_service                  = new FulfillmentsService();
-		$shipping_label                        = new View(
+		$this->shipping_fulfillments_data_store = new ShippingFulfillmentsDataStore();
+		$schemas_store                          = new WC_Connect_Service_Schemas_Store( $api_client, $logger );
+		$settings_store                         = new WC_Connect_Service_Settings_Store( $schemas_store, $api_client, $logger, $this->shipping_fulfillments_data_store );
+		$payment_methods_store                  = new WC_Connect_Payment_Methods_Store( $settings_store, $api_client, $logger );
+		$account_settings                       = new WC_Connect_Account_Settings( $settings_store, $payment_methods_store );
+		$shipments_service                      = new ShipmentsService( $settings_store );
+		$origin_addresses_service               = new OriginAddressService();
+		$this->view_service                     = new ViewService( $account_settings, $schemas_store );
+		$this->upsdap_carrier_strategy_service  = new UPSDAPCarrierStrategyService( $origin_addresses_service, $api_client );
+		$carrier_strategy_service               = new CarrierStrategyService( $this->upsdap_carrier_strategy_service );
+		$promo_service                          = new PromoService( $schemas_store, $settings_store );
+		$this->address_normalization_service    = new AddressNormalizationService( $settings_store, $api_client, $logger, $origin_addresses_service );
+		$this->fulfillments_service             = new FulfillmentsService( $this->shipping_fulfillments_data_store );
+		$shipping_label                         = new View(
 			$api_client,
 			$settings_store,
 			$schemas_store,
@@ -986,7 +999,8 @@ class Loader {
 			$account_settings,
 			$promo_service,
 			$this->address_normalization_service,
-			$fulfillments_service
+			$this->fulfillments_service,
+			$this->shipping_fulfillments_data_store
 		);
 
 		$legacy_shipping_label = new WC_Connect_Shipping_Label(
@@ -1340,12 +1354,11 @@ class Loader {
 		( new PackagesRESTController( $settings_store, $package_settings ) )->register_routes();
 
 		$shipments_service      = new ShipmentsService( $settings_store );
-		$fulfillments_service   = new FulfillmentsService();
-		$label_purchase_service = new LabelPurchaseService( $settings_store, $this->api_client, $this->shipping_label, $logger, $this->promo_service, $fulfillments_service );
+		$label_purchase_service = new LabelPurchaseService( $settings_store, $this->api_client, $this->shipping_label, $logger, $this->promo_service, $this->fulfillments_service );
 		( new LabelPurchaseRESTController( $label_purchase_service ) )->register_routes();
-		( new ShipmentsRESTController( $shipments_service, $fulfillments_service ) )->register_routes();
+		( new ShipmentsRESTController( $shipments_service, $this->fulfillments_service ) )->register_routes();
 
-		( new LabelStatusController( $label_purchase_service, $logger ) )->register_routes();
+		( new LabelStatusController( $label_purchase_service, $logger, $this->shipping_fulfillments_data_store ) )->register_routes();
 
 		( new LabelRefundRESTController( $label_purchase_service ) )->register_routes();
 

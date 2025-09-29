@@ -1,12 +1,26 @@
 <?php
 
+declare( strict_types=1 );
+
 namespace Automattic\WCShipping\Fulfillments;
 
-use Automattic\WooCommerce\Internal\DataStores\Fulfillments\FulfillmentsDataStore;
-use Automattic\WooCommerce\Internal\Fulfillments\Fulfillment;
 use WC_Order;
 
+defined( 'ABSPATH' ) || exit;
+
 class FulfillmentsService {
+
+	/**
+	 * @var ShippingFulfillmentsDataStore
+	 */
+	private $data_store;
+
+	/**
+	 * @param ShippingFulfillmentsDataStore $shipping_fulfillments_data_store
+	 */
+	public function __construct( ShippingFulfillmentsDataStore $data_store ) {
+		$this->data_store = $data_store;
+	}
 
 	/**
 	 * Get the fulfillments for an order in shipments format.
@@ -22,8 +36,7 @@ class FulfillmentsService {
 		if ( ! $order instanceof WC_Order ) {
 			throw new \Exception( 'Order not found' );
 		}
-		$datastore    = wc_get_container()->get( FulfillmentsDataStore::class );
-		$fulfillments = $datastore->read_fulfillments( WC_Order::class, "$order_id" );
+		$fulfillments = $this->data_store->read_fulfillments( WC_Order::class, "$order_id" );
 
 		return $this->convert_fulfillments_to_shipments_format( $fulfillments );
 	}
@@ -44,8 +57,7 @@ class FulfillmentsService {
 			throw new \Exception( 'Order not found' );
 		}
 
-		$datastore             = wc_get_container()->get( FulfillmentsDataStore::class );
-		$existing_fulfillments = $datastore->read_fulfillments( WC_Order::class, "$order_id" );
+		$existing_fulfillments = $this->data_store->read_fulfillments( WC_Order::class, "$order_id" );
 
 		// Create a map of existing fulfillments by their ID for efficient lookup
 		$fulfillment_map = array();
@@ -117,7 +129,7 @@ class FulfillmentsService {
 	 * @return Fulfillment The created fulfillment.
 	 */
 	private function create_order_fulfillment( int $order_id, array $items ) {
-		$fulfillment = new Fulfillment();
+		$fulfillment = new ShippingFulfillment();
 
 		$fulfillment->set_entity_type( WC_Order::class );
 		$fulfillment->set_entity_id( "$order_id" );
@@ -229,16 +241,15 @@ class FulfillmentsService {
 	 * Ensure the order has at least one fulfillment. If not, create one from shippable order items.
 	 *
 	 * @param int $order_id Order ID.
-	 * @return void
+	 * @return Fulfillment | Fulfillment[] | null If a new fulfillment is created it's returned, if fulfillments already exist it's returned and null otherwise
 	 */
 	public function ensure_order_has_fulfillment( int $order_id ) {
 		// Check if order already has fulfillments
-		$datastore             = wc_get_container()->get( FulfillmentsDataStore::class );
-		$existing_fulfillments = $datastore->read_fulfillments( WC_Order::class, "$order_id" );
+		$existing_fulfillments = $this->data_store->read_fulfillments( WC_Order::class, "$order_id" );
 
 		// If order already has fulfillments, don't create a new one
 		if ( ! empty( $existing_fulfillments ) ) {
-			return;
+			return $existing_fulfillments;
 		}
 
 		// Create a fulfillment from all order items
@@ -251,8 +262,9 @@ class FulfillmentsService {
 
 		// Only create fulfillment if there are items that need shipping
 		if ( ! empty( $fulfillment_items ) ) {
-			$this->create_order_fulfillment( $order_id, $fulfillment_items );
+			return $this->create_order_fulfillment( $order_id, $fulfillment_items );
 		}
+		return;
 	}
 
 	/**

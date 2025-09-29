@@ -29,9 +29,9 @@ class LabelPurchaseRESTController extends WCShippingRESTController {
 	protected $rest_base = 'label/purchase';
 
 	/**
-	 * Address normalization service.
+	 * Label purchase service.
 	 *
-	 * @var OrderService
+	 * @var LabelPurchaseService
 	 */
 	private $label_service;
 

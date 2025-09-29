@@ -16,10 +16,12 @@ import {
 interface Props {
 	children: React.JSX.Element | React.JSX.Element[];
 	orderId: number;
+	nextDesign?: boolean;
 }
 
 export const LabelPurchaseContextProvider = ( {
 	children,
+	nextDesign = false,
 }: Props ): React.JSX.Element => {
 	const orderItems = getCurrentOrderItems();
 	const storeCurrency = CurrencyFactory();
@@ -190,6 +192,7 @@ export const LabelPurchaseContextProvider = ( {
 		labels,
 		account,
 		essentialDetails,
+		nextDesign,
 	};
 
 	return (

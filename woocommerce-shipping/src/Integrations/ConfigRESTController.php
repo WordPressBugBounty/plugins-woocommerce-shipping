@@ -7,6 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use Automattic\WCShipping\Exceptions\RESTRequestException;
 use Automattic\WCShipping\LabelPurchase\View;
+use Automattic\WCShipping\Utils;
 use Automattic\WCShipping\WCShippingRESTController;
 use Exception;
 use WP_Error;
@@ -62,8 +63,10 @@ class ConfigRESTController extends WCShippingRESTController {
 			$config = $this->shipping_label_view->get_meta_boxes_payload( $order, array() );
 			return rest_ensure_response(
 				array(
-					'success' => true,
-					'config'  => $config,
+					'success'   => true,
+					'config'    => $config,
+					'scriptUrl' => Utils::get_enqueue_base_url() . 'woocommerce-shipping-plugin.js',
+					'id'        => $order_id, // Temporary ID to satisfy the JS side (which expects an object with an ID).
 				),
 			);
 		} catch ( Exception $e ) {

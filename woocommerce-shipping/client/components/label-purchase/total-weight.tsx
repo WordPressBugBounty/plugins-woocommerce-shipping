@@ -3,9 +3,10 @@ import {
 	Flex,
 	FlexBlock,
 	__experimentalInputControl as InputControl,
+	__experimentalInputControlSuffixWrapper as InputControlSuffixWrapper,
 	SelectControl,
 } from '@wordpress/components';
-import { isNumber } from 'lodash';
+import _, { isNumber } from 'lodash';
 import { __, sprintf } from '@wordpress/i18n';
 import { useEffect, useState } from '@wordpress/element';
 import {
@@ -34,6 +35,7 @@ export const TotalWeight = ( { packageWeight = 0 } ) => {
 			setShipmentTotalWeight,
 		},
 		rates: { isFetching, errors, setErrors },
+		nextDesign,
 	} = useLabelPurchaseContext();
 
 	const shipmentWeight = getShipmentWeight();
@@ -99,13 +101,15 @@ export const TotalWeight = ( { packageWeight = 0 } ) => {
 				convertWeightToUnit( value, weightUnit, defaultUnit )
 			);
 		},
-		value: formatNumber(
-			convertWeightToUnit(
-				getShipmentTotalWeight(),
-				defaultUnit,
-				weightUnit
-			)
-		),
+		value: nextDesign
+			? undefined
+			: formatNumber(
+					convertWeightToUnit(
+						getShipmentTotalWeight(),
+						defaultUnit,
+						weightUnit
+					)
+			  ),
 		className: errors[ fieldName ]
 			? 'package-total-weight has-error'
 			: 'package-total-weight',
@@ -147,42 +151,130 @@ export const TotalWeight = ( { packageWeight = 0 } ) => {
 		setWeightUnit( newUnit );
 	};
 
+	const shipmentWeightInLbs = convertWeightToUnit(
+		getShipmentTotalWeight(),
+		defaultUnit,
+		WEIGHT_UNITS.LBS
+	);
+
+	const [ weightLbs, setWeightLbs ] = useState(
+		Math.floor( shipmentWeightInLbs )
+	);
+	const [ weightOz, setWeightOz ] = useState(
+		Math.round( ( shipmentWeightInLbs - weightLbs ) * 16 )
+	);
+
 	const weightUnitOptions = Object.values( WEIGHT_UNITS ).map( ( unit ) => ( {
 		label: unit,
 		value: unit,
 	} ) );
 
+	useEffect( () => {
+		if ( nextDesign ) {
+			const totalWeightInLbs = weightLbs + weightOz / 16;
+			if ( totalWeightInLbs >= minValue ) {
+				setShipmentTotalWeight(
+					convertWeightToUnit(
+						totalWeightInLbs,
+						WEIGHT_UNITS.LBS,
+						defaultUnit
+					)
+				);
+			}
+		}
+	}, [
+		weightLbs,
+		weightOz,
+		defaultUnit,
+		nextDesign,
+		setShipmentTotalWeight,
+		minValue,
+	] );
+
 	return (
 		<FlexBlock>
-			<Flex gap={ 3 } align="flex-start">
-				<InputControl
-					label={ __(
-						'Total shipment weight (with package)',
-						'woocommerce-shipping'
-					) }
-					type="number"
-					disabled={ isFetching }
-					step={ [ 'g', 'oz' ].includes( weightUnit ) ? 1 : 0.1 }
-					min={ minValue }
-					{ ...props }
-					__next40pxDefaultSize={ true }
-				/>
-				<SelectControl
-					label={
-						// should get hidden by css
-						__( 'Unit', 'woocommerce-shipping' )
-					}
-					className="package-total-weight-unit"
-					value={ weightUnit }
-					options={ weightUnitOptions }
-					disabled={ isFetching }
-					onChange={ onUnitChange }
-					// Opting into the new styles for margin bottom
-					__nextHasNoMarginBottom={ true }
-					// Opting into the new styles for height
-					__next40pxDefaultSize={ true }
-				/>
-			</Flex>
+			{ nextDesign ? (
+				<Flex
+					direction="row"
+					justify="flex-start"
+					align="flex-end"
+					gap={ nextDesign ? 4 : 0 }
+					style={ { maxWidth: 326 } }
+				>
+					<FlexBlock>
+						<InputControl
+							label={ __(
+								'Total Shipment Weight',
+								'woocommerce-shipping'
+							) }
+							suffix={
+								<InputControlSuffixWrapper>
+									{ WEIGHT_UNITS.LBS }
+								</InputControlSuffixWrapper>
+							}
+							type="number"
+							min={ 0 }
+							step={ 1 }
+							{ ..._.omit( props, 'value', 'onChange' ) }
+							value={ weightLbs.toString() }
+							onChange={ ( val ) => {
+								setWeightLbs( Number( val ) );
+							} }
+							__next40pxDefaultSize={ true }
+						/>
+					</FlexBlock>
+					<FlexBlock>
+						<InputControl
+							label={ null }
+							type="number"
+							suffix={
+								<InputControlSuffixWrapper>
+									{ WEIGHT_UNITS.OZ }
+								</InputControlSuffixWrapper>
+							}
+							min={ 0 }
+							step={ 1 }
+							max={ 15 }
+							{ ..._.omit( props, 'value', 'onChange' ) }
+							value={ weightOz.toString() }
+							onChange={ ( val ) => {
+								setWeightOz( Number( val ) );
+							} }
+							__next40pxDefaultSize={ true }
+						/>
+					</FlexBlock>
+				</Flex>
+			) : (
+				<Flex gap={ 3 } align="flex-start">
+					<InputControl
+						label={ __(
+							'Total shipment weight (with package)',
+							'woocommerce-shipping'
+						) }
+						type="number"
+						disabled={ isFetching }
+						step={ [ 'g', 'oz' ].includes( weightUnit ) ? 1 : 0.1 }
+						min={ minValue }
+						{ ...props }
+						__next40pxDefaultSize={ true }
+					/>
+					<SelectControl
+						label={
+							// should get hidden by css
+							__( 'Unit', 'woocommerce-shipping' )
+						}
+						className="package-total-weight-unit"
+						value={ weightUnit }
+						options={ weightUnitOptions }
+						disabled={ isFetching }
+						onChange={ onUnitChange }
+						// Opting into the new styles for margin bottom
+						__nextHasNoMarginBottom={ true }
+						// Opting into the new styles for height
+						__next40pxDefaultSize={ true }
+					/>
+				</Flex>
+			) }
 		</FlexBlock>
 	);
 };
