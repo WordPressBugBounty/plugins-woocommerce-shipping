@@ -7,13 +7,13 @@
  * Author URI: https://woocommerce.com/
  * Text Domain: woocommerce-shipping
  * Domain Path: /languages/
- * Version: 1.8.9
+ * Version: 2.1.4
  * Requires Plugins: woocommerce
  * Requires PHP: 7.4
- * Requires at least: 6.7
- * Tested up to: 6.8.1
- * WC requires at least: 10.0
- * WC tested up to: 10.2
+ * Requires at least: 6.8
+ * Tested up to: 6.9
+ * WC requires at least: 10.3
+ * WC tested up to: 10.5
  * License: GPL v2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  *
@@ -39,7 +39,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'WCSHIPPING_VERSION', '1.8.9' ); // WRCS: DEFINED_VERSION.
+define( 'WCSHIPPING_VERSION', '2.1.4' ); // WRCS: DEFINED_VERSION.
 define( 'WCSHIPPING_PLUGIN_FILE', __FILE__ );
 define( 'WCSHIPPING_PLUGIN_DIR', __DIR__ );
 define( 'WCSHIPPING_PLUGIN_DIST_DIR', WCSHIPPING_PLUGIN_DIR . '/dist/' );
@@ -73,6 +73,7 @@ if ( false !== getenv( 'WOOCOMMERCE_SERVICES_CI_TEST_MODE' ) ) {
 		define( 'WOOCOMMERCE_SERVICES_LOCAL_TEST_MODE', true );
 	}
 	if ( ! defined( 'JETPACK_DEV_DEBUG' ) ) {
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound -- Jetpack constant.
 		define( 'JETPACK_DEV_DEBUG', true );
 	}
 }

@@ -133,14 +133,14 @@ export const CarrierRates = withBoundary( ( { rates } ) => {
 						signatureRequiredRate={ getExtraOptionRate(
 							rate.serviceId,
 							signatureRequiredRates?.[ rate.carrierId ] ?? [],
-							rate || 0,
+							rate ?? 0,
 							camelCase( LABEL_RATE_TYPE.SIGNATURE_REQUIRED )
 						) }
 						adultSignatureRequiredRate={ getExtraOptionRate(
 							rate.serviceId,
 							adultSignatureRequiredRates?.[ rate.carrierId ] ??
 								[],
-							rate || 0,
+							rate ?? 0,
 							camelCase(
 								LABEL_RATE_TYPE.ADULT_SIGNATURE_REQUIRED
 							)
@@ -152,7 +152,7 @@ export const CarrierRates = withBoundary( ( { rates } ) => {
 										carbonNeutralRates?.[
 											rate.carrierId
 										] ?? [],
-										rate || 0,
+										rate ?? 0,
 										camelCase(
 											LABEL_RATE_TYPE.CARBON_NEUTRAL
 										)
@@ -166,7 +166,7 @@ export const CarrierRates = withBoundary( ( { rates } ) => {
 										additionalHandlingRates?.[
 											rate.carrierId
 										] ?? [],
-										rate || 0,
+										rate ?? 0,
 										camelCase(
 											LABEL_RATE_TYPE.ADDITIONAL_HANDLING
 										)
@@ -180,7 +180,7 @@ export const CarrierRates = withBoundary( ( { rates } ) => {
 										saturdayDeliveryRates?.[
 											rate.carrierId
 										] ?? [],
-										rate || 0,
+										rate ?? 0,
 										camelCase(
 											LABEL_RATE_TYPE.SATURDAY_DELIVERY
 										)

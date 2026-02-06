@@ -46,7 +46,7 @@ export const RowExtras = ( {
 					label={ sprintf(
 						// translators: %s the cost of the additional service.
 						__(
-							'Signature Required ( +%s )',
+							'Signature required ( +%s )',
 							'woocommerce-shipping'
 						),
 						formatAmount( signatureRequiredRate.rate - rate.rate )
@@ -73,7 +73,7 @@ export const RowExtras = ( {
 					label={ sprintf(
 						// translators: %s the cost of the additional service.
 						__(
-							'Adult Signature Required ( +%s )',
+							'Adult signature required ( +%s )',
 							'woocommerce-shipping'
 						),
 						formatAmount(
@@ -105,7 +105,7 @@ export const RowExtras = ( {
 				<CheckboxControl
 					label={ sprintf(
 						// translators: %s the cost of the additional service.
-						__( 'Carbon Neutral ( +%s )', 'woocommerce-shipping' ),
+						__( 'Carbon neutral ( +%s )', 'woocommerce-shipping' ),
 						formatAmount( carbonNeutralRate.rate - rate.rate )
 					) }
 					onChange={ ( checked ) => {
@@ -128,7 +128,7 @@ export const RowExtras = ( {
 					label={ sprintf(
 						// translators: %s the cost of the additional service.
 						__(
-							'Additional Handling ( +%s )',
+							'Additional handling ( +%s )',
 							'woocommerce-shipping'
 						),
 						formatAmount( additionalHandlingRate.rate - rate.rate )
@@ -155,7 +155,7 @@ export const RowExtras = ( {
 					label={ sprintf(
 						// translators: %s the cost of the additional service.
 						__(
-							'Saturday Delivery ( %s )',
+							'Saturday delivery ( %s )',
 							'woocommerce-shipping'
 						),
 						saturdayDeliveryRate.rate - rate.rate > 0

@@ -15,7 +15,14 @@ import {
 	RateExtraOptionValue,
 	RateExtraOptions,
 } from 'types';
-import { getAccountSettings, getCurrentOrder, setAccountSettings } from 'utils';
+import {
+	applyPromo,
+	getAccountSettings,
+	getCurrentOrder,
+	setAccountSettings,
+	toUTCMidnightISOString,
+} from 'utils';
+import { addressStore } from 'data/address';
 import { labelPurchaseStore } from 'data/label-purchase';
 import { CUSTOM_BOX_ID_PREFIX, CUSTOM_PACKAGE_TYPES } from '../packages';
 import type { usePackageState } from './packages';
@@ -26,9 +33,15 @@ import {
 	RATES_FETCH_ABORTED,
 	RATES_FETCH_FAILED,
 } from 'data/label-purchase/action-types';
-import { LABEL_RATE_TYPE } from 'data/constants';
+import { ADDRESS_TYPES, LABEL_RATE_TYPE } from 'data/constants';
 import { DELIVERY_PROPERTIES, SORT_BY } from '../shipping-service/constants';
-import { applyPromo } from 'utils';
+
+/**
+ * Maximum allowed price change (in dollars) when matching rates after refetch.
+ * If the price difference exceeds this threshold, the rate won't be auto-matched
+ * to protect merchants from unexpected significant price increases.
+ */
+const RATE_MATCH_PRICE_THRESHOLD = 1.0;
 
 interface UseRatesStateProps {
 	currentShipmentId: string;
@@ -44,6 +57,9 @@ interface UseRatesStateProps {
 	getShipmentOrigin: ReturnType<
 		typeof useShipmentState
 	>[ 'getShipmentOrigin' ];
+	getCurrentShipmentIsReturn: ReturnType<
+		typeof useShipmentState
+	>[ 'getCurrentShipmentIsReturn' ];
 	getCurrentShipmentDate: ReturnType<
 		typeof useShipmentState
 	>[ 'getCurrentShipmentDate' ];
@@ -143,6 +159,7 @@ export function useRatesState( {
 	totalWeight,
 	customs: { maybeApplyCustomsToPackage },
 	getShipmentOrigin,
+	getCurrentShipmentIsReturn,
 	getCurrentShipmentDate,
 }: UseRatesStateProps ) {
 	const accountSettings = useMemo( getAccountSettings, [] );
@@ -337,6 +354,15 @@ export function useRatesState( {
 				isLetter?: boolean;
 			}
 		) => {
+			// Early return to prevent unnecessary API calls when destination is unverified.
+			// No state changes needed as the UI already indicates the address needs verification.
+			const isDestinationVerified = select(
+				addressStore
+			).getIsAddressVerified( ADDRESS_TYPES.DESTINATION );
+			if ( ! isDestinationVerified ) {
+				return;
+			}
+
 			setIsFetching( true );
 			setErrors( { ...errors, endpoint: null } );
 			removeSelectedRate();
@@ -364,6 +390,8 @@ export function useRatesState( {
 					: isLetter ?? false,
 			};
 
+			const currentShipmentDate = getCurrentShipmentDate()?.shippingDate;
+
 			// @ts-ignore TODO: Convert getRates to TypeScript
 			const { payload, type: responseType } = await dispatch(
 				labelPurchaseStore
@@ -375,9 +403,11 @@ export function useRatesState( {
 				],
 				orderId: getCurrentOrder().id,
 				origin: getShipmentOrigin(),
+				is_return: getCurrentShipmentIsReturn(),
 				shipment_options: {
-					label_date:
-						getCurrentShipmentDate()?.shippingDate?.toISOString(),
+					label_date: currentShipmentDate
+						? toUTCMidnightISOString( currentShipmentDate )
+						: undefined,
 				},
 			} );
 
@@ -432,6 +462,7 @@ export function useRatesState( {
 			maybeApplyCustomsToPackage,
 			applyHazmatToPackage,
 			getShipmentOrigin,
+			getCurrentShipmentIsReturn,
 			preselectRateBasedOnLastSelections,
 			getCurrentShipmentDate,
 		]
@@ -502,7 +533,7 @@ export function useRatesState( {
 
 			// Always put MediaMail at the bottom of the list.
 			const mediaMailRate = sortedRates.find(
-				( rate ) => rate && rate.serviceId === 'MediaMail'
+				( rate ) => rate?.serviceId === 'MediaMail'
 			);
 			if ( mediaMailRate ) {
 				const filteredRates = sortedRates.filter(
@@ -537,7 +568,10 @@ export function useRatesState( {
 
 	/**
 	 * Reselect the rate and its parent.
-	 * This is useful when we've refetched rates and we want to select the rate with the same serviceId and price.
+	 * This is useful when we've refetched rates and we want to select the rate with the same serviceId.
+	 * The rate is matched by serviceId, allowing for minor price changes between fetches.
+	 * If the price change exceeds RATE_MATCH_PRICE_THRESHOLD, the match fails to protect
+	 * merchants from unexpected significant price increases.
 	 *
 	 * @param {RateWithParent} selectedRate - The rate that was previously selected, including its parent rate if applicable.
 	 * @return {RateWithParent | false} The rate and its parent rate if found, or false if not found.
@@ -553,15 +587,24 @@ export function useRatesState( {
 				) as RecordValues< typeof LABEL_RATE_TYPE >
 			);
 
+			// Match by serviceId first.
 			const foundRate = allRatesForType?.[
 				selectedRate.rate.carrierId as Carrier
 			]?.find(
-				( rate ) =>
-					rate.serviceId === selectedRate.rate.serviceId &&
-					rate.rate === selectedRate.rate.rate
+				( rate ) => rate.serviceId === selectedRate.rate.serviceId
 			);
 
 			if ( ! foundRate ) {
+				return false;
+			}
+
+			// Check if the price change exceeds the threshold.
+			// This protects merchants from unexpected significant price increases
+			// while still allowing minor fluctuations.
+			const priceChange = Math.abs(
+				foundRate.rate - selectedRate.rate.rate
+			);
+			if ( priceChange > RATE_MATCH_PRICE_THRESHOLD ) {
 				return false;
 			}
 

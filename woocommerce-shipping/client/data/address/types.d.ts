@@ -3,13 +3,20 @@ import {
 	ADDRESS_NORMALIZATION_FAILED,
 	DELETE_ORIGIN_ADDRESS,
 	DELETE_ORIGIN_ADDRESS_FAILED,
+	INVALIDATE_ADDRESS_STORE,
 	UPDATE_SHIPMENT_ADDRESS,
 	UPDATE_SHIPMENT_ADDRESS_FAILED,
 	VERIFY_ORDER_SHIPPING_ADDRESS,
 	VERIFY_ORDER_SHIPPING_ADDRESS_FAILED,
 	VERIFY_ORDER_SHIPPING_ADDRESS_START,
 } from './action-types';
-import { Action, AddressTypes, Destination, OriginAddress } from 'types';
+import {
+	Action,
+	AddressTypes,
+	Destination,
+	OriginAddress,
+	SimpleAction,
+} from 'types';
 import { resetAddressNormalizationResponse } from './actions';
 
 export interface ShippingAddressVerifyAction extends Action {
@@ -45,7 +52,7 @@ export interface NormalizationAddressAction extends Action {
 		isTrivialNormalization: boolean;
 		address: Destination | OriginAddress;
 		normalizedAddress: Destination | OriginAddress;
-		warnings?: Array<Record<string, string>>;
+		warnings?: Array< Record< string, string > >;
 	};
 }
 
@@ -54,7 +61,7 @@ export interface NormalizationAddressFailedAction extends Action {
 	payload: {
 		addressType: AddressTypes;
 		address: Destination | OriginAddress;
-		errors?: Record<string, string> & {
+		errors?: Record< string, string > & {
 			general?: string;
 		};
 		message?: string;
@@ -101,11 +108,15 @@ export interface DeleteOriginAddressAction extends Action {
 	};
 }
 
+export interface StateResetAction extends SimpleAction {
+	type: typeof INVALIDATE_ADDRESS_STORE;
+}
+
 export type AddressActions =
 	| ShippingAddressVerifyAction
 	| ShippingAddressVerifyFailedAction
 	| NormalizationAddressFailedAction
-	| ReturnType<typeof resetAddressNormalizationResponse>
+	| ReturnType< typeof resetAddressNormalizationResponse >
 	| UpdateShipmentAddressAction
 	| UpdateShipmentAddressFailedAction
 	| NormalizationAddressAction

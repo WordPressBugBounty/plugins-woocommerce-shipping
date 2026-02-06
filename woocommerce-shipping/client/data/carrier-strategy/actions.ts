@@ -3,11 +3,13 @@ import { getCarrierStrategyPath } from '../routes';
 import {
 	CARRIER_STRATEGY_UPSDAP_UPDATE,
 	CARRIER_STRATEGY_UPSDAP_UPDATE_FAILED,
+	STATE_RESET,
 } from './action-types';
 import { UPSDAPStrategyResponse } from 'types';
 import {
 	CarrierStrategyUPSDAPUpdate,
 	CarrierStrategyUPSDAPUpdateFailed,
+	StateResetAction,
 } from './types.d';
 import { camelCaseKeys } from 'utils';
 
@@ -59,5 +61,11 @@ export function updateUPSDAPStrategySuccess( {
 			addressId,
 			confirmed,
 		},
+	};
+}
+
+export function stateReset(): StateResetAction {
+	return {
+		type: STATE_RESET,
 	};
 }

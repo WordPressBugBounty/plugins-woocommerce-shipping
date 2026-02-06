@@ -3,11 +3,11 @@ Contributors: woocommerce, automattic, harriswong, waclawjacek, samnajian, kloon
 Tags: woocommerce, shipping, usps, dhl, labels
 Requires Plugins: woocommerce
 Requires PHP: 7.4
-Requires at least: 6.7
-Tested up to: 6.8
-WC requires at least: 10.0
-WC tested up to: 10.2
-Stable tag: 1.8.9
+Requires at least: 6.8
+Tested up to: 6.9
+WC requires at least: 10.3
+WC tested up to: 10.5
+Stable tag: 2.1.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -128,7 +128,54 @@ Absolutely! You can read our Terms of Service [here](https://wordpress.com/tos).
 
 == Changelog ==
 
+= 2.1.4 - 2026-02-03 =
+* Fix   - Non-US phone number validation.
+* Fix   - Add origin email address to the purchase label request.
+* Fix   - Display correct dimension units on label details after purchase.
+* Tweak - WooCommerce 10.5 compatibility.
+
+= 2.1.3 - 2026-01-28 =
+* Fix   - Prevent rate fetch API calls when destination address is unverified.
+* Fix   - Validate delivery dates against ship date for accurate display.
+* Fix   - Allow deselecting all carriers in the carrier filter.
+* Fix   - Preserve rate selection when prices fluctuate during UPS TOS acceptance flow.
+
+= 2.1.2 - 2026-01-19 =
+* Fix   - Exclude labels from trashed orders in ScanForm eligible orders query.
+* Fix   - Box weight not added to total weight when shipment weight triggers oz display.
+* Fix   - Set the shipment date to UTC.
+
+= 2.1.1 - 2026-01-12 =
+* Fix   - Wrong package weight used when purchasing UPS rates with non-signature options.
+
+= 2.1.0 - 2026-01-12 =
+* Add   - USPS ScanForm Feature.
+* Add   - Setting to enable "Return package to sender" by default for international shipments.
+* Fix   - Critical error when opening older orders with corrupted shipment data.
+* Fix   - Fatal error due to removed AccessiblePrivateMethods trait in WooCommerce 10.5.
+* Fix   - Design QA issues in the Buy Shipping Label flow including title case formatting, dimension units, items summary, and address tooltip.
+
+= 2.0.2 - 2025-12-10 =
+* Fix   - node-forge vulnerability (CVE-2025-12816)
+* Fix   - Success banner after WPCOM connection not dismissing on WooCommerce Orders page.
+* Fix   - Fix display of debug logs in the plugin status page.
+* Tweak - WordPress 6.9 and WooCommerce 10.4 compatibility.
+
+= 2.0.1 - 2025-11-17 =
+* Add   - Ability for merchants to save and use unverified addresses when validation fails.
+
+= 2.0.0 - 2025-11-11 =
+* Add   - New Return Label feature. You can now buy return labels for domestic shipments.
+
+= 1.8.11 - 2025-10-20 =
+* Fix   - Fix SchedulePickup and RefundShipment components rendering issues in purchase notice.
+
+= 1.8.10 - 2025-10-14 =
+* Fix   - Styling glitch in address suggestion modal.
+* Tweak - WooCommerce 10.3 Compatibility.
+
 = 1.8.9 - 2025-09-29 =
+* Tweak - Add packaging slip support for fulfillments without a shipping label.
 * Fix   - Show correct refund status in Analytics → Shipping Labels and fix PHP warnings.
 
 = 1.8.8 - 2025-09-10 =
@@ -168,7 +215,6 @@ Absolutely! You can read our Terms of Service [here](https://wordpress.com/tos).
 = 1.7.5 - 2025-07-07 =
 * Tweak - WooCommerce 10.0 Compatibility.
 * Fix   - PHP error warning in the plugin settings page.
-
 = 1.7.4 - 2025-06-23 =
 * Fix   - Resolved the issue of duplicate shipments by ensuring refunded labels are ignored during shipment generation.
 

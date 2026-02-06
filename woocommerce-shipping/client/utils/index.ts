@@ -1,5 +1,6 @@
 export * from './common';
 export * from './config';
+export * from './config-sync';
 export * from './location';
 export * from './order';
 export * from './packages';
@@ -20,6 +21,7 @@ export * from './tracks';
 export * from './address';
 export * from './deferred';
 export * from './weight';
+export * from './dimensions';
 export * from './analytics';
 export * from './url';
 export * from './api-fetch';

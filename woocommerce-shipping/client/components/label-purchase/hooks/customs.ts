@@ -16,15 +16,19 @@ import {
 	isCustomsRequired,
 	isHSTariffNumberValid,
 	sanitizeHSTariffNumber,
+	getAccountSettings,
 } from 'utils';
 import { useShipmentState } from './shipment';
 import { labelPurchaseStore } from 'data/label-purchase';
 
-const getInitialShipmentCustomsState = < T >( items: T ) => ( {
+const getInitialShipmentCustomsState = < T >(
+	items: T,
+	isReturnToSender = false
+) => ( {
 	items,
 	contentsType: contentTypes[ 0 ].value,
 	restrictionType: 'none',
-	isReturnToSender: false,
+	isReturnToSender,
 	itn: '',
 } );
 
@@ -92,9 +96,16 @@ export function useCustomsState(
 		]
 	);
 
+	const returnToSenderDefault =
+		getAccountSettings()?.purchaseSettings?.return_to_sender_default ??
+		false;
+
 	const initialCustomsInfo: CustomsState =
 		storedCustomsInformationForShipment ??
-		getInitialShipmentCustomsState( getCustomsItems() );
+		getInitialShipmentCustomsState(
+			getCustomsItems(),
+			returnToSenderDefault
+		);
 
 	const initialCustomsState: Record<
 		typeof currentShipmentId,
@@ -139,7 +150,8 @@ export function useCustomsState(
 						allTheCustomItems.find(
 							( i ) => i.product_id === item.product_id
 						) ?? item
-				)
+				),
+				returnToSenderDefault
 			);
 
 		if ( isEmpty( state[ currentShipmentId ] ) ) {
@@ -148,7 +160,7 @@ export function useCustomsState(
 				[ currentShipmentId ]: currentShipmentCustomsInfo,
 			} ) );
 		}
-	}, [ currentShipmentId, getCustomsItems, state ] );
+	}, [ currentShipmentId, getCustomsItems, returnToSenderDefault, state ] );
 
 	const getCustomsState = useCallback(
 		() => state[ currentShipmentId ],

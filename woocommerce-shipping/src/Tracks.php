@@ -14,6 +14,10 @@ use WC_Site_Tracking;
 use WC_Tracks_Event;
 use Automattic\WCShipping\Utils;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 if ( ! class_exists( 'WC_Tracks' ) ) {
 	require_once WC_ABSPATH . 'includes/tracks/class-wc-tracks.php';
 }

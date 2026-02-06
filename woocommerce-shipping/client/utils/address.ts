@@ -164,3 +164,42 @@ export const areAddressesClose = (
 		isCountrySimilar
 	);
 };
+
+/**
+ * Check if only checkbox fields (defaultAddress, defaultReturnAddress) have changed
+ * and no actual address data fields have been modified.
+ *
+ * @param originalAddress The original address object
+ * @param newAddress      The new address object with potentially changed values
+ * @return boolean True if only checkbox fields changed, false otherwise
+ */
+export const hasOnlyCheckboxChanges = < T extends Record< string, unknown > >(
+	originalAddress: T,
+	newAddress: T
+): boolean => {
+	const addressFields = [
+		'name',
+		'company',
+		'address',
+		'city',
+		'state',
+		'postcode',
+		'country',
+		'email',
+		'phone',
+		'firstName',
+		'lastName',
+	];
+
+	// Check if any actual address fields have changed
+	const hasAddressFieldChanges = addressFields.some( ( field ) => {
+		const originalValue = originalAddress[ field as keyof T ];
+		const newValue = newAddress[ field as keyof T ];
+
+		// Type-agnostic comparison to handle cases like 1 vs '1'
+		// eslint-disable-next-line eqeqeq
+		return originalValue != newValue;
+	} );
+
+	return ! hasAddressFieldChanges;
+};

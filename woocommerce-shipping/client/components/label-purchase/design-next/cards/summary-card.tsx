@@ -9,8 +9,9 @@ import { ShipmentDetails } from 'components/label-purchase/details';
 import { Destination, Order } from 'types';
 import { __ } from '@wordpress/i18n';
 import { useLabelPurchaseContext } from 'context/label-purchase';
+import { withBoundaryNext } from 'components/HOC';
 
-export const SummaryCard = ( {
+const SummaryCardComponent = ( {
 	order,
 	destinationAddress,
 }: {
@@ -58,3 +59,5 @@ export const SummaryCard = ( {
 		)
 	);
 };
+
+export const SummaryCard = withBoundaryNext( SummaryCardComponent )();

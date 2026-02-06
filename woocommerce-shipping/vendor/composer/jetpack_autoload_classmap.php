@@ -11,15 +11,15 @@ return array(
 		'path'    => $baseDir . '/tests/php/Utilities/AddressUtilsTest.php'
 	),
 	'Autoloader' => array(
-		'version' => '5.0.0',
+		'version' => '5.0.15',
 		'path'    => $vendorDir . '/automattic/jetpack-autoloader/src/class-autoloader.php'
 	),
 	'Autoloader_Handler' => array(
-		'version' => '5.0.0',
+		'version' => '5.0.15',
 		'path'    => $vendorDir . '/automattic/jetpack-autoloader/src/class-autoloader-handler.php'
 	),
 	'Autoloader_Locator' => array(
-		'version' => '5.0.0',
+		'version' => '5.0.15',
 		'path'    => $vendorDir . '/automattic/jetpack-autoloader/src/class-autoloader-locator.php'
 	),
 	'Automattic\\Jetpack\\A8c_Mc_Stats' => array(
@@ -43,27 +43,27 @@ return array(
 		'path'    => $vendorDir . '/automattic/jetpack-assets/src/class-semver.php'
 	),
 	'Automattic\\Jetpack\\Autoloader\\AutoloadFileWriter' => array(
-		'version' => '5.0.0',
+		'version' => '5.0.15',
 		'path'    => $vendorDir . '/automattic/jetpack-autoloader/src/AutoloadFileWriter.php'
 	),
 	'Automattic\\Jetpack\\Autoloader\\AutoloadGenerator' => array(
-		'version' => '5.0.0',
+		'version' => '5.0.15',
 		'path'    => $vendorDir . '/automattic/jetpack-autoloader/src/AutoloadGenerator.php'
 	),
 	'Automattic\\Jetpack\\Autoloader\\AutoloadProcessor' => array(
-		'version' => '5.0.0',
+		'version' => '5.0.15',
 		'path'    => $vendorDir . '/automattic/jetpack-autoloader/src/AutoloadProcessor.php'
 	),
 	'Automattic\\Jetpack\\Autoloader\\CustomAutoloaderPlugin' => array(
-		'version' => '5.0.0',
+		'version' => '5.0.15',
 		'path'    => $vendorDir . '/automattic/jetpack-autoloader/src/CustomAutoloaderPlugin.php'
 	),
 	'Automattic\\Jetpack\\Autoloader\\ManifestGenerator' => array(
-		'version' => '5.0.0',
+		'version' => '5.0.15',
 		'path'    => $vendorDir . '/automattic/jetpack-autoloader/src/ManifestGenerator.php'
 	),
 	'Automattic\\Jetpack\\Config' => array(
-		'version' => '3.0.0.0',
+		'version' => '3.1.1.0',
 		'path'    => $vendorDir . '/automattic/jetpack-config/src/class-config.php'
 	),
 	'Automattic\\Jetpack\\Connection\\Authorize_Json_Api' => array(
@@ -334,6 +334,14 @@ return array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/src/DOM/Manipulation.php'
 	),
+	'Automattic\\WCShipping\\Emails\\WC_Admin_Return_Label_Email' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/src/Emails/WC_Admin_Return_Label_Email.php'
+	),
+	'Automattic\\WCShipping\\Emails\\WC_Return_Label_Email' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/src/Emails/WC_Return_Label_Email.php'
+	),
 	'Automattic\\WCShipping\\Exceptions\\RESTRequestException' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/src/Exceptions/RESTRequestException.php'
@@ -341,6 +349,10 @@ return array(
 	'Automattic\\WCShipping\\FeatureFlags\\FeatureFlags' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/src/FeatureFlags/FeatureFlags.php'
+	),
+	'Automattic\\WCShipping\\Fulfillments\\FulfillmentNotificationType' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/src/Fulfillments/FulfillmentNotificationType.php'
 	),
 	'Automattic\\WCShipping\\Fulfillments\\FulfillmentsService' => array(
 		'version' => 'dev-trunk',
@@ -361,6 +373,10 @@ return array(
 	'Automattic\\WCShipping\\Integrations\\ConfigRESTController' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/src/Integrations/ConfigRESTController.php'
+	),
+	'Automattic\\WCShipping\\Integrations\\Garden' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/src/Integrations/Garden.php'
 	),
 	'Automattic\\WCShipping\\Integrations\\TosRESTController' => array(
 		'version' => 'dev-trunk',
@@ -510,6 +526,50 @@ return array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/src/Promo/PromoService.php'
 	),
+	'Automattic\\WCShipping\\RestApi\\Routes\\V2\\AbstractController' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/src/RestAPi/Routes/V2/AbstractController.php'
+	),
+	'Automattic\\WCShipping\\RestApi\\Routes\\V2\\AbstractSchema' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/src/RestAPi/Routes/V2/AdbstractSchema.php'
+	),
+	'Automattic\\WCShipping\\RestApi\\Routes\\V2\\Addresses\\AddressSchema' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/src/RestAPi/Routes/V2/Addresses/AddressSchema.php'
+	),
+	'Automattic\\WCShipping\\RestApi\\Routes\\V2\\Addresses\\Controller' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/src/RestAPi/Routes/V2/Addresses/Controller.php'
+	),
+	'Automattic\\WCShipping\\ScanForm\\ScanForm' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/src/ScanForm/ScanForm.php'
+	),
+	'Automattic\\WCShipping\\ScanForm\\ScanFormHistoryRESTController' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/src/ScanForm/ScanFormHistoryRESTController.php'
+	),
+	'Automattic\\WCShipping\\ScanForm\\ScanFormOnboardingNotice' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/src/ScanForm/ScanFormOnboardingNotice.php'
+	),
+	'Automattic\\WCShipping\\ScanForm\\ScanFormRESTController' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/src/ScanForm/ScanFormRESTController.php'
+	),
+	'Automattic\\WCShipping\\ScanForm\\ScanFormService' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/src/ScanForm/ScanFormService.php'
+	),
+	'Automattic\\WCShipping\\ServiceData\\ServiceSchemasFetcherService' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/src/ServiceData/ServiceSchemasFetcherService.php'
+	),
+	'Automattic\\WCShipping\\ServiceData\\ServicesErrorNotice' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/src/ServiceData/ServicesErrorNotice.php'
+	),
 	'Automattic\\WCShipping\\Shipment\\Address' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/src/Shipment/Address.php'
@@ -529,6 +589,10 @@ return array(
 	'Automattic\\WCShipping\\Shipments\\Models\\Shipments' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/src/Shipments/Models/Shipments.php'
+	),
+	'Automattic\\WCShipping\\Shipments\\ShipmentDataValidator' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/src/Shipments/ShipmentDataValidator.php'
 	),
 	'Automattic\\WCShipping\\Shipments\\ShipmentsRESTController' => array(
 		'version' => 'dev-trunk',
@@ -574,9 +638,21 @@ return array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/tests/php/Integrations/ConfigRESTControllerTest.php'
 	),
+	'Automattic\\WCShipping\\Tests\\Emails\\WC_Admin_Return_Label_Email_Test' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/tests/php/Emails/WC_Admin_Return_Label_Email_Test.php'
+	),
+	'Automattic\\WCShipping\\Tests\\Emails\\WC_Return_Label_Email_Test' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/tests/php/Emails/WC_Return_Label_Email_Test.php'
+	),
 	'Automattic\\WCShipping\\Tests\\LabelPurchase\\AddressNormalizationServiceTest' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/tests/php/LabelPurchase/AddressNormalizationServiceTest.php'
+	),
+	'Automattic\\WCShipping\\Tests\\LoaderEmailTest' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/tests/php/LoaderEmailTest.php'
 	),
 	'Automattic\\WCShipping\\Tests\\Packages\\PackageRepositoryTest' => array(
 		'version' => 'dev-trunk',
@@ -589,6 +665,10 @@ return array(
 	'Automattic\\WCShipping\\Tests\\Promo\\PromoServiceTest' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/tests/php/Promo/PromoServiceTest.php'
+	),
+	'Automattic\\WCShipping\\Tests\\ServiceData\\ServicesErrorNoticeTest' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/tests/php/ServiceData/ServicesErrorNoticeTest.php'
 	),
 	'Automattic\\WCShipping\\Tests\\Shipments\\Models\\ShipmentItemTest' => array(
 		'version' => 'dev-trunk',
@@ -690,9 +770,33 @@ return array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/tests/php/Promo/PromoRESTControllerTest.php'
 	),
+	'Automattic\\WCShipping\\Tests\\php\\RestAPi\\Routes\\V2\\Addresses\\ControllerTest' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/tests/php/RestAPi/Routes/V2/Addresses/ControllerTest.php'
+	),
+	'Automattic\\WCShipping\\Tests\\php\\ScanForm\\ScanFormFeatureTest' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/tests/php/ScanForm/ScanFormFeatureTest.php'
+	),
+	'Automattic\\WCShipping\\Tests\\php\\ScanForm\\ScanFormHistoryRESTControllerTest' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/tests/php/ScanForm/ScanFormHistoryRESTControllerTest.php'
+	),
+	'Automattic\\WCShipping\\Tests\\php\\ScanForm\\ScanFormRESTControllerTest' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/tests/php/ScanForm/ScanFormRESTControllerTest.php'
+	),
+	'Automattic\\WCShipping\\Tests\\php\\ScanForm\\ScanFormServiceTest' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/tests/php/ScanForm/ScanFormServiceTest.php'
+	),
 	'Automattic\\WCShipping\\Tests\\php\\Shipment\\AddressTest' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/tests/php/Shipment/AddressTest.php'
+	),
+	'Automattic\\WCShipping\\Tests\\php\\Shipments\\ShipmentDataValidatorTest' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/tests/php/Shipments/ShipmentDataValidatorTest.php'
 	),
 	'Automattic\\WCShipping\\Tests\\php\\Shipments\\ShipmentsServiceTest' => array(
 		'version' => 'dev-trunk',
@@ -721,6 +825,10 @@ return array(
 	'Automattic\\WCShipping\\Tests\\php\\WCShipping_Test_Case' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/tests/php/WCShipping_Test_Case.php'
+	),
+	'Automattic\\WCShipping\\Tests\\php\\classes\\WC_Connect_Service_Settings_Store_Test' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/tests/php/classes/WC_Connect_Service_Settings_Store_Test.php'
 	),
 	'Automattic\\WCShipping\\Tracks' => array(
 		'version' => 'dev-trunk',
@@ -759,7 +867,7 @@ return array(
 		'path'    => $baseDir . '/tests/php/Checkout/CheckoutServiceTest.php'
 	),
 	'Container' => array(
-		'version' => '5.0.0',
+		'version' => '5.0.15',
 		'path'    => $vendorDir . '/automattic/jetpack-autoloader/src/class-container.php'
 	),
 	'DummyOrderItem' => array(
@@ -767,7 +875,7 @@ return array(
 		'path'    => $baseDir . '/tests/php/Shipment/ShipmentFromLabelGeneratorTest.php'
 	),
 	'Hook_Manager' => array(
-		'version' => '5.0.0',
+		'version' => '5.0.15',
 		'path'    => $vendorDir . '/automattic/jetpack-autoloader/src/class-hook-manager.php'
 	),
 	'Jetpack_IXR_Client' => array(
@@ -799,7 +907,7 @@ return array(
 		'path'    => $vendorDir . '/automattic/jetpack-connection/legacy/class-jetpack-xmlrpc-server.php'
 	),
 	'Latest_Autoloader_Guard' => array(
-		'version' => '5.0.0',
+		'version' => '5.0.15',
 		'path'    => $vendorDir . '/automattic/jetpack-autoloader/src/class-latest-autoloader-guard.php'
 	),
 	'LegacySettingsMigratorTest' => array(
@@ -807,7 +915,7 @@ return array(
 		'path'    => $baseDir . '/tests/php/Migration/LegacySettingsMigratorTest.php'
 	),
 	'Manifest_Reader' => array(
-		'version' => '5.0.0',
+		'version' => '5.0.15',
 		'path'    => $vendorDir . '/automattic/jetpack-autoloader/src/class-manifest-reader.php'
 	),
 	'OriginAddressServiceTest' => array(
@@ -815,7 +923,7 @@ return array(
 		'path'    => $baseDir . '/tests/php/OriginAddresses/OriginAddressServiceTest.php'
 	),
 	'PHP_Autoloader' => array(
-		'version' => '5.0.0',
+		'version' => '5.0.15',
 		'path'    => $vendorDir . '/automattic/jetpack-autoloader/src/class-php-autoloader.php'
 	),
 	'PackageTest' => array(
@@ -823,15 +931,15 @@ return array(
 		'path'    => $baseDir . '/tests/php/Packages/PackageTest.php'
 	),
 	'Path_Processor' => array(
-		'version' => '5.0.0',
+		'version' => '5.0.15',
 		'path'    => $vendorDir . '/automattic/jetpack-autoloader/src/class-path-processor.php'
 	),
 	'Plugin_Locator' => array(
-		'version' => '5.0.0',
+		'version' => '5.0.15',
 		'path'    => $vendorDir . '/automattic/jetpack-autoloader/src/class-plugin-locator.php'
 	),
 	'Plugins_Handler' => array(
-		'version' => '5.0.0',
+		'version' => '5.0.15',
 		'path'    => $vendorDir . '/automattic/jetpack-autoloader/src/class-plugins-handler.php'
 	),
 	'ShipmentFromLabelGeneratorTest' => array(
@@ -843,7 +951,7 @@ return array(
 		'path'    => $baseDir . '/tests/php/test-sample.php'
 	),
 	'Shutdown_Handler' => array(
-		'version' => '5.0.0',
+		'version' => '5.0.15',
 		'path'    => $vendorDir . '/automattic/jetpack-autoloader/src/class-shutdown-handler.php'
 	),
 	'StoreApiExtensionControllerTest' => array(
@@ -867,11 +975,11 @@ return array(
 		'path'    => $baseDir . '/tests/php/Carrier/UPSDAP/UPSDAPCarrierStrategyServiceTest.php'
 	),
 	'Version_Loader' => array(
-		'version' => '5.0.0',
+		'version' => '5.0.15',
 		'path'    => $vendorDir . '/automattic/jetpack-autoloader/src/class-version-loader.php'
 	),
 	'Version_Selector' => array(
-		'version' => '5.0.0',
+		'version' => '5.0.15',
 		'path'    => $vendorDir . '/automattic/jetpack-autoloader/src/class-version-selector.php'
 	),
 	'ViewServiceTest' => array(
@@ -885,6 +993,10 @@ return array(
 	'WC_Connect_Package_Settings_Test' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/tests/php/classes/WC_Connect_Package_Settings_Test.php'
+	),
+	'WC_Connect_Payment_Methods_Store_Test' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/tests/php/classes/WC_Connect_Payment_Methods_Store_Test.php'
 	),
 	'WC_REST_Connect_Packages_Controller_Test' => array(
 		'version' => 'dev-trunk',

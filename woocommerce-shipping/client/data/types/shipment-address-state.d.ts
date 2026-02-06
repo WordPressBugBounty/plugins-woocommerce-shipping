@@ -1,6 +1,6 @@
 import { OriginAddress } from 'types';
 
-export interface ShipmentAddressState<T = OriginAddress> {
+export interface ShipmentAddressState< T = OriginAddress > {
 	address: T;
 	isVerified: boolean;
 	normalizedAddress: T | null;
@@ -8,6 +8,6 @@ export interface ShipmentAddressState<T = OriginAddress> {
 	isTrivialNormalization: boolean | null;
 	addressNeedsConfirmation: boolean;
 	isAddressVerificationInProgress?: boolean;
-	formErrors: Record<string, string>;
-	warnings?: Array<Record<string, string>>
+	formErrors: Record< string, string >;
+	warnings?: Array< Record< string, string > >;
 }

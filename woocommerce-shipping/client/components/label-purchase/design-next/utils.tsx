@@ -3,6 +3,7 @@ declare global {
 		wp: any; // eslint-disable-line @typescript-eslint/no-explicit-any
 		wcSettings?: {
 			currency: Currency;
+			shippingMethodTitles?: Record< string, string >;
 		};
 	}
 }

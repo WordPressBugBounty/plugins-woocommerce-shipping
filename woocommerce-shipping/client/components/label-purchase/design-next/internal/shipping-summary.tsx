@@ -8,10 +8,11 @@ import { __, _n, sprintf } from '@wordpress/i18n';
 import { TAB_NAMES } from 'components/label-purchase/packages';
 import { useLabelPurchaseContext } from 'context/label-purchase';
 import { Destination, OriginAddress, Rate, RateWithParent } from 'types';
-import { addressToString } from 'utils';
+import { addressToString, isDeliveryDateValid } from 'utils';
 import { dateI18n } from '@wordpress/date';
 import { Badge } from 'components/wp';
-import subline from 'components/icons/subline-icon';
+import { subline } from 'components/icons';
+import { startCase, toLower } from 'lodash';
 
 interface ShippingSummaryProps {
 	destinationAddress: OriginAddress | Destination;
@@ -57,6 +58,7 @@ export const ShippingSummary = ( {
 		storeCurrency,
 		packages: { currentPackageTab, getCustomPackage, getSelectedPackage },
 		rates: { getSelectedRate, getSelectedRateOptions, availableRates },
+		shipment: { getCurrentShipmentDate },
 		weight: { getShipmentTotalWeight },
 	} = useLabelPurchaseContext();
 
@@ -76,18 +78,27 @@ export const ShippingSummary = ( {
 	);
 
 	let deliveryDateMessage = '-';
+	const shipDate = getCurrentShipmentDate()?.shippingDate;
 
 	if ( availableRates && selectedRate ) {
+		// Use parent rate if it exists (e.g., when signature options are selected),
+		// otherwise use the selected rate itself
+		const rateToLookup = selectedRate.parent ?? selectedRate.rate;
+
 		const { deliveryDateGuaranteed, deliveryDate, deliveryDays } =
-			( availableRates![ selectedRate.rate.carrierId ].find(
-				( rate ) => rate.rateId === selectedRate.rate.rateId
+			( availableRates![ rateToLookup.carrierId ].find(
+				( rate ) => rate.rateId === rateToLookup.rateId
 			) ?? {} ) as Rate & {
 				deliveryDateGuaranteed?: boolean;
-				deliveryDate?: Date;
+				deliveryDate?: string;
 				deliveryDays?: number;
 			};
 
-		if ( deliveryDateGuaranteed && deliveryDate ) {
+		if (
+			deliveryDateGuaranteed &&
+			deliveryDate &&
+			isDeliveryDateValid( deliveryDate, shipDate )
+		) {
 			deliveryDateMessage = dateI18n( 'F d', deliveryDate );
 		} else if ( deliveryDays ) {
 			deliveryDateMessage = sprintf(
@@ -98,7 +109,7 @@ export const ShippingSummary = ( {
 					deliveryDays,
 					'woocommerce-shipping'
 				),
-				deliveryDays
+				String( deliveryDays )
 			);
 		}
 	}
@@ -111,25 +122,31 @@ export const ShippingSummary = ( {
 			<Flex direction={ 'column' } gap={ 4 }>
 				<SummaryItem label={ __( 'Ship to', 'woocommerce-shipping' ) }>
 					<Text>
-						{ destinationAddress.name ??
-							`${ destinationAddress.firstName } ${ destinationAddress.lastName }` }
+						{ startCase(
+							toLower(
+								destinationAddress.name ??
+									`${ destinationAddress.firstName } ${ destinationAddress.lastName }`
+							)
+						) }
 					</Text>
 					<Text display="flex">
-						{ addressToString( destinationAddress ) }
+						{ addressToString( destinationAddress, {
+							titleCase: true,
+						} ) }
 					</Text>
 				</SummaryItem>
 				<SummaryItem label={ __( 'Package', 'woocommerce-shipping' ) }>
 					<Text>
 						{ currentPackageTab === TAB_NAMES.CUSTOM_PACKAGE &&
-							`${ customPackage.width }″ × ${
+							`${ customPackage.width }in × ${
 								customPackage.length
-							}″ × ${
+							}in × ${
 								customPackage.height
-							}″, ${ getShipmentTotalWeight() } lb` }
+							}in, ${ getShipmentTotalWeight() } lb` }
 						{ currentPackageTab === TAB_NAMES.CARRIER_PACKAGE &&
 							selectedPackage &&
 							[
-								`${ selectedPackage.width }″ × ${ selectedPackage.length }″ × ${ selectedPackage.height }″`,
+								`${ selectedPackage.width }in × ${ selectedPackage.length }in × ${ selectedPackage.height }in`,
 								selectedPackage?.name,
 								getShipmentTotalWeight() + ' lb',
 							]
@@ -155,7 +172,8 @@ export const ShippingSummary = ( {
 							value={
 								selectedRate
 									? storeCurrency.formatAmount(
-											selectedRate.rate.rate
+											selectedRate.rate.rate ??
+												selectedRate.parent?.rate
 									  )
 									: '-'
 							}
@@ -167,11 +185,11 @@ export const ShippingSummary = ( {
 									selectedRateOptions.signature.value.toString() ===
 									'adult'
 										? __(
-												'Adult Signature Required',
+												'Adult signature required',
 												'woocommerce-shipping'
 										  )
 										: __(
-												'Signature Required',
+												'Signature required',
 												'woocommerce-shipping'
 										  )
 								}
@@ -190,7 +208,7 @@ export const ShippingSummary = ( {
 							<RateExtraLine
 								isSubLine
 								label={ __(
-									'Carbon Neutral',
+									'Carbon neutral',
 									'woocommerce-shipping'
 								) }
 								value={
@@ -207,7 +225,7 @@ export const ShippingSummary = ( {
 							<RateExtraLine
 								isSubLine
 								label={ __(
-									'Additional Handling',
+									'Additional handling',
 									'woocommerce-shipping'
 								) }
 								value={
@@ -225,7 +243,7 @@ export const ShippingSummary = ( {
 							<RateExtraLine
 								isSubLine
 								label={ __(
-									'Saturday Delivery',
+									'Saturday delivery',
 									'woocommerce-shipping'
 								) }
 								value={
@@ -278,7 +296,7 @@ export const ShippingSummary = ( {
 				) }
 				<Text variant="muted">
 					{ __(
-						'This order will be fulfilled after you purchase the shipping label.',
+						'This order will be fulfilled after you buy the shipping label.',
 						'woocommerce-shipping'
 					) }
 				</Text>

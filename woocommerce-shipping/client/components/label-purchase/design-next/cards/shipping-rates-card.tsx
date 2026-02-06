@@ -3,27 +3,107 @@ import {
 	Card,
 	CardBody,
 	Flex,
-	Notice,
 	__experimentalText as Text,
 } from '@wordpress/components';
 import { useSelect } from '@wordpress/data';
-import { __, sprintf } from '@wordpress/i18n';
+import { __ } from '@wordpress/i18n';
+
 import { ShippingRates } from 'components/label-purchase/shipping-service';
 import { useLabelPurchaseContext } from 'context/label-purchase';
 import { labelPurchaseStore } from 'data/label-purchase';
 import { isEmpty } from 'lodash';
-import { hasUPSPackages } from 'utils';
 import { useCollapsibleCard } from '../internal/useCollapsibleCard';
 import { Badge } from 'components/wp';
 import { NoRatesAvailableV2 } from '../internal/no-rates-available-v2';
+import { withBoundaryNext } from 'components/HOC/error-boundary/with-boundary-next';
+import { useMemo, useState } from 'react';
+import { EnterPackageDetailsV2 } from '../internal/enter-package-details-v2';
+import { FetchingRatesV2 } from '../internal/fetching-rates-v2';
+import { Carrier, Rate } from 'types';
 
-export const ShippingRatesCard = () => {
+const ShippingRatesCardBodyContents = ( {
+	availableRates,
+	isFetching,
+	packageNeedsDimensions,
+	packageNeedsWeight,
+}: {
+	availableRates: Record< Carrier, Rate[] > | undefined;
+	isFetching: boolean;
+	packageNeedsDimensions: () => boolean;
+	packageNeedsWeight: () => boolean;
+} ) => {
+	/**
+	 * State flag to prevent showing stale rates from a previous package configuration.
+	 * - Starts as `true` to show loading state on initial render
+	 * - Set to `true` when package details change (dimensions/weight cleared)
+	 * - Set to `false` once fetching begins, allowing rates to display after fetch completes
+	 *
+	 * This prevents a flash of old rates when the user changes package details,
+	 * ensuring we wait for fresh rates to be fetched.
+	 */
+	const [ clearUntilFetching, setClearUntilFetching ] = useState( true );
+
+	return useMemo( () => {
+		// Priority 1: If package details are incomplete, prompt user to enter them
+		if ( packageNeedsDimensions() || packageNeedsWeight() ) {
+			// Reset the clear flag so old rates won't show after user enters new details
+			setClearUntilFetching( true );
+			return <EnterPackageDetailsV2 className="" />;
+		}
+
+		// Priority 2: Show loading animation while fetching rates
+		if ( isFetching ) {
+			// Clear the flag to allow rates to display once fetch completes
+			setClearUntilFetching( false );
+			return (
+				<Animate type={ 'loading' }>
+					{ ( { className } ) => (
+						<FetchingRatesV2 className={ className } />
+					) }
+				</Animate>
+			);
+		}
+
+		// Priority 3: Show rates if we've completed a fetch cycle (clearUntilFetching is false)
+		if ( ! clearUntilFetching && Boolean( availableRates ) ) {
+			// If rates object exists but is empty, no carriers returned rates
+			if ( isEmpty( availableRates ) ) {
+				return <NoRatesAvailableV2 className="" />;
+			}
+			// Display the available shipping rates
+			return (
+				<ShippingRates
+					availableRates={ availableRates }
+					isFetching={ false }
+				/>
+			);
+		}
+
+		// Fallback: Default to loading state while waiting for fetch to start
+		return (
+			<Animate type={ 'loading' }>
+				{ ( { className } ) => (
+					<FetchingRatesV2 className={ className } />
+				) }
+			</Animate>
+		);
+	}, [
+		availableRates,
+		isFetching,
+		packageNeedsDimensions,
+		packageNeedsWeight,
+		clearUntilFetching,
+	] );
+};
+
+const ShippingRatesCardComponent = () => {
 	const {
 		shipment: { currentShipmentId },
 		rates: { isFetching },
-		packages: { isCustomPackageTab, isPackageSpecified },
-		hazmat: { getShipmentHazmat },
+		packages: { isCustomPackageTab, getCustomPackage, isPackageSpecified },
+		weight: { getShipmentTotalWeight },
 	} = useLabelPurchaseContext();
+	const rawPackageData = getCustomPackage();
 	const availableRates = useSelect(
 		( select ) =>
 			select( labelPurchaseStore ).getRatesForShipment(
@@ -32,6 +112,22 @@ export const ShippingRatesCard = () => {
 		[ currentShipmentId ]
 	);
 	const { CardHeader, isOpen } = useCollapsibleCard( true );
+	const packageNeedsDimensions = () => {
+		if ( isCustomPackageTab() ) {
+			if (
+				! parseInt( rawPackageData?.length ?? '0', 10 ) ||
+				! parseInt( rawPackageData?.width ?? '0', 10 ) ||
+				! parseInt( rawPackageData?.height ?? '0', 10 )
+			) {
+				return true;
+			}
+		}
+		return false;
+	};
+	const packageNeedsWeight = () => {
+		return getShipmentTotalWeight() === 0;
+	};
+
 	return (
 		<Card>
 			<CardHeader iconSize={ 'small' } isBorderless>
@@ -51,105 +147,18 @@ export const ShippingRatesCard = () => {
 			</CardHeader>
 			{ isOpen && (
 				<CardBody style={ { paddingTop: 0 } }>
-					{ ! Boolean( availableRates ) && (
-						<Animate type={ isFetching ? 'loading' : undefined }>
-							{ ( { className } ) => (
-								<NoRatesAvailableV2 className={ className } />
-							) }
-						</Animate>
-					) }
-					{ availableRates && isEmpty( availableRates ) && (
-						<Animate type={ isFetching ? 'loading' : undefined }>
-							{ ( { className } ) => (
-								<Notice
-									status="info"
-									isDismissible={ false }
-									className={ className }
-								>
-									<p>
-										{ sprintf(
-											// translators: %1$s: HAZMAT part, %2$s: package part
-											__(
-												'No shipping rates were found based on the combination of %1$s%2$s and the total shipment weight.',
-												'woocommerce-shipping'
-											),
-											getShipmentHazmat().isHazmat
-												? __(
-														'the selected HAZMAT category, ',
-														'woocommerce-shipping'
-												  )
-												: '',
-											isCustomPackageTab()
-												? __(
-														'the package type, package dimensions',
-														'woocommerce-shipping'
-												  )
-												: __(
-														'the selected package',
-														'woocommerce-shipping'
-												  )
-										) }
-									</p>
-									<p>
-										{ sprintf(
-											// translators: %1$s: HAZMAT part, %2$s: package part
-											__(
-												`We couldn't find a shipping service for the combination of %1$s%2$s and the total shipment weight. Please adjust your input and try again.`,
-												'woocommerce-shipping'
-											),
-											getShipmentHazmat().isHazmat
-												? __(
-														'the selected HAZMAT category, ',
-														'woocommerce-shipping'
-												  )
-												: '',
-											isCustomPackageTab()
-												? __(
-														'selected package type, package dimensions',
-														'woocommerce-shipping'
-												  )
-												: __(
-														'the selected package',
-														'woocommerce-shipping'
-												  )
-										) }
-									</p>
-								</Notice>
-							) }
-						</Animate>
-					) }
-
-					{ Boolean( availableRates ) &&
-						! isEmpty( availableRates ) &&
-						( isFetching ? (
-							<Animate type="loading">
-								{ ( { className } ) => (
-									<ShippingRates
-										availableRates={ availableRates }
-										isFetching={ isFetching }
-										className={ className }
-									/>
-								) }
-							</Animate>
-						) : (
-							<ShippingRates
-								availableRates={ availableRates }
-								isFetching={ isFetching }
-							/>
-						) ) }
-
-					{ isPackageSpecified() && hasUPSPackages() && (
-						<>
-							<p className="upsdap-trademark-notice upsdap-trademark-notice--desktop">
-								{ __(
-									'UPS, the UPS brandmark, UPS Ready®, and the color brown are trademarks of United Parcel Service of America, Inc. All Rights Reserved.',
-									'woocommerce-shipping'
-								) }
-							</p>
-						</>
-					) }
+					<ShippingRatesCardBodyContents
+						availableRates={ availableRates }
+						isFetching={ isFetching }
+						packageNeedsDimensions={ packageNeedsDimensions }
+						packageNeedsWeight={ packageNeedsWeight }
+					/>
 				</CardBody>
 			) }
 		</Card>
 	);
 };
+
+export const ShippingRatesCard = withBoundaryNext(
+	ShippingRatesCardComponent
+)();

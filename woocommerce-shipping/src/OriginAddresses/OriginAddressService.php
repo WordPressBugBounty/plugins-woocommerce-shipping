@@ -22,6 +22,17 @@ class OriginAddressService {
 			$addresses[0]['default_address'] = true;
 		}
 
+		// Make sure a default return address is selected.
+		$defaultReturnAddress = array_filter(
+			$addresses,
+			function ( $address ) {
+				return isset( $address['default_return_address'] ) && $address['default_return_address'];
+			}
+		);
+		if ( empty( $defaultReturnAddress ) ) {
+			$addresses[0]['default_return_address'] = true;
+		}
+
 		return $addresses;
 	}
 
@@ -38,6 +49,13 @@ class OriginAddressService {
 		if ( isset( $address['default_address'] ) && $address['default_address'] ) {
 			foreach ( $origin_addresses as &$origin_address ) {
 				unset( $origin_address['default_address'] );
+			}
+		}
+
+		// If the new address is set as default return address, remove default_return_address from all existing addresses
+		if ( isset( $address['default_return_address'] ) && $address['default_return_address'] ) {
+			foreach ( $origin_addresses as &$origin_address ) {
+				unset( $origin_address['default_return_address'] );
 			}
 		}
 
@@ -78,6 +96,36 @@ class OriginAddressService {
 	}
 
 	/**
+	 * Get the default origin address for outbound shipments.
+	 *
+	 * @return array|null
+	 */
+	public function get_default_outbound_address() {
+		$addresses = $this->get_origin_addresses();
+		foreach ( $addresses as $address ) {
+			if ( isset( $address['default_address'] ) && $address['default_address'] ) {
+				return $address;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Get the default return address for return shipments.
+	 *
+	 * @return array|null
+	 */
+	public function get_default_return_address() {
+		$addresses = $this->get_origin_addresses();
+		foreach ( $addresses as $address ) {
+			if ( isset( $address['default_return_address'] ) && $address['default_return_address'] ) {
+				return $address;
+			}
+		}
+		return null;
+	}
+
+	/**
 	 * Sync origin address with store address.
 	 * This is to ensure that the origin address is always in sync with the store address.
 	 *
@@ -109,20 +157,21 @@ class OriginAddressService {
 		$email      = get_option( 'admin_email', '' );
 
 		$store_details = array(
-			'id'          => 'store_details',
-			'name'        => 'Store Address',
-			'company'     => $store_name,
-			'address_1'   => trim( $address . ' ' . $address_2 ),
-			'address_2'   => '',
-			'city'        => $city,
-			'state'       => $state,
-			'postcode'    => $postcode,
-			'country'     => $country,
-			'email'       => $email,
-			'phone'       => '',
-			'first_name'  => '',
-			'last_name'   => '',
-			'is_verified' => false,
+			'id'                     => 'store_details',
+			'name'                   => 'Store Address',
+			'company'                => $store_name,
+			'address_1'              => trim( $address . ' ' . $address_2 ),
+			'address_2'              => '',
+			'city'                   => $city,
+			'state'                  => $state,
+			'postcode'               => $postcode,
+			'country'                => $country,
+			'email'                  => $email,
+			'phone'                  => '',
+			'first_name'             => '',
+			'last_name'              => '',
+			'is_verified'            => false,
+			'default_return_address' => true,
 		);
 
 		return $store_details;

@@ -26,6 +26,7 @@ class WC_Connect_Options {
 					'error_notice',
 					'services',
 					'services_last_update',
+					'services_fetch_error',
 					'last_heartbeat',
 					'origin_address',
 					'origin_addresses',
@@ -34,6 +35,7 @@ class WC_Connect_Options {
 					'services_last_result_code',
 					'upsdap_strategies',
 					'tax_identifiers',
+					'use_fulfillment_api',
 				);
 			case 'shipping_method':
 				return array(

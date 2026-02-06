@@ -84,6 +84,11 @@ class LabelPurchaseRESTController extends WCShippingRESTController {
 								),
 							),
 						),
+						'is_return'        => array(
+							'type'        => 'boolean',
+							'description' => __( 'Whether this is a return shipment', 'woocommerce-shipping' ),
+							'required'    => false,
+						),
 					),
 				),
 			)
@@ -125,6 +130,8 @@ class LabelPurchaseRESTController extends WCShippingRESTController {
 				$customs,
 				$features_supported_by_client,
 				$shipment_options,
+				$is_return,
+				$parent_shipment_id,
 			)                 = $this->get_and_check_body_params(
 				$request,
 				array(
@@ -137,6 +144,8 @@ class LabelPurchaseRESTController extends WCShippingRESTController {
 					'customs',
 					'?features_supported_by_client', // Optional parameter.
 					'?shipment_options', // Optional parameter.
+					'?is_return', // Optional parameter.
+					'?parent_shipment_id', // Optional parameter.
 				)
 			);
 			list( $order_id ) = $this->get_and_check_request_params( $request, array( 'order_id' ) );
@@ -160,6 +169,8 @@ class LabelPurchaseRESTController extends WCShippingRESTController {
 				$user_meta,
 				$features_supported_by_client,
 				$shipment_options,
+				$is_return,
+				$parent_shipment_id,
 			)
 		);
 	}

@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, JSX } from 'react';
-import { Link, useFormContext } from '@woocommerce/components';
+import { useEffect, useRef, JSX } from 'react';
+import { useFormContext } from '@woocommerce/components';
 import type { InputProps } from '@woocommerce/components/build-types/form';
 
 import {
@@ -7,6 +7,7 @@ import {
 	__experimentalInputControl as InputControl,
 	__experimentalSpacer as Spacer,
 	CheckboxControl,
+	ExternalLink,
 	Flex,
 	FlexBlock,
 	Icon,
@@ -212,14 +213,9 @@ export const CustomsForm = (): JSX.Element => {
 						),
 						{
 							a: (
-								<Link
-									href="https://pe.usps.com/text/imm/immc5_010.htm"
-									target="_blank"
-									rel="noopener noreferrer"
-									type="external"
-								>
+								<ExternalLink href="https://pe.usps.com/text/imm/immc5_010.htm">
 									{ ' ' }
-								</Link>
+								</ExternalLink>
 							),
 						}
 					) }
@@ -244,6 +240,10 @@ export const CustomsForm = (): JSX.Element => {
 					) }
 					{ ...getCheckboxControlProps< boolean >(
 						'isReturnToSender'
+					) }
+					help={ __(
+						'Sender will be charged all return shipping costs and any applicable customs duties, taxes, or fees.',
+						'woocommerce-shipping'
 					) }
 					disabled={ disable }
 					// Opting into the new styles for height
@@ -276,14 +276,9 @@ export const CustomsForm = (): JSX.Element => {
 													),
 													{
 														a: (
-															<Link
-																href="https://www.usps.com/international/new-eu-customs-rules.htm"
-																target="_blank"
-																rel="noopener noreferrer"
-																type="external"
-															>
+															<ExternalLink href="https://www.usps.com/international/new-eu-customs-rules.htm">
 																{ ' ' }
-															</Link>
+															</ExternalLink>
 														),
 														i: (
 															<Icon
@@ -315,14 +310,9 @@ export const CustomsForm = (): JSX.Element => {
 										),
 										{
 											a: (
-												<Link
-													href="https://woocommerce.com/document/woocommerce-shipping-and-tax/woocommerce-shipping/#section-30"
-													target="_blank"
-													rel="noopener noreferrer"
-													type="external"
-												>
+												<ExternalLink href="https://woocommerce.com/document/woocommerce-shipping-and-tax/woocommerce-shipping/#section-30">
 													{ ' ' }
-												</Link>
+												</ExternalLink>
 											),
 										}
 									) }

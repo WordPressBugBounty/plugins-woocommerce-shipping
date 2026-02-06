@@ -8,6 +8,9 @@ export const getUPSDAPCarrierStrategyForAddressId = (
 	state: CarrierStrategyState,
 	addressId: string
 ) => {
-	const { originAddress } = getUPSDAPCarrierStrategy( state );
-	return camelCaseKeys( originAddress[ addressId ] );
+	const upsdap = getUPSDAPCarrierStrategy( state );
+	if ( ! upsdap?.originAddress?.[ addressId ] ) {
+		return { hasAgreedToTos: false };
+	}
+	return camelCaseKeys( upsdap.originAddress[ addressId ] );
 };

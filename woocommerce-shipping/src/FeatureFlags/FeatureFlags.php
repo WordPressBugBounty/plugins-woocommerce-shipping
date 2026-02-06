@@ -2,6 +2,10 @@
 
 namespace Automattic\WCShipping\FeatureFlags;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 class FeatureFlags {
 
 	/**
@@ -38,5 +42,19 @@ class FeatureFlags {
 	 */
 	public function get_features_supported_by_store(): array {
 		return self::FEATURES_SUPPORTED_BY_STORE;
+	}
+
+	/**
+	 * Check if ScanForm feature is enabled.
+	 *
+	 * @return bool
+	 */
+	public static function is_scanform_enabled() {
+		/**
+		 * Filter to enable USPS ScanForm feature.
+		 *
+		 * @param bool $enable_scanform Whether to enable the ScanForm feature. Default false.
+		 */
+		return apply_filters( 'wcshipping_enable_scanform_feature', false );
 	}
 }

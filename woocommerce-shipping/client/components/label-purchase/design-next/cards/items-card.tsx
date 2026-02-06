@@ -1,11 +1,10 @@
 import {
 	__experimentalText as Text,
-	__experimentalSpacer as Spacer,
 	Card,
 	CardBody,
-	CardDivider,
 	Flex,
 	Notice,
+	Tooltip,
 } from '@wordpress/components';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import { mainModalContentSelector } from 'components/label-purchase/constants';
@@ -14,7 +13,7 @@ import { StaticHeader } from 'components/label-purchase/split-shipment/header';
 import { SelectableItems } from 'components/label-purchase/split-shipment/selectable-items';
 import { useLabelPurchaseContext } from 'context/label-purchase';
 import { useEffect, useRef } from 'react';
-import { ShipmentItem, ShipmentSubItem } from 'types';
+import { ShipmentItem, ShipmentSubItem, Order } from 'types';
 import {
 	getSelectablesCount,
 	getSubItems,
@@ -24,11 +23,13 @@ import {
 import { ItemsList } from '../internal/items-list';
 import { useCollapsibleCard } from '../internal/useCollapsibleCard';
 import { formatCurrency, getCurrencyObject } from '../utils';
+import { withBoundaryNext } from 'components/HOC/error-boundary/with-boundary-next';
 
-const getItemsSummary = ( items: ( ShipmentItem | ShipmentSubItem )[] ) => {
-	const totalItems = items.reduce( ( total, item ) => {
-		return total + item.quantity;
-	}, 0 );
+const getItemsSummary = (
+	items: ( ShipmentItem | ShipmentSubItem )[],
+	order: Order
+) => {
+	const totalItems = order.total_line_items_quantity;
 
 	const itemsPart = sprintf(
 		/* translators: %d: number of items */
@@ -38,20 +39,32 @@ const getItemsSummary = ( items: ( ShipmentItem | ShipmentSubItem )[] ) => {
 
 	const totalWeight = items.reduce( ( total, item ) => {
 		const itemWeight = item.weight ? parseFloat( item.weight ) : 0;
-		return total + itemWeight;
+		return total + itemWeight * item.quantity;
 	}, 0 );
 
 	const weightUnit = getWeightUnit();
 
 	const weightPart =
-		totalWeight > 0 ? `, ${ totalWeight } ${ weightUnit }` : '';
+		totalWeight > 0 ? ` · ${ totalWeight } ${ weightUnit }` : '';
 
-	return `${ itemsPart }${ weightPart }`;
+	const costPart = formatCurrency(
+		parseFloat( order.total ),
+		getCurrencyObject().code
+	);
+
+	const deliveryOptionPart = `${ order.shipping_methods } ${ formatCurrency(
+		parseFloat( order.total_shipping ),
+		getCurrencyObject().code
+	) }`;
+
+	return `${ itemsPart }${ weightPart } · ${ deliveryOptionPart } · ${ costPart } total`;
 };
 
 const ItemsCard = ( {
+	order,
 	items,
 }: {
+	order: Order;
 	items: ( ShipmentItem | ShipmentSubItem )[];
 } ) => {
 	const { CardHeader, isOpen } = useCollapsibleCard( true );
@@ -122,11 +135,6 @@ const ItemsCard = ( {
 		}
 	}, [ essentialDetailsFocusArea, shipments ] );
 
-	const orderWeight = items.reduce( ( total, item ) => {
-		const itemWeight = item.weight ? parseFloat( item.weight ) : 0;
-		return total + itemWeight;
-	}, 0 );
-
 	return (
 		<Card>
 			<CardHeader iconSize={ 'small' } isBorderless>
@@ -135,9 +143,21 @@ const ItemsCard = ( {
 						{ __( 'Items', 'woocommerce-shipping' ) }
 					</Text>
 					{ ! isOpen && (
-						<Text as="span" weight={ 400 } size={ 13 }>
-							{ getItemsSummary( items ) }
-						</Text>
+						<Tooltip text={ getItemsSummary( items, order ) }>
+							<Text
+								as="span"
+								weight={ 400 }
+								size={ 13 }
+								style={ {
+									maxWidth: '350px',
+									overflow: 'hidden',
+									textOverflow: 'ellipsis',
+									whiteSpace: 'nowrap',
+								} }
+							>
+								{ getItemsSummary( items, order ) }
+							</Text>
+						</Tooltip>
 					) }
 				</Flex>
 			</CardHeader>
@@ -196,72 +216,7 @@ const ItemsCard = ( {
 							/>
 						</Flex>
 					) : (
-						<>
-							<ItemsList items={ items } />
-							<Spacer paddingX={ 6 } paddingY={ 4 }>
-								<CardDivider
-									style={ { marginBottom: '20px' } }
-								/>
-								<Flex justify="space-between" align="center">
-									<Text size={ 13 } as="span" weight={ 400 }>
-										{ __(
-											'Order Total',
-											'woocommerce-shipping'
-										) }
-									</Text>
-									<Text size={ 13 } as="span" weight={ 400 }>
-										{ formatCurrency(
-											items.reduce( ( total, item ) => {
-												return (
-													total +
-													parseFloat( item.total )
-												);
-											}, 0 ),
-											getCurrencyObject().code
-										) }
-									</Text>
-								</Flex>
-							</Spacer>
-							<Spacer paddingX={ 6 } paddingBottom={ 4 }>
-								<CardDivider
-									style={ { marginBottom: '20px' } }
-								/>
-								<Flex justify="space-between" align="center">
-									<Text size={ 13 } as="span" weight={ 400 }>
-										{ __(
-											'In this shipment',
-											'woocommerce-shipping'
-										) }
-									</Text>
-									<Text size={ 13 } as="span" weight={ 400 }>
-										{ sprintf(
-											/** translators: %s: number of items */
-											_n(
-												'%s item',
-												'%s items',
-												items.length,
-												'woocommerce-shipping'
-											),
-											items.length
-										) }
-									</Text>
-									<Text size={ 13 } as="span" weight={ 400 }>
-										{ `${ orderWeight.toString() } ${ getWeightUnit() }` }
-									</Text>
-									<Text size={ 13 } as="span" weight={ 400 }>
-										{ formatCurrency(
-											items.reduce( ( total, item ) => {
-												return (
-													total +
-													parseFloat( item.total )
-												);
-											}, 0 ),
-											getCurrencyObject().code
-										) }
-									</Text>
-								</Flex>
-							</Spacer>
-						</>
+						<ItemsList items={ items } />
 					) }
 				</CardBody>
 			) }
@@ -269,4 +224,4 @@ const ItemsCard = ( {
 	);
 };
 
-export default ItemsCard;
+export default withBoundaryNext( ItemsCard )();

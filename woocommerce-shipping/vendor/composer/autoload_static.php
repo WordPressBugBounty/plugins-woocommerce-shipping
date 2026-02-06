@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInit644a80e4b25560037acd97262c6185ae
+class ComposerStaticInitbb81dbe696cc282e0dd9e56ef55e05a8
 {
     public static $files = array (
         '3773ef3f09c37da5478d578e32b03a4b' => __DIR__ . '/..' . '/automattic/jetpack-assets/actions.php',
@@ -109,13 +109,17 @@ class ComposerStaticInit644a80e4b25560037acd97262c6185ae
         'Automattic\\WCShipping\\Checkout\\StoreNotice' => __DIR__ . '/../..' . '/src/Checkout/StoreNotice.php',
         'Automattic\\WCShipping\\Checkout\\StoreNoticeTypes' => __DIR__ . '/../..' . '/src/Checkout/StoreNoticeTypes.php',
         'Automattic\\WCShipping\\DOM\\Manipulation' => __DIR__ . '/../..' . '/src/DOM/Manipulation.php',
+        'Automattic\\WCShipping\\Emails\\WC_Admin_Return_Label_Email' => __DIR__ . '/../..' . '/src/Emails/WC_Admin_Return_Label_Email.php',
+        'Automattic\\WCShipping\\Emails\\WC_Return_Label_Email' => __DIR__ . '/../..' . '/src/Emails/WC_Return_Label_Email.php',
         'Automattic\\WCShipping\\Exceptions\\RESTRequestException' => __DIR__ . '/../..' . '/src/Exceptions/RESTRequestException.php',
         'Automattic\\WCShipping\\FeatureFlags\\FeatureFlags' => __DIR__ . '/../..' . '/src/FeatureFlags/FeatureFlags.php',
+        'Automattic\\WCShipping\\Fulfillments\\FulfillmentNotificationType' => __DIR__ . '/../..' . '/src/Fulfillments/FulfillmentNotificationType.php',
         'Automattic\\WCShipping\\Fulfillments\\FulfillmentsService' => __DIR__ . '/../..' . '/src/Fulfillments/FulfillmentsService.php',
         'Automattic\\WCShipping\\Fulfillments\\ShippingFulfillment' => __DIR__ . '/../..' . '/src/Fulfillments/ShippingFulfillment.php',
         'Automattic\\WCShipping\\Fulfillments\\ShippingFulfillmentsDataStore' => __DIR__ . '/../..' . '/src/Fulfillments/ShippingFulfillmentsDataStore.php',
         'Automattic\\WCShipping\\Integrations\\AssetsRESTController' => __DIR__ . '/../..' . '/src/Integrations/AssetsRESTController.php',
         'Automattic\\WCShipping\\Integrations\\ConfigRESTController' => __DIR__ . '/../..' . '/src/Integrations/ConfigRESTController.php',
+        'Automattic\\WCShipping\\Integrations\\Garden' => __DIR__ . '/../..' . '/src/Integrations/Garden.php',
         'Automattic\\WCShipping\\Integrations\\TosRESTController' => __DIR__ . '/../..' . '/src/Integrations/TosRESTController.php',
         'Automattic\\WCShipping\\Integrations\\WCST' => __DIR__ . '/../..' . '/src/Integrations/WCST.php',
         'Automattic\\WCShipping\\Integrations\\WooCommerceBlocksIntegration' => __DIR__ . '/../..' . '/src/Integrations/WooCommerceBlocksIntegration.php',
@@ -153,11 +157,19 @@ class ComposerStaticInit644a80e4b25560037acd97262c6185ae
         'Automattic\\WCShipping\\Packages\\PackagesRESTController' => __DIR__ . '/../..' . '/src/Packages/PackagesRESTController.php',
         'Automattic\\WCShipping\\Promo\\PromoRESTController' => __DIR__ . '/../..' . '/src/Promo/PromoRESTController.php',
         'Automattic\\WCShipping\\Promo\\PromoService' => __DIR__ . '/../..' . '/src/Promo/PromoService.php',
+        'Automattic\\WCShipping\\ScanForm\\ScanForm' => __DIR__ . '/../..' . '/src/ScanForm/ScanForm.php',
+        'Automattic\\WCShipping\\ScanForm\\ScanFormHistoryRESTController' => __DIR__ . '/../..' . '/src/ScanForm/ScanFormHistoryRESTController.php',
+        'Automattic\\WCShipping\\ScanForm\\ScanFormOnboardingNotice' => __DIR__ . '/../..' . '/src/ScanForm/ScanFormOnboardingNotice.php',
+        'Automattic\\WCShipping\\ScanForm\\ScanFormRESTController' => __DIR__ . '/../..' . '/src/ScanForm/ScanFormRESTController.php',
+        'Automattic\\WCShipping\\ScanForm\\ScanFormService' => __DIR__ . '/../..' . '/src/ScanForm/ScanFormService.php',
+        'Automattic\\WCShipping\\ServiceData\\ServiceSchemasFetcherService' => __DIR__ . '/../..' . '/src/ServiceData/ServiceSchemasFetcherService.php',
+        'Automattic\\WCShipping\\ServiceData\\ServicesErrorNotice' => __DIR__ . '/../..' . '/src/ServiceData/ServicesErrorNotice.php',
         'Automattic\\WCShipping\\Shipment\\Address' => __DIR__ . '/../..' . '/src/Shipment/Address.php',
         'Automattic\\WCShipping\\Shipment\\ShipmentFromLabelGenerator' => __DIR__ . '/../..' . '/src/Shipment/ShipmentFromLabelGenerator.php',
         'Automattic\\WCShipping\\Shipments\\Models\\Shipment' => __DIR__ . '/../..' . '/src/Shipments/Models/Shipment.php',
         'Automattic\\WCShipping\\Shipments\\Models\\ShipmentItem' => __DIR__ . '/../..' . '/src/Shipments/Models/ShipmentItem.php',
         'Automattic\\WCShipping\\Shipments\\Models\\Shipments' => __DIR__ . '/../..' . '/src/Shipments/Models/Shipments.php',
+        'Automattic\\WCShipping\\Shipments\\ShipmentDataValidator' => __DIR__ . '/../..' . '/src/Shipments/ShipmentDataValidator.php',
         'Automattic\\WCShipping\\Shipments\\ShipmentsRESTController' => __DIR__ . '/../..' . '/src/Shipments/ShipmentsRESTController.php',
         'Automattic\\WCShipping\\Shipments\\ShipmentsService' => __DIR__ . '/../..' . '/src/Shipments/ShipmentsService.php',
         'Automattic\\WCShipping\\StoreApi\\AbstractStoreApiExtension' => __DIR__ . '/../..' . '/src/StoreApi/AbstractStoreApiExtension.php',
@@ -184,9 +196,9 @@ class ComposerStaticInit644a80e4b25560037acd97262c6185ae
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInit644a80e4b25560037acd97262c6185ae::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInit644a80e4b25560037acd97262c6185ae::$prefixDirsPsr4;
-            $loader->classMap = ComposerStaticInit644a80e4b25560037acd97262c6185ae::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInitbb81dbe696cc282e0dd9e56ef55e05a8::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInitbb81dbe696cc282e0dd9e56ef55e05a8::$prefixDirsPsr4;
+            $loader->classMap = ComposerStaticInitbb81dbe696cc282e0dd9e56ef55e05a8::$classMap;
 
         }, null, ClassLoader::class);
     }

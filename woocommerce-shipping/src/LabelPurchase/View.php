@@ -367,11 +367,11 @@ class View {
 		switch ( $context ) {
 			case 'shipping_label':
 				DOM_Manipilation::create_root_script_element( 'woocommerce-shipping-shipping-label', $context );
-				do_action( 'enqueue_woocommerce_shipping_script', 'woocommerce-shipping-create-shipping-label', $payload, $context );
+				do_action( 'wcshipping_enqueue_script', 'woocommerce-shipping-create-shipping-label', $payload, $context );
 				break;
 			case 'shipment_tracking':
 				DOM_Manipilation::create_root_script_element( 'woocommerce-shipping-shipping-label', $context );
-				do_action( 'enqueue_woocommerce_shipping_script', 'woocommerce-shipping-shipment-tracking', $payload, $context );
+				do_action( 'wcshipping_enqueue_script', 'woocommerce-shipping-shipment-tracking', $payload, $context );
 				break;
 		}
 	}
@@ -607,6 +607,7 @@ class View {
 		$selected_destination = $order->get_meta( LabelPurchaseService::SELECTED_DESTINATION_KEY );
 		$customs_information  = $order->get_meta( LabelPurchaseService::CUSTOMS_INFORMATION );
 		$shipment_dates       = $order->get_meta( LabelPurchaseService::SHIPMENT_DATES );
+		$package_dimensions   = $order->get_meta( LabelPurchaseService::PACKAGE_DIMENSIONS );
 		$destination          = $this->get_destination_address( $order );
 
 		if ( ! $destination['country'] ) {
@@ -651,7 +652,8 @@ class View {
 			'selected_origin',
 			'selected_destination',
 			'customs_information',
-			'shipment_dates'
+			'shipment_dates',
+			'package_dimensions'
 		);
 
 		$data['order_id'] = $order_id;

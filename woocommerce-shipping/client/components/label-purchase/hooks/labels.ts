@@ -3,6 +3,7 @@ import { dispatch, select } from '@wordpress/data';
 import apiFetch from '@wordpress/api-fetch';
 import { __ } from '@wordpress/i18n';
 import { mapValues } from 'lodash';
+import { useDebounce } from '@wordpress/compose';
 import {
 	Label,
 	LabelPurchaseError,
@@ -25,6 +26,7 @@ import {
 	shouldAutomaticallyOpenPrintDialog,
 	printPackingSlipDocument,
 	maybeDecrementPromoRemaining,
+	toUTCMidnightISOString,
 } from 'utils';
 import { labelPurchaseStore } from 'data/label-purchase';
 import { usePackageState } from './packages';
@@ -69,6 +71,14 @@ interface UseLabelsStateProps {
 	getCurrentShipmentDate: ReturnType<
 		typeof useShipmentState
 	>[ 'getCurrentShipmentDate' ];
+	getCurrentShipmentIsReturn: ReturnType<
+		typeof useShipmentState
+	>[ 'getCurrentShipmentIsReturn' ];
+	getCurrentShipmentParentId: ReturnType<
+		typeof useShipmentState
+	>[ 'getCurrentShipmentParentId' ];
+	returnShipments: ReturnType< typeof useShipmentState >[ 'returnShipments' ];
+	removeShipment?: ( shipmentId: string ) => void; // Added removeShipment
 }
 
 const handlePurchaseException = ( e: LabelPurchaseError ) =>
@@ -116,6 +126,9 @@ export function useLabelsState( {
 	shipments,
 	getSelectedRateOptions,
 	getCurrentShipmentDate,
+	getCurrentShipmentIsReturn,
+	getCurrentShipmentParentId,
+	removeShipment, // Added removeShipment
 }: UseLabelsStateProps ) {
 	const order = getCurrentOrder();
 	const getShipmentLabel = useCallback(
@@ -130,16 +143,14 @@ export function useLabelsState( {
 	const country = getShipmentOrigin()?.country;
 
 	const paperSizes = getPaperSizes( country );
-	const [ labels, setLabels ] = useState<
-		Record< string, Label | undefined >
-	>(
+	const [ , setLabels ] = useState< Record< string, Label | undefined > >(
 		purchasedLabels ?? {
 			0: currentShipmentLabel,
 		}
 	);
 
 	useEffect( () => {
-		setLabels( ( prevState: typeof labels ) => ( {
+		setLabels( ( prevState: Record< string, Label | undefined > ) => ( {
 			...prevState,
 			// we want to update the label for the current shipment even if the label turned out to be refunded, in this case currentShipmentLabel will be undefined
 			[ currentShipmentId ]: currentShipmentLabel,
@@ -158,8 +169,9 @@ export function useLabelsState( {
 	);
 
 	const getCurrentShipmentLabel = useCallback(
-		( shipmentId = currentShipmentId ) => labels[ shipmentId ],
-		[ labels, currentShipmentId ]
+		( shipmentId = currentShipmentId ) =>
+			select( labelPurchaseStore ).getPurchasedLabel( shipmentId ),
+		[ currentShipmentId ]
 	);
 
 	const [ isPurchasing, setIsPurchasing ] = useState( false );
@@ -174,10 +186,62 @@ export function useLabelsState( {
 		string[]
 	>( [] );
 
+	const hasPurchasedLabel = useCallback(
+		(
+			checkStatus = true,
+			excludeRefunded = false,
+			shipmentId: string = currentShipmentId
+		): boolean => {
+			const label = getShipmentLabel( shipmentId );
+			if ( excludeRefunded && label?.refund ) {
+				return false;
+			}
+
+			if ( checkStatus ) {
+				return label?.status === LABEL_PURCHASE_STATUS.PURCHASED;
+			}
+
+			return (
+				// label is purchased if it's not errored
+				( label &&
+					label.status !== LABEL_PURCHASE_STATUS.PURCHASE_ERROR ) ??
+				false
+			);
+		},
+		[ currentShipmentId, getShipmentLabel ]
+	);
+
 	// Track retry count for label status polling
 	const [ labelStatusRetryCount, setLabelStatusRetryCount ] = useState<
 		Record< number, number >
 	>( {} );
+
+	const [ isAnyRequestInProgress, setIsAnyRequestInProgress ] =
+		useState( false );
+
+	/**
+	 * Debounced function to hide the progress state. We only debounce when hiding (not showing)
+	 * to ensure the modal appears immediately but closes smoothly after a short delay.
+	 * useCallback is required because useDebounce recreates the debounced function when
+	 * the callback reference changes, which would break the debounce timing.
+	 */
+	const debouncedSetProgressFalse = useDebounce(
+		useCallback( () => setIsAnyRequestInProgress( false ), [] ),
+		300
+	);
+
+	useEffect( () => {
+		if ( isPurchasing || isUpdatingStatus ) {
+			debouncedSetProgressFalse.cancel();
+			setIsAnyRequestInProgress( true );
+		} else {
+			/**
+			 * Debounce hiding the "Processing your order" modal to provide a smoother UX
+			 * and prevent abrupt UI changes when the request completes (success or error).
+			 */
+			debouncedSetProgressFalse();
+		}
+	}, [ isPurchasing, isUpdatingStatus, debouncedSetProgressFalse ] );
 
 	// Helper function to reset retry count for a specific label
 	const resetLabelRetryCount = useCallback(
@@ -197,8 +261,22 @@ export function useLabelsState( {
 		) {
 			// The purchase might not be successful yet.
 			updateRates(); // Update rates so that the same shipment id is not used again
+
+			// Remove the current shipment if it has no purchased label and was created for a failed purchase
+			if (
+				removeShipment &&
+				! hasPurchasedLabel( false, false, currentShipmentId )
+			) {
+				removeShipment( currentShipmentId );
+			}
 		}
-	}, [ currentShipmentLabel, updateRates ] );
+	}, [
+		currentShipmentLabel,
+		updateRates,
+		hasPurchasedLabel,
+		currentShipmentId,
+		removeShipment,
+	] );
 
 	const printLabel = useCallback(
 		async (
@@ -491,8 +569,10 @@ export function useLabelsState( {
 				),
 			] as RequestPackageWithCustoms< LabelRequestPackages >[];
 
-			const shippingDate =
-				getCurrentShipmentDate()?.shippingDate?.toISOString();
+			const currentShipmentDate = getCurrentShipmentDate()?.shippingDate;
+			const shippingDate = currentShipmentDate
+				? toUTCMidnightISOString( currentShipmentDate )
+				: undefined;
 
 			try {
 				await dispatch( labelPurchaseStore ).purchaseLabel(
@@ -516,7 +596,9 @@ export function useLabelsState( {
 					},
 					{
 						label_date: shippingDate,
-					}
+					},
+					getCurrentShipmentIsReturn(),
+					getCurrentShipmentParentId()
 				);
 			} catch ( e ) {
 				setIsPurchasing( false );
@@ -533,8 +615,6 @@ export function useLabelsState( {
 				}
 				return handlePurchaseException( e as LabelPurchaseError );
 			}
-
-			select( labelPurchaseStore ).getPurchasedLabel( currentShipmentId );
 
 			setIsPurchasing( false );
 		},
@@ -553,32 +633,9 @@ export function useLabelsState( {
 			applyHazmatToPackage,
 			getSelectedRateOptions,
 			getCurrentShipmentDate,
+			getCurrentShipmentIsReturn,
+			getCurrentShipmentParentId,
 		]
-	);
-
-	const hasPurchasedLabel = useCallback(
-		(
-			checkStatus = true,
-			excludeRefunded = false,
-			shipmentId: string = currentShipmentId
-		): boolean => {
-			const label = getShipmentLabel( shipmentId );
-			if ( excludeRefunded && label?.refund ) {
-				return false;
-			}
-
-			if ( checkStatus ) {
-				return label?.status === LABEL_PURCHASE_STATUS.PURCHASED;
-			}
-
-			return (
-				// label is purchased if it's not errored
-				( label &&
-					label.status !== LABEL_PURCHASE_STATUS.PURCHASE_ERROR ) ??
-				false
-			);
-		},
-		[ currentShipmentId, getShipmentLabel ]
 	);
 
 	const getLabelProductIds = useCallback(
@@ -777,5 +834,6 @@ export function useLabelsState( {
 		hasMissingPurchase,
 		hasUnfinishedShipment,
 		isCurrentTabPurchasingExtraLabel,
+		isAnyRequestInProgress,
 	};
 }

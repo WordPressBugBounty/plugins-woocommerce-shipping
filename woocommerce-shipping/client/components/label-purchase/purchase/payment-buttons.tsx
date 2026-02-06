@@ -1,29 +1,34 @@
 import { MouseEventHandler } from 'react';
 import {
 	__experimentalSpacer as Spacer,
+	__experimentalText as Text,
 	Button,
 	CheckboxControl,
+	ExternalLink,
 	Flex,
 	FlexBlock,
 	Notice,
 } from '@wordpress/components';
 import {
 	createInterpolateElement,
+	createPortal,
 	useCallback,
 	useEffect,
 	useLayoutEffect,
 	useMemo,
 	useState,
 } from '@wordpress/element';
-import { Link } from '@woocommerce/components';
+import { Link } from 'components/wc';
 import { __, sprintf } from '@wordpress/i18n';
 import { uniq } from 'lodash';
 import {
+	canManagePayments as canManagePaymentsUtil,
 	getAddPaymentMethodURL,
+	getParentIdFromSubItemId,
+	getUPSDAPTosApprovedVersionsFromError,
 	hasPaymentMethod,
 	hasSelectedPaymentMethod,
-	canManagePayments as canManagePaymentsUtil,
-	getParentIdFromSubItemId,
+	mapAddressForRequest,
 } from 'utils';
 import { CreditCardButton } from './credit-card-button';
 import { settingsPageUrl } from '../constants';
@@ -44,10 +49,7 @@ import { LABEL_PURCHASE_STATUS } from 'data/constants';
 import { UPSDAPTos } from 'components/carrier/upsdap/upsdap-tos';
 import apiFetch from '@wordpress/api-fetch';
 import { getCarrierStrategyPath } from 'data/routes';
-import {
-	mapAddressForRequest,
-	getUPSDAPTosApprovedVersionsFromError,
-} from 'utils';
+import { MANAGE_PAYMENT_METHODS_URL } from 'components/shipping-settings/constants';
 
 interface PaymentButtonsProps {
 	order: Order;
@@ -62,6 +64,8 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 			currentShipmentId,
 			getShipmentOrigin,
 			isExtraLabelPurchaseValid,
+			getShipmentType,
+			getCurrentShipmentIsReturn,
 		},
 		labels: {
 			selectedLabelSize,
@@ -79,9 +83,12 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 			canPurchase,
 			setAccountCompleteOrder,
 			getAccountCompleteOrder,
+			getNextPaymentMethod,
 		},
 		nextDesign,
 	} = useLabelPurchaseContext();
+	const nextPaymentMethod = getNextPaymentMethod();
+
 	const lastOrderCompleted = getAccountCompleteOrder();
 	const [ errors, setErrors ] = useState< LabelPurchaseError | null >( null );
 	const [ markOrderAsCompleted, setMarkOrderAsCompleted ] =
@@ -136,11 +143,15 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 			? sprintf(
 					// translators: %s is the shipment title as Shipment 1/2, Shipment 2/2, etc.
 					__( 'Purchase %s', 'woocommerce-shipping' ),
-					getShipmentTitle( currentShipmentId, shipmentsCount )
+					getShipmentTitle(
+						currentShipmentId,
+						shipmentsCount,
+						getShipmentType( currentShipmentId )
+					)
 			  )
 			: __( 'Purchase label', 'woocommerce-shipping' );
 	const purchaseButtonLabel = nextDesign
-		? __( 'Buy label', 'woocommerce-shipping' )
+		? __( 'Buy shipping label', 'woocommerce-shipping' )
 		: purchaseButtonLabelDefault;
 
 	const addCardButtonDescription = (
@@ -153,14 +164,9 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 			),
 			{
 				a: (
-					<Link
-						onClick={ onAddCard }
-						type="external"
-						href="#"
-						role="button"
-					>
+					<ExternalLink onClick={ onAddCard } href="#" role="button">
 						{ ' ' }
-					</Link>
+					</ExternalLink>
 				),
 			}
 		);
@@ -338,7 +344,6 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 			order_destination_country: order.shipping_address.country,
 			carrier_id: getSelectedRate()?.rate.carrierId,
 			rate: getSelectedRate()?.rate.rate,
-			list_rate: getSelectedRate()?.rate.listRate,
 			retail_rate: getSelectedRate()?.rate.retailRate,
 			service_id: getSelectedRate()?.rate.serviceId,
 		};
@@ -425,6 +430,16 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 					const switchedRate = matchAndSelectRate( selectedRate );
 					if ( switchedRate ) {
 						purchaseLabel( switchedRate );
+					} else {
+						setErrors( {
+							cause: 'rate_mismatch',
+							message: [
+								__(
+									'The shipping rate has changed significantly. Please review the available rates and select one to continue.',
+									'woocommerce-shipping'
+								),
+							],
+						} );
 					}
 				}
 			} catch {
@@ -471,7 +486,7 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 					setIsConfirming={ setIsTOSConfirming }
 				/>
 			) }
-			{ canPurchase() && (
+			{ nextPaymentMethod && (
 				<Button
 					variant="primary"
 					disabled={
@@ -480,7 +495,7 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 						isFetching ||
 						isUpdatingStatus ||
 						hasPurchasedLabel( false ) ||
-						! shipmentOrigin.isVerified ||
+						! shipmentOrigin.isApproved ||
 						( isExtraLabelPurchase() &&
 							! isExtraLabelPurchaseValid() )
 					}
@@ -496,70 +511,59 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 						isPurchasing ||
 						isFetching ||
 						hasPurchasedLabel( false ) ||
-						! shipmentOrigin.isVerified ||
+						! shipmentOrigin.isApproved ||
 						( isExtraLabelPurchase() &&
 							! isExtraLabelPurchaseValid() )
 					}
+					size="compact"
 				>
 					{ purchaseButtonLabel }
 				</Button>
 			) }
-			{ ! hasPaymentMethod( { accountSettings } ) && (
-				<>
-					{ canManagePayments ? (
-						<CreditCardButton
-							url={ getAddPaymentMethodURL() }
-							buttonLabel={ __(
-								'Add credit card',
-								'woocommerce-shipping'
-							) }
-							buttonDescription={ addCardButtonDescription }
-						/>
-					) : (
-						<Notice status="warning" isDismissible={ false }>
-							{ __(
-								'Please contact your site administrator to add a payment method.',
-								'woocommerce-shipping'
+			{ ! nextPaymentMethod &&
+				document.getElementById( 'label-purchase-status-notices' ) &&
+				createPortal(
+					<div style={ { marginBottom: '16px' } }>
+						<Notice status="error" isDismissible={ false }>
+							{ createInterpolateElement(
+								__(
+									'No payment method selected for this site. Please select a payment method to purchase a label. <ManageLink/>',
+									'woocommerce-shipping'
+								),
+								{
+									ManageLink: (
+										<ExternalLink
+											href={ MANAGE_PAYMENT_METHODS_URL }
+											style={ {
+												display: 'block',
+											} }
+										>
+											{ __(
+												'Manage payment methods.',
+												'woocommerce-shipping'
+											) }
+										</ExternalLink>
+									),
+								}
 							) }
 						</Notice>
-					) }
-				</>
-			) }
-			{ hasPaymentMethod( { accountSettings } ) &&
-				! hasSelectedPaymentMethod( { accountSettings } ) && (
-					<>
-						{ canManagePayments ? (
-							<CreditCardButton
-								url={ settingsPageUrl }
-								buttonLabel={ __(
-									'Choose credit card',
-									'woocommerce-shipping'
-								) }
-								buttonDescription={
-									chooseCardButtonDescription
-								}
-							/>
-						) : (
-							<Notice status="warning" isDismissible={ false }>
-								{ __(
-									'Please contact your site administrator to set a default payment method.',
-									'woocommerce-shipping'
-								) }
+					</div>,
+					document.getElementById( 'label-purchase-status-notices' )!
+				) }
+			{ errors &&
+				Object.keys( errors ).length > 0 &&
+				createPortal(
+					<Flex className="purchase-label-errors" direction="column">
+						{ errors && Object.keys( errors ).length > 0 && (
+							<Notice status="error" isDismissible={ false }>
+								{ uniq( errors.message ).map( ( m, index ) => (
+									<Text key={ index }>{ m }</Text>
+								) ) }
 							</Notice>
 						) }
-					</>
+					</Flex>,
+					document.getElementById( 'label-purchase-status-notices' )!
 				) }
-			{ errors && Object.keys( errors ).length > 0 && (
-				<Notice
-					status="error"
-					actions={ uniq( errors.actions ) }
-					onDismiss={ resetErrors }
-				>
-					{ uniq( errors.message ).map( ( m, index ) => (
-						<p key={ index }>{ m }</p>
-					) ) }
-				</Notice>
-			) }
 		</>
 	) : (
 		<>
@@ -607,6 +611,7 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 									( isExtraLabelPurchase() &&
 										! isExtraLabelPurchaseValid() )
 								}
+								__next40pxDefaultSize={ nextDesign }
 							>
 								{ purchaseButtonLabel }
 							</Button>
@@ -615,7 +620,8 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 							<EssentialDetails />
 						</FlexBlock>
 						{ ! hasPurchasedLabel( false ) &&
-							! isOrderCompleted && (
+							! isOrderCompleted &&
+							! getCurrentShipmentIsReturn() && (
 								<Flex>
 									<CheckboxControl
 										label={ __(
@@ -684,6 +690,7 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 						</>
 					) }
 			</Flex>
+
 			<Spacer />
 			{ errors && Object.keys( errors ).length > 0 && (
 				<Notice

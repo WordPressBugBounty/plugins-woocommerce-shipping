@@ -1,7 +1,7 @@
 import { find, flatMap, get, isEmpty, isEqual, omit, sortBy } from 'lodash';
 // @ts-ignore can't find type definitions for @woocommerce/settings
 import { getSetting } from '@woocommerce/settings';
-import { composeAddress, composeName } from 'utils';
+import { composeAddress, composeName } from '../order';
 import {
 	Destination,
 	LocationResponse,
@@ -145,8 +145,8 @@ export const hasStates = (
 
 export const getStoreOrigin = () => {
 	return {
-		country: getSetting( 'baseLocation' )?.country || 'US',
-		state: getSetting( 'baseLocation' )?.state || 'CA',
+		country: getSetting( 'baseLocation' )?.country ?? 'US',
+		state: getSetting( 'baseLocation' )?.state ?? 'CA',
 	};
 };
 
@@ -178,7 +178,7 @@ export const isCustomsRequired = (
 export const getOriginAddresses = (
 	config: WCShippingConfig = getConfig()
 ) => {
-	return config.origin_addresses
+	return ( config.origin_addresses ?? [] )
 		.map( ( originalAddress ) => ( {
 			...originalAddress,
 			address: composeAddress( originalAddress ),
@@ -195,7 +195,51 @@ export const getFirstSelectableOriginAddress = (
 		( address ) => address.defaultAddress
 	);
 
-	return defaultAddress ?? originAddresses[ 0 ];
+	if ( defaultAddress ) {
+		return defaultAddress;
+	}
+
+	// Prioritize store address with ID 'store_details' as default return address
+	const storeAddress = originAddresses.find(
+		( address ) => address.id === 'store_details'
+	);
+
+	return (
+		storeAddress ??
+		( originAddresses.length > 0 ? originAddresses[ 0 ] : undefined )
+	);
+};
+
+export const getDefaultOutboundAddress = (
+	config: WCShippingConfig = getConfig()
+) => {
+	const originAddresses = getOriginAddresses( config );
+	const defaultAddress = originAddresses.find(
+		( address ) => address.defaultAddress
+	);
+
+	if ( defaultAddress ) {
+		return defaultAddress;
+	}
+
+	// Fallback to first selectable address
+	return getFirstSelectableOriginAddress( config );
+};
+
+export const getDefaultReturnAddress = (
+	config: WCShippingConfig = getConfig()
+) => {
+	const originAddresses = getOriginAddresses( config );
+	const defaultReturnAddress = originAddresses.find(
+		( address ) => address.defaultReturnAddress
+	);
+
+	if ( defaultReturnAddress ) {
+		return defaultReturnAddress;
+	}
+
+	// Fallback to first selectable address
+	return getFirstSelectableOriginAddress( config );
 };
 
 export const isOriginAddress = (

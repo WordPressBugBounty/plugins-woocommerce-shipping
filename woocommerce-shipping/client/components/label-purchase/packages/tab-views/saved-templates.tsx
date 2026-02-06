@@ -35,8 +35,9 @@ interface SavedTemplatesProps {
 		| ReturnType<
 				ReturnType< typeof usePackageState >[ 'getCustomPackage' ]
 		  >;
-	setSelectedPackage:
-		| ReturnType< typeof usePackageState >[ 'setSelectedPackage' ];
+	setSelectedPackage: ReturnType<
+		typeof usePackageState
+	>[ 'setSelectedPackage' ];
 }
 
 export const SavedTemplates = withBoundary(

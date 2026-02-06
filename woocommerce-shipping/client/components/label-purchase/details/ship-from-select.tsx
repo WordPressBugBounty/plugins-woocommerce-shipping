@@ -8,7 +8,7 @@ import {
 	useRef,
 	useState,
 } from '@wordpress/element';
-import { Link } from '@woocommerce/components';
+import { Link } from 'components/wc';
 import { chevronDown, Icon } from '@wordpress/icons';
 import { useSelect } from '@wordpress/data';
 import {

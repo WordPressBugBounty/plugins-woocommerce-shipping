@@ -68,8 +68,18 @@ export const TotalWeight = ( { packageWeight = 0 } ) => {
 	);
 
 	useEffect( () => {
+		// Both are in same unit (defaultUnit) so we can add them directly
 		const totalWeight = shipmentWeight + Number( packageWeight );
-		if ( totalWeight >= minValue ) {
+		// Convert totalWeight to the display unit (weightUnit) for proper comparison with minValue
+		// minValue is computed in weightUnit, so both must be in the same unit for accurate comparison
+		const totalWeightInDisplayUnit = convertWeightToUnit(
+			totalWeight,
+			defaultUnit,
+			weightUnit
+		);
+		// For nextDesign, always update to reflect actual items regardless of minValue as we have LB and OZ inputs.
+		// For legacy design, respect minValue check
+		if ( nextDesign || totalWeightInDisplayUnit >= minValue ) {
 			setShipmentTotalWeight( totalWeight );
 		}
 		// reset errors on initial render to avoid false positives on context switch
@@ -83,7 +93,13 @@ export const TotalWeight = ( { packageWeight = 0 } ) => {
 		// This effect should not run on `errors` change, so it's removed from the dependency array
 		// This should not run on minValue change, so it's removed from the dependency array
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [ packageWeight, shipmentWeight, setShipmentTotalWeight, setErrors ] );
+	}, [
+		packageWeight,
+		shipmentWeight,
+		setShipmentTotalWeight,
+		setErrors,
+		nextDesign,
+	] );
 
 	const props = {
 		onChange: ( val: string | undefined ) => {
@@ -126,7 +142,7 @@ export const TotalWeight = ( { packageWeight = 0 } ) => {
 								'Weight must be greater than or equal to %1$s %2$s',
 								'woocommerce-shipping'
 							),
-							threshold,
+							String( threshold ),
 							weightUnit
 						),
 					},
@@ -151,45 +167,10 @@ export const TotalWeight = ( { packageWeight = 0 } ) => {
 		setWeightUnit( newUnit );
 	};
 
-	const shipmentWeightInLbs = convertWeightToUnit(
-		getShipmentTotalWeight(),
-		defaultUnit,
-		WEIGHT_UNITS.LBS
-	);
-
-	const [ weightLbs, setWeightLbs ] = useState(
-		Math.floor( shipmentWeightInLbs )
-	);
-	const [ weightOz, setWeightOz ] = useState(
-		Math.round( ( shipmentWeightInLbs - weightLbs ) * 16 )
-	);
-
 	const weightUnitOptions = Object.values( WEIGHT_UNITS ).map( ( unit ) => ( {
 		label: unit,
 		value: unit,
 	} ) );
-
-	useEffect( () => {
-		if ( nextDesign ) {
-			const totalWeightInLbs = weightLbs + weightOz / 16;
-			if ( totalWeightInLbs >= minValue ) {
-				setShipmentTotalWeight(
-					convertWeightToUnit(
-						totalWeightInLbs,
-						WEIGHT_UNITS.LBS,
-						defaultUnit
-					)
-				);
-			}
-		}
-	}, [
-		weightLbs,
-		weightOz,
-		defaultUnit,
-		nextDesign,
-		setShipmentTotalWeight,
-		minValue,
-	] );
 
 	return (
 		<FlexBlock>
@@ -215,12 +196,30 @@ export const TotalWeight = ( { packageWeight = 0 } ) => {
 							type="number"
 							min={ 0 }
 							step={ 1 }
-							{ ..._.omit( props, 'value', 'onChange' ) }
-							value={ weightLbs.toString() }
+							{ ..._.omit(
+								props,
+								'value',
+								'onChange',
+								'onValidate'
+							) }
+							value={ Math.floor(
+								getShipmentTotalWeight()
+							).toString() }
 							onChange={ ( val ) => {
-								setWeightLbs( Number( val ) );
+								// Prevent empty values - default to 0 if empty
+								let lbsValue =
+									val === '' || val === undefined
+										? 0
+										: Number( val );
+								// Validate and clamp the value (no negative values)
+								if ( isNaN( lbsValue ) || lbsValue < 0 ) {
+									lbsValue = 0;
+								}
+								setShipmentTotalWeight(
+									lbsValue + ( getShipmentTotalWeight() % 1 )
+								); // preserve decimal part
 							} }
-							__next40pxDefaultSize={ true }
+							__next40pxDefaultSize
 						/>
 					</FlexBlock>
 					<FlexBlock>
@@ -235,12 +234,39 @@ export const TotalWeight = ( { packageWeight = 0 } ) => {
 							min={ 0 }
 							step={ 1 }
 							max={ 15 }
-							{ ..._.omit( props, 'value', 'onChange' ) }
-							value={ weightOz.toString() }
+							{ ..._.omit(
+								props,
+								'value',
+								'onChange',
+								'onValidate'
+							) }
+							value={
+								getShipmentTotalWeight() % 1 === 0
+									? '0'
+									: Math.round(
+											( getShipmentTotalWeight() % 1 ) *
+												16
+									  ).toString()
+							}
 							onChange={ ( val ) => {
-								setWeightOz( Number( val ) );
+								// Prevent empty values - default to 0 if empty
+								let ozValue =
+									val === '' || val === undefined
+										? 0
+										: parseInt( val, 10 );
+
+								// Validate and clamp the value to valid range (0-15)
+								if ( isNaN( ozValue ) || ozValue < 0 ) {
+									ozValue = 0;
+								} else if ( ozValue > 15 ) {
+									ozValue = 0; // Reset to 0 if out of range
+								}
+								setShipmentTotalWeight(
+									Math.floor( getShipmentTotalWeight() ) +
+										ozValue / 16
+								);
 							} }
-							__next40pxDefaultSize={ true }
+							__next40pxDefaultSize
 						/>
 					</FlexBlock>
 				</Flex>
@@ -256,7 +282,7 @@ export const TotalWeight = ( { packageWeight = 0 } ) => {
 						step={ [ 'g', 'oz' ].includes( weightUnit ) ? 1 : 0.1 }
 						min={ minValue }
 						{ ...props }
-						__next40pxDefaultSize={ true }
+						__next40pxDefaultSize
 					/>
 					<SelectControl
 						label={
@@ -269,9 +295,9 @@ export const TotalWeight = ( { packageWeight = 0 } ) => {
 						disabled={ isFetching }
 						onChange={ onUnitChange }
 						// Opting into the new styles for margin bottom
-						__nextHasNoMarginBottom={ true }
+						__nextHasNoMarginBottom
 						// Opting into the new styles for height
-						__next40pxDefaultSize={ true }
+						__next40pxDefaultSize
 					/>
 				</Flex>
 			) }

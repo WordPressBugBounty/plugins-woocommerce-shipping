@@ -19,6 +19,7 @@ import { PurchaseSettings } from './purchase-settings';
 import { PurchaseMeta } from './purchase-meta';
 import { ShipmentDate } from './shipment-date';
 import { Promotion } from './promotion';
+import { PackageDimensions } from './package-dimensions';
 
 export interface WCShippingConfigAccountSettings {
 	purchaseSettings: PurchaseSettings;
@@ -56,6 +57,9 @@ export interface WCShippingConfig {
 			selected_destination: SelectedDestination | '';
 			customs_information: ShipmentRecord< CustomsState > | '';
 			shipment_dates: ShipmentRecord< ShipmentDate< string > > | '';
+			package_dimensions:
+				| ShipmentRecord< Record< number, PackageDimensions > >
+				| '';
 		};
 	};
 	origin_addresses: LocationResponse[];
@@ -74,4 +78,9 @@ export interface WCShippingConfig {
 	custom_fulfillment_summary: string;
 	promotion?: Promotion;
 	should_use_fulfillment_api: boolean;
+	scanFormEnabled?: boolean;
+	mode?: 'label-purchase' | 'address-editor';
+	address?: unknown;
+	onAddressComplete?: ( address: unknown ) => void;
+	onAddressCancel?: () => void;
 }

@@ -44,7 +44,7 @@ export const RatesSorter = ( {
 						</Text>
 						<Text>
 							{ sortingBy === SORT_BY.CHEAPEST
-								? __( 'Low to High', 'woocommerce-shipping' )
+								? __( 'Low to high', 'woocommerce-shipping' )
 								: __( 'Fastest', 'woocommerce-shipping' ) }
 						</Text>
 					</Button>
@@ -63,7 +63,7 @@ export const RatesSorter = ( {
 						iconPosition={ 'right' }
 						role="menuitemradio"
 					>
-						{ __( 'Low to High', 'woocommerce-shipping' ) }
+						{ __( 'Low to high', 'woocommerce-shipping' ) }
 					</MenuItem>
 					{ canSortByDelivery && (
 						<MenuItem

@@ -409,6 +409,14 @@ class AddressNormalizationService {
 			unset( $request_body['is_verified'] );
 		}
 
+		if ( isset( $request_body['is_approved'] ) ) {
+			unset( $request_body['is_approved'] );
+		}
+
+		if ( isset( $request_body['default_return_address'] ) ) {
+			unset( $request_body['default_return_address'] );
+		}
+
 		return $request_body;
 	}
 

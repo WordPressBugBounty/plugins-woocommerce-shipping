@@ -71,7 +71,7 @@ const PackageLine = ( {
 							sprintf(
 								/* translators: %s: weight in lbs */
 								__( '%slb', 'woocommerce-shipping' ),
-								pkg.maxWeight
+								String( pkg.maxWeight )
 							) }
 					</Text>
 				</>
@@ -89,151 +89,165 @@ const PackageTypeSelect = ( {
 	const availableCarrierPackages: AvailablePackages =
 		getAvailableCarrierPackages();
 	return (
-		<Dropdown
-			popoverProps={ {
-				placement: 'bottom-start',
-				resize: false,
-				shift: false,
-				inline: true,
-				noArrow: true,
-			} }
-			style={ { width: '100%' } }
-			renderToggle={ ( { isOpen, onToggle } ) => {
-				return (
-					<Button
-						className="shipping-rates__sort"
-						onClick={ onToggle }
-						aria-expanded={ isOpen }
-						icon={ isOpen ? chevronUp : chevronDown }
-						iconPosition="right"
-						style={ {
-							width: '100%',
-							justifyContent: 'space-between',
-							boxShadow: isOpen
-								? '0 0 0 1px inset #000'
-								: '0 0 0 1px inset #949494',
-							color: isOpen ? '#000' : '#555',
-							paddingRight: '4px',
-						} }
-					>
-						{ currentPackageTab === TAB_NAMES.CUSTOM_PACKAGE &&
-							__( 'Custom package', 'woocommerce-shipping' ) }
-						{ currentPackageTab === TAB_NAMES.SAVED_TEMPLATES &&
-							__( 'Saved templates', 'woocommerce-shipping' ) }
-						{ currentPackageTab === TAB_NAMES.CARRIER_PACKAGE &&
-							selectedPackage && (
-								<PackageLine
-									provider={
-										getSelectedCarrierIdFromPackage(
-											availableCarrierPackages,
-											selectedPackage.id
-										) ?? ''
-									}
-									pkg={ selectedPackage as PackageType }
-								/>
-							) }
-					</Button>
-				);
-			} }
-			renderContent={ ( { onClose } ) => (
-				<Scrollable style={ { maxHeight: '300px' } }>
-					<Flex
-						direction={ 'column' }
-						style={ {
-							width: 'min-content',
-						} }
-						gap={ 0 }
-					>
-						<MenuGroup>
-							<MenuItem
-								onClick={ () => {
-									setCurrentPackageTab(
-										TAB_NAMES.CUSTOM_PACKAGE
-									);
-									onClose();
-								} }
-								role="menuitemradio"
-								isSelected={
-									currentPackageTab ===
-									TAB_NAMES.CUSTOM_PACKAGE
-								}
-							>
-								{ __(
-									'Custom package',
+		<Flex direction={ 'column' } gap={ 1 }>
+			<Text size={ 11 } weight={ 500 } lineHeight={ '24px' } upperCase>
+				{ __( 'Choose Package', 'woocommerce-shipping' ) }
+			</Text>
+			<Dropdown
+				popoverProps={ {
+					placement: 'bottom-start',
+					resize: false,
+					shift: false,
+					inline: true,
+					noArrow: true,
+				} }
+				style={ { width: '100%' } }
+				renderToggle={ ( { isOpen, onToggle } ) => {
+					return (
+						<Button
+							className="shipping-rates__sort"
+							onClick={ onToggle }
+							aria-expanded={ isOpen }
+							icon={ isOpen ? chevronUp : chevronDown }
+							iconPosition="right"
+							style={ {
+								width: '100%',
+								justifyContent: 'space-between',
+								boxShadow: isOpen
+									? '0 0 0 1px inset #000'
+									: '0 0 0 1px inset #949494',
+								color: isOpen ? '#000' : '#555',
+								paddingRight: '4px',
+							} }
+						>
+							{ currentPackageTab === TAB_NAMES.CUSTOM_PACKAGE &&
+								__( 'Custom package', 'woocommerce-shipping' ) }
+							{ currentPackageTab === TAB_NAMES.SAVED_TEMPLATES &&
+								__(
+									'Saved templates',
 									'woocommerce-shipping'
 								) }
-							</MenuItem>
-						</MenuGroup>
-						{ Object.keys( availableCarrierPackages ).length > 0 &&
-							Object.keys( availableCarrierPackages ).map(
-								( provider: string ) => (
-									<MenuGroup
-										key={ provider }
-										label={
-											CARRIER_ID_TO_NAME[
-												provider as keyof typeof CARRIER_ID_TO_NAME
-											]
+							{ currentPackageTab === TAB_NAMES.CARRIER_PACKAGE &&
+								selectedPackage && (
+									<PackageLine
+										provider={
+											getSelectedCarrierIdFromPackage(
+												availableCarrierPackages,
+												selectedPackage.id
+											) ?? ''
 										}
-									>
-										{ Object.keys(
-											availableCarrierPackages[ provider ]
-										).map( ( pkgType ) => {
-											const pkgDefinitions =
+										pkg={ selectedPackage as PackageType }
+									/>
+								) }
+						</Button>
+					);
+				} }
+				renderContent={ ( { onClose } ) => (
+					<Scrollable style={ { maxHeight: '300px' } }>
+						<Flex
+							direction={ 'column' }
+							style={ {
+								width: 'min-content',
+							} }
+							gap={ 0 }
+						>
+							<MenuGroup>
+								<MenuItem
+									onClick={ () => {
+										setCurrentPackageTab(
+											TAB_NAMES.CUSTOM_PACKAGE
+										);
+										onClose();
+									} }
+									role="menuitemradio"
+									isSelected={
+										currentPackageTab ===
+										TAB_NAMES.CUSTOM_PACKAGE
+									}
+								>
+									{ __(
+										'Custom package',
+										'woocommerce-shipping'
+									) }
+								</MenuItem>
+							</MenuGroup>
+							{ Object.keys( availableCarrierPackages ).length >
+								0 &&
+								Object.keys( availableCarrierPackages ).map(
+									( provider: string ) => (
+										<MenuGroup
+											key={ provider }
+											label={
+												CARRIER_ID_TO_NAME[
+													provider as keyof typeof CARRIER_ID_TO_NAME
+												]
+											}
+										>
+											{ Object.keys(
 												availableCarrierPackages[
 													provider
-												][ pkgType ].definitions;
-											return (
-												<section key={ pkgType }>
-													{ pkgDefinitions.map(
-														(
-															pkg: PackageType & {
-																maxWeight?: number;
-															}
-														) => (
-															<MenuItem
-																key={ pkg.id }
-																onClick={ () => {
-																	setSelectedPackage?.(
-																		pkg
-																	);
-																	setCurrentPackageTab(
-																		TAB_NAMES.CARRIER_PACKAGE
-																	);
-																	onClose();
-																} }
-																role="menuitemradio"
-																icon={
-																	currentPackageTab ===
-																		TAB_NAMES.CARRIER_PACKAGE &&
-																	selectedPackage?.id ===
-																		pkg.id
-																		? check
-																		: undefined
+												]
+											).map( ( pkgType ) => {
+												const pkgDefinitions =
+													availableCarrierPackages[
+														provider
+													][ pkgType ].definitions;
+												return (
+													<section key={ pkgType }>
+														{ pkgDefinitions.map(
+															(
+																pkg: PackageType & {
+																	maxWeight?: number;
 																}
-																iconPosition="right"
-																isSelected={
-																	currentPackageTab ===
-																		TAB_NAMES.CARRIER_PACKAGE &&
-																	selectedPackage?.id ===
+															) => (
+																<MenuItem
+																	key={
 																		pkg.id
-																}
-															>
-																<PackageLine
-																	provider={
-																		provider
 																	}
-																	pkg={ pkg }
-																/>
-															</MenuItem>
-														)
-													) }
-												</section>
-											);
-										} ) }
-									</MenuGroup>
-								)
-							) }
-						{ /*<MenuGroup>
+																	onClick={ () => {
+																		setSelectedPackage?.(
+																			pkg
+																		);
+																		setCurrentPackageTab(
+																			TAB_NAMES.CARRIER_PACKAGE
+																		);
+																		onClose();
+																	} }
+																	role="menuitemradio"
+																	icon={
+																		currentPackageTab ===
+																			TAB_NAMES.CARRIER_PACKAGE &&
+																		selectedPackage?.id ===
+																			pkg.id
+																			? check
+																			: undefined
+																	}
+																	iconPosition="right"
+																	isSelected={
+																		currentPackageTab ===
+																			TAB_NAMES.CARRIER_PACKAGE &&
+																		selectedPackage?.id ===
+																			pkg.id
+																	}
+																>
+																	<PackageLine
+																		provider={
+																			provider
+																		}
+																		pkg={
+																			pkg
+																		}
+																	/>
+																</MenuItem>
+															)
+														) }
+													</section>
+												);
+											} ) }
+										</MenuGroup>
+									)
+								) }
+							{ /*<MenuGroup>
 							<MenuItem
 								onClick={ () => {
 									setCurrentPackageTab(
@@ -253,10 +267,11 @@ const PackageTypeSelect = ( {
 								) }
 							</MenuItem>
 						</MenuGroup>*/ }
-					</Flex>
-				</Scrollable>
-			) }
-		/>
+						</Flex>
+					</Scrollable>
+				) }
+			/>
+		</Flex>
 	);
 };
 

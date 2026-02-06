@@ -123,7 +123,7 @@ export const validatePhone = ( {
 }: AddressValidationInput ): AddressValidationInput => {
 	const localErrors = createLocalErrors();
 
-	const { phone } = values;
+	const { phone, country } = values;
 
 	if ( ! phone ) {
 		localErrors.phone = __(
@@ -157,9 +157,14 @@ export const validatePhone = ( {
 		const digitsOnly = trimmedPhone.replace( /\D/g, '' );
 
 		// Check if we have exactly 10 digits, or 11 digits starting with 1 (US country code)
-		const isValid =
+		let isValid =
 			digitsOnly.length === 10 ||
 			( digitsOnly.length === 11 && digitsOnly.startsWith( '1' ) );
+
+		// Check if we have at least 7 digits for other countries
+		if ( country.toUpperCase() !== 'US' ) {
+			isValid = digitsOnly.length >= 7;
+		}
 
 		if ( ! isValid ) {
 			localErrors.phone = __(

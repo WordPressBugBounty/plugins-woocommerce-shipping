@@ -32,9 +32,6 @@ export const CarrierFilter = ( {
 		const newSelections = select
 			? [ ...selections, carrier ]
 			: selections.filter( ( c ) => c !== carrier );
-		if ( ! nextDesign && newSelections.length === 1 && ! select ) {
-			return;
-		}
 		setSelections( newSelections );
 		if ( nextDesign ) {
 			filterToCarriers( newSelections );
@@ -76,7 +73,7 @@ export const CarrierFilter = ( {
 				>
 					{ selections.length === 0 ||
 					selections.length === carriers.length
-						? __( 'All Carriers', 'woocommerce-shipping' )
+						? __( 'All carriers', 'woocommerce-shipping' )
 						: selections
 								.map(
 									( carrierId ) =>
@@ -100,7 +97,7 @@ export const CarrierFilter = ( {
 							onChange={ toggleAll }
 							checked={ areAllSelected() }
 							label={ __(
-								'All Carriers',
+								'All carriers',
 								'woocommerce-shipping'
 							) }
 							__nextHasNoMarginBottom={ true }
@@ -171,10 +168,6 @@ export const CarrierFilter = ( {
 								</>
 							}
 							__nextHasNoMarginBottom={ true }
-							disabled={
-								selections.length === 1 &&
-								selections.includes( id )
-							}
 						/>
 					) ) }
 					<Button

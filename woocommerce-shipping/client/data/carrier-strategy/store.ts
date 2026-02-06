@@ -9,7 +9,7 @@ const resolvers = {};
 
 export const createStore = () =>
 	createReduxStore( CARRIER_STRATEGY_STORE_NAME, {
-		reducer: carrierStrategyReducer,
+		reducer: carrierStrategyReducer(),
 		actions,
 		selectors,
 		controls: wpControls,

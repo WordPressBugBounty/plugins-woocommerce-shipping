@@ -9,6 +9,9 @@ use Automattic\WCShipping\Connect\WC_Connect_Account_Settings;
 use Automattic\WCShipping\Connect\WC_Connect_Service_Schemas_Store;
 use Automattic\WCShipping\Connect\WC_Connect_Utils;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 
 class ViewService {
 

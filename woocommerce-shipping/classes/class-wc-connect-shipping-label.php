@@ -581,6 +581,6 @@ class WC_Connect_Shipping_Label {
 			$this
 		);
 
-		do_action( 'enqueue_wcshipping_script', 'woocommerce-shipping-create-shipping-label', $payload );
+		do_action( 'wcshipping_enqueue_script', 'woocommerce-shipping-create-shipping-label', $payload );
 	}
 }

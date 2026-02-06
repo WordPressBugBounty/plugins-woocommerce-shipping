@@ -116,6 +116,10 @@ class LabelRateRESTController extends WCShippingRESTController {
 					),
 				),
 			),
+			'is_return'        => array(
+				'type'        => 'boolean',
+				'description' => __( 'Define label as a return label. This will reverse the to and from addresses.', 'woocommerce-shipping' ),
+			),
 		);
 	}
 

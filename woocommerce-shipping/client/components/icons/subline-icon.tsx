@@ -1,4 +1,4 @@
-const subline = (
+export const subline = (
 	<svg
 		width="16"
 		height="16"
@@ -12,4 +12,3 @@ const subline = (
 		/>
 	</svg>
 );
-export default subline;

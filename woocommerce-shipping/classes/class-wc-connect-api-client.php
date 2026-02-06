@@ -202,6 +202,26 @@ abstract class WC_Connect_API_Client {
 	}
 
 	/**
+	 * Create a USPS ScanForm from label IDs.
+	 *
+	 * @param array $body Request body containing label_ids.
+	 * @return object|WP_Error Response from server with ScanForm data.
+	 */
+	public function send_scan_form( $body ) {
+		return $this->request( 'POST', '/shipping/scan-form', $body );
+	}
+
+	/**
+	 * Review label IDs before creating a ScanForm.
+	 *
+	 * @param array $body Request body containing label_ids.
+	 * @return object|WP_Error Response with eligible, already_scanned, not_found, and invalid_site arrays.
+	 */
+	public function review_scan_form( $body ) {
+		return $this->request( 'POST', '/shipping/scan-form/review', $body );
+	}
+
+	/**
 	 * Asks the WooCommerce Shipping server for an array of payment methods
 	 *
 	 * @return mixed|WP_Error
@@ -299,6 +319,17 @@ abstract class WC_Connect_API_Client {
 	 */
 	public function get_labels_print_pdf( $request ) {
 		return $this->request( 'POST', 'shipping/labels/print', $request );
+	}
+
+	/**
+	 * Gets a PDF of the packing slip
+	 *
+	 * @param $request
+	 *
+	 * @return object|WP_Error
+	 */
+	public function get_packing_slip_pdf( $request ) {
+		return $this->request( 'POST', 'shipping/packing-slip/pdf', $request );
 	}
 
 	/**

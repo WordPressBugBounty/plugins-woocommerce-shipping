@@ -78,6 +78,36 @@ class LabelPrintController extends WCShippingRESTController {
 				),
 			)
 		);
+
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/packing-slip',
+			array(
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_packing_list_without_label' ),
+					'permission_callback' => array( $this, 'ensure_rest_permission' ),
+					'args'                => array(
+						'order_id' => array(
+							'type'              => 'integer',
+							'required'          => true,
+							'validate_callback' => function ( $param ) {
+								return is_numeric( $param );
+							},
+						),
+						'format'   => array(
+							'type'              => 'string',
+							'required'          => false,
+							'default'           => 'html',
+							'enum'              => array( 'html', 'pdf' ),
+							'validate_callback' => function ( $param ) {
+								return in_array( $param, array( 'html', 'pdf' ), true );
+							},
+						),
+					),
+				),
+			)
+		);
 	}
 
 	public function print_label( $request ) {
@@ -131,5 +161,24 @@ class LabelPrintController extends WCShippingRESTController {
 		}
 
 		return rest_ensure_response( $this->label_print_service->get_packing_list( $order_id, $label_id ) );
+	}
+
+	/**
+	 * Generate packing list without requiring a shipping label.
+	 *
+	 * @param WP_REST_Request $request REST request object.
+	 * @return WP_REST_Response|WP_Error REST response or error.
+	 */
+	public function get_packing_list_without_label( \WP_REST_Request $request ) {
+		try {
+			list( $order_id ) = $this->get_and_check_request_params( $request, array( 'order_id' ) );
+		} catch ( \RESTRequestException $error ) {
+			return rest_ensure_response( $error->get_error_response() );
+		}
+
+		$format = $request->get_param( 'format' ) ?? 'html';
+		$this->logger->log( "Packing slip request - Order ID: $order_id, Format: $format", __CLASS__ );
+
+		return rest_ensure_response( $this->label_print_service->get_packing_list_without_label( $order_id, $format ) );
 	}
 }

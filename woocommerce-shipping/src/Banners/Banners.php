@@ -6,6 +6,10 @@ use Automattic\WCShipping\Connect\WC_Connect_Service_Schemas_Store;
 use Automattic\WCShipping\Connect\WC_Connect_Logger;
 use Automattic\WCShipping\Tracks;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 class Banners {
 
 	/**
@@ -50,6 +54,10 @@ class Banners {
 	 */
 	protected function should_show_feature_banners() {
 		if ( ! is_admin() || ! current_user_can( 'manage_woocommerce' ) ) {
+			return false;
+		}
+
+		if ( defined( 'NEXT_ADMIN_PLUGIN_DIR' ) ) {
 			return false;
 		}
 
@@ -354,7 +362,7 @@ class Banners {
 					$image_url = plugins_url( 'images/' . $image_filename, WCSHIPPING_PLUGIN_FILE );
 				} else {
 					// Log if image not found (optional)
-					$this->logger->log( 'Feature banner image not found: ' . $image_filename, __FUNCTION__ );
+					$this->logger->log( 'Feature banner image not found: ' . $image_filename, __METHOD__ );
 				}
 			}
 			// if the banner is not a valid file name, we are keeping it as null to skip rendering

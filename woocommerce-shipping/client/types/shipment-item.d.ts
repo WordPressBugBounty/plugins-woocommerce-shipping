@@ -6,9 +6,10 @@ export type ShipmentSubItem = ShipmentItem & {
 };
 export type RawShipmentSubItem = `${ ShipmentItem.id }-sub-${ number }`;
 
-export interface ShipmentItem < SubItemType extends ShipmentSubItem | RawShipmentSubItem = ShipmentSubItem > extends OrderItem {
+export interface ShipmentItem<
+	SubItemType extends ShipmentSubItem | RawShipmentSubItem = ShipmentSubItem,
+> extends OrderItem {
 	subItems: SubItemType[];
-	id: number|string;
-	parentId?: number|string;
+	id: number | string;
+	parentId?: number | string;
 }
-

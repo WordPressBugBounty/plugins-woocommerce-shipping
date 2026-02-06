@@ -5,9 +5,28 @@ import type { Field } from '@wordpress/dataviews/wp';
 import { Badge } from '@woocommerce/components';
 import { OrderItem, ShipmentItem } from 'types';
 import { formatCurrency, getCurrencyObject } from '../utils';
-import { getWeightUnit } from 'utils';
+import { getCurrentOrder, getWeightUnit } from 'utils';
+/* eslint-disable-next-line import/named */
+import { OrderShippingLine } from '@woocommerce/data';
 
 type OrderItemType = OrderItem | ShipmentItem;
+
+interface ItemMetaDataType {
+	key: string;
+	label: string;
+	value: string;
+}
+
+interface TableDataType {
+	id: string | null;
+	name: string;
+	weight: string | null;
+	quantity: string | null;
+	total: string;
+	sku: string;
+	image?: string;
+	meta_data?: ItemMetaDataType[];
+}
 
 export const ItemsList = ( {
 	items,
@@ -58,6 +77,22 @@ export const ItemsList = ( {
 	};
 
 	const renderLineItemSummary = ( { item }: { item: OrderItemType } ) => {
+		if ( item.id === 'summary-row' || item.id === 'total-row' ) {
+			return (
+				<Text as="p" id={ item.id }>
+					{ item.name }
+				</Text>
+			);
+		} else if ( item.id.toString().startsWith( 'shipping-row' ) ) {
+			return (
+				<Text as="p" id={ String( item.id ) }>
+					{ item.name }{ ' ' }
+					<Text variant="muted" style={ { display: 'inline' } }>
+						({ item.sku })
+					</Text>
+				</Text>
+			);
+		}
 		return (
 			<div
 				style={ {
@@ -94,32 +129,99 @@ export const ItemsList = ( {
 						{ item.name }
 						{ renderLineItemMetaData( item ) }
 					</Text>
-					<Text as="p">{ item.sku }</Text>
+					<Text as="p" variant="muted">
+						{ item.sku }
+					</Text>
 				</div>
 			</div>
 		);
 	};
 
+	const tableData: TableDataType[] = [
+		...items.map( ( item ) => ( {
+			id: String( item.id ),
+			name: item.name,
+			weight: item.weight
+				? parseFloat( item.weight ) * item.quantity + ''
+				: '0',
+			quantity: String( item.quantity ),
+			total: item.total,
+			sku: item.sku,
+			image: ( item as any ).image, // eslint-disable-line @typescript-eslint/no-explicit-any
+			meta_data: ( item as any ).meta_data, // eslint-disable-line @typescript-eslint/no-explicit-any
+		} ) ),
+	];
+
+	// Append summary items to tableData as OrderItem type
+	tableData.push( {
+		id: 'summary-row',
+		name: __( 'In this shipment', 'woocommerce-shipping' ),
+		weight: items
+			.map( ( item ) =>
+				item.weight ? parseFloat( item.weight ) * item.quantity : 0
+			)
+			.reduce( ( total, weight ) => total + weight, 0 )
+			.toString(),
+		quantity: getCurrentOrder()?.total_line_items_quantity + ' items',
+		total: items
+			.map( ( item ) => parseFloat( item.total ) )
+			.reduce( ( a, b ) => a + b, 0 )
+			.toString(),
+		sku: '',
+	} as TableDataType );
+
+	const shippingLines = getCurrentOrder()
+		?.shipping_lines as OrderShippingLine[];
+	// Append shipping row
+	if ( shippingLines && shippingLines.length > 0 ) {
+		shippingLines.forEach(
+			( shippingLine: OrderShippingLine, index: number ) => {
+				tableData.push( {
+					id: `shipping-row-${ index }`,
+					name: shippingLine.method_title ?? '-',
+					weight: null,
+					quantity: null,
+					total: shippingLine.total || '0',
+					sku:
+						window.wcSettings?.shippingMethodTitles?.[
+							shippingLine.method_id
+						] ?? '',
+				} as TableDataType );
+			}
+		);
+	}
+
+	// Order total row
+	tableData.push( {
+		id: 'total-row',
+		name: __( 'Order total', 'woocommerce-shipping' ),
+		weight: null,
+		quantity: null,
+		total: (
+			items
+				.map( ( item ) => parseFloat( item.total ) )
+				.reduce( ( total, value ) => total + value, 0 ) +
+			parseFloat( getCurrentOrder().total_shipping || '0' )
+		).toString(),
+		sku: '',
+	} as TableDataType );
+
 	return (
-		<DataViews< OrderItemType >
+		<DataViews< TableDataType >
 			view={ {
 				type: 'table',
 				layout: {
 					styles: {
 						order_line_item_summary: {
 							align: 'start',
-							width: 'calc(100% - 210px)',
 						},
 						order_line_item_qty: {
-							width: '50px',
 							align: 'end',
 						},
 						order_line_item_weight: {
-							width: '85px',
 							align: 'end',
 						},
 						order_line_item_total: {
-							width: '75px',
 							align: 'end',
 						},
 					},
@@ -135,7 +237,7 @@ export const ItemsList = ( {
 				[
 					{
 						id: 'order_line_item_summary',
-						label: __( 'Items', 'woocommerce-shipping' ),
+						label: __( 'Products', 'woocommerce-shipping' ),
 						render: renderLineItemSummary,
 						enableSorting: false,
 						enableHiding: false,
@@ -147,7 +249,7 @@ export const ItemsList = ( {
 						type: 'text',
 						enableSorting: false,
 						enableHiding: false,
-						getValue: ( { item }: { item: OrderItemType } ) => {
+						getValue: ( { item }: { item: TableDataType } ) => {
 							return item.quantity;
 						},
 						filterBy: false,
@@ -158,10 +260,11 @@ export const ItemsList = ( {
 						type: 'text',
 						enableSorting: false,
 						enableHiding: false,
-						render: ( { item }: { item: OrderItemType } ) => {
-							const weight = item.weight
-								? parseFloat( item.weight )
-								: 0;
+						render: ( { item }: { item: TableDataType } ) => {
+							const weight = item.weight;
+							if ( weight === null ) {
+								return '';
+							}
 							const weightUnit = getWeightUnit();
 							return `${ weight } ${ weightUnit }`;
 						},
@@ -173,18 +276,28 @@ export const ItemsList = ( {
 						type: 'text',
 						enableSorting: false,
 						enableHiding: false,
-						getValue: ( { item }: { item: OrderItemType } ) => {
+						getValue: ( { item }: { item: TableDataType } ) => {
 							const currency = getCurrencyObject();
-							return formatCurrency(
-								parseFloat( item.total ),
-								currency.code
+							return (
+								<Text
+									variant={
+										item.id === 'total-row'
+											? undefined
+											: 'muted'
+									}
+								>
+									{ formatCurrency(
+										parseFloat( item.total ),
+										currency.code
+									) }
+								</Text>
 							);
 						},
 						filterBy: false,
 					},
-				] as Field< OrderItemType >[]
+				] as Field< TableDataType >[]
 			}
-			data={ items }
+			data={ tableData }
 			isLoading={ false }
 			onChangeView={ () => {} } // eslint-disable-line @typescript-eslint/no-empty-function
 			search={ false }
@@ -195,9 +308,33 @@ export const ItemsList = ( {
 				totalItems: items.length,
 				totalPages: 1,
 			} }
-			getItemId={ ( item: OrderItemType ) => String( item.id ) }
+			getItemId={ ( item: TableDataType ) => String( item.id ) }
 		>
-			<DataViews.Layout />
+			<style>
+				{ `
+				.wcship-items-data-view.dataviews-view-table thead
+				th:has(.dataviews-view-table-header-button)
+				.dataviews-view-table-header-button {
+					padding-left: 0;
+					padding-right: 0;
+				}
+				.wcship-items-data-view colgroup col:nth-child(1) {
+					width: 100% !important;
+				}
+				.wcship-items-data-view .dataviews-view-table__cell-content-wrapper:not(.dataviews-column-primary__media) {
+					min-width: 10ch !important;
+				}
+				.wcship-items-data-view tr:has(#summary-row).is-hovered,
+				.wcship-items-data-view tr:has(#shipping-row).is-hovered,
+				.wcship-items-data-view tr:has(#total-row).is-hovered {
+					background-color: transparent !important;
+				}
+				.wcship-items-data-view tr:has(#shipping-row) {
+					border-top: 0px solid transparent !important;
+				}
+				` }
+			</style>
+			<DataViews.Layout className="wcship-items-data-view" />
 		</DataViews>
 	);
 };

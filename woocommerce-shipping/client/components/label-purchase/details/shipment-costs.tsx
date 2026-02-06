@@ -14,10 +14,13 @@ import {
 	RateExtraOptions,
 	RateWithParent,
 } from 'types';
-import { extraRateTypeToTitle, filterToNonSignatureExtraOptions } from 'utils';
+import {
+	extraRateTypeToTitle,
+	filterToNonSignatureExtraOptions,
+	getPromoDiscount,
+} from 'utils';
 import { useLabelPurchaseContext } from 'context/label-purchase';
 import { Badge } from 'components/wp';
-import { getPromoDiscount } from 'utils';
 
 interface ExtraOptionLabelProps {
 	option: CamelCaseType< RateExtraOptionNames >;

@@ -186,6 +186,16 @@ export const ShippingRates = ( {
 					/>
 				</Flex>
 				<CarrierRates rates={ sortRates( getRates(), sortingBy ) } />
+				{ nextDesign && carriers.some( ( c ) => c.id === 'upsdap' ) ? (
+					<p className="upsdap-trademark-notice upsdap-trademark-notice--desktop">
+						{ __(
+							'UPS, the UPS brandmark, UPS Ready®, and the color brown are trademarks of United Parcel Service of America, Inc. All Rights Reserved.',
+							'woocommerce-shipping'
+						) }
+					</p>
+				) : (
+					<div></div>
+				) }
 			</Flex>
 		</Flex>
 	);

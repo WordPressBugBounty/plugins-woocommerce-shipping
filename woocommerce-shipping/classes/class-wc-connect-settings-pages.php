@@ -3,8 +3,13 @@ namespace Automattic\WCShipping\Connect;
 
 use Automattic\WCShipping\Carrier\CarrierStrategyService;
 use Automattic\WCShipping\DOM\Manipulation as DOM_Manipulation;
+use Automattic\WCShipping\FeatureFlags\FeatureFlags;
 use Automattic\WCShipping\OriginAddresses\OriginAddressService;
 use Automattic\WCShipping\Utils;
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 
 class WC_Connect_Settings_Pages {
 	/**
@@ -120,6 +125,7 @@ class WC_Connect_Settings_Pages {
 	public function output_shipping_settings_screen() {
 		// hiding the save button because the react container has its own.
 		global $hide_save_button;
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- WooCommerce global.
 		$hide_save_button = true;
 
 		if ( WC_Connect_Jetpack::is_offline_mode() ) {
@@ -165,8 +171,10 @@ class WC_Connect_Settings_Pages {
 		$extra_args['constants']          = Utils::get_constants_for_js();
 		$extra_args['accountSettings']    = $this->account_settings->get();
 		$extra_args['carrier_strategies'] = $this->carrier_strategy_service->get_strategies();
+		$extra_args['scanFormEnabled']    = FeatureFlags::is_scanform_enabled();
+
 		DOM_Manipulation::create_root_script_element( 'woocommerce-shipping-settings' );
 
-		do_action( 'enqueue_woocommerce_shipping_script', 'woocommerce-shipping-settings', $extra_args );
+		do_action( 'wcshipping_enqueue_script', 'woocommerce-shipping-settings', $extra_args );
 	}
 }

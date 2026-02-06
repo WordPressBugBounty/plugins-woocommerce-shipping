@@ -1,11 +1,12 @@
 import { isObject, mapValues } from 'lodash';
 import {
+	RateExtraOptions,
+	ShipmentRecord,
 	WCShippingAnalyticsConfig,
 	WCShippingConfig,
 	WCShippingConfigAccountSettings,
 } from 'types';
 import { camelCaseKeys } from 'utils';
-import { ShipmentRecord, RateExtraOptions } from 'types';
 
 export const getConfig = (): WCShippingConfig =>
 	( window.WCShipping_Config || {} ) as WCShippingConfig;
@@ -42,6 +43,11 @@ export const getSelectedHazmat = () =>
 
 export const getCustomsInformation = () =>
 	getConfig().shippingLabelData.storedData.customs_information;
+
+export const getStoredPackageDimensions = () => {
+	const config = getConfig();
+	return config?.shippingLabelData?.storedData?.package_dimensions;
+};
 
 export const getPluginRelativeDirectory = ( forWooCommerce = false ) =>
 	forWooCommerce

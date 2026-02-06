@@ -76,10 +76,12 @@ export const CustomPackage = withBoundary(
 			}
 		}, [ updateErrors, setErrors ] );
 
-		const invalidDimensionError = __(
-			'Invalid dimension value.',
-			'woocommerce-shipping'
-		);
+		const invalidDimensionError = nextDesign
+			? __(
+					'Invalid dimension value. Value should be a number greater than 0.',
+					'woocommerce-shipping'
+			  )
+			: __( 'Invalid dimension value.', 'woocommerce-shipping' );
 
 		const setErrorForInvalidDimension = ( value, fieldName ) => {
 			if ( ! [ 'width', 'height', 'length' ].includes( fieldName ) ) {
@@ -93,6 +95,8 @@ export const CustomPackage = withBoundary(
 					...errors,
 					[ fieldName ]: {
 						message: invalidDimensionError,
+						className:
+							'components-validated-control__indicator is-invalid',
 					},
 				} );
 			}
@@ -176,9 +180,10 @@ export const CustomPackage = withBoundary(
 			const {
 				type: responseType,
 				payload: { custom: updatedListOfPackages },
-			} = await dispatch( labelPurchaseStore ).saveCustomPackage(
-				rawPackageData
-			);
+			} =
+				await dispatch( labelPurchaseStore ).saveCustomPackage(
+					rawPackageData
+				);
 			setIsSaving( false );
 
 			// Bail the rest of the "save" logic if we have an error.
@@ -223,24 +228,41 @@ export const CustomPackage = withBoundary(
 			}
 		}, [ isSaved, setIsSaved, setTab ] );
 
-		const getControlProps = ( fieldName, className = '' ) => ( {
-			onChange: ( val ) => {
-				const { ...newErrors } = errors;
-				delete newErrors[ fieldName ];
-				setErrors( newErrors );
-				setData( { ...rawPackageData, [ fieldName ]: val } );
-				resetEssentialDetailsFocusArea();
-				setErrorForInvalidDimension( val, fieldName );
-			},
-			value: rawPackageData[ fieldName ],
-			className: clsx( className, { 'has-error': errors[ fieldName ] } ),
-			onValidate: ( value ) => {
-				setErrorForInvalidDimension( value, fieldName );
-			},
-			help: errors[ fieldName ]?.message
-				? errors[ fieldName ].message
-				: [],
-		} );
+		const getControlProps = ( fieldName, className = '' ) => {
+			const error = errors[ fieldName ];
+			let helpContent = [];
+
+			if ( error?.message ) {
+				if ( error.className ) {
+					helpContent = (
+						<span className={ error.className }>
+							{ error.message }
+						</span>
+					);
+				} else {
+					helpContent = error.message;
+				}
+			}
+
+			return {
+				onChange: ( val ) => {
+					const { ...newErrors } = errors;
+					delete newErrors[ fieldName ];
+					setErrors( newErrors );
+					setData( { ...rawPackageData, [ fieldName ]: val } );
+					resetEssentialDetailsFocusArea();
+					setErrorForInvalidDimension( val, fieldName );
+				},
+				value: rawPackageData[ fieldName ],
+				className: clsx( className, {
+					'has-error': errors[ fieldName ],
+				} ),
+				onValidate: ( value ) => {
+					setErrorForInvalidDimension( value, fieldName );
+				},
+				help: helpContent,
+			};
+		};
 
 		const getRates = useCallback( async () => {
 			const tracksProperties = {
@@ -300,37 +322,6 @@ export const CustomPackage = withBoundary(
 			rawPackageData.boxWeight,
 			hasFormErrors,
 		] );
-
-		const packageWeight = getShipmentTotalWeight();
-
-		// Fetch rates automatically when dimensions or weight changes and we have no errors.
-		useEffect( () => {
-			if ( ! nextDesign ) {
-				return;
-			}
-			const dimensions = [
-				rawPackageData.width,
-				rawPackageData.height,
-				rawPackageData.length,
-			];
-			if (
-				dimensions.some( ( dim ) => dim <= 0 ) ||
-				packageWeight <= 0
-			) {
-				return;
-			}
-			if ( hasFormErrors() || hasCustomsErrors() ) {
-				return;
-			}
-			getRates();
-		}, [
-			nextDesign,
-			rawPackageData.type,
-			rawPackageData.width,
-			rawPackageData.height,
-			rawPackageData.length,
-			packageWeight,
-		] ); // eslint-disable-line react-hooks/exhaustive-deps
 
 		return (
 			<Flex
@@ -429,6 +420,7 @@ export const CustomPackage = withBoundary(
 								}
 								type="number"
 								min={ 0 }
+								placeholder="0"
 								{ ...getControlProps( 'length' ) }
 								__next40pxDefaultSize={ true }
 							/>
@@ -451,6 +443,7 @@ export const CustomPackage = withBoundary(
 									</InputControlSuffixWrapper>
 								}
 								min={ 0 }
+								placeholder="0"
 								{ ...getControlProps( 'width' ) }
 								__next40pxDefaultSize={ true }
 							/>
@@ -473,6 +466,7 @@ export const CustomPackage = withBoundary(
 								}
 								type="number"
 								min={ 0 }
+								placeholder="0"
 								{ ...getControlProps( 'height' ) }
 								__next40pxDefaultSize={ true }
 							/>
@@ -579,7 +573,7 @@ export const CustomPackage = withBoundary(
 				<FlexItem>
 					<Flex align="flex-end" gap={ nextDesign ? 0 : 6 }>
 						<TotalWeight
-							packageWeight={ rawPackageData?.boxWeight || 0 }
+							packageWeight={ rawPackageData?.boxWeight ?? 0 }
 						/>
 						{ ! nextDesign && (
 							<GetRatesButton

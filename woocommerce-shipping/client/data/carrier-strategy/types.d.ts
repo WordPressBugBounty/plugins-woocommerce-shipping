@@ -1,4 +1,4 @@
-import { Action } from 'types';
+import { Action, SimpleAction } from 'types';
 import {
 	CARRIER_STRATEGY_UPSDAP_UPDATE,
 	CARRIER_STRATEGY_UPSDAP_UPDATE_FAILED,
@@ -13,7 +13,7 @@ export interface CarrierStrategyUPSDAPUpdate extends Action {
 }
 
 export interface CarrierStrategyUPSDAPUpdateFailed<
-	ET = Record< string, string >
+	ET = Record< string, string >,
 > {
 	type: CARRIER_STRATEGY_UPSDAP_UPDATE_FAILED;
 	payload: ET;
@@ -21,3 +21,7 @@ export interface CarrierStrategyUPSDAPUpdateFailed<
 
 export type CarrierStrategyActions = CarrierStrategyUPSDAPUpdate &
 	CarrierStrategyUPSDAPUpdateFailed;
+
+export interface StateResetAction extends SimpleAction {
+	type: typeof STATE_RESET;
+}

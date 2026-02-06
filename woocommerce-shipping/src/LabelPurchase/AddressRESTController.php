@@ -149,6 +149,15 @@ class AddressRESTController extends WCShippingRESTController {
 			return rest_ensure_response( $error->get_error_response() );
 		}
 
+		/**
+		 * Always set is_approved to true when updating an origin address.
+		 * Note: is_verified indicates whether the verified address is being used.
+		 */
+		$origin = array_merge(
+			$origin,
+			array( 'is_approved' => true )
+		);
+
 		return rest_ensure_response( $this->normalization_service->update_origin_address( $origin ) );
 	}
 

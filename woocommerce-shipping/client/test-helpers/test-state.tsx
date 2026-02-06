@@ -71,6 +71,7 @@ export const ProvideTestState = ( {
 		totalWeight,
 		customs,
 		getShipmentOrigin,
+		getCurrentShipmentIsReturn: () => false,
 		currentPackageTab: TAB_NAMES.CUSTOM_PACKAGE,
 		getCurrentShipmentDate,
 	} );
@@ -93,6 +94,7 @@ export const ProvideTestState = ( {
 					0: {},
 				},
 				getShipmentOrigin,
+				getCurrentShipmentIsReturn: () => false,
 				selections: {
 					0: [ { id: 0 } ],
 				},

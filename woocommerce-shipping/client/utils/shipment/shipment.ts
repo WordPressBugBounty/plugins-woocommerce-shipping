@@ -362,7 +362,29 @@ export const removeEmptyShipments = ( shipments: Shipments ): Shipments => {
  * a subItem has a sibling in the same shipment
  *
  * @param {Object} shipments
- * @return {Object} normalizedShipments
+ * @return {Object} { normalizedShipments, keyMapping }
  */
-export const normalizeShipments = ( shipments: Shipments ): Shipments =>
-	normalizeSubItems( removeEmptyShipments( shipments ) );
+export const normalizeShipments = (
+	shipments: Shipments
+): {
+	normalizedShipments: Shipments;
+	keyMapping: Record< string, string >;
+} => {
+	// First remove empty shipments and get the key mapping
+	const filteredShipments = Object.entries( shipments ).filter(
+		( [ , shipmentItems ] ) => shipmentItems.length > 0
+	);
+
+	const keyMapping: Record< string, string > = {};
+	const normalizedIndices: Shipments = {};
+
+	filteredShipments.forEach( ( [ originalKey, shipmentItems ], index ) => {
+		const newKey = index.toString();
+		keyMapping[ originalKey ] = newKey;
+		normalizedIndices[ newKey ] = shipmentItems;
+	} );
+
+	const normalizedShipments = normalizeSubItems( normalizedIndices );
+
+	return { normalizedShipments, keyMapping };
+};

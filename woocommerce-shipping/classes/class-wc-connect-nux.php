@@ -7,6 +7,10 @@ use Jetpack_Connection_Banner;
 use Automattic\WCShipping\Utils;
 use WP_Screen;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 class WC_Connect_Nux {
 	/**
 	 * Jetpack status constants.

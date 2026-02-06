@@ -12,6 +12,9 @@ declare( strict_types=1 );
 
 namespace Automattic\WCShipping\Fulfillments;
 
+use Automattic\WCShipping\Utils;
+use Automattic\WCShipping\Fulfillments\FulfillmentNotificationType;
+
 defined( 'ABSPATH' ) || exit;
 
 // Only extend the parent class if it exists (requires WooCommerce 10.1+)
@@ -25,6 +28,13 @@ if ( class_exists( '\Automattic\WooCommerce\Internal\Fulfillments\Fulfillment' )
 	 * @since 1.9.0
 	 */
 	class ShippingFulfillment extends \Automattic\WooCommerce\Internal\Fulfillments\Fulfillment {
+
+		/**
+		 * The type of notification to send to the customer.
+		 *
+		 * @var string One of FulfillmentNotificationType constants, or FulfillmentNotificationType::NONE for no notification.
+		 */
+		private $notify_customer = FulfillmentNotificationType::NONE;
 
 		/**
 		 * Get the tracking number for this shipping fulfillment.
@@ -148,10 +158,15 @@ if ( class_exists( '\Automattic\WooCommerce\Internal\Fulfillments\Fulfillment' )
 			// Store the main labels array
 			$this->update_meta_data( '_shipping_labels', $labels );
 
-			// Store individual label_id entries for fast lookup
+			// Store individual label_id entries for fast lookup and set tracking metadata
 			foreach ( $labels as $label ) {
 				if ( isset( $label['label_id'] ) ) {
 					$this->add_meta_data( '_shipping_label_id', $label['label_id'] );
+
+					// Set tracking metadata for purchased labels
+					if ( isset( $label['status'] ) && 'PURCHASED' === $label['status'] ) {
+						$this->set_tracking_metadata( $label );
+					}
 				}
 			}
 		}
@@ -427,6 +442,54 @@ if ( class_exists( '\Automattic\WooCommerce\Internal\Fulfillments\Fulfillment' )
 		}
 
 		/**
+		 * Set tracking metadata for a label.
+		 * This includes tracking number, tracking URL, and shipment provider.
+		 *
+		 * @param array $label_data The label data containing tracking information.
+		 * @return void
+		 */
+		public function set_tracking_metadata( array $label_data ): void {
+			// Set tracking number if available
+			if ( isset( $label_data['tracking'] ) ) {
+				$this->add_meta_data( '_tracking_number', $label_data['tracking'] );
+
+				// Calculate and set tracking URL if we have carrier_id
+				if ( isset( $label_data['carrier_id'] ) && ! empty( $label_data['carrier_id'] ) ) {
+					$full_tracking_url = Utils::get_tracking_url( $label_data['carrier_id'], $label_data['tracking'] );
+					if ( ! empty( $full_tracking_url ) ) {
+						$this->add_meta_data( '_tracking_url', $full_tracking_url );
+					}
+				}
+			}
+
+			$shipment_provider = '';
+			if ( isset( $label_data['carrier_id'] ) && ! empty( $label_data['carrier_id'] ) ) {
+				$shipment_provider = $label_data['carrier_id'] === 'upsdap' ? 'ups' : $label_data['carrier_id'];
+			}
+
+			if ( ! empty( $shipment_provider ) ) {
+				$this->add_meta_data( '_shipment_provider', $shipment_provider );
+			}
+		}
+
+		/**
+		 * Check if a label's status will change to a specific target status.
+		 *
+		 * @param string $label_id The ID of the label to check.
+		 * @param array  $new_label_data The new label data being applied.
+		 * @param string $target_status The status to check for (default: 'PURCHASED').
+		 * @return bool True if status will change to the target status, false otherwise.
+		 */
+		public function will_status_change( string $label_id, array $new_label_data, string $target_status = 'PURCHASED' ): bool {
+			$old_label  = $this->get_label_by_id( $label_id );
+			$old_status = isset( $old_label['status'] ) ? $old_label['status'] : '';
+			$new_status = isset( $new_label_data['status'] ) ? $new_label_data['status'] : '';
+
+			// Check if status is transitioning TO the target status
+			return $old_status !== $target_status && $new_status === $target_status;
+		}
+
+		/**
 		 * Clean up individual label_id meta entries.
 		 * Removes all meta entries with '_shipping_label_id' key.
 		 *
@@ -434,6 +497,90 @@ if ( class_exists( '\Automattic\WooCommerce\Internal\Fulfillments\Fulfillment' )
 		 */
 		private function cleanup_individual_label_entries(): void {
 			$this->delete_meta_data( '_shipping_label_id' );
+		}
+
+		/**
+		 * Get the notification type to send to the customer.
+		 *
+		 * @return string One of FulfillmentNotificationType constants, or FulfillmentNotificationType::NONE for no notification.
+		 */
+		public function get_notify_customer(): string {
+			return $this->notify_customer ?? FulfillmentNotificationType::NONE;
+		}
+
+		/**
+		 * Set the notification type to send to the customer.
+		 *
+		 * @param string|null $notification_type One of FulfillmentNotificationType constants, or null for no notification (converted to NONE).
+		 * @return void
+		 * @throws \InvalidArgumentException If the notification type is invalid.
+		 */
+		public function set_notify_customer( ?string $notification_type ): void {
+			if ( null !== $notification_type && ! FulfillmentNotificationType::is_valid( $notification_type ) ) {
+				throw new \InvalidArgumentException(
+					sprintf(
+						'Invalid notification type: %s. Must be one of: %s',
+						esc_html( $notification_type ),
+						esc_html( implode( ', ', FulfillmentNotificationType::get_all() ) )
+					)
+				);
+			}
+			$this->notify_customer = $notification_type ?? FulfillmentNotificationType::NONE;
+		}
+
+		/**
+		 * Save the fulfillment and trigger notifications if needed.
+		 *
+		 * @return int The ID of the saved fulfillment.
+		 */
+		public function save() {
+			$result          = parent::save();
+			$notify_customer = $this->get_notify_customer();
+
+			if ( $this->get_is_fulfilled() && FulfillmentNotificationType::NONE !== $notify_customer ) {
+				$order_id = (int) $this->get_entity_id();
+				$order    = wc_get_order( $order_id );
+
+				if ( FulfillmentNotificationType::CREATED === $notify_customer ) {
+					/**
+					 * Trigger the fulfillment created notification.
+					 */
+					do_action( 'woocommerce_fulfillment_created_notification', $order_id, $this, $order );
+				} elseif ( FulfillmentNotificationType::UPDATED === $notify_customer ) {
+					/**
+					 * Trigger the fulfillment updated notification.
+					 */
+					do_action( 'woocommerce_fulfillment_updated_notification', $order_id, $this, $order );
+				}
+
+				// This prevents consecutive notifications. It leaves the control to the invoking code.
+				$this->set_notify_customer( FulfillmentNotificationType::NONE );
+			}
+
+			return $result;
+		}
+
+		/**
+		 * Delete the fulfillment and trigger notifications if needed.
+		 *
+		 * @param bool $force_delete Whether to force delete (bypass trash).
+		 * @return bool Result of the delete operation.
+		 */
+		public function delete( $force_delete = false ) {
+			$notify_customer = $this->get_notify_customer();
+			$order_id        = (int) $this->get_entity_id();
+			$is_fulfilled    = $this->get_is_fulfilled();
+
+			$result = parent::delete( $force_delete );
+
+			if ( $result && $is_fulfilled && FulfillmentNotificationType::DELETED === $notify_customer ) {
+				/**
+				 * Trigger the fulfillment deleted notification on deleting a fulfilled fulfillment.
+				 */
+				do_action( 'woocommerce_fulfillment_deleted_notification', $order_id, $this, wc_get_order( $order_id ) );
+			}
+
+			return $result;
 		}
 
 		/**

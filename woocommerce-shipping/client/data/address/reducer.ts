@@ -14,6 +14,7 @@ import {
 	ADDRESS_NORMALIZATION_FAILED,
 	DELETE_ORIGIN_ADDRESS,
 	RESET_ADDRESS_NORMALIZATION,
+	STATE_RESET,
 	UPDATE_SHIPMENT_ADDRESS,
 	UPDATE_SHIPMENT_ADDRESS_FAILED,
 	VERIFY_ORDER_SHIPPING_ADDRESS,
@@ -37,35 +38,62 @@ import { resetAddressNormalizationResponse } from './actions';
 import { AddressState } from '../types';
 
 export const getReducer = ( withDestination: boolean ) => {
-	const defaultState: AddressState = {
-		origin: {
-			addresses: getOriginAddresses(),
-			address: getFirstSelectableOriginAddress(),
-			isVerified: getFirstSelectableOriginAddress()?.isVerified,
-			isAddressVerificationInProgress: false,
-			normalizedAddress: null,
-			submittedAddress: null,
-			isTrivialNormalization: null,
-			addressNeedsConfirmation: false,
-			formErrors: {},
-		},
-		storeOrigin: getStoreOrigin(),
-	} as const;
+	const getDefaultState = (): AddressState => {
+		const originAddresses = getOriginAddresses();
+		const firstSelectableAddress = getFirstSelectableOriginAddress();
 
-	if ( withDestination ) {
-		defaultState.destination = {
-			address: getCurrentOrderShipTo(),
-			isVerified: getIsDestinationVerified(),
-			isAddressVerificationInProgress: false,
-			normalizedAddress: null,
-			submittedAddress: null,
-			isTrivialNormalization: null,
-			addressNeedsConfirmation: false,
-			formErrors: {},
+		// Provide a default empty address if none exist
+		const defaultOriginAddress = firstSelectableAddress ?? {
+			id: '',
+			name: '',
+			address: '',
+			address1: '',
+			address2: '',
+			city: '',
+			state: '',
+			postcode: '',
+			country: getStoreOrigin().country,
+			phone: '',
+			email: '',
+			firstName: '',
+			lastName: '',
+			company: '',
+			isVerified: false,
+			defaultAddress: false,
 		};
-	}
 
-	const addressReducer = createReducer( defaultState )
+		const defaultState: AddressState = {
+			origin: {
+				addresses: originAddresses,
+				address: defaultOriginAddress,
+				isVerified: defaultOriginAddress.isVerified ?? false,
+				isAddressVerificationInProgress: false,
+				normalizedAddress: null,
+				submittedAddress: null,
+				isTrivialNormalization: null,
+				addressNeedsConfirmation: false,
+				formErrors: {},
+			},
+			storeOrigin: getStoreOrigin(),
+		} as const;
+
+		if ( withDestination ) {
+			defaultState.destination = {
+				address: getCurrentOrderShipTo(),
+				isVerified: getIsDestinationVerified(),
+				isAddressVerificationInProgress: false,
+				normalizedAddress: null,
+				submittedAddress: null,
+				isTrivialNormalization: null,
+				addressNeedsConfirmation: false,
+				formErrors: {},
+			};
+		}
+
+		return defaultState;
+	};
+
+	const addressReducer = createReducer( getDefaultState() )
 		.on(
 			ADDRESS_NORMALIZATION,
 			(
@@ -148,6 +176,26 @@ export const getReducer = ( withDestination: boolean ) => {
 							if ( originAddress.id === address.id ) {
 								return address;
 							}
+							// Clear defaultAddress from other addresses if the updated address is being set as default
+							if (
+								address.defaultAddress &&
+								originAddress.defaultAddress
+							) {
+								return {
+									...originAddress,
+									defaultAddress: false,
+								};
+							}
+							// Clear defaultReturnAddress from other addresses if the updated address is being set as default return
+							if (
+								address.defaultReturnAddress &&
+								originAddress.defaultReturnAddress
+							) {
+								return {
+									...originAddress,
+									defaultReturnAddress: false,
+								};
+							}
 							return originAddress;
 						}
 					);
@@ -189,12 +237,24 @@ export const getReducer = ( withDestination: boolean ) => {
 		.on(
 			ADD_ORIGIN_ADDRESS,
 			( state, { payload: { address } }: AddOriginAddressAction ) => {
-				const existingAddresses = address.defaultAddress
-					? state.origin.addresses.map( ( origin ) => ( {
-							...origin,
-							defaultAddress: false,
-					  } ) )
-					: state.origin.addresses;
+				let existingAddresses = state.origin.addresses;
+
+				// Clear defaultAddress from other addresses if the new address is being set as default
+				if ( address.defaultAddress ) {
+					existingAddresses = existingAddresses.map( ( origin ) => ( {
+						...origin,
+						defaultAddress: false,
+					} ) );
+				}
+
+				// Clear defaultReturnAddress from other addresses if the new address is being set as default return
+				if ( address.defaultReturnAddress ) {
+					existingAddresses = existingAddresses.map( ( origin ) => ( {
+						...origin,
+						defaultReturnAddress: false,
+					} ) );
+				}
+
 				return {
 					...state,
 					origin: {
@@ -291,6 +351,9 @@ export const getReducer = ( withDestination: boolean ) => {
 				};
 			}
 		)
+		.on( STATE_RESET, () => ( {
+			...getDefaultState(),
+		} ) )
 		.bind< AddressActions >();
 
 	return addressReducer;

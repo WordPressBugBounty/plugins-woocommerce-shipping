@@ -5,7 +5,9 @@ namespace Automattic\WCShipping\Connect;
 use Automattic\WCShipping\Packages\PackageRepository;
 use Automattic\WCShipping\Packages\PackageValidationException;
 use Automattic\WCShipping\Fulfillments\ShippingFulfillmentsDataStore;
+use Automattic\WCShipping\Fulfillments\FulfillmentNotificationType;
 use Automattic\WCShipping\Utils;
+use Automattic\WCShipping\Integrations\Garden;
 
 use WC_Order;
 use WC_Cache_Helper;
@@ -123,6 +125,14 @@ class WC_Connect_Service_Settings_Store {
 			$result['remember_last_used_shipping_date'] = true;
 		}
 
+		if ( ! isset( $result['return_to_sender_default'] ) ) {
+			$result['return_to_sender_default'] = false;
+		}
+
+		if ( Utils::is_next() ) {
+			$result['selected_payment_method_id'] = 0;
+		}
+
 		return $result;
 	}
 
@@ -136,7 +146,7 @@ class WC_Connect_Service_Settings_Store {
 	public function update_account_settings( $settings ) {
 		// simple validation for now.
 		if ( ! is_array( $settings ) ) {
-			$this->logger->log( 'Array expected but not received', __FUNCTION__ );
+			$this->logger->log( 'Array expected but not received', __METHOD__ );
 			return false;
 
 		}
@@ -172,6 +182,7 @@ class WC_Connect_Service_Settings_Store {
 			'checkout_address_validation',
 			'automatically_open_print_dialog',
 			'remember_last_used_shipping_date',
+			'return_to_sender_default',
 		);
 
 		$validated_settings = array();
@@ -189,6 +200,7 @@ class WC_Connect_Service_Settings_Store {
 		$validated_settings['checkout_address_validation']      = isset( $validated_settings['checkout_address_validation'] ) && $validated_settings['checkout_address_validation'] ? true : false;
 		$validated_settings['automatically_open_print_dialog']  = isset( $validated_settings['automatically_open_print_dialog'] ) && $validated_settings['automatically_open_print_dialog'] ? true : false;
 		$validated_settings['remember_last_used_shipping_date'] = isset( $validated_settings['remember_last_used_shipping_date'] ) && $validated_settings['remember_last_used_shipping_date'] ? true : false;
+		$validated_settings['return_to_sender_default']         = isset( $validated_settings['return_to_sender_default'] ) && $validated_settings['return_to_sender_default'] ? true : false;
 		$saved = WC_Connect_Options::update_option( 'account_settings', $validated_settings );
 
 		/**
@@ -202,8 +214,12 @@ class WC_Connect_Service_Settings_Store {
 	}
 
 	public function get_selected_payment_method_id() {
-		$account_settings = $this->get_account_settings();
-		return intval( $account_settings['selected_payment_method_id'] );
+		if ( Garden::is_config_enabled() ) {
+			return Garden::get_selected_payment_method_id();
+		} else {
+			$account_settings = $this->get_account_settings();
+			return intval( $account_settings['selected_payment_method_id'] );
+		}
 	}
 
 	public function set_selected_payment_method_id( $new_payment_method_id ) {
@@ -372,8 +388,8 @@ class WC_Connect_Service_Settings_Store {
 	 * Returns labels for the specific order ID
 	 *
 	 * @param $order_id
-	 * @param bool     $use_legacy_key should the legacy key be used to retrieve the order labels, this is most useful for
-	 *     migration purposes.
+	 * @param bool $use_legacy_key should the legacy key be used to retrieve the order labels, this is most useful for
+	 * migration purposes.
 	 *
 	 * @return array
 	 */
@@ -412,6 +428,17 @@ class WC_Connect_Service_Settings_Store {
 			$label_as_array       = (array) $new_label_data;
 			$shipping_fulfillment = $this->shipping_fulfillments_data_store->get_by_label_id( $label_as_array['label_id'] );
 			if ( $shipping_fulfillment ) {
+				// Check if this is a refund operation
+				if ( ! empty( $label_as_array['refund'] ) ) {
+					// Set the fulfillment back to unfulfilled status after refund
+					$shipping_fulfillment->set_status( 'unfulfilled' );
+				} elseif ( $shipping_fulfillment->will_status_change( $label_as_array['label_id'], $label_as_array ) ) {
+					// Only notify customer if status is changing TO 'PURCHASED'
+					// As it's the first time the label status is changing to 'PURCHASED', we need to notify the customer with fulfillment created notification.
+					$shipping_fulfillment->set_notify_customer( FulfillmentNotificationType::CREATED );
+					$shipping_fulfillment->set_status( 'fulfilled' );
+				}
+
 				$shipping_fulfillment->update_label( $label_as_array['label_id'], $label_as_array );
 				$shipping_fulfillment->save();
 				return $shipping_fulfillment->get_label_by_id( $label_as_array['label_id'] ) ?? $label_as_array;
@@ -448,7 +475,7 @@ class WC_Connect_Service_Settings_Store {
 	 * Adds new labels to the order
 	 *
 	 * @param $order_id
-	 * @param array    $new_labels - labels to be added
+	 * @param array $new_labels - labels to be added
 	 */
 	public function add_labels_to_order( $order_id, $new_labels ) {
 		$labels_data = $this->get_label_order_meta_data( $order_id );
@@ -773,7 +800,7 @@ class WC_Connect_Service_Settings_Store {
 			case 'yd':
 				return __( 'yd', 'woocommerce-shipping' );
 			default:
-				$this->logger->log( 'Unexpected measurement unit: ' . $value, __FUNCTION__ );
+				$this->logger->log( 'Unexpected measurement unit: ' . $value, __METHOD__ );
 				return $value;
 		}
 	}

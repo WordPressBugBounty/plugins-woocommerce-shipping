@@ -8,6 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 if ( ! class_exists( 'WC_Connect_API_Client_Local_Test_Mock' ) ) {
 	require_once __DIR__ . '/../../../classes/class-wc-connect-api-client.php';
 
+	// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound -- Test mock class.
 	class WC_Connect_API_Client_Local_Test_Mock extends WC_Connect_API_Client {
 
 		/**

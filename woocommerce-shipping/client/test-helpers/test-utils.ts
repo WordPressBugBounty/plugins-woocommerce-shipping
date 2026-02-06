@@ -126,6 +126,7 @@ export const mockUtils = ( overrides?: object ) => {
 		camelCaseKeys,
 		getPackageDimensions,
 		camelCasePackageResponse,
+		toUTCMidnightISOString,
 		...restOfUtils
 	} = jest.requireActual( 'utils' );
 
@@ -133,6 +134,7 @@ export const mockUtils = ( overrides?: object ) => {
 		__esModule: true,
 		...restOfUtils,
 		camelCasePackageResponse,
+		toUTCMidnightISOString,
 		getWeightUnit: () => 'lbs',
 		getDimensionsUnit: () => 'cm',
 		getCurrencySymbol: () => '$',
@@ -140,7 +142,7 @@ export const mockUtils = ( overrides?: object ) => {
 		getConfig: () => ( {
 			order: orderTestData,
 			is_origin_verified: false,
-			is_destination_verified: false,
+			is_destination_verified: true,
 			packagesSettings,
 			accountSettings,
 			shippingLabelData: {
@@ -165,7 +167,7 @@ export const mockUtils = ( overrides?: object ) => {
 			),
 		getAvailableCarrierPackages: () =>
 			getAvailableCarrierPackages( { packagesSettings } ),
-		getIsDestinationVerified: () => false,
+		getIsDestinationVerified: () => true,
 		getCurrentOrderShipTo: () => ( {} ),
 		camelCaseKeys,
 		getPackageDimensions,
@@ -176,7 +178,10 @@ export const mockUtils = ( overrides?: object ) => {
 		getPurchasedLabels: () => ( {
 			0: null,
 		} ),
-		getSelectedRates: () => null,
+		getSelectedRates: () => ( {
+			'0': { rate: { isReturn: false } },
+			'1': { rate: { isReturn: true } },
+		} ),
 		getSelectedHazmat: () => null,
 		getOriginAddresses: jest.fn().mockReturnValue( [ address ] ),
 		getFirstSelectableOriginAddress: () => ( {} ),

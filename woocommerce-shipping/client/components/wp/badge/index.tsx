@@ -51,7 +51,11 @@ export function Badge( {
 				'is-actionable': intent === 'warning-alt',
 			} ) }
 			{ ...props }
-			style={ { userSelect: 'none', flexShrink: noEllipsis ? 0 : 1 } }
+			style={ {
+				userSelect: 'none',
+				flexShrink: noEllipsis ? 0 : 1,
+				lineHeight: 'inherit',
+			} }
 		>
 			{ hasIcon && (
 				<Icon

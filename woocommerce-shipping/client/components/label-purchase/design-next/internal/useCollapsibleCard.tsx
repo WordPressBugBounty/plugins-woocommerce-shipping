@@ -59,7 +59,7 @@ export function useCollapsibleCard( initialIsOpen = true ) {
 						color: '#1e1e1e', // grey-900,
 						pointerEvents: 'none', // Prevent button click from bubbling
 					} }
-					size={ props.iconSize || undefined }
+					size={ props.iconSize ?? undefined }
 				/>
 			</CardHeader>
 		),

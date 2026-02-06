@@ -16,7 +16,7 @@ export const createLocalErrors = (
 ): CustomsValidationInput[ 'errors' ] => ( {
 	items: Array( items.length )
 		.fill( 0 )
-		.map( () => ( {} as FormErrors< CustomsItem > ) ),
+		.map( () => ( {} ) as FormErrors< CustomsItem > ),
 } );
 
 /**
@@ -128,7 +128,7 @@ export const calculateValuesByTariffNumber = (
 ): Record< string, number > => {
 	return items.reduce(
 		( acc: Record< string, number >, { product_id, hsTariffNumber } ) => {
-			if ( hsTariffNumber && hsTariffNumber.length === 6 ) {
+			if ( hsTariffNumber?.length === 6 ) {
 				if ( ! acc[ hsTariffNumber ] ) {
 					acc[ hsTariffNumber ] = 0;
 				}
@@ -200,11 +200,10 @@ export const validateITN =
 				localErrors.itn = sprintf(
 					// translators: %s is the tariff number
 					__(
-						'International Transaction Number is required for shipping items valued over $2,500 per tariff number. ' +
-							'Products with tariff number %s add up to more than $2,500.',
+						'International Transaction Number is required for shipping items valued over $2,500 per tariff number. Products with tariff number %s add up to more than $2,500.',
 						'woocommerce-shipping'
 					),
-					classesAbove2500usd.values().next().value // Just pick the first code
+					classesAbove2500usd.values().next().value ?? ''
 				);
 			} else if ( USPS_ITN_REQUIRED_DESTINATIONS.includes( country ) ) {
 				localErrors.itn = sprintf(

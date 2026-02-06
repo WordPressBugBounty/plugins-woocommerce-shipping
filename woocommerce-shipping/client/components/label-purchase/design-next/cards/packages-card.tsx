@@ -3,6 +3,7 @@ import {
 	CardBody,
 	CardDivider,
 	Flex,
+	Spinner,
 	__experimentalText as Text,
 	__experimentalSpacer as Spacer,
 } from '@wordpress/components';
@@ -23,8 +24,9 @@ import { Badge } from 'components/wp';
 import { uspsHazmatCategories } from 'components/label-purchase/hazmat/usps-hazmat-categories';
 import { Hazmat } from 'components/label-purchase/hazmat';
 import PackageTypeSelect from '../internal/package-type-select';
+import { withBoundaryNext } from 'components/HOC/error-boundary/with-boundary-next';
 
-export const PackagesCard = () => {
+const PackagesCardComponent = () => {
 	const {
 		packages: {
 			getCustomPackage,
@@ -36,7 +38,7 @@ export const PackagesCard = () => {
 		},
 		hazmat: { getShipmentHazmat },
 		shipment: { currentShipmentId },
-		rates: { removeSelectedRate },
+		rates: { removeSelectedRate, isFetching },
 	} = useLabelPurchaseContext();
 
 	const selectedPackage = getSelectedPackage();
@@ -68,13 +70,22 @@ export const PackagesCard = () => {
 
 	const { CardHeader, isOpen } = useCollapsibleCard( true );
 
-	const getPackageSummary = () => {
+	const packageNeedsDimensions = () => {
 		if ( currentPackageTab === TAB_NAMES.CUSTOM_PACKAGE ) {
 			if (
 				! parseInt( rawPackageData?.length ?? '0', 10 ) ||
 				! parseInt( rawPackageData?.width ?? '0', 10 ) ||
 				! parseInt( rawPackageData?.height ?? '0', 10 )
 			) {
+				return true;
+			}
+		}
+		return false;
+	};
+
+	const getPackageSummary = () => {
+		if ( currentPackageTab === TAB_NAMES.CUSTOM_PACKAGE ) {
+			if ( packageNeedsDimensions() ) {
 				return (
 					<Badge intent="warning-alt">
 						{ __( 'Needs dimensions', 'woocommerce-shipping' ) }
@@ -85,11 +96,11 @@ export const PackagesCard = () => {
 			const hazmat = getShipmentHazmat();
 
 			return sprintf(
-				/* translators: %1$d: length, %2$d: width, %3$d: height, %4$s: hazmat info */
-				__( '%1$d” x %2$d” x %3$d” %4$s', 'woocommerce-shipping' ),
-				rawPackageData.length,
-				rawPackageData.width,
-				rawPackageData.height,
+				/* translators: %1$s: length, %2$s: width, %3$s: height, %4$s: hazmat info */
+				__( '%1$sin x %2$sin x %3$sin %4$s', 'woocommerce-shipping' ),
+				String( rawPackageData.length ),
+				String( rawPackageData.width ),
+				String( rawPackageData.height ),
 				hazmat.isHazmat
 					? ` · ${
 							uspsHazmatCategories[
@@ -120,19 +131,6 @@ export const PackagesCard = () => {
 		}
 	};
 
-	const packageNeedsDimensions = () => {
-		if ( currentPackageTab === TAB_NAMES.CUSTOM_PACKAGE ) {
-			if (
-				! parseInt( rawPackageData?.length ?? '0', 10 ) ||
-				! parseInt( rawPackageData?.width ?? '0', 10 ) ||
-				! parseInt( rawPackageData?.height ?? '0', 10 )
-			) {
-				return true;
-			}
-		}
-		return false;
-	};
-
 	return (
 		<Card>
 			<CardHeader iconSize={ 'small' } isBorderless>
@@ -140,20 +138,39 @@ export const PackagesCard = () => {
 					<Text as="span" weight={ 500 } size={ 15 }>
 						{ __( 'Package', 'woocommerce-shipping' ) }
 					</Text>
-					{ ( ! isOpen || packageNeedsDimensions() ) && (
-						<Text
-							as="span"
-							weight={ 400 }
-							size={ 13 }
-							style={ {
-								maxWidth: '300px',
-								overflow: 'hidden',
-								textOverflow: 'ellipsis',
-								whiteSpace: 'nowrap',
-							} }
+					{ ! isFetching &&
+						( ! isOpen || packageNeedsDimensions() ) && (
+							<Text
+								as="span"
+								weight={ 400 }
+								size={ 13 }
+								style={ {
+									maxWidth: '300px',
+									overflow: 'hidden',
+									textOverflow: 'ellipsis',
+									whiteSpace: 'nowrap',
+								} }
+							>
+								{ getPackageSummary() }
+							</Text>
+						) }
+					{ isOpen && isFetching && (
+						<Flex
+							direction="row"
+							align="center"
+							justify="flex-end"
+							gap={ 0 }
 						>
-							{ getPackageSummary() }
-						</Text>
+							<div style={ { marginTop: -2 } }>
+								<Spinner />
+							</div>
+							<Text as="span" weight={ 400 } size={ 12 }>
+								{ __(
+									'Fetching rates …',
+									'woocommerce-shipping'
+								) }
+							</Text>
+						</Flex>
 					) }
 				</Flex>
 			</CardHeader>
@@ -202,3 +219,5 @@ export const PackagesCard = () => {
 		</Card>
 	);
 };
+
+export const PackagesCard = withBoundaryNext( PackagesCardComponent )();

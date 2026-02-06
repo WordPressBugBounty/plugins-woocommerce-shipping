@@ -1,4 +1,3 @@
-import { JSX, useEffect } from 'react';
 import { __experimentalGrid as Grid } from '@wordpress/components';
 import { createPortal } from '@wordpress/element';
 import { getCurrentOrder } from 'utils';
@@ -15,6 +14,10 @@ import { ShippingRatesCard } from './cards/shipping-rates-card';
 import { Customs } from '../customs';
 import { SummaryCard } from './cards/summary-card';
 import { PaymentButtons } from '../purchase';
+import { AddressesCard } from './cards/addresses-card';
+import { ErrorBoundaryNext } from 'components/HOC/error-boundary/error-boundary-next';
+import { withBoundaryNext } from 'components/HOC';
+import { PaymentMethodSummary } from './internal/payment-method-summary';
 
 interface ShipmentContentProps {
 	items: unknown[];
@@ -27,23 +30,35 @@ const LabelPurchaseStatusNotices = () => {
 			hasPurchasedLabel,
 			showRefundedNotice,
 			hasRequestedRefund,
+			isAnyRequestInProgress,
 		},
 	} = useLabelPurchaseContext();
 
+	const currentLabel = getCurrentShipmentLabel();
+	const hasNonErrorLabel =
+		hasPurchasedLabel( false ) &&
+		currentLabel?.status !== LABEL_PURCHASE_STATUS.PURCHASE_ERROR;
+
 	return (
-		<>
-			{ hasPurchasedLabel( false ) &&
-				getCurrentShipmentLabel()?.status !==
-					LABEL_PURCHASE_STATUS.PURCHASE_ERROR && <PurchaseNotice /> }
-			<PurchaseErrorNotice label={ getCurrentShipmentLabel() } />
-			{ hasRequestedRefund() &&
-				showRefundedNotice &&
-				! hasPurchasedLabel() && <RefundedNotice /> }
-		</>
+		<ErrorBoundaryNext>
+			<div id="label-purchase-status-notices">
+				{ /* Render PurchaseNotice when we have a successful label OR when a request is in progress (retry scenario) */ }
+				{ ( hasNonErrorLabel || isAnyRequestInProgress ) && (
+					<PurchaseNotice />
+				) }
+				{ /* Only show error notice when not processing a new request */ }
+				{ ! isAnyRequestInProgress && (
+					<PurchaseErrorNotice label={ currentLabel } />
+				) }
+				{ hasRequestedRefund() &&
+					showRefundedNotice &&
+					! hasPurchasedLabel() && <RefundedNotice /> }
+			</div>
+		</ErrorBoundaryNext>
 	);
 };
 
-export const ShipmentContentV2 = ( {
+const ShipmentContentV2Component = ( {
 	items,
 }: ShipmentContentProps ): JSX.Element => {
 	const order = getCurrentOrder();
@@ -52,15 +67,10 @@ export const ShipmentContentV2 = ( {
 		customs: { isCustomsNeeded },
 		labels: {
 			hasPurchasedLabel,
-			isCurrentTabPurchasingExtraLabel,
+
 			getCurrentShipmentLabel,
 		},
-		shipment: {
-			currentShipmentId,
-			getSelectionItems,
-			getShipmentDestination,
-		},
-		essentialDetails: { setExtraLabelPurchaseCompleted },
+		shipment: { currentShipmentId, getShipmentDestination },
 	} = useLabelPurchaseContext();
 
 	const destinationAddress = getShipmentDestination() as Destination;
@@ -70,25 +80,22 @@ export const ShipmentContentV2 = ( {
 			'fulfill-page-actions__purchase-label__action-wrapper'
 		) ?? undefined;
 
-	useEffect( () => {
-		if ( isCurrentTabPurchasingExtraLabel() ) {
-			setExtraLabelPurchaseCompleted( getSelectionItems()?.length > 0 );
-		}
-	}, [
-		setExtraLabelPurchaseCompleted,
-		isCurrentTabPurchasingExtraLabel,
-		getSelectionItems,
-	] );
-
 	return (
 		<Grid columns={ 1 } rowGap="24px">
 			<LabelPurchaseStatusNotices />
+			<AddressesCard
+				order={ order }
+				destinationAddress={ destinationAddress }
+			/>
 			<ItemsCard
+				order={ order }
 				items={ items as ( ShipmentItem | ShipmentSubItem )[] }
 			/>
 			{ isCustomsNeeded() &&
 				Boolean( getCurrentShipmentLabel()?.isLegacy ) === false && (
-					<Customs key={ currentShipmentId } />
+					<ErrorBoundaryNext>
+						<Customs key={ currentShipmentId } />
+					</ErrorBoundaryNext>
 				) }
 			{ ! hasPurchasedLabel( false ) && (
 				<>
@@ -100,8 +107,18 @@ export const ShipmentContentV2 = ( {
 				order={ order }
 				destinationAddress={ destinationAddress }
 			/>
+			<PaymentMethodSummary />
 			{ portal &&
-				createPortal( <PaymentButtons order={ order } />, portal ) }
+				createPortal(
+					<ErrorBoundaryNext>
+						<PaymentButtons order={ order } />
+					</ErrorBoundaryNext>,
+					portal
+				) }
 		</Grid>
 	);
 };
+
+export const ShipmentContentV2 = withBoundaryNext(
+	ShipmentContentV2Component
+)();

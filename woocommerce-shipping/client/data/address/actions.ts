@@ -7,6 +7,7 @@ import {
 	ADDRESS_NORMALIZATION_FAILED,
 	DELETE_ORIGIN_ADDRESS,
 	RESET_ADDRESS_NORMALIZATION,
+	STATE_RESET,
 	UPDATE_SHIPMENT_ADDRESS,
 	UPDATE_SHIPMENT_ADDRESS_FAILED,
 	VERIFY_ORDER_SHIPPING_ADDRESS,
@@ -42,6 +43,7 @@ import {
 	ShippingAddressVerifyAction,
 	ShippingAddressVerifyFailedAction,
 	ShippingAddressVerifyStartAction,
+	StateResetAction,
 	UpdateShipmentAddressAction,
 	UpdateShipmentAddressFailedAction,
 } from './types.d';
@@ -362,4 +364,10 @@ export function* addOriginAddress( address: OriginAddress ): Generator<
 			},
 		};
 	}
+}
+
+export function stateReset(): StateResetAction {
+	return {
+		type: STATE_RESET,
+	};
 }

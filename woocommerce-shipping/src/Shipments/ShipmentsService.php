@@ -6,6 +6,7 @@ use Automattic\WCShipping\Connect\WC_Connect_Service_Settings_Store;
 use Automattic\WCShipping\Shipment\ShipmentFromLabelGenerator;
 use Automattic\WCShipping\Shipments\Models\Shipments;
 use Exception;
+use InvalidArgumentException;
 use WC_Order;
 use Automattic\WCShipping\Exceptions\RESTRequestException;
 use Automattic\WCShipping\Utils;
@@ -19,8 +20,20 @@ class ShipmentsService {
 	 */
 	protected $settings_store;
 
-	public function __construct( WC_Connect_Service_Settings_Store $settings_store ) {
+	/**
+	 * @var ShipmentDataValidator
+	 */
+	protected $validator;
+
+	/**
+	 * Constructor.
+	 *
+	 * @param WC_Connect_Service_Settings_Store $settings_store Settings store instance.
+	 * @param ShipmentDataValidator|null        $validator      Optional validator instance for testing.
+	 */
+	public function __construct( WC_Connect_Service_Settings_Store $settings_store, ?ShipmentDataValidator $validator = null ) {
 		$this->settings_store = $settings_store;
+		$this->validator      = $validator ?? new ShipmentDataValidator();
 	}
 
 	/**
@@ -47,19 +60,7 @@ class ShipmentsService {
 			throw new RESTRequestException( esc_html__( 'Order not found when updating order shipments ', 'woocommerce-shipping' ) );
 		}
 
-		try {
-			// Cast shipments to the data model to ensure data sanity
-			$shipments_model = new Shipments( $raw_shipments );
-			$shipments       = $shipments_model->to_array();
-		} catch ( Exception $e ) {
-			throw new RESTRequestException(
-				sprintf(
-					/* translators: %s: Reason for the failure in creating the data model */
-					esc_html__( 'Shipment model creation failed with error: %s', 'woocommerce-shipping' ),
-					esc_html( $e->getMessage() )
-				)
-			);
-		}
+		$shipments = $this->create_shipments_model( $raw_shipments, $order );
 
 		$order->update_meta_data( self::META_KEY, $shipments );
 
@@ -103,19 +104,7 @@ class ShipmentsService {
 		$raw_shipments = $order->get_meta( self::META_KEY );
 
 		if ( ! empty( $raw_shipments ) ) {
-			try {
-				// Cast shipments to the data model to ensure data sanity
-				$shipments_model = new Shipments( $raw_shipments );
-				$shipments       = $shipments_model->to_array();
-			} catch ( Exception $e ) {
-				throw new RESTRequestException(
-					sprintf(
-						/* translators: %s: Reason for the failure in creating the data model */
-						esc_html__( 'Shipment model creation failed with error: %s', 'woocommerce-shipping' ),
-						esc_html( $e->getMessage() )
-					)
-				);
-			}
+			$shipments = $this->create_shipments_model( $raw_shipments, $order );
 
 			return array(
 				'shipments'                 => $shipments,
@@ -153,12 +142,56 @@ class ShipmentsService {
 		return $generator->generate_shipments( $valid_labels );
 	}
 
-		/**
-		 * Build a shipment from order items.
-		 *
-		 * @param WC_Order $order Order object.
-		 * @return array
-		 */
+	/**
+	 * Create a Shipments model from raw data.
+	 *
+	 * First attempts to create the model directly. If an InvalidArgumentException
+	 * is thrown (indicating corrupted data like null item IDs), runs the repair
+	 * logic and retries. This avoids the overhead of validation for healthy orders.
+	 *
+	 * @param array    $raw_shipments Raw shipments data.
+	 * @param WC_Order $order         The WooCommerce order object.
+	 * @return array The shipments data as an array.
+	 *
+	 * @throws RESTRequestException If model creation fails even after repair.
+	 */
+	protected function create_shipments_model( array $raw_shipments, WC_Order $order ): array {
+		try {
+			$shipments_model = new Shipments( $raw_shipments );
+			return $shipments_model->to_array();
+		} catch ( InvalidArgumentException $e ) {
+			// Data is corrupted (e.g., null item IDs). Attempt repair and retry.
+			$repaired_shipments = $this->validator->validate_and_repair( $raw_shipments, $order );
+
+			try {
+				$shipments_model = new Shipments( $repaired_shipments );
+				return $shipments_model->to_array();
+			} catch ( Exception $retry_exception ) {
+				throw new RESTRequestException(
+					sprintf(
+						/* translators: %s: Reason for the failure in creating the data model */
+						esc_html__( 'Shipment model creation failed after repair attempt: %s', 'woocommerce-shipping' ),
+						esc_html( $retry_exception->getMessage() )
+					)
+				);
+			}
+		} catch ( Exception $e ) {
+			throw new RESTRequestException(
+				sprintf(
+					/* translators: %s: Reason for the failure in creating the data model */
+					esc_html__( 'Shipment model creation failed with error: %s', 'woocommerce-shipping' ),
+					esc_html( $e->getMessage() )
+				)
+			);
+		}
+	}
+
+	/**
+	 * Build a shipment from order items.
+	 *
+	 * @param WC_Order $order Order object.
+	 * @return array
+	 */
 	public static function build_shipment_from_order_items( $order ) {
 		$order_products = array();
 		foreach ( $order->get_items() as $item_id => $item ) {

@@ -9,6 +9,7 @@ import {
 	BaseControl,
 	ToggleControl,
 	SelectControl,
+	ExternalLink,
 	Flex,
 	__experimentalText as Text,
 	__experimentalSpacer as Spacer,
@@ -16,7 +17,6 @@ import {
 import { chevronDown } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
 import { createInterpolateElement, useEffect } from '@wordpress/element';
-import { Link } from '@woocommerce/components';
 import clsx from 'clsx';
 
 /**
@@ -191,10 +191,6 @@ export const Hazmat = () => {
 									...hazmatCategories,
 								] }
 								onChange={ handleHazmatCategoryChange }
-								help={ __(
-									'We automatically detected the hazardous material types from your order.',
-									'woocommerce-shipping'
-								) }
 								required
 								disabled={ hasPurchasedLabel( false ) }
 								__next40pxDefaultSize
@@ -203,9 +199,10 @@ export const Hazmat = () => {
 
 							<Notification
 								title={ __(
-									'Important requirements',
+									'Important: Shipping hazardous materials',
 									'woocommerce-shipping'
 								) }
+								type="warning"
 							>
 								<ul
 									style={ {
@@ -215,37 +212,48 @@ export const Hazmat = () => {
 									} }
 								>
 									<li>
-										{ __(
-											'Must be shipped in separate packages.',
-											'woocommerce-shipping'
+										{ createInterpolateElement(
+											__(
+												'Ship hazardous items in <strong>separate packages</strong>.',
+												'woocommerce-shipping'
+											),
+											{
+												strong: <strong />,
+											}
 										) }
 									</li>
 									<li>
-										{ __(
-											'Special labeling and documentation required.',
-											'woocommerce-shipping'
+										{ createInterpolateElement(
+											__(
+												'Use the <strong>required hazardous material labels and paperwork.</strong>',
+												'woocommerce-shipping'
+											),
+											{
+												strong: <strong />,
+											}
 										) }
 									</li>
 									<li>
-										{ __(
-											'Additional fees and restrictions may apply.',
-											'woocommerce-shipping'
+										{ createInterpolateElement(
+											__(
+												'Be aware: <strong>extra fees and carrier restrictions may apply.</strong>',
+												'woocommerce-shipping'
+											),
+											{
+												strong: <strong />,
+											}
 										) }
 									</li>
 								</ul>
 								<Text>
 									{ createInterpolateElement(
 										__(
-											'Learn more about packaging and shipping instructions <a>here</a>.',
+											'<a>Learn more about shipping hazardous materials</a>',
 											'woocommerce-shipping'
 										),
 										{
 											a: (
-												<Link
-													href="https://www.uspsdelivers.com/hazmat-shipping-safety/"
-													target="_blank"
-													rel="noreferrer"
-												/>
+												<ExternalLink href="https://www.uspsdelivers.com/hazmat-shipping-safety/" />
 											),
 										}
 									) }
@@ -268,40 +276,18 @@ export const Hazmat = () => {
 									),
 									{
 										a1: (
-											<Link
-												target="_blank"
-												href="https://www.usps.com/hazmat"
-												type="external"
-												rel="noreferrer"
-											/>
+											<ExternalLink href="https://www.usps.com/hazmat" />
 										),
 										a2: (
-											<Link
-												target="_blank"
-												href="https://pe.usps.com/hazmat/index"
-												type="external"
-												rel="noreferrer"
-											/>
+											<ExternalLink href="https://pe.usps.com/hazmat/index" />
 										),
 									}
 								) }
 							</p>
 							<p>
-								{ createInterpolateElement(
-									__(
-										'WooCommerce Shipping does not currently support HAZMAT shipments through <a>DHL Express</a>.',
-										'woocommerce-shipping'
-									),
-									{
-										a: (
-											<Link
-												type="external"
-												target="_blank"
-												href="https://www.dhl.com/us-en/home/express.html"
-												rel="noreferrer"
-											/>
-										),
-									}
+								{ __(
+									'WooCommerce Shipping only supports HAZMAT shipments through USPS.',
+									'woocommerce-shipping'
 								) }
 							</p>
 

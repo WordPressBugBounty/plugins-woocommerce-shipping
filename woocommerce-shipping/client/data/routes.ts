@@ -32,6 +32,9 @@ export const getLabelTestPrintPath = () => `${ NAMESPACE }/label/preview`;
 export const getPackingSlipPrintPath = ( labelId: number, orderId: number ) =>
 	`${ NAMESPACE }/label/print/packing-list/${ labelId }/${ orderId }`;
 
+export const getPackingSlipWithoutLabelPrintPath = ( orderId: number ) =>
+	`${ NAMESPACE }/label/print/packing-slip?order_id=${ orderId }`;
+
 export const getWCOrdersPath = ( orderId: string ) =>
 	`${ WC_NAMESPACE }/orders/${ orderId }`;
 
@@ -50,3 +53,18 @@ export const getCarrierStrategyPath = ( carrierId: Carrier ) =>
 	`${ NAMESPACE }/carrier-strategy/${ carrierId }`;
 
 export const getLabelsReportPath = () => `${ NAMESPACE }/reports/labels`;
+
+/**
+ * ScanForm routes.
+ */
+export const getScanFormOriginsPath = () => `${ NAMESPACE }/scan-form/origins`;
+
+export const getCreateScanFormPath = () => `${ NAMESPACE }/scan-form/create`;
+
+export const getScanFormReviewPath = () => `${ NAMESPACE }/scan-form/review`;
+
+export const getScanFormHistoryPath = ( page: number, per_page: number ) =>
+	`${ NAMESPACE }/scan-form/history?page=${ page }&per_page=${ per_page }`;
+
+export const getScanFormLabelsPath = ( scanFormId: string ) =>
+	`${ NAMESPACE }/scan-form/${ scanFormId }/labels`;

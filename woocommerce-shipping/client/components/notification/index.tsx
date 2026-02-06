@@ -1,6 +1,6 @@
 import { Flex, Icon, __experimentalText as Text } from '@wordpress/components';
-import { error, info, published } from '@wordpress/icons';
-import WarningIcon from 'components/icons/warning-icon';
+import { info, published, error } from '@wordpress/icons';
+import { WarningIcon } from 'components/icons';
 
 type NotificationType = 'info' | 'success' | 'warning' | 'error';
 
@@ -45,6 +45,7 @@ interface NotificationProps {
 	title?: string;
 	children: React.ReactNode;
 	className?: string;
+	marginBottom?: string;
 }
 
 const Notification = ( {
@@ -52,6 +53,8 @@ const Notification = ( {
 	title,
 	children,
 	className,
+	marginBottom = '8px',
+	style,
 	...props
 }: NotificationProps & React.ComponentPropsWithoutRef< 'div' > ) => {
 	const icon = contextBasedIcon( type );
@@ -64,8 +67,9 @@ const Notification = ( {
 				border: `1px solid ${ borderColorMap[ type ] }`,
 				borderRadius: 'var(--radius-l, 8px)',
 				fontSize: '13px',
-				marginBottom: '8px',
+				marginBottom,
 				padding: '16px',
+				...( style ?? {} ),
 			} }
 			{ ...props }
 		>
@@ -82,6 +86,7 @@ const Notification = ( {
 						fill={ iconColorMap[ type ] }
 						style={ {
 							marginTop: '-3px',
+							minWidth: '24px', // Override Flex-base-ItemsRow > * { min-width: 0; }
 						} }
 					/>
 				) }
