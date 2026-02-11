@@ -61,9 +61,31 @@ const initScanFormButton = () => {
 	button.addEventListener( 'click', mountModal );
 };
 
+/**
+ * Auto-open the ScanForm modal when navigated with ?open_scanform=1.
+ */
+const maybeAutoOpenModal = () => {
+	const params = new URLSearchParams( window.location.search );
+	if ( params.get( 'open_scanform' ) === '1' ) {
+		// Remove the param from URL to prevent re-opening on refresh.
+		params.delete( 'open_scanform' );
+		const newUrl =
+			window.location.pathname +
+			( params.toString() ? '?' + params.toString() : '' );
+		window.history.replaceState( {}, '', newUrl );
+
+		// Auto-open the modal.
+		mountModal();
+	}
+};
+
 // Initialize when DOM is ready.
 if ( document.readyState === 'loading' ) {
-	document.addEventListener( 'DOMContentLoaded', initScanFormButton );
+	document.addEventListener( 'DOMContentLoaded', () => {
+		initScanFormButton();
+		maybeAutoOpenModal();
+	} );
 } else {
 	initScanFormButton();
+	maybeAutoOpenModal();
 }

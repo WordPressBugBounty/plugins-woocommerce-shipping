@@ -14,6 +14,7 @@ export const useSettings = () => {
 		tax_identifiers: taxIdentifiers,
 		remember_last_used_shipping_date: rememberLastUsedShippingDate,
 		return_to_sender_default: returnToSenderDefault,
+		scanform_enabled: scanformEnabled,
 	} = useSelect( ( select ) => {
 		const settings = select( settingsStore ).getConfigSettings();
 		if ( ! settings ) {
@@ -28,6 +29,7 @@ export const useSettings = () => {
 				tax_identifiers: defaultTaxIdentifiers,
 				remember_last_used_shipping_date: '',
 				return_to_sender_default: '',
+				scanform_enabled: '',
 			};
 		}
 		return {
@@ -43,6 +45,7 @@ export const useSettings = () => {
 			remember_last_used_shipping_date:
 				settings.remember_last_used_shipping_date ?? '',
 			return_to_sender_default: settings.return_to_sender_default ?? '',
+			scanform_enabled: settings.scanform_enabled ?? '',
 		};
 	} );
 
@@ -90,5 +93,6 @@ export const useSettings = () => {
 		canManagePayments,
 		rememberLastUsedShippingDate,
 		returnToSenderDefault,
+		scanformEnabled,
 	};
 };

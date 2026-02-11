@@ -58,15 +58,9 @@ export const getAddressNeedsConfirmation = (
 };
 
 export const getPreparedDestination = ( state: AddressState ) => {
-	/* eslint-disable camelcase, no-unused-vars */
-	const {
-		firstName,
-		lastName,
-		email,
-		address1,
-		address2,
-		...rawDestination
-	} = getOrderDestination( state );
+	/* eslint-disable camelcase */
+	const { firstName, lastName, address1, address2, ...rawDestination } =
+		getOrderDestination( state );
 	const destination = {
 		...rawDestination,
 		name: composeName( {

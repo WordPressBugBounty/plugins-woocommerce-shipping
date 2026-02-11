@@ -29,3 +29,7 @@ export const ACCEPTED_ORIGIN_COUNTRIES = {
 	FM: 'Micronesia',
 	MP: 'Northern Mariana Islands',
 } as const;
+
+/** Route path for Shipping → Operations settings (use with WCShipping_Config.navigate). */
+export const SHIPPING_OPERATIONS_PATH =
+	'/woocommerce/settings/shipping/operations';

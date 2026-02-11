@@ -8,12 +8,12 @@ import {
 	RadioControl,
 	BaseControl,
 	ToggleControl,
-	SelectControl,
 	ExternalLink,
 	Flex,
 	__experimentalText as Text,
 	__experimentalSpacer as Spacer,
 } from '@wordpress/components';
+import { SelectControl } from 'components/design-system/select-control';
 import { chevronDown } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
 import { createInterpolateElement, useEffect } from '@wordpress/element';
@@ -180,17 +180,18 @@ export const Hazmat = () => {
 								) }
 								hideLabelFromVision
 								value={ hazmatState?.category || '' }
-								options={ [
+								items={ [
 									{
 										label: __(
 											'Select a hazardous or dangerous material category',
 											'woocommerce-shipping'
 										),
 										value: '',
+										disabled: true,
 									},
 									...hazmatCategories,
 								] }
-								onChange={ handleHazmatCategoryChange }
+								onValueChange={ handleHazmatCategoryChange }
 								required
 								disabled={ hasPurchasedLabel( false ) }
 								__next40pxDefaultSize
@@ -198,12 +199,13 @@ export const Hazmat = () => {
 							/>
 
 							<Notification
-								title={ __(
+								status="warning"
+								isDismissible={ false }
+							>
+								{ __(
 									'Important: Shipping hazardous materials',
 									'woocommerce-shipping'
 								) }
-								type="warning"
-							>
 								<ul
 									style={ {
 										listStylePosition: 'inside',

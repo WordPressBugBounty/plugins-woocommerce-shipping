@@ -1,105 +1,28 @@
-import { Flex, Icon, __experimentalText as Text } from '@wordpress/components';
-import { info, published, error } from '@wordpress/icons';
-import { WarningIcon } from 'components/icons';
+import { Button, Flex, Notice } from '@wordpress/components';
+import { NoticeProps } from '@wordpress/components/build-types/notice/types';
 
-type NotificationType = 'info' | 'success' | 'warning' | 'error';
-
-function contextBasedIcon( type: NotificationType = 'info' ) {
-	switch ( type ) {
-		case 'info':
-			return info;
-		case 'success':
-			return published;
-		case 'warning':
-			return WarningIcon;
-		case 'error':
-			return error;
-		default:
-			return null;
-	}
-}
-
-const iconColorMap: Record< NotificationType, string > = {
-	info: '#A77F30',
-	success: '#2E7D32',
-	warning: '#A77F30',
-	error: '#8C0B0B',
-};
-
-const backgroundColorMap: Record< NotificationType, string > = {
-	info: '#F0B8490A',
-	success: '#E8F5E9',
-	warning: '#F0B8490A',
-	error: '#CC18180A',
-};
-
-const borderColorMap: Record< NotificationType, string > = {
-	info: '#0000001A',
-	success: '#A5D6A7',
-	warning: '#0000001A',
-	error: '#0000001A',
-};
-
-interface NotificationProps {
-	type?: NotificationType;
-	title?: string;
-	children: React.ReactNode;
-	className?: string;
-	marginBottom?: string;
-}
-
-const Notification = ( {
-	type = 'info',
-	title,
-	children,
-	className,
-	marginBottom = '8px',
-	style,
-	...props
-}: NotificationProps & React.ComponentPropsWithoutRef< 'div' > ) => {
-	const icon = contextBasedIcon( type );
+const Notification = ( { actions, children, ...props }: NoticeProps ) => {
 	return (
-		<Flex
-			direction="column"
-			gap={ 2 }
-			style={ {
-				background: backgroundColorMap[ type ],
-				border: `1px solid ${ borderColorMap[ type ] }`,
-				borderRadius: 'var(--radius-l, 8px)',
-				fontSize: '13px',
-				marginBottom,
-				padding: '16px',
-				...( style ?? {} ),
-			} }
-			{ ...props }
-		>
-			<Flex
-				direction="row"
-				justify="flex-start"
-				align="flex-start"
-				gap={ 2 }
-			>
-				{ icon && (
-					<Icon
-						icon={ icon }
-						size={ 24 }
-						fill={ iconColorMap[ type ] }
-						style={ {
-							marginTop: '-3px',
-							minWidth: '24px', // Override Flex-base-ItemsRow > * { min-width: 0; }
-						} }
-					/>
-				) }
-				<Flex
-					direction="column"
-					gap={ 4 }
-					style={ { lineHeight: 1.4 } }
-				>
-					{ title ? <Text weight={ 500 }>{ title }</Text> : null }
-					{ children }
+		<Notice { ...props }>
+			<Flex direction="column" gap={ 3 }>
+				{ children }
+				<Flex direction="row" gap={ 3 }>
+					{ actions?.map(
+						( { label, className, onClick, url, variant } ) => (
+							<Button
+								key={ label }
+								className={ className }
+								onClick={ onClick }
+								variant={ variant }
+								{ ...( url ? { href: url } : {} ) }
+							>
+								{ label }
+							</Button>
+						)
+					) }
 				</Flex>
 			</Flex>
-		</Flex>
+		</Notice>
 	);
 };
 

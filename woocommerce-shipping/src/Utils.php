@@ -205,7 +205,7 @@ class Utils {
 	}
 
 	/**
-	 * Checks if we're on an orders list screen (HPOS or Classic).
+	 * Checks if we're on an orders screen (HPOS or Classic), including list and edit pages.
 	 *
 	 * @return bool True if on orders screen, false otherwise.
 	 */
@@ -216,7 +216,7 @@ class Utils {
 			return false;
 		}
 
-		return ( 'woocommerce_page_wc-orders' === $screen->id || 'edit-shop_order' === $screen->id );
+		return in_array( $screen->id, array( 'woocommerce_page_wc-orders', 'edit-shop_order', 'shop_order' ), true );
 	}
 
 	public static function is_next(): bool {

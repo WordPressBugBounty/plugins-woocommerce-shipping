@@ -12,6 +12,7 @@ namespace Automattic\WCShipping\ScanForm;
 use Automattic\WCShipping\Connect\WC_Connect_Functions;
 use Automattic\WCShipping\FeatureFlags\FeatureFlags;
 use Automattic\WCShipping\Utils;
+use Automattic\WooCommerce\Internal\Admin\Orders\PageController;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -122,7 +123,8 @@ class ScanFormOnboardingNotice {
 			'wcshipping-scanform-onboarding',
 			'wcShippingScanFormOnboarding',
 			array(
-				'nonce' => wp_create_nonce( 'wcshipping_dismiss_scanform_onboarding_nonce' ),
+				'nonce'           => wp_create_nonce( 'wcshipping_dismiss_scanform_onboarding_nonce' ),
+				'orders_list_url' => add_query_arg( 'open_scanform', '1', wc_get_container()->get( PageController::class )->get_orders_url() ),
 			)
 		);
 	}

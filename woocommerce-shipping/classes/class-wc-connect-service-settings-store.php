@@ -129,6 +129,10 @@ class WC_Connect_Service_Settings_Store {
 			$result['return_to_sender_default'] = false;
 		}
 
+		if ( ! isset( $result['scanform_enabled'] ) ) {
+			$result['scanform_enabled'] = false;
+		}
+
 		if ( Utils::is_next() ) {
 			$result['selected_payment_method_id'] = 0;
 		}
@@ -183,6 +187,7 @@ class WC_Connect_Service_Settings_Store {
 			'automatically_open_print_dialog',
 			'remember_last_used_shipping_date',
 			'return_to_sender_default',
+			'scanform_enabled',
 		);
 
 		$validated_settings = array();
@@ -201,6 +206,7 @@ class WC_Connect_Service_Settings_Store {
 		$validated_settings['automatically_open_print_dialog']  = isset( $validated_settings['automatically_open_print_dialog'] ) && $validated_settings['automatically_open_print_dialog'] ? true : false;
 		$validated_settings['remember_last_used_shipping_date'] = isset( $validated_settings['remember_last_used_shipping_date'] ) && $validated_settings['remember_last_used_shipping_date'] ? true : false;
 		$validated_settings['return_to_sender_default']         = isset( $validated_settings['return_to_sender_default'] ) && $validated_settings['return_to_sender_default'] ? true : false;
+		$validated_settings['scanform_enabled']                 = isset( $validated_settings['scanform_enabled'] ) && $validated_settings['scanform_enabled'] ? true : false;
 		$saved = WC_Connect_Options::update_option( 'account_settings', $validated_settings );
 
 		/**

@@ -42,6 +42,13 @@ class UPSDAPCarrierStrategyService implements CarrierStrategyServiceInterface {
 	public function update_strategies( $origin, $options = array() ) {
 		$current_user = wp_get_current_user();
 
+		if ( empty( $current_user->user_email ) || ! is_email( $current_user->user_email ) ) {
+			return new \WP_Error(
+				'invalid_user_email',
+				__( 'A valid email address is required to accept UPS Terms of Service. Please update your account email.', 'woocommerce-shipping' )
+			);
+		}
+
 		$data = array(
 			'origin' => array_merge(
 				$origin,

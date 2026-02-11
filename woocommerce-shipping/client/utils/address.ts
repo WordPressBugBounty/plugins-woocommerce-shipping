@@ -1,4 +1,22 @@
-import { Destination } from 'types';
+import { Destination, OriginAddress } from 'types';
+
+/**
+ * Returns true if there are no origin addresses or every address is unverified.
+ *
+ * @param originAddresses - Array of origin addresses (e.g. from getOriginAddresses())
+ * @return true when no addresses exist or all have isVerified falsy
+ */
+export const areAllOriginsUnverified = (
+	originAddresses: OriginAddress[] | undefined | null
+): boolean =>
+	! originAddresses?.length ||
+	originAddresses.every(
+		( address ) =>
+			address.isApproved === false ||
+			( ( address.isApproved === undefined ||
+				address.isApproved === null ) &&
+				! address.isVerified )
+	);
 
 /**
  * Map of common address abbreviations to their full names.

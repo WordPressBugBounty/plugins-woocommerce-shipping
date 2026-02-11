@@ -2,6 +2,8 @@
 
 namespace Automattic\WCShipping\FeatureFlags;
 
+use Automattic\WCShipping\Connect\WC_Connect_Options;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -47,14 +49,19 @@ class FeatureFlags {
 	/**
 	 * Check if ScanForm feature is enabled.
 	 *
+	 * Checks the user setting from account_settings, with a filter to override.
+	 *
 	 * @return bool
 	 */
-	public static function is_scanform_enabled() {
+	public static function is_scanform_enabled(): bool {
+		$account_settings   = WC_Connect_Options::get_option( 'account_settings', array() );
+		$enabled_by_setting = ! empty( $account_settings['scanform_enabled'] );
+
 		/**
-		 * Filter to enable USPS ScanForm feature.
+		 * Filter to enable/disable USPS ScanForm feature.
 		 *
-		 * @param bool $enable_scanform Whether to enable the ScanForm feature. Default false.
+		 * @param bool $enable_scanform Whether to enable the ScanForm feature. Defaults to the user setting value.
 		 */
-		return apply_filters( 'wcshipping_enable_scanform_feature', false );
+		return apply_filters( 'wcshipping_enable_scanform_feature', $enabled_by_setting );
 	}
 }

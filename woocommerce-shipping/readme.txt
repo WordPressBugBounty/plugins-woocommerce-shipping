@@ -7,7 +7,7 @@ Requires at least: 6.8
 Tested up to: 6.9
 WC requires at least: 10.3
 WC tested up to: 10.5
-Stable tag: 2.1.4
+Stable tag: 2.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -127,6 +127,10 @@ Absolutely! You can read our Terms of Service [here](https://wordpress.com/tos).
 6. WooCommerce Shipping address validation at checkout suggestion.
 
 == Changelog ==
+
+= 2.2.0 - 2026-02-11 =
+* New   – USPS ScanForm is now available. Enable or disable the feature in Shipping settings.
+* Fix   - UPS TOS acceptance failures on Atomic/WPCloud sites due to missing or invalid user email.
 
 = 2.1.4 - 2026-02-03 =
 * Fix   - Non-US phone number validation.

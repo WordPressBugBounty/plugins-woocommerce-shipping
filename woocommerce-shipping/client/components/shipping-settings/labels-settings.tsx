@@ -42,6 +42,7 @@ export const LabelsSettingsComponent = () => {
 		automaticallyOpenPrintDialog,
 		rememberLastUsedShippingDate,
 		returnToSenderDefault,
+		scanformEnabled,
 	} = useSettings();
 
 	const maybeConfirmExit = ( isChanged: boolean ) => {
@@ -285,6 +286,22 @@ export const LabelsSettingsComponent = () => {
 							checked={ Boolean( returnToSenderDefault ) }
 							onChange={ updateFormData(
 								SETTINGS_KEYS.RETURN_TO_SENDER_DEFAULT
+							) }
+							__nextHasNoMarginBottom={ true }
+						/>
+						<Spacer marginTop={ 0 } marginBottom={ 3 } />
+						<CheckboxControl
+							label={ __(
+								'Enable USPS ScanForm feature',
+								'woocommerce-shipping'
+							) }
+							help={ __(
+								'Create a single barcode to scan all USPS packages scheduled for pickup.',
+								'woocommerce-shipping'
+							) }
+							checked={ Boolean( scanformEnabled ) }
+							onChange={ updateFormData(
+								SETTINGS_KEYS.SCANFORM_ENABLED
 							) }
 							__nextHasNoMarginBottom={ true }
 						/>

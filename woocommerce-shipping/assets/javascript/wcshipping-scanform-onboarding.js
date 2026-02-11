@@ -22,13 +22,16 @@
 			if ( e.target.closest( '.wcshipping-scanform-try-now' ) ) {
 				e.preventDefault();
 
-				// Trigger the existing ScanForm button.
 				const scanFormButton = document.getElementById(
 					'wc-shipping-scanform-trigger'
 				);
 
 				if ( scanFormButton ) {
+					// On orders list page - trigger the modal directly.
 					scanFormButton.click();
+				} else if ( wcShippingScanFormOnboarding.orders_list_url ) {
+					// On individual order page - open orders list in new tab with auto-open param.
+					window.open( wcShippingScanFormOnboarding.orders_list_url, '_blank' );
 				}
 			}
 		} );

@@ -18,6 +18,7 @@ import { dispatch, useSelect } from '@wordpress/data';
 import { useLabelPurchaseContext } from 'context/label-purchase';
 import {
 	createInterpolateElement,
+	useCallback,
 	useEffect,
 	useRef,
 	useState,
@@ -25,6 +26,7 @@ import {
 import {
 	addressToString,
 	areAddressesClose,
+	areAllOriginsUnverified,
 	composeName,
 	formatAddressFields,
 } from 'utils';
@@ -36,7 +38,7 @@ import { ShipFromSelectV2 } from '../internal/ship-from-select-v2';
 import { withBoundaryNext } from 'components/HOC/error-boundary/with-boundary-next';
 import { startCase, toLower } from 'lodash';
 import Notification from 'components/notification';
-import { Link } from 'components/wc';
+import { SHIPPING_OPERATIONS_PATH } from 'next/data';
 
 const firstFilled = ( arr: ( string | undefined )[] ) => {
 	for ( const item of arr ) {
@@ -163,6 +165,16 @@ const AddressesCardComponent = ( {
 		[]
 	);
 
+	const allOriginsUnverified = areAllOriginsUnverified( origins );
+
+	const navigateToShippingOperations = useCallback( () => {
+		if ( window.WCShipping_Config?.navigate ) {
+			window.WCShipping_Config.navigate( {
+				to: SHIPPING_OPERATIONS_PATH,
+			} );
+		}
+	}, [] );
+
 	const originAddress = ! hasPurchasedLabel( false )
 		? ( getShipmentOrigin() as OriginAddress )
 		: ( getShipmentPurchaseOrigin() as OriginAddress );
@@ -272,45 +284,97 @@ const AddressesCardComponent = ( {
 							</Text>
 						</Flex>
 					) : (
-						! isDestinationAddressVerified && (
-							<Badge intent="warning-alt">
-								{ __(
-									'Recipient address needs review',
-									'woocommerce-shipping'
-								) }{ ' ' }
-							</Badge>
-						)
-					) }
-					{ isDestinationAddressVerified && ! isOpen && (
-						<Tooltip
-							text={ getAddressSummary(
-								originAddress,
-								destinationAddress
+						<>
+							{ ! isDestinationAddressVerified && (
+								<Badge intent="warning-alt">
+									{ __(
+										'Recipient address needs review',
+										'woocommerce-shipping'
+									) }{ ' ' }
+								</Badge>
 							) }
-						>
-							<Text
-								as="span"
-								weight={ 400 }
-								size={ 13 }
-								style={ {
-									maxWidth: '350px',
-									overflow: 'hidden',
-									textOverflow: 'ellipsis',
-									whiteSpace: 'nowrap',
-								} }
-							>
-								{ getAddressSummary(
+							{ allOriginsUnverified && (
+								<Badge intent="warning-alt">
+									{ __(
+										'Need sender address',
+										'woocommerce-shipping'
+									) }{ ' ' }
+								</Badge>
+							) }
+						</>
+					) }
+					{ isDestinationAddressVerified &&
+						! allOriginsUnverified &&
+						! isOpen && (
+							<Tooltip
+								text={ getAddressSummary(
 									originAddress,
 									destinationAddress
 								) }
-							</Text>
-						</Tooltip>
-					) }
+							>
+								<Text
+									as="span"
+									weight={ 400 }
+									size={ 13 }
+									style={ {
+										maxWidth: '350px',
+										overflow: 'hidden',
+										textOverflow: 'ellipsis',
+										whiteSpace: 'nowrap',
+									} }
+								>
+									{ getAddressSummary(
+										originAddress,
+										destinationAddress
+									) }
+								</Text>
+							</Tooltip>
+						) }
 				</Flex>
 			</CardHeader>
 			{ isOpen && (
 				<CardBody style={ { padding: 0, paddingBottom: 0 } }>
 					<Flex direction="column" gap={ 0 } justify="space-between">
+						{ allOriginsUnverified && (
+							<Spacer
+								marginBottom={ 0 }
+								marginTop={ 4 }
+								marginX={ 6 }
+							>
+								<Notification
+									status="warning"
+									isDismissible={ false }
+									actions={ [
+										{
+											label: __(
+												'Add ship-from address',
+												'woocommerce-shipping'
+											),
+											onClick:
+												navigateToShippingOperations,
+											variant: 'primary',
+										},
+									] }
+								>
+									{ createInterpolateElement(
+										__(
+											'<strong>Sender address needs validation.</strong> Add and validate a ship-from address to get shipping rates.',
+											'woocommerce-shipping'
+										),
+										{
+											strong: (
+												<strong>
+													{ __(
+														'Sender address needs validation.',
+														'woocommerce-shipping'
+													) }
+												</strong>
+											),
+										}
+									) }
+								</Notification>
+							</Spacer>
+						) }
 						<Spacer
 							paddingX={ 6 }
 							paddingBottom={ 4 }
@@ -360,31 +424,26 @@ const AddressesCardComponent = ( {
 									marginTop={ 4 }
 									marginX={ 6 }
 								>
-									<Notification type="warning">
-										{ createInterpolateElement(
-											__(
-												'This address couldn’t be validated automatically. Please check the details and try again. <a>Review address</a>',
-												'woocommerce-shipping'
-											),
+									<Notification
+										status="warning"
+										isDismissible={ false }
+										actions={ [
 											{
-												a: (
-													<Link
-														onClick={ () =>
-															setIsAddressModalOpen(
-																true
-															)
-														}
-														type="wc-admin"
-														href="#"
-														role="button"
-													>
-														{ __(
-															'Review address',
-															'woocommerce-shipping'
-														) }
-													</Link>
+												label: __(
+													'Review address',
+													'woocommerce-shipping'
 												),
-											}
+												onClick: () =>
+													setIsAddressModalOpen(
+														true
+													),
+												variant: 'primary',
+											},
+										] }
+									>
+										{ __(
+											'This address couldn’t be validated automatically. Please check the details and try again.',
+											'woocommerce-shipping'
 										) }
 									</Notification>
 								</Spacer>

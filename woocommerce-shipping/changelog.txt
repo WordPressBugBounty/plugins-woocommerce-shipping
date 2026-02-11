@@ -1,5 +1,9 @@
 *** WooCommerce Shipping Changelog ***
 
+= 2.2.0 - 2026-02-11 =
+* New   – USPS ScanForm is now available. Enable or disable the feature in Shipping settings.
+* Fix   - UPS TOS acceptance failures on Atomic/WPCloud sites due to missing or invalid user email.
+
 = 2.1.4 - 2026-02-03 =
 * Fix   - Non-US phone number validation.
 * Fix   - Add origin email address to the purchase label request.

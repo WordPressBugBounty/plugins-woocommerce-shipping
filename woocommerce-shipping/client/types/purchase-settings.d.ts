@@ -9,4 +9,5 @@ export interface PurchaseSettings {
 	automatically_open_print_dialog: boolean;
 	remember_last_used_shipping_date: boolean;
 	return_to_sender_default: boolean;
+	scanform_enabled: boolean;
 }

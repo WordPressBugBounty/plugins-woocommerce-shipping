@@ -17,6 +17,7 @@ import {
 } from 'types';
 import {
 	applyPromo,
+	areAllOriginsUnverified,
 	getAccountSettings,
 	getCurrentOrder,
 	setAccountSettings,
@@ -360,6 +361,12 @@ export function useRatesState( {
 				addressStore
 			).getIsAddressVerified( ADDRESS_TYPES.DESTINATION );
 			if ( ! isDestinationVerified ) {
+				return;
+			}
+
+			// Early return when all origin addresses are unverified (or none exist).
+			const originAddresses = select( addressStore ).getOriginAddresses();
+			if ( areAllOriginsUnverified( originAddresses ) ) {
 				return;
 			}
 
