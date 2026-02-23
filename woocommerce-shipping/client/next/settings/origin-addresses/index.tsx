@@ -131,11 +131,11 @@ export const OriginAddresses = () => {
 			<CardHeader isBorderless>
 				<VStack>
 					<Heading level={ 4 } weight={ 'normal' }>
-						{ __( 'Ship-from location', 'woocommerce-shipping' ) }
+						{ __( 'Sender addresses', 'woocommerce-shipping' ) }
 					</Heading>
 					<Text variant="muted">
 						{ __(
-							'This address is used to calculate shipping rates and delivery times.',
+							'Add the addresses of any locations you ship from. The sender address you select will be used to calculate shipping rates and delivery times.',
 							'woocommerce-shipping'
 						) }
 					</Text>
@@ -158,7 +158,7 @@ export const OriginAddresses = () => {
 									{ args.item.default_address && (
 										<Badge>
 											{ __(
-												'Default Origin',
+												'Default sender',
 												'woocommerce-shipping'
 											) }
 										</Badge>
@@ -166,7 +166,7 @@ export const OriginAddresses = () => {
 									{ args.item.default_return_address && (
 										<Badge>
 											{ __(
-												'Default Return',
+												'Default return',
 												'woocommerce-shipping'
 											) }
 										</Badge>
@@ -219,7 +219,7 @@ export const OriginAddresses = () => {
 						disabled={ ! canCreateRecord }
 						onClick={ handleAdd }
 					>
-						{ __( 'Add another', 'woocommerce-shipping' ) }
+						{ __( 'Add sender address', 'woocommerce-shipping' ) }
 					</Button>
 				</CardFooter>
 			</CardBody>

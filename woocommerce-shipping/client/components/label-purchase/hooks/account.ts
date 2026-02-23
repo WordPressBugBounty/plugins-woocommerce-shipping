@@ -70,6 +70,11 @@ export function useAccountState() {
 		[ accountSettings, siteSettings ]
 	);
 
+	const getSubscriptionId = useCallback(
+		() => siteSettings?.plan?.subscription_id,
+		[ siteSettings ]
+	);
+
 	return {
 		refreshSettings,
 		accountSettings,
@@ -77,5 +82,6 @@ export function useAccountState() {
 		setAccountCompleteOrder,
 		getAccountCompleteOrder,
 		getNextPaymentMethod,
+		getSubscriptionId,
 	};
 }

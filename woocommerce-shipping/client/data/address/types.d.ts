@@ -3,6 +3,7 @@ import {
 	ADDRESS_NORMALIZATION_FAILED,
 	DELETE_ORIGIN_ADDRESS,
 	DELETE_ORIGIN_ADDRESS_FAILED,
+	FETCH_ORIGIN_ADDRESSES,
 	INVALIDATE_ADDRESS_STORE,
 	UPDATE_SHIPMENT_ADDRESS,
 	UPDATE_SHIPMENT_ADDRESS_FAILED,
@@ -105,6 +106,13 @@ export interface DeleteOriginAddressAction extends Action {
 	type: DELETE_ORIGIN_ADDRESS;
 	payload: {
 		deletedId: string;
+	};
+}
+
+export interface FetchOriginAddressesAction extends Action {
+	type: FETCH_ORIGIN_ADDRESSES;
+	payload: {
+		addresses: OriginAddress[];
 	};
 }
 

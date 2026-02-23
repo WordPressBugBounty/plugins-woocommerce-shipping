@@ -7,7 +7,7 @@ import {
 import { __, sprintf } from '@wordpress/i18n';
 import { useLabelPurchaseContext } from 'context/label-purchase';
 import { payment } from '@wordpress/icons';
-import { MANAGE_PAYMENT_METHODS_URL } from 'components/shipping-settings/constants';
+import { getChangePaymentMethodUrl } from 'components/shipping-settings/constants';
 
 /**
  * Displays the selected payment method with a link to manage payment methods.
@@ -15,7 +15,7 @@ import { MANAGE_PAYMENT_METHODS_URL } from 'components/shipping-settings/constan
  */
 export const PaymentMethodSummary = () => {
 	const {
-		account: { getNextPaymentMethod },
+		account: { getNextPaymentMethod, getSubscriptionId },
 	} = useLabelPurchaseContext();
 
 	const nextPaymentMethod = getNextPaymentMethod();
@@ -23,6 +23,10 @@ export const PaymentMethodSummary = () => {
 	if ( ! nextPaymentMethod ) {
 		return null;
 	}
+
+	const changePaymentMethodUrl = getChangePaymentMethodUrl(
+		getSubscriptionId()
+	);
 
 	const cardType =
 		nextPaymentMethod.card_type.charAt( 0 ).toUpperCase() +
@@ -44,7 +48,7 @@ export const PaymentMethodSummary = () => {
 				) }
 				{ ' · ' }
 				<ExternalLink
-					href={ MANAGE_PAYMENT_METHODS_URL }
+					href={ changePaymentMethodUrl }
 					style={ { fontSize: 'inherit' } }
 				>
 					{ __( 'Manage payment method', 'woocommerce-shipping' ) }

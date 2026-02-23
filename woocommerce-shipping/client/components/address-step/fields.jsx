@@ -218,7 +218,7 @@ export const AddressFields = withBoundary(
 									<FlexBlock>
 										<CheckboxControl
 											label={ __(
-												'Save as default origin address',
+												'Save as default sender address',
 												'woocommerce-shipping'
 											) }
 											disabled={ isUpdating }

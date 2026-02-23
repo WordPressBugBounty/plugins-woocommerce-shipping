@@ -116,6 +116,8 @@ export const ProvideTestState = ( {
 			customs: {
 				hasErrors: () => false,
 				hasCustomsErrors: () => false,
+				isCustomsNeeded: () => false,
+				getCustomsState: () => null,
 			},
 			labels: {
 				hasPurchasedLabel: () => false,

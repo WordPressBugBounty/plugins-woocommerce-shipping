@@ -32,6 +32,14 @@ export const SETTINGS_KEYS = {
 	SCANFORM_ENABLED: 'scanform_enabled',
 } as const;
 
-export const MANAGE_PAYMENT_METHODS_URL = `https://my.wordpress.com/me/billing/purchases?search=${ encodeURIComponent(
+const MANAGE_PAYMENT_METHODS_URL = `https://my.wordpress.com/me/billing/purchases?search=${ encodeURIComponent(
 	window.location.host
 ) }`;
+
+export function getChangePaymentMethodUrl( subscriptionId?: number ): string {
+	if ( ! subscriptionId ) {
+		return MANAGE_PAYMENT_METHODS_URL;
+	}
+	const redirectTo = encodeURIComponent( window.location.href );
+	return `https://my.wordpress.com/me/billing/purchases/${ subscriptionId }/payment-method/change?redirect_to=${ redirectTo }`;
+}

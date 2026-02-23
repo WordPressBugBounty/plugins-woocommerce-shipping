@@ -1,22 +1,26 @@
-import { useCallback, useEffect, useState, useMemo } from '@wordpress/element';
+import {
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from '@wordpress/element';
 import {
 	__experimentalSpacer as Spacer,
 	__experimentalText as Text,
-	__experimentalInputControl as InputControl,
 	Button,
 	Flex,
 	Notice,
-	SelectControl,
-	CheckboxControl,
 } from '@wordpress/components';
-import { __ } from '@wordpress/i18n';
+import { __, _n } from '@wordpress/i18n';
 import {
 	DataForm,
-	DataFormControlProps,
 	DeepPartial,
 	Field,
 	Form,
 	FormField,
+	FormValidity,
+	useFormValidity,
 } from '@wordpress/dataviews/wp';
 import { AddressContextProvider } from './context';
 import { getCountryNames, getStateNames, isMailAndPhoneRequired } from 'utils';
@@ -27,8 +31,85 @@ import {
 	LocationResponse,
 	AddressTypes,
 } from 'types';
-import { FormErrors } from '@woocommerce/components';
-import _ from 'lodash';
+import {
+	validateName,
+	validateCompany,
+	validateAddress,
+	validateCity,
+	validateState,
+	validatePostcode,
+	validateCountry,
+	validateEmailField,
+	validatePhone,
+} from './validations';
+
+/**
+ * Check if all fields in a FormValidity object are valid.
+ * Mirrors the logic from useFormValidity's internal isFormValid.
+ */
+function isFormValidCheck( formValidity: FormValidity | undefined ): boolean {
+	if ( ! formValidity ) {
+		return true;
+	}
+	return Object.values( formValidity ).every( ( fieldValidation ) =>
+		Object.entries( fieldValidation ).every( ( [ key, validation ] ) => {
+			if (
+				key === 'children' &&
+				validation &&
+				typeof validation === 'object'
+			) {
+				return isFormValidCheck( validation as FormValidity );
+			}
+			return validation.type === 'valid';
+		} )
+	);
+}
+
+/**
+ * Keeps a field's `custom` validity in sync with shared validators even when
+ * another field changes (for example, country toggling destination phone/email
+ * requiredness). Inserts/updates invalid custom state when a message exists,
+ * and removes stale custom errors when the field is valid again.
+ */
+const upsertCustomFieldValidity = (
+	formValidity: Record< string, FormValidityEntry >,
+	fieldId: string,
+	message: string | null
+): Record< string, FormValidityEntry > => {
+	const updated = { ...formValidity };
+	const fieldValidity = updated[ fieldId ];
+
+	if ( message ) {
+		updated[ fieldId ] = {
+			...( fieldValidity ?? {} ),
+			custom: {
+				type: 'invalid',
+				message,
+			},
+		};
+	} else if ( fieldValidity?.custom?.type === 'invalid' ) {
+		const { custom: _custom, ...restFieldValidity } = fieldValidity;
+
+		if ( Object.keys( restFieldValidity ).length === 0 ) {
+			const { [ fieldId ]: _removed, ...rest } = updated;
+			return rest;
+		}
+
+		updated[ fieldId ] = restFieldValidity;
+	}
+
+	return updated;
+};
+
+interface FormValidityCustom {
+	type?: 'valid' | 'invalid';
+	message?: string;
+}
+
+interface FormValidityEntry {
+	custom?: FormValidityCustom;
+	[ key: string ]: unknown;
+}
 
 interface AddressDataFormProps< T = Destination > {
 	type: AddressTypes;
@@ -39,90 +120,8 @@ interface AddressDataFormProps< T = Destination > {
 	isVerified: boolean;
 	validationErrors: Record< string, string >;
 	showUPSDAPTOSWarning: boolean;
-	validateAddressSection: ( values: T ) => FormErrors< T >;
-	isSubmitButtonDisabled: ( {
-		isDirty,
-		isValidForm,
-	}: {
-		isDirty: boolean;
-		isValidForm: boolean;
-	} ) => boolean;
 	originCountry?: string;
 	onSaveWithoutValidation?: ( values: T ) => Promise< void >;
-}
-
-function FieldInput< T = Destination >( {
-	data,
-	field,
-	onChange,
-	hideLabelFromVision,
-}: DataFormControlProps< T > ): React.ReactNode {
-	// Map address to address1 for backwards compatibility
-	const fieldValue =
-		field.id === 'address'
-			? data[ 'address1' as keyof T ] || data[ 'address' as keyof T ]
-			: data[ field.id as keyof T ];
-
-	const handleChange = ( value: string | undefined ) => {
-		onChange( { [ field.id ]: value } as DeepPartial< T > );
-	};
-
-	return (
-		<InputControl
-			value={ fieldValue as string }
-			label={ field.label }
-			onChange={ handleChange }
-			placeholder={ field.placeholder }
-			hideLabelFromVision={ hideLabelFromVision }
-			__next40pxDefaultSize
-		/>
-	);
-}
-
-function FieldSelect< T = Destination >( {
-	data,
-	field,
-	onChange,
-	options,
-	hideLabelFromVision,
-}: DataFormControlProps< T > & {
-	options: { label: string; value: string }[];
-} ): React.ReactNode {
-	const fieldValue = data[ field.id as keyof T ];
-	const handleChange = ( value: string | undefined ) => {
-		onChange( { [ field.id ]: value } as DeepPartial< T > );
-	};
-	return (
-		<SelectControl
-			value={ fieldValue as string }
-			options={ options }
-			label={ field.label }
-			hideLabelFromVision={ hideLabelFromVision }
-			onChange={ handleChange }
-			__next40pxDefaultSize
-			__nextHasNoMarginBottom
-		/>
-	);
-}
-
-function FieldCheckbox< T = Destination >( {
-	data,
-	field,
-	onChange,
-}: DataFormControlProps< T > & {
-	validationErrors?: Record< string, string >;
-} ): React.ReactNode {
-	const fieldValue = data[ field.id as keyof T ];
-	const handleChange = ( value: boolean ) => {
-		onChange( { [ field.id ]: value } as DeepPartial< T > );
-	};
-	return (
-		<CheckboxControl
-			label={ field.label }
-			checked={ fieldValue as boolean }
-			onChange={ handleChange }
-		/>
-	);
 }
 
 export function AddressDataForm<
@@ -133,30 +132,13 @@ export function AddressDataForm<
 	onSubmit,
 	onCancel,
 	isUpdating,
-	isVerified,
 	validationErrors,
 	showUPSDAPTOSWarning,
-	validateAddressSection,
-	isSubmitButtonDisabled,
 	originCountry,
 }: AddressDataFormProps< T > ) {
 	// State for DataForm
 	const [ formData, setFormData ] = useState< T >( initialValue );
-	const [ dataFormIsDirty, setDataFormIsDirty ] = useState( false );
-	const [ formValidationErrors, setFormValidationErrors ] = useState<
-		FormErrors< T >
-	>( {} );
-
-	// Handle form submission for DataForm
-	const handleDataFormSubmit = async () => {
-		await onSubmit( formData );
-	};
-
-	const allValidationErrors = {
-		...validationErrors,
-		...formValidationErrors,
-	};
-	const dataFormIsValid = Object.keys( formValidationErrors ).length === 0;
+	const formRef = useRef< HTMLFormElement >( null );
 
 	// Get country and state options
 	const countryNames = useMemo(
@@ -188,12 +170,18 @@ export function AddressDataForm<
 					type === ADDRESS_TYPES.DESTINATION
 						? __( 'Recipient Name', 'woocommerce-shipping' )
 						: __( 'Name', 'woocommerce-shipping' ),
+				isValid: {
+					custom: ( item: T ) => validateName( item, type ),
+				},
 			},
 			{
 				id: 'company',
 				type: 'text',
 				label: __( 'Company', 'woocommerce-shipping' ),
 				isVisible: () => type === ADDRESS_TYPES.ORIGIN,
+				isValid: {
+					custom: ( item: T ) => validateCompany( item, type ),
+				},
 			},
 			{
 				id: 'address',
@@ -203,6 +191,10 @@ export function AddressDataForm<
 					type === ADDRESS_TYPES.DESTINATION
 						? __( 'Shipping Address', 'woocommerce-shipping' )
 						: __( 'Address', 'woocommerce-shipping' ),
+				isValid: {
+					custom: ( item: T ) =>
+						validateAddress( item, type, originCountry ),
+				},
 			},
 			{
 				id: 'address2',
@@ -212,80 +204,84 @@ export function AddressDataForm<
 					'woocommerce-shipping'
 				),
 				isVisible: () => type === ADDRESS_TYPES.DESTINATION,
-				Edit: ( props ) => (
-					<FieldInput< T > { ...props } hideLabelFromVision />
-				),
+				label: ' ', // Empty label to hide the label visually
 			},
 			{
 				id: 'city',
 				type: 'text',
 				placeholder: __( 'City', 'woocommerce-shipping' ),
-				Edit: ( props ) => (
-					<FieldInput< T > { ...props } hideLabelFromVision />
-				),
+				isValid: {
+					custom: ( item: T ) =>
+						validateCity( item, type, originCountry ),
+				},
 			},
 			{
 				id: 'state',
 				type: 'text',
 				label: __( 'State', 'woocommerce-shipping' ),
 				placeholder: __( 'State', 'woocommerce-shipping' ),
-				Edit: ( props ) =>
-					stateNames.length > 0 ? (
-						<FieldSelect< T >
-							{ ...props }
-							options={ stateNames }
-							hideLabelFromVision
-						/>
-					) : (
-						<FieldInput< T > { ...props } hideLabelFromVision />
-					),
+				elements: stateNames,
+				isValid: {
+					elements: false,
+					custom: ( item: T ) =>
+						validateState( item, type, originCountry ),
+				},
 			},
 			{
 				id: 'postcode',
 				type: 'text',
 				placeholder: __( 'Postal Code', 'woocommerce-shipping' ),
-				Edit: ( props ) => (
-					<FieldInput< T > { ...props } hideLabelFromVision />
-				),
+				isValid: {
+					custom: ( item: T ) =>
+						validatePostcode( item, type, originCountry ),
+				},
 			},
 			{
 				id: 'country',
 				type: 'text',
 				label: __( 'Country', 'woocommerce-shipping' ),
-				Edit: ( props ) => (
-					<FieldSelect< T >
-						{ ...props }
-						options={ countryNames }
-						hideLabelFromVision
-					/>
-				),
+				elements: countryNames,
+				isValid: {
+					elements: false,
+					custom: ( item: T ) =>
+						validateCountry( item, type, originCountry ),
+				},
 			},
 			{
 				id: 'email',
-				type: 'text',
+				type: 'email',
 				label: isPhoneAndEmailRequired
 					? __( 'Email', 'woocommerce-shipping' )
 					: __( 'Email (optional)', 'woocommerce-shipping' ),
-				Edit: ( props ) => <FieldInput< T > { ...props } />,
+				isValid: {
+					custom: ( item: T ) =>
+						validateEmailField( item, type, originCountry ),
+				},
 			},
 			{
 				id: 'phone',
-				type: 'text',
-				label: __( 'Phone', 'woocommerce-shipping' ),
-				Edit: ( props ) => <FieldInput< T > { ...props } />,
+				type: 'telephone',
+				label: isPhoneAndEmailRequired
+					? __( 'Phone', 'woocommerce-shipping' )
+					: __( 'Phone (optional)', 'woocommerce-shipping' ),
+				isValid: {
+					custom: ( item: T ) =>
+						validatePhone( item, type, originCountry ),
+				},
 			},
 			// Add Save as default checkbox only for origin addresses
 			{
+				Edit: 'checkbox',
 				id: 'defaultAddress',
 				type: 'boolean',
 				label: __(
-					'Save as default origin address',
+					'Save as default sender address',
 					'woocommerce-shipping'
 				),
 				isVisible: () => type === ADDRESS_TYPES.ORIGIN,
-				Edit: ( props ) => <FieldCheckbox< T > { ...props } />,
 			},
 			{
+				Edit: 'checkbox',
 				id: 'defaultReturnAddress',
 				type: 'boolean',
 				label: __(
@@ -293,29 +289,28 @@ export function AddressDataForm<
 					'woocommerce-shipping'
 				),
 				isVisible: () => type === ADDRESS_TYPES.ORIGIN,
-				Edit: ( props ) => <FieldCheckbox< T > { ...props } />,
 			},
 		],
-		[ countryNames, stateNames, isPhoneAndEmailRequired, type ]
+		[
+			countryNames,
+			stateNames,
+			isPhoneAndEmailRequired,
+			type,
+			originCountry,
+		]
 	);
 
 	const form: Form = {
 		fields: [
 			'name',
 			'company',
-			{
-				id: 'emailPhoneRow',
-				layout: {
-					type: 'row',
-				},
-				children: [ 'email', 'phone' ],
-			},
 			'address',
 			'address2',
 			{
 				id: 'cityStateRow',
 				layout: {
 					type: 'row',
+					alignment: 'start',
 				},
 				children: [ 'city', 'state' ],
 			} as FormField,
@@ -323,13 +318,99 @@ export function AddressDataForm<
 				id: 'postcodeCountryRow',
 				layout: {
 					type: 'row',
+					alignment: 'start',
 				},
 				children: [ 'postcode', 'country' ],
 			} as FormField,
+			'phone',
+			'email',
 			'defaultAddress',
 			'defaultReturnAddress',
 		].filter( Boolean ) as FormField[],
 	};
+
+	// useFormValidity processes all isValid rules (required, elements, custom, etc.)
+	// and produces the validity object that DataForm uses to display inline errors.
+	const { validity: rawValidity } = useFormValidity( formData, fields, form );
+
+	// useFormValidity only re-validates fields whose own value changed,
+	// so cross-field dependencies (name ↔ company) can leave stale errors.
+	// Post-process to clear them when the sibling now satisfies the condition.
+	const { validity, isValid: dataFormIsValid } = useMemo( () => {
+		let adjusted: Record< string, FormValidityEntry > = {
+			...( ( rawValidity ?? {} ) as Record< string, FormValidityEntry > ),
+		};
+
+		// Email/phone requiredness for destination depends on origin/destination country,
+		// so enforce the shared validator result even when only country changes.
+		adjusted = upsertCustomFieldValidity(
+			adjusted,
+			'email',
+			validateEmailField( formData, type, originCountry )
+		);
+		adjusted = upsertCustomFieldValidity(
+			adjusted,
+			'phone',
+			validatePhone( formData, type, originCountry )
+		);
+
+		if ( type === ADDRESS_TYPES.ORIGIN ) {
+			const hasName = !! formData.name;
+			const hasCompany = !! formData.company;
+
+			// If either name or company is now provided, clear the
+			// cross-field "required" error on the other field.
+			if ( hasName && adjusted.company?.custom?.type === 'invalid' ) {
+				const { company: _removed, ...rest } = adjusted;
+				adjusted = rest;
+			}
+
+			if ( hasCompany && adjusted.name?.custom?.type === 'invalid' ) {
+				const { name: _removed, ...rest } = adjusted;
+				adjusted = rest;
+			}
+		}
+
+		const adjustedValidity = Object.keys( adjusted ).length
+			? ( adjusted as FormValidity )
+			: undefined;
+
+		return {
+			validity: adjustedValidity,
+			isValid: isFormValidCheck( adjustedValidity ),
+		};
+	}, [
+		rawValidity,
+		formData,
+		type,
+		originCountry,
+		formData.name,
+		formData.company,
+	] );
+
+	/**
+	 * Trigger inline validation on mount for pre-filled fields.
+	 *
+	 * When the form opens with existing address data (e.g. editing a saved
+	 * address), any invalid values should surface errors right away rather
+	 * than waiting for the user to interact with each field.
+	 *
+	 * By the time this effect runs, DataForm has already evaluated every
+	 * field's isValid.custom validator and called setCustomValidity() on
+	 * the underlying <input> elements. Calling checkValidity() on the
+	 * <form> fires the native `invalid` event on every input whose custom
+	 * validity message is non-empty, which ControlWithError listens for
+	 * to render the inline error message.
+	 */
+	useEffect( () => {
+		if (
+			Object.values( initialValue ).some(
+				( value ) => `${ value }`.length > 2
+			)
+		) {
+			formRef.current?.checkValidity();
+		}
+	}, [ initialValue ] );
 
 	const handleChange = useCallback(
 		( value: DeepPartial< T > ) => {
@@ -341,18 +422,19 @@ export function AddressDataForm<
 		[ setFormData ]
 	);
 
-	// Check if form is dirty or has validation errors on formData change
-	useEffect( () => {
-		setDataFormIsDirty( ! _.isEqual( initialValue, formData ) );
-
-		// Validate the form
-		const errors = validateAddressSection( formData );
-		setFormValidationErrors( errors );
-		// eslint-disable-next-line react-hooks/exhaustive-deps -- we want this to only run when formData changes
-	}, [ formData, validateAddressSection ] );
+	// Handle form submission
+	const handleDataFormSubmit = async () => {
+		if ( ! dataFormIsValid ) {
+			// Trigger native invalid events on all inputs so that
+			// ControlWithError shows the inline error messages.
+			formRef.current?.checkValidity();
+			return;
+		}
+		await onSubmit( formData );
+	};
 
 	return (
-		<>
+		<form ref={ formRef } noValidate>
 			{ showUPSDAPTOSWarning && (
 				<>
 					<Notice status="warning" isDismissible={ false }>
@@ -366,46 +448,6 @@ export function AddressDataForm<
 					<Spacer marginBottom={ 3 } />
 				</>
 			) }
-			{ ! isVerified && (
-				<Spacer marginBottom={ 3 }>
-					<Notice status="warning" isDismissible={ false }>
-						{ __(
-							"This address hasn't been validated. We recommend validating to help ensure successful delivery.",
-							'woocommerce-shipping'
-						) }
-					</Notice>
-				</Spacer>
-			) }
-			{ Object.keys( allValidationErrors ).length > 0 && (
-				<Spacer marginBottom={ 3 }>
-					<Notice status="error" isDismissible={ false }>
-						<Text>
-							{ __(
-								'Please fix the errors below to continue.',
-								'woocommerce-shipping'
-							) }
-						</Text>
-						<ul
-							style={ {
-								margin: 0,
-								paddingInlineStart: 0,
-								listStylePosition: 'inside',
-							} }
-						>
-							{ [
-								...new Set(
-									Object.values( allValidationErrors ).filter(
-										( msg ): msg is string =>
-											typeof msg === 'string'
-									)
-								),
-							].map( ( message ) => (
-								<li key={ message }>{ message }</li>
-							) ) }
-						</ul>
-					</Notice>
-				</Spacer>
-			) }
 			<AddressContextProvider
 				initialValue={ {
 					isUpdating,
@@ -418,11 +460,41 @@ export function AddressDataForm<
 						fields={ fields }
 						onChange={ handleChange }
 						form={ form }
+						validity={ validity }
 					/>
 				</Spacer>
 			</AddressContextProvider>
+			{ Object.keys( validationErrors ).length > 0 && ! isUpdating && (
+				<>
+					<Notice status="error" isDismissible={ false }>
+						<strong>
+							{ _n(
+								'Please fix the error below to continue:',
+								'Please fix the errors below to continue:',
+								Object.keys( validationErrors ).length,
+								'woocommerce-shipping'
+							) }
+						</strong>
+						{ Object.keys( validationErrors ).length === 1 ? (
+							<p style={ { margin: 0 } }>
+								{ Object.values( validationErrors )[ 0 ] }
+							</p>
+						) : (
+							<ul style={ { margin: 0, paddingLeft: '1em' } }>
+								{ Object.values( validationErrors ).map(
+									( message, index ) => (
+										<li key={ index }>{ message }</li>
+									)
+								) }
+							</ul>
+						) }
+					</Notice>
+					<Spacer marginBottom={ 3 } />
+				</>
+			) }
 			<Flex justify="flex-end" align={ 'center' } as="footer">
 				<Button
+					type="button"
 					onClick={ onCancel }
 					isBusy={ isUpdating }
 					variant="tertiary"
@@ -430,17 +502,15 @@ export function AddressDataForm<
 					{ __( 'Cancel', 'woocommerce-shipping' ) }
 				</Button>
 				<Button
-					onClick={ handleDataFormSubmit }
+					type="button"
 					variant="primary"
-					disabled={ isSubmitButtonDisabled( {
-						isDirty: dataFormIsDirty,
-						isValidForm: dataFormIsValid,
-					} ) }
+					disabled={ isUpdating || ! dataFormIsValid }
 					isBusy={ isUpdating }
+					onClick={ handleDataFormSubmit }
 				>
 					{ __( 'Validate and save', 'woocommerce-shipping' ) }
 				</Button>
 			</Flex>
-		</>
+		</form>
 	);
 }

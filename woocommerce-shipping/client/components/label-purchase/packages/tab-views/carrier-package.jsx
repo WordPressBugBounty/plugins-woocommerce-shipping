@@ -15,6 +15,7 @@ import { Packages } from './carrier-package/packages';
 import { CarrierIcon } from '../../../carrier-icon';
 import { FetchNotice } from './fetch-notice';
 import { TotalWeight } from '../../total-weight';
+import { CustomsWeightWarning } from './customs-weight-warning';
 import { GetRatesButton } from '../../get-rates-button';
 import { useLabelPurchaseContext } from 'context/label-purchase';
 import { recordEvent } from 'utils/tracks';
@@ -146,6 +147,7 @@ export const CarrierPackage = withBoundary(
 										disabled={ isGetRatesButtonDisabled }
 									/>
 								</Flex>
+								<CustomsWeightWarning />
 								<FetchNotice margin="before" />
 							</>
 						);

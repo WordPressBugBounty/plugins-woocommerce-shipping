@@ -6,6 +6,7 @@ import {
 	ADDRESS_NORMALIZATION,
 	ADDRESS_NORMALIZATION_FAILED,
 	DELETE_ORIGIN_ADDRESS,
+	FETCH_ORIGIN_ADDRESSES,
 	RESET_ADDRESS_NORMALIZATION,
 	STATE_RESET,
 	UPDATE_SHIPMENT_ADDRESS,
@@ -17,6 +18,7 @@ import {
 import {
 	getAddressNormalizationPath,
 	getDeleteOriginAddressPath,
+	getOriginAddressesPath,
 	getUpdateDestinationPath,
 	getUpdateOriginPath,
 	getVerifyOrderShippingAddressPath,
@@ -364,6 +366,22 @@ export function* addOriginAddress( address: OriginAddress ): Generator<
 			},
 		};
 	}
+}
+
+export function* fetchOriginAddresses() {
+	const addresses: LocationResponse[] = yield apiFetch( {
+		path: getOriginAddressesPath(),
+	} );
+	return {
+		type: FETCH_ORIGIN_ADDRESSES,
+		payload: {
+			addresses: addresses.map( ( addr ) => ( {
+				...camelCaseKeys( addr ),
+				address: composeAddress( addr ),
+				name: composeName( addr ),
+			} ) ),
+		},
+	};
 }
 
 export function stateReset(): StateResetAction {

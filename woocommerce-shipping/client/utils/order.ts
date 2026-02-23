@@ -1,6 +1,6 @@
 import { getConfig } from './config';
 import { Destination, LocationResponse, OriginAddress } from '../types';
-import { capitalize, groupBy } from 'lodash';
+import { groupBy } from 'lodash';
 import { camelCaseKeys } from './common';
 
 export const getCurrentOrder = () => {
@@ -67,19 +67,12 @@ export const addressToString = (
 				| 'country'
 		  >
 		| null
-		| undefined,
-	options?: { titleCase?: boolean }
+		| undefined
 ) => {
 	// Handle null or undefined address
 	if ( ! address ) {
 		return '';
 	}
-
-	const { titleCase = false } = options ?? {};
-
-	// Helper to apply title case if enabled
-	const convertToTitleCase = ( part: string ) =>
-		titleCase ? capitalize( part ) : part;
 
 	const concatAddress = composeAddress( {
 		address: address.address,
@@ -87,12 +80,9 @@ export const addressToString = (
 		address_2: address.address2,
 	} );
 
-	// Build address string with safe fallbacks
-	// Title case is applied to street address and city only
-	// State, postcode, and country are preserved as-is
 	const parts = [
-		convertToTitleCase( concatAddress ),
-		convertToTitleCase( address.city || '' ),
+		concatAddress,
+		address.city || '',
 		`${ address.state || '' } ${ address.postcode || '' }`.trim(),
 		address.country || '',
 	].filter( ( part ) => part ); // Remove empty parts

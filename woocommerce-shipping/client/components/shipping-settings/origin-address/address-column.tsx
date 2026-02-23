@@ -22,12 +22,12 @@ export const AddressColumn = ( {
 				<Text weight="bold">{ address.name }</Text>
 				{ address.defaultAddress && (
 					<Text variant="muted">
-						{ __( 'Default Origin', 'woocommerce-shipping' ) }
+						{ __( 'Default sender', 'woocommerce-shipping' ) }
 					</Text>
 				) }
 				{ address.defaultReturnAddress && (
 					<Text variant="muted">
-						{ __( 'Default Return', 'woocommerce-shipping' ) }
+						{ __( 'Default return', 'woocommerce-shipping' ) }
 					</Text>
 				) }
 			</HStack>

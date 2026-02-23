@@ -12,7 +12,6 @@ import { addressToString, isDeliveryDateValid } from 'utils';
 import { dateI18n } from '@wordpress/date';
 import { Badge } from 'components/wp';
 import { subline } from 'components/icons';
-import { startCase, toLower } from 'lodash';
 
 interface ShippingSummaryProps {
 	destinationAddress: OriginAddress | Destination;
@@ -122,17 +121,11 @@ export const ShippingSummary = ( {
 			<Flex direction={ 'column' } gap={ 4 }>
 				<SummaryItem label={ __( 'Ship to', 'woocommerce-shipping' ) }>
 					<Text>
-						{ startCase(
-							toLower(
-								destinationAddress.name ??
-									`${ destinationAddress.firstName } ${ destinationAddress.lastName }`
-							)
-						) }
+						{ destinationAddress.name ??
+							`${ destinationAddress.firstName } ${ destinationAddress.lastName }` }
 					</Text>
 					<Text display="flex">
-						{ addressToString( destinationAddress, {
-							titleCase: true,
-						} ) }
+						{ addressToString( destinationAddress ) }
 					</Text>
 				</SummaryItem>
 				<SummaryItem label={ __( 'Package', 'woocommerce-shipping' ) }>

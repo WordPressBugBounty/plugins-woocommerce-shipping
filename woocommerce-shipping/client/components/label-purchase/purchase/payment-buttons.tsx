@@ -2,6 +2,7 @@ import { MouseEventHandler } from 'react';
 import {
 	__experimentalSpacer as Spacer,
 	__experimentalText as Text,
+	Animate,
 	Button,
 	CheckboxControl,
 	ExternalLink,
@@ -35,6 +36,7 @@ import { settingsPageUrl } from '../constants';
 import { useLabelPurchaseContext } from 'context/label-purchase';
 import { getShipmentTitle } from '../utils';
 import {
+	CoreDataInvalidateDispatch,
 	Label,
 	LabelPurchaseError,
 	Order,
@@ -42,6 +44,7 @@ import {
 	WPErrorRESTResponse,
 } from 'types';
 import { dispatch, select, useSelect } from '@wordpress/data';
+import { store as coreStore } from '@wordpress/core-data';
 import { labelPurchaseStore } from 'data/label-purchase';
 import { EssentialDetails } from '../essential-details';
 import { recordEvent } from 'utils/tracks';
@@ -49,7 +52,8 @@ import { LABEL_PURCHASE_STATUS } from 'data/constants';
 import { UPSDAPTos } from 'components/carrier/upsdap/upsdap-tos';
 import apiFetch from '@wordpress/api-fetch';
 import { getCarrierStrategyPath } from 'data/routes';
-import { MANAGE_PAYMENT_METHODS_URL } from 'components/shipping-settings/constants';
+import { getChangePaymentMethodUrl } from 'components/shipping-settings/constants';
+import { usePaymentMethodPolling } from './use-payment-method-polling';
 
 interface PaymentButtonsProps {
 	order: Order;
@@ -84,10 +88,13 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 			setAccountCompleteOrder,
 			getAccountCompleteOrder,
 			getNextPaymentMethod,
+			getSubscriptionId,
 		},
 		nextDesign,
 	} = useLabelPurchaseContext();
 	const nextPaymentMethod = getNextPaymentMethod();
+	const subscriptionId = getSubscriptionId();
+	const changePaymentMethodUrl = getChangePaymentMethodUrl( subscriptionId );
 
 	const lastOrderCompleted = getAccountCompleteOrder();
 	const [ errors, setErrors ] = useState< LabelPurchaseError | null >( null );
@@ -110,6 +117,26 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 	const resetErrors = () => {
 		setErrors( null );
 	};
+
+	const invalidateSiteSettingsRecord = useCallback( () => {
+		const coreDataDispatch = dispatch(
+			coreStore
+		) as unknown as CoreDataInvalidateDispatch;
+
+		void coreDataDispatch.invalidateResolution( 'getEntityRecord', [
+			'root',
+			'site',
+			undefined,
+		] );
+	}, [] );
+
+	const {
+		isPolling: isPaymentMethodPolling,
+		startPolling: startPaymentMethodPolling,
+	} = usePaymentMethodPolling( {
+		isResolved: !! nextPaymentMethod,
+		onPoll: invalidateSiteSettingsRecord,
+	} );
 
 	const purchaseAPIErrors = useSelect(
 		( s ) =>
@@ -523,31 +550,45 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 			{ ! nextPaymentMethod &&
 				document.getElementById( 'label-purchase-status-notices' ) &&
 				createPortal(
-					<div style={ { marginBottom: '16px' } }>
-						<Notice status="error" isDismissible={ false }>
-							{ createInterpolateElement(
-								__(
-									'No payment method selected for this site. Please select a payment method to purchase a label. <ManageLink/>',
-									'woocommerce-shipping'
-								),
-								{
-									ManageLink: (
-										<ExternalLink
-											href={ MANAGE_PAYMENT_METHODS_URL }
-											style={ {
-												display: 'block',
-											} }
-										>
-											{ __(
-												'Manage payment methods.',
-												'woocommerce-shipping'
-											) }
-										</ExternalLink>
-									),
-								}
-							) }
-						</Notice>
-					</div>,
+					<Animate
+						type={ isPaymentMethodPolling ? 'loading' : undefined }
+					>
+						{ ( { className } ) => (
+							<div
+								className={ className }
+								style={ { marginBottom: '16px' } }
+							>
+								<Notice status="error" isDismissible={ false }>
+									{ createInterpolateElement(
+										__(
+											'No payment method selected for this site. Please select a payment method to purchase a label. <ManageLink/>',
+											'woocommerce-shipping'
+										),
+										{
+											ManageLink: (
+												<ExternalLink
+													href={
+														changePaymentMethodUrl
+													}
+													onClick={
+														startPaymentMethodPolling
+													}
+													style={ {
+														display: 'block',
+													} }
+												>
+													{ __(
+														'Manage payment methods.',
+														'woocommerce-shipping'
+													) }
+												</ExternalLink>
+											),
+										}
+									) }
+								</Notice>
+							</div>
+						) }
+					</Animate>,
 					document.getElementById( 'label-purchase-status-notices' )!
 				) }
 			{ errors &&

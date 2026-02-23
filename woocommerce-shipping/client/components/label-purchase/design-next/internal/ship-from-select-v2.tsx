@@ -29,6 +29,8 @@ import { useLabelPurchaseContext } from 'context/label-purchase';
 import { AddressStep } from 'components/address-step';
 import { addressStore } from 'data/address';
 import { settingsPageUrl } from 'components/label-purchase/constants';
+import { SHIPPING_OPERATIONS_PATH } from 'next/data';
+import { Badge } from 'components/wp';
 
 interface ShipFromSelectProps {
 	disabled: boolean;
@@ -104,6 +106,19 @@ const AddressLine = ( {
 					{ addressToString( origin ) }
 				</Text>
 			</Flex>
+			{ ! origin.isVerified && (
+				<span
+					style={ {
+						marginBottom: '-16px',
+						marginLeft: '4px',
+						display: 'block',
+					} }
+				>
+					<Badge intent="warning-alt">
+						{ __( 'Not validated', 'woocommerce-shipping' ) }
+					</Badge>
+				</span>
+			) }
 		</MenuItem>
 	);
 };
@@ -199,13 +214,25 @@ export const ShipFromSelectV2 = ( { disabled }: ShipFromSelectProps ) => {
 									paddingRight: '4px',
 								} }
 							>
-								{ getShipmentOrigin()
-									? getShipmentOrigin().company ??
-									  getShipmentOrigin().name
-									: __(
-											'Choose a ship from address',
-											'woocommerce-shipping'
-									  ) }
+								<Flex direction="row" align="center" gap={ 4 }>
+									<Text size={ 13 } lineHeight={ '20px' }>
+										{ getShipmentOrigin()
+											? getShipmentOrigin().company ??
+											  getShipmentOrigin().name
+											: __(
+													'Choose a ship from address',
+													'woocommerce-shipping'
+											  ) }
+									</Text>
+									{ ! getShipmentOrigin()?.isVerified && (
+										<Badge intent="warning-alt">
+											{ __(
+												'Not validated',
+												'woocommerce-shipping'
+											) }
+										</Badge>
+									) }
+								</Flex>
 							</Button>
 						);
 					} }
@@ -237,9 +264,18 @@ export const ShipFromSelectV2 = ( { disabled }: ShipFromSelectProps ) => {
 								>
 									<Button
 										variant="link"
-										href="/wp-admin/admin.php?page=next-admin&p=%2Fwoocommerce%2Fsettings%2Fshipping%2Foperations"
 										onClick={ () => {
 											onClose();
+											if (
+												window.WCShipping_Config
+													?.navigate
+											) {
+												window.WCShipping_Config.navigate(
+													{
+														to: SHIPPING_OPERATIONS_PATH,
+													}
+												);
+											}
 										} }
 										style={ {
 											textDecoration: 'none',

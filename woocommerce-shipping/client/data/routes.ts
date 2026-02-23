@@ -3,6 +3,8 @@ import { Carrier, CustomPackageType } from 'types';
 
 export const getRatesPath = () => `${ NAMESPACE }/label/rate`;
 
+export const getOriginAddressesPath = () => `${ NAMESPACE }/address/origins`;
+
 export const getUpdateOriginPath = () => `${ NAMESPACE }/address/update_origin`;
 
 export const getUpdateDestinationPath = ( orderId: string ) =>

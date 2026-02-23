@@ -78,3 +78,4 @@ export * from './promotion.d';
 export * from './shipments.d';
 export * from './scanform-types.d';
 export * from './site-settings.d';
+export * from './core-data.d';

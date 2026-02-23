@@ -4,7 +4,6 @@ import {
 	createLocalErrors,
 	createValidationResult,
 	hasStates,
-	US_MILITARY_STATES,
 } from 'utils';
 import {
 	AddressValidationInput,
@@ -181,35 +180,23 @@ export const validateDestinationPhone =
 	( originCountry: string ) =>
 	( { values, errors }: AddressValidationInput ) => {
 		const localErrors = createLocalErrors();
-		const { phone, country, state } = values;
+		const { phone, country } = values;
+		const isCrossBorderDestination = originCountry !== country;
 
-		// Check if this is a military address that requires special validation
-		const isMilitaryAddress =
-			originCountry === country &&
-			country === 'US' &&
-			US_MILITARY_STATES.includes( state );
+		if ( ! phone ) {
+			if ( isCrossBorderDestination ) {
+				localErrors.phone = __(
+					"Phone number can't be empty for this address.",
+					'woocommerce-shipping'
+				);
+			}
 
-		// For military addresses, use the specific military validation
-		if ( isMilitaryAddress && ! phone ) {
-			localErrors.phone = __(
-				'A destination address phone number is required for this shipment.',
-				'woocommerce-shipping'
-			);
-		} else if (
-			isMilitaryAddress &&
-			phone.split( /\D+/g ).join( '' ).replace( /^1/, '' ).length !== 10
-		) {
-			localErrors.phone = __(
-				'Customs forms require a 10-digit phone number. ' +
-					'Please edit your phone number so it has at most 10 digits.',
-				'woocommerce-shipping'
-			);
-		} else {
-			// For all other destination addresses, use standard phone validation
-			return validatePhone( { values, errors } );
+			return createValidationResult( values, errors, localErrors );
 		}
 
-		return createValidationResult( values, errors, localErrors );
+		// Phone is optional for domestic destination shipments.
+		// If present, apply standard format validation rules.
+		return validatePhone( { values, errors } );
 	};
 
 export const validateEmail = ( {

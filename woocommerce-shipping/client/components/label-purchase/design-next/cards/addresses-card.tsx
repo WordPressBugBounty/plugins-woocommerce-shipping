@@ -16,19 +16,15 @@ import { addressStore } from 'data/address';
 import { ADDRESS_TYPES } from 'data/constants';
 import { dispatch, useSelect } from '@wordpress/data';
 import { useLabelPurchaseContext } from 'context/label-purchase';
-import {
-	createInterpolateElement,
-	useCallback,
-	useEffect,
-	useRef,
-	useState,
-} from '@wordpress/element';
+import { useEffect, useRef, useState } from '@wordpress/element';
 import {
 	addressToString,
 	areAddressesClose,
 	areAllOriginsUnverified,
+	camelCaseKeys,
 	composeName,
 	formatAddressFields,
+	snakeCaseKeys,
 } from 'utils';
 import { AddressStep } from 'components/address-step';
 import { pencil as edit } from '@wordpress/icons';
@@ -36,9 +32,6 @@ import { Badge } from 'components/wp';
 import { Destination, Order, OriginAddress } from 'types';
 import { ShipFromSelectV2 } from '../internal/ship-from-select-v2';
 import { withBoundaryNext } from 'components/HOC/error-boundary/with-boundary-next';
-import { startCase, toLower } from 'lodash';
-import Notification from 'components/notification';
-import { SHIPPING_OPERATIONS_PATH } from 'next/data';
 
 const firstFilled = ( arr: ( string | undefined )[] ) => {
 	for ( const item of arr ) {
@@ -59,15 +52,11 @@ const getAddressSummary = (
 		__( 'No name provided', 'woocommerce-shipping' ),
 	] ) } (${
 		originAddress
-			? `${ startCase( toLower( originAddress.city ) ) }, ${
-					originAddress.state
-			  } ${ originAddress.postcode }`
+			? `${ originAddress.city }, ${ originAddress.state } ${ originAddress.postcode }`
 			: __( 'No address provided', 'woocommerce-shipping' )
 	}) → ${
 		destinationAddress
-			? `${ startCase( toLower( destinationAddress.city ) ) }, ${
-					destinationAddress.state
-			  } ${ destinationAddress.postcode }`
+			? `${ destinationAddress.city }, ${ destinationAddress.state } ${ destinationAddress.postcode }`
 			: __( 'No address provided', 'woocommerce-shipping' )
 	}`;
 };
@@ -129,10 +118,13 @@ const AddressesCardComponent = ( {
 	order: Order;
 	destinationAddress: Destination | OriginAddress;
 } ) => {
-	const [ isAddressModalOpen, setIsAddressModalOpen ] = useState( false );
+	const [ isDestinationModalOpen, setIsDestinationModalOpen ] =
+		useState( false );
+	const [ isOriginModalOpen, setIsOriginModalOpen ] = useState( false );
 	const [ isRecipientAddressHovered, setIsRecipientAddressHovered ] =
 		useState( false );
-
+	const [ isOriginAddressHovered, setIsOriginAddressHovered ] =
+		useState( false );
 	const isDestinationAddressVerified = useSelect(
 		( select ) =>
 			select( addressStore ).getIsAddressVerified(
@@ -167,13 +159,10 @@ const AddressesCardComponent = ( {
 
 	const allOriginsUnverified = areAllOriginsUnverified( origins );
 
-	const navigateToShippingOperations = useCallback( () => {
-		if ( window.WCShipping_Config?.navigate ) {
-			window.WCShipping_Config.navigate( {
-				to: SHIPPING_OPERATIONS_PATH,
-			} );
-		}
-	}, [] );
+	// Refresh origin addresses on mount so we pick up changes made on the settings page.
+	useEffect( () => {
+		dispatch( addressStore ).fetchOriginAddresses();
+	}, [] ); // eslint-disable-line react-hooks/exhaustive-deps
 
 	const originAddress = ! hasPurchasedLabel( false )
 		? ( getShipmentOrigin() as OriginAddress )
@@ -192,7 +181,10 @@ const AddressesCardComponent = ( {
 
 	useEffect(
 		() => {
-			if ( hasAutoVerificationRunOnce.current || isAddressModalOpen ) {
+			if (
+				hasAutoVerificationRunOnce.current ||
+				isDestinationModalOpen
+			) {
 				return;
 			}
 
@@ -254,7 +246,12 @@ const AddressesCardComponent = ( {
 	);
 
 	const onCompleteCallback = () => {
-		setIsAddressModalOpen( false );
+		setIsDestinationModalOpen( false );
+		updateRates();
+	};
+
+	const onOriginCompleteCallback = () => {
+		setIsOriginModalOpen( false );
 		updateRates();
 	};
 
@@ -266,40 +263,44 @@ const AddressesCardComponent = ( {
 					<Text weight={ 500 } size={ 15 }>
 						{ __( 'Addresses', 'woocommerce-shipping' ) }
 					</Text>
-					{ isDestinationAddressVerifying ? (
-						<Flex
-							direction="row"
-							align="center"
-							justify="flex-end"
-							gap={ 0 }
-						>
-							<div style={ { marginTop: -2 } }>
-								<Spinner />
-							</div>
-							<Text as="span" weight={ 400 } size={ 12 }>
-								{ __(
-									'Validating address…',
-									'woocommerce-shipping'
-								) }
-							</Text>
-						</Flex>
-					) : (
+					{ ! isOpen && (
 						<>
-							{ ! isDestinationAddressVerified && (
-								<Badge intent="warning-alt">
-									{ __(
-										'Recipient address needs review',
-										'woocommerce-shipping'
-									) }{ ' ' }
-								</Badge>
-							) }
-							{ allOriginsUnverified && (
-								<Badge intent="warning-alt">
-									{ __(
-										'Need sender address',
-										'woocommerce-shipping'
-									) }{ ' ' }
-								</Badge>
+							{ isDestinationAddressVerifying ? (
+								<Flex
+									direction="row"
+									align="center"
+									justify="flex-end"
+									gap={ 0 }
+								>
+									<div style={ { marginTop: -2 } }>
+										<Spinner />
+									</div>
+									<Text as="span" weight={ 400 } size={ 12 }>
+										{ __(
+											'Validating address…',
+											'woocommerce-shipping'
+										) }
+									</Text>
+								</Flex>
+							) : (
+								<>
+									{ ! isDestinationAddressVerified && (
+										<Badge intent="warning-alt">
+											{ __(
+												'Review recipient address',
+												'woocommerce-shipping'
+											) }{ ' ' }
+										</Badge>
+									) }
+									{ allOriginsUnverified && (
+										<Badge intent="warning-alt">
+											{ __(
+												'Review sender address',
+												'woocommerce-shipping'
+											) }{ ' ' }
+										</Badge>
+									) }
+								</>
 							) }
 						</>
 					) }
@@ -335,119 +336,104 @@ const AddressesCardComponent = ( {
 			{ isOpen && (
 				<CardBody style={ { padding: 0, paddingBottom: 0 } }>
 					<Flex direction="column" gap={ 0 } justify="space-between">
-						{ allOriginsUnverified && (
-							<Spacer
-								marginBottom={ 0 }
-								marginTop={ 4 }
-								marginX={ 6 }
-							>
-								<Notification
-									status="warning"
-									isDismissible={ false }
-									actions={ [
-										{
-											label: __(
-												'Add ship-from address',
-												'woocommerce-shipping'
-											),
-											onClick:
-												navigateToShippingOperations,
-											variant: 'primary',
-										},
-									] }
-								>
-									{ createInterpolateElement(
-										__(
-											'<strong>Sender address needs validation.</strong> Add and validate a ship-from address to get shipping rates.',
-											'woocommerce-shipping'
-										),
-										{
-											strong: (
-												<strong>
-													{ __(
-														'Sender address needs validation.',
-														'woocommerce-shipping'
-													) }
-												</strong>
-											),
-										}
-									) }
-								</Notification>
-							</Spacer>
-						) }
 						<Spacer
 							paddingX={ 6 }
 							paddingBottom={ 4 }
 							marginBottom={ 0 }
+							onMouseEnter={ () => {
+								setIsOriginAddressHovered( true );
+							} }
+							onMouseLeave={ () => {
+								setIsOriginAddressHovered( false );
+							} }
 						>
 							<Flex direction={ 'column' } gap={ 1 }>
-								<Text
-									size={ 11 }
-									weight={ 500 }
-									lineHeight={ '24px' }
-									variant="muted"
-									upperCase
+								<Flex
+									direction="row"
+									align="flex-start"
+									gap={ 4 }
 								>
-									{ __( 'Sender', 'woocommerce-shipping' ) }
-								</Text>
-								{ ! hasPurchasedLabel( false ) && (
-									<>
-										{ origins.length > 1 ? (
-											<ShipFromSelectV2
-												disabled={ hasPurchasedLabel(
-													false
-												) }
-											/>
-										) : (
+									<Text
+										size={ 11 }
+										weight={ 500 }
+										lineHeight={ '24px' }
+										variant="muted"
+										upperCase
+									>
+										{ __(
+											'Sender',
+											'woocommerce-shipping'
+										) }
+									</Text>
+									{ origins.length <= 1 &&
+									( isOriginAddressHovered ||
+										allOriginsUnverified ) ? (
+										<Button
+											onClick={ () =>
+												setIsOriginModalOpen( true )
+											}
+											icon={ edit }
+											iconSize={ 24 }
+											title={ __(
+												'Click to update address',
+												'woocommerce-shipping'
+											) }
+											style={ {
+												color: '#1E1E1E',
+												height: 24,
+												width: 24,
+												minWidth: 24,
+												padding: 0,
+											} }
+										/>
+									) : (
+										' '
+									) }
+								</Flex>
+								{ ! hasPurchasedLabel( false ) &&
+								origins.length > 1 ? (
+									<ShipFromSelectV2
+										disabled={ hasPurchasedLabel( false ) }
+									/>
+								) : (
+									<Flex
+										direction="row"
+										align="flex-end"
+										justify="flex-start"
+									>
+										{ ! hasPurchasedLabel( false ) && (
 											<AddressBlock
 												address={ origins[ 0 ] }
 											/>
 										) }
-									</>
-								) }
-								{ hasPurchasedLabel( false ) && (
-									<AddressBlock
-										address={
-											originAddress as OriginAddress
-										}
-									/>
+										{ hasPurchasedLabel( false ) && (
+											<AddressBlock
+												address={
+													originAddress as OriginAddress
+												}
+											/>
+										) }
+										{ allOriginsUnverified && (
+											<span
+												style={ {
+													marginBottom: '-4px',
+												} }
+											>
+												<Badge intent="warning-alt">
+													{ __(
+														'Not validated',
+														'woocommerce-shipping'
+													) }
+												</Badge>
+											</span>
+										) }
+									</Flex>
 								) }
 							</Flex>
 						</Spacer>
 						<Spacer marginBottom={ 0 } marginX={ 6 }>
 							<CardDivider />
 						</Spacer>
-						{ ! isDestinationAddressVerified &&
-							! isDestinationAddressVerifying && (
-								<Spacer
-									marginBottom={ 0 }
-									marginTop={ 4 }
-									marginX={ 6 }
-								>
-									<Notification
-										status="warning"
-										isDismissible={ false }
-										actions={ [
-											{
-												label: __(
-													'Review address',
-													'woocommerce-shipping'
-												),
-												onClick: () =>
-													setIsAddressModalOpen(
-														true
-													),
-												variant: 'primary',
-											},
-										] }
-									>
-										{ __(
-											'This address couldn’t be validated automatically. Please check the details and try again.',
-											'woocommerce-shipping'
-										) }
-									</Notification>
-								</Spacer>
-							) }
 						<Spacer
 							paddingX={ 6 }
 							paddingTop={ 4 }
@@ -486,18 +472,18 @@ const AddressesCardComponent = ( {
 											'woocommerce-shipping'
 										) }
 									</Text>
-									{ isRecipientAddressHovered ? (
+									{ isRecipientAddressHovered ||
+									! isDestinationAddressVerified ? (
 										<Button
 											onClick={ () =>
-												setIsAddressModalOpen( true )
+												setIsDestinationModalOpen(
+													true
+												)
 											}
 											icon={ edit }
 											iconSize={ 24 }
-											hidden={
-												! isRecipientAddressHovered
-											}
 											title={ __(
-												'Click to change address',
+												'Click to update address',
 												'woocommerce-shipping'
 											) }
 											style={ {
@@ -512,31 +498,91 @@ const AddressesCardComponent = ( {
 										' '
 									) }
 								</Flex>
-								{ ! hasPurchasedLabel( false ) && (
-									<AddressBlock
-										address={ destinationAddress }
-									/>
-								) }
-								{ hasPurchasedLabel( false ) && (
-									<AddressBlock
-										address={ destinationAddress }
-									/>
-								) }
+								<Flex
+									direction="row"
+									align="flex-end"
+									justify="flex-start"
+								>
+									{ ! hasPurchasedLabel( false ) && (
+										<AddressBlock
+											address={ destinationAddress }
+										/>
+									) }
+									{ hasPurchasedLabel( false ) && (
+										<AddressBlock
+											address={ destinationAddress }
+										/>
+									) }
+									{ ! isDestinationAddressVerified &&
+										! isDestinationAddressVerifying && (
+											<span
+												style={ {
+													marginBottom: '-4px',
+												} }
+											>
+												<Badge intent="warning-alt">
+													{ __(
+														'Not validated',
+														'woocommerce-shipping'
+													) }
+												</Badge>
+											</span>
+										) }
+								</Flex>
 							</Flex>
 						</Spacer>
 					</Flex>
 				</CardBody>
 			) }
-			{ isAddressModalOpen && (
+			{ isOriginModalOpen && originAddress && (
 				<Modal
-					onRequestClose={ () => setIsAddressModalOpen( false ) }
+					onRequestClose={ () => setIsOriginModalOpen( false ) }
 					focusOnMount
 					shouldCloseOnClickOutside={ false }
 					size="medium"
-					title={ __(
-						'Edit destination address',
-						'woocommerce-shipping'
-					) }
+					title={
+						originAddress.isVerified
+							? __(
+									'Edit origin address',
+									'woocommerce-shipping'
+							  )
+							: __(
+									'Validate sender details',
+									'woocommerce-shipping'
+							  )
+					}
+				>
+					<AddressStep
+						type={ 'origin' }
+						address={ camelCaseKeys(
+							formatAddressFields(
+								snakeCaseKeys( originAddress )
+							)
+						) }
+						isAdd={ false }
+						onCompleteCallback={ onOriginCompleteCallback }
+						onCancelCallback={ () => setIsOriginModalOpen( false ) }
+						nextDesign={ true }
+					/>
+				</Modal>
+			) }
+			{ isDestinationModalOpen && (
+				<Modal
+					onRequestClose={ () => setIsDestinationModalOpen( false ) }
+					focusOnMount
+					shouldCloseOnClickOutside={ false }
+					size="medium"
+					title={
+						isDestinationAddressVerified
+							? __(
+									'Edit destination address',
+									'woocommerce-shipping'
+							  )
+							: __(
+									'Validate recipient details',
+									'woocommerce-shipping'
+							  )
+					}
 				>
 					<AddressStep
 						type={ ADDRESS_TYPES.DESTINATION }
@@ -553,7 +599,7 @@ const AddressesCardComponent = ( {
 						isAdd={ false }
 						onCompleteCallback={ onCompleteCallback }
 						onCancelCallback={ () =>
-							setIsAddressModalOpen( false )
+							setIsDestinationModalOpen( false )
 						}
 						orderId={ `${ order.id }` }
 						originCountry={ getShipmentOrigin()?.country }

@@ -13,6 +13,7 @@ import { LABEL_PURCHASE_STATUS } from 'data/constants';
 import { Label } from 'types';
 import { settingsPageUrl } from '../constants';
 import { useLabelPurchaseContext } from 'context/label-purchase';
+import { getChangePaymentMethodUrl } from 'components/shipping-settings/constants';
 
 interface PurchaseErrorNoticeProps {
 	label?: Label;
@@ -22,6 +23,7 @@ export const PurchaseErrorNotice = withBoundary(
 	( { label }: PurchaseErrorNoticeProps ) => {
 		const {
 			labels: { labelStatusUpdateErrors },
+			account: { getSubscriptionId },
 			nextDesign,
 		} = useLabelPurchaseContext();
 		if (
@@ -32,13 +34,16 @@ export const PurchaseErrorNotice = withBoundary(
 			return null;
 		}
 
-		const siteDomain = window.location.host;
-		const billingUrl = `https://my.wordpress.com/me/billing/purchases?search=${ encodeURIComponent(
-			siteDomain
-		) }`;
+		const changePaymentMethodUrl = getChangePaymentMethodUrl(
+			getSubscriptionId()
+		);
 
 		const handleClick = () => {
-			window.open( billingUrl, '_blank', 'noopener,noreferrer' );
+			window.open(
+				changePaymentMethodUrl,
+				'_blank',
+				'noopener,noreferrer'
+			);
 		};
 
 		return (

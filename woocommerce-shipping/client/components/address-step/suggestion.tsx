@@ -24,6 +24,7 @@ interface AddressSuggestionProps {
 	confirmAddress: ( arg: boolean ) => void;
 	errors: Record< string, string >;
 	nextDesign?: boolean;
+	isUpdating?: boolean;
 }
 
 export const AddressSuggestion = withBoundary(
@@ -35,6 +36,7 @@ export const AddressSuggestion = withBoundary(
 		confirmAddress,
 		errors,
 		nextDesign = false,
+		isUpdating = false,
 	}: AddressSuggestionProps ) => {
 		const [ selectedAddress, setSelectedAddress ] = useState(
 			normalizedAddress ? 'normalized' : 'original'
@@ -155,7 +157,11 @@ export const AddressSuggestion = withBoundary(
 				</Spacer>
 				<Spacer marginBottom={ 4 } />
 				<Flex justify="flex-end" align={ 'center' } as="footer">
-					<Button onClick={ editAddress } variant="tertiary">
+					<Button
+						onClick={ editAddress }
+						variant="tertiary"
+						disabled={ isUpdating }
+					>
 						{ __( 'Edit address', 'woocommerce-shipping' ) }
 					</Button>
 					<Button
@@ -163,6 +169,8 @@ export const AddressSuggestion = withBoundary(
 							confirmAddress( selectedAddress === 'normalized' )
 						}
 						variant="primary"
+						isBusy={ isUpdating }
+						disabled={ isUpdating }
 					>
 						{ confirmButtonMessage }
 					</Button>
@@ -234,7 +242,11 @@ export const AddressSuggestion = withBoundary(
 					</Flex>
 				</ToggleGroupControl>
 				<Flex justify="flex-end" as="footer">
-					<Button onClick={ editAddress } variant="tertiary">
+					<Button
+						onClick={ editAddress }
+						variant="tertiary"
+						disabled={ isUpdating }
+					>
 						{ __( 'Edit address', 'woocommerce-shipping' ) }
 					</Button>
 					<Button
@@ -242,6 +254,8 @@ export const AddressSuggestion = withBoundary(
 							confirmAddress( selectedAddress === 'normalized' )
 						}
 						variant="primary"
+						isBusy={ isUpdating }
+						disabled={ isUpdating }
 					>
 						{ confirmButtonMessage }
 					</Button>

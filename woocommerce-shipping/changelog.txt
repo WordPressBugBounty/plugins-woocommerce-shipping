@@ -1,5 +1,8 @@
 *** WooCommerce Shipping Changelog ***
 
+= 2.2.1 - 2026-02-23 =
+* Fix   - Allow purchasing domestic shipping labels without a destination phone number.
+
 = 2.2.0 - 2026-02-11 =
 * New   – USPS ScanForm is now available. Enable or disable the feature in Shipping settings.
 * Fix   - UPS TOS acceptance failures on Atomic/WPCloud sites due to missing or invalid user email.

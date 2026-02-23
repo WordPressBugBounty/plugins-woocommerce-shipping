@@ -230,7 +230,6 @@ export const AddressStep = withBoundary(
 		};
 
 		const updateAddress = async ( isNormalizedAddress: boolean ) => {
-			setIsSuggestionModalOpen( false );
 			setIsUpdating( true );
 
 			if ( normalizedAddress && submittedAddress ) {
@@ -269,6 +268,7 @@ export const AddressStep = withBoundary(
 			}
 
 			setIsUpdating( false );
+			setIsSuggestionModalOpen( false );
 			setIsConfirming( false );
 			setIsComplete( true );
 		};
@@ -290,13 +290,15 @@ export const AddressStep = withBoundary(
 
 		useEffect( () => {
 			if ( isComplete && isEmpty( validationErrors ) ) {
+				setIsComplete( false );
 				onCompleteCallback( address );
 			}
 
 			if ( ! isEmpty( validationErrors ) ) {
 				setIsComplete( false );
 			}
-		}, [ address, isComplete, validationErrors, onCompleteCallback ] );
+			// eslint-disable-next-line react-hooks/exhaustive-deps -- deps omitted to avoid duplicate invocations from parent re-renders.
+		}, [ isComplete, validationErrors ] );
 
 		const isSubmitButtonDisabled = ( {
 			isDirty,
@@ -356,12 +358,6 @@ export const AddressStep = withBoundary(
 								isVerified={ isVerified }
 								validationErrors={ validationErrors }
 								showUPSDAPTOSWarning={ showUPSDAPTOSWarning }
-								validateAddressSection={
-									validateAddressSection
-								}
-								isSubmitButtonDisabled={
-									isSubmitButtonDisabled
-								}
 								originCountry={ originCountry }
 								onSaveWithoutValidation={
 									handleSaveWithoutValidation
@@ -527,6 +523,7 @@ export const AddressStep = withBoundary(
 								confirmAddress={ updateAddress }
 								errors={ validationErrors }
 								nextDesign={ nextDesign }
+								isUpdating={ isUpdating }
 							></AddressSuggestion>
 						</Modal>
 					) }

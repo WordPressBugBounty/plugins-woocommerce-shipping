@@ -22,7 +22,6 @@ use Automattic\WCShipping\Utils;
 use Automattic\WCShipping\Fulfillments\FulfillmentsService;
 use Automattic\WCShipping\Fulfillments\ShippingFulfillmentsDataStore;
 
-
 use WC_Order;
 use WC_Order_Item;
 use WC_Order_Item_Shipping;

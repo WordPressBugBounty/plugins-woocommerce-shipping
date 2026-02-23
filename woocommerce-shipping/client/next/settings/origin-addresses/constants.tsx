@@ -76,7 +76,7 @@ export const fields: Field< Partial< AddressEntityRecord > >[] = [
 	{
 		id: 'default_address',
 		type: 'boolean',
-		label: __( 'Save as default origin address', 'woocommerce-shipping' ),
+		label: __( 'Save as default sender address', 'woocommerce-shipping' ),
 	},
 ];
 

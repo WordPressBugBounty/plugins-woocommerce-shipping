@@ -13,6 +13,7 @@ import {
 	ADDRESS_NORMALIZATION,
 	ADDRESS_NORMALIZATION_FAILED,
 	DELETE_ORIGIN_ADDRESS,
+	FETCH_ORIGIN_ADDRESSES,
 	RESET_ADDRESS_NORMALIZATION,
 	STATE_RESET,
 	UPDATE_SHIPMENT_ADDRESS,
@@ -26,6 +27,7 @@ import {
 	AddOriginAddressFailedAction,
 	AddressActions,
 	DeleteOriginAddressAction,
+	FetchOriginAddressesAction,
 	NormalizationAddressAction,
 	NormalizationAddressFailedAction,
 	ShippingAddressVerifyAction,
@@ -350,6 +352,19 @@ export const getReducer = ( withDestination: boolean ) => {
 					},
 				};
 			}
+		)
+		.on(
+			FETCH_ORIGIN_ADDRESSES,
+			(
+				state,
+				{ payload: { addresses } }: FetchOriginAddressesAction
+			) => ( {
+				...state,
+				origin: {
+					...state.origin,
+					addresses,
+				},
+			} )
 		)
 		.on( STATE_RESET, () => ( {
 			...getDefaultState(),

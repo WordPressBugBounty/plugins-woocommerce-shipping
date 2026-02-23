@@ -27,6 +27,7 @@ import { TAB_NAMES, CUSTOM_PACKAGE_TYPES } from '../constants';
 import { labelPurchaseStore } from 'data/label-purchase';
 import { useLabelPurchaseContext } from 'context/label-purchase';
 import { TotalWeight } from '../../total-weight';
+import { CustomsWeightWarning } from './customs-weight-warning';
 import { GetRatesButton } from '../../get-rates-button';
 import { PACKAGE_SECTION } from 'components/label-purchase/essential-details/constants';
 import { recordEvent } from 'utils/tracks';
@@ -586,6 +587,7 @@ export const CustomPackage = withBoundary(
 							/>
 						) }
 					</Flex>
+					<CustomsWeightWarning />
 					<FetchNotice margin="before" />
 				</FlexItem>
 			</Flex>

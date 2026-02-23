@@ -18,6 +18,7 @@ import { NoSavedTemplates } from './saved-templates/no-saved-templates';
 import { useLabelPurchaseContext } from 'context/label-purchase';
 import { FetchNotice } from './fetch-notice';
 import { TotalWeight } from '../../total-weight';
+import { CustomsWeightWarning } from './customs-weight-warning';
 import { GetRatesButton } from '../../get-rates-button';
 import { recordEvent } from 'utils';
 import { withBoundary } from 'components/HOC/error-boundary';
@@ -258,6 +259,7 @@ export const SavedTemplates = withBoundary(
 								disabled={ isGetRatesButtonDisabled }
 							/>
 						</Flex>
+						<CustomsWeightWarning />
 						<FetchNotice />
 						{ deletablePackage && (
 							<ConfirmPackageDeletion
