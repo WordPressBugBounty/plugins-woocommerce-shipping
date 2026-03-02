@@ -7,7 +7,7 @@ Requires at least: 6.8
 Tested up to: 6.9
 WC requires at least: 10.3
 WC tested up to: 10.5
-Stable tag: 2.2.1
+Stable tag: 2.2.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -128,8 +128,19 @@ Absolutely! You can read our Terms of Service [here](https://wordpress.com/tos).
 
 == Changelog ==
 
+= 2.2.3 - 2026-03-02 =
+* Fix   - Allow rate fetching for addresses that fail validation when manually approved by the merchant.
+* Fix   - Update USPS ScanForm branding to USPS® SCAN Form and add documentation link to onboarding banner.
+* Tweak - Remove USPS® SCAN Form onboarding notice banner from the orders list screen.
+* Tweak - Enable USPS® SCAN Form feature by default for new installations.
+* Dev   - Add usage tracking for the label purchase flow in the new label purchase experience.
+
+= 2.2.2 - 2026-02-24 =
+* Fix   - Allow fetching rates for unverified destination addresses (e.g. international addresses).
+
 = 2.2.1 - 2026-02-23 =
 * Fix   - Allow purchasing domestic shipping labels without a destination phone number.
+* Fix   - locutus vulnerability (CVE-2026-25521)
 
 = 2.2.0 - 2026-02-11 =
 * New   – USPS ScanForm is now available. Enable or disable the feature in Shipping settings.

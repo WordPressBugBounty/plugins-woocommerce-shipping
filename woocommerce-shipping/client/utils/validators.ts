@@ -85,7 +85,7 @@ export const validatePostalCode = ( {
 		! /^\d{5}(?:-\d{4})?$/.test( postcode )
 	) {
 		localErrors.postcode = __(
-			'Invalid postal code format',
+			'Please provide a valid postal code.',
 			'woocommerce-shipping'
 		);
 	}

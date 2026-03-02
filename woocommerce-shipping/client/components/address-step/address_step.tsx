@@ -220,7 +220,7 @@ export const AddressStep = withBoundary(
 			}
 
 			setShowBypassConfirmation( false );
-			await persistAddress( pendingBypassValues, false );
+			await persistAddress( pendingBypassValues, true );
 			setPendingBypassValues( null );
 		};
 
@@ -538,7 +538,7 @@ export const AddressStep = withBoundary(
 					>
 						<p>
 							{ __(
-								'This address could not be validated. Proceeding without validation may result in delivery delays or failures.',
+								'This address could not be validated. By proceeding, you confirm the address is correct and deliverable. Incorrect addresses may result in delivery issues and are not eligible for refunds.',
 								'woocommerce-shipping'
 							) }
 						</p>
@@ -553,7 +553,10 @@ export const AddressStep = withBoundary(
 								variant="primary"
 								onClick={ confirmSaveWithoutValidation }
 							>
-								{ __( 'Save anyway', 'woocommerce-shipping' ) }
+								{ __(
+									'Approve and save anyway',
+									'woocommerce-shipping'
+								) }
 							</Button>
 						</Flex>
 					</Modal>

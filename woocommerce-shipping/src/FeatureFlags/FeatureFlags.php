@@ -55,7 +55,7 @@ class FeatureFlags {
 	 */
 	public static function is_scanform_enabled(): bool {
 		$account_settings   = WC_Connect_Options::get_option( 'account_settings', array() );
-		$enabled_by_setting = ! empty( $account_settings['scanform_enabled'] );
+		$enabled_by_setting = ! isset( $account_settings['scanform_enabled'] ) || ! empty( $account_settings['scanform_enabled'] );
 
 		/**
 		 * Filter to enable/disable USPS ScanForm feature.

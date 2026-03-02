@@ -98,6 +98,9 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 
 	const lastOrderCompleted = getAccountCompleteOrder();
 	const [ errors, setErrors ] = useState< LabelPurchaseError | null >( null );
+	const [ purchaseStartTime, setPurchaseStartTime ] = useState<
+		number | null
+	>( null );
 	const [ markOrderAsCompleted, setMarkOrderAsCompleted ] =
 		useState( lastOrderCompleted );
 	const orderStatus = select( labelPurchaseStore ).getOrderStatus();
@@ -374,10 +377,20 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 			retail_rate: getSelectedRate()?.rate.retailRate,
 			service_id: getSelectedRate()?.rate.serviceId,
 		};
-		recordEvent(
-			'label_purchase_purchase_shipping_label_clicked',
-			tracksProperties
-		);
+
+		if ( nextDesign ) {
+			setPurchaseStartTime( Date.now() );
+			recordEvent( 'shipping_label_button_click', {
+				button_label: 'buy_shipping_label',
+				...tracksProperties,
+			} );
+		} else {
+			recordEvent(
+				'label_purchase_purchase_shipping_label_clicked',
+				tracksProperties
+			);
+		}
+
 		resetErrors();
 		try {
 			await requestLabelPurchase( order.id, rate );
@@ -393,8 +406,21 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 				LabelPurchaseError;
 
 			if ( error.code === 'missing_upsdap_terms_of_service_acceptance' ) {
+				setPurchaseStartTime( null );
 				setUPSDAPTosError( error );
 				return;
+			}
+
+			if ( nextDesign ) {
+				setPurchaseStartTime( null );
+				const errorCode =
+					( error as LabelPurchaseError ).code ??
+					( error as LabelPurchaseError ).cause ??
+					( error as WPErrorRESTResponse ).data?.status ??
+					'unknown';
+				recordEvent( 'shipping_label_purchase_error', {
+					error_code: String( errorCode ),
+				} );
 			}
 
 			// If it's not the UPS DAP TOS error, treat it as a standard LabelPurchaseError.
@@ -495,6 +521,31 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 	// Reset errors when shipment origin changes
 	useEffect( resetErrors, [ shipmentOrigin ] );
 
+	// Fire the success event only after the full purchase cycle completes,
+	// including any async status polling (PURCHASE_IN_PROGRESS → PURCHASED).
+	// purchaseStartTime is set on button click and cleared on error, so this
+	// effect is a no-op on mount and after failed purchases.
+	useEffect( () => {
+		if (
+			nextDesign &&
+			purchaseStartTime !== null &&
+			! isPurchasing &&
+			! isUpdatingStatus &&
+			hasPurchasedLabel()
+		) {
+			recordEvent( 'shipping_label_purchase_success', {
+				response_time_ms: Date.now() - purchaseStartTime,
+			} );
+			setPurchaseStartTime( null );
+		}
+	}, [
+		nextDesign,
+		purchaseStartTime,
+		isPurchasing,
+		isUpdatingStatus,
+		hasPurchasedLabel,
+	] );
+
 	const isExtraLabelPurchase = () => {
 		return ! hasMissingPurchase();
 	};
@@ -561,7 +612,7 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 								<Notice status="error" isDismissible={ false }>
 									{ createInterpolateElement(
 										__(
-											'No payment method selected for this site. Please select a payment method to purchase a label. <ManageLink/>',
+											'A payment method is required to purchase shipping labels. <ManageLink/>',
 											'woocommerce-shipping'
 										),
 										{
@@ -573,12 +624,9 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 													onClick={
 														startPaymentMethodPolling
 													}
-													style={ {
-														display: 'block',
-													} }
 												>
 													{ __(
-														'Manage payment methods.',
+														'Add a payment method',
 														'woocommerce-shipping'
 													) }
 												</ExternalLink>

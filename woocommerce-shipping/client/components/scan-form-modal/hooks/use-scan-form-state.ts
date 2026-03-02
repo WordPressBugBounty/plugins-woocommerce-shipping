@@ -190,7 +190,7 @@ export const useScanFormState = () => {
 			if ( labelsToProcess.length === 0 ) {
 				setError(
 					__(
-						'No eligible labels to create ScanForm.',
+						'No eligible labels to create SCAN Form.',
 						'woocommerce-shipping'
 					)
 				);
@@ -218,8 +218,8 @@ export const useScanFormState = () => {
 						sprintf(
 							/* translators: %d is number of labels */
 							_n(
-								'ScanForm created successfully for %d label!',
-								'ScanForm created successfully for %d labels!',
+								'SCAN Form created successfully for %d label!',
+								'SCAN Form created successfully for %d labels!',
 								label_count,
 								'woocommerce-shipping'
 							),
@@ -234,7 +234,7 @@ export const useScanFormState = () => {
 				} else {
 					setError(
 						__(
-							'Failed to create ScanForm.',
+							'Failed to create SCAN Form.',
 							'woocommerce-shipping'
 						)
 					);
@@ -254,7 +254,7 @@ export const useScanFormState = () => {
 						err instanceof Error
 							? err.message
 							: __(
-									'Failed to create ScanForm.',
+									'Failed to create SCAN Form.',
 									'woocommerce-shipping'
 							  );
 					setError( errorMessage );

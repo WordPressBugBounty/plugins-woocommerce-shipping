@@ -30,7 +30,6 @@ use Automattic\WCShipping\Connect\WC_Connect_Service_Settings_Store;
 use Automattic\WCShipping\ScanForm\ScanFormHistoryRESTController;
 use Automattic\WCShipping\ScanForm\ScanFormService;
 use Automattic\WCShipping\ScanForm\ScanForm;
-use Automattic\WCShipping\ScanForm\ScanFormOnboardingNotice;
 use Automattic\WCShipping\Connect\WC_Connect_Settings_Pages;
 use Automattic\WCShipping\Connect\WC_Connect_Shipping_Label;
 use Automattic\WCShipping\Connect\WC_Connect_Account_Settings;
@@ -1122,9 +1121,6 @@ class Loader {
 
 		if ( FeatureFlags::is_scanform_enabled() ) {
 			new ScanForm();
-
-			// Initialize ScanForm onboarding notice.
-			new ScanFormOnboardingNotice();
 		}
 
 		require_once WCSHIPPING_PLUGIN_DIR . '/classes/class-wc-connect-settings-pages.php';

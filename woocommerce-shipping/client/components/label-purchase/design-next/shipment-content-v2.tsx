@@ -1,4 +1,4 @@
-import { __experimentalGrid as Grid } from '@wordpress/components';
+import { Flex } from '@wordpress/components';
 import { createPortal } from '@wordpress/element';
 import { getCurrentOrder } from 'utils';
 
@@ -41,7 +41,10 @@ const LabelPurchaseStatusNotices = () => {
 
 	return (
 		<ErrorBoundaryNext>
-			<div id="label-purchase-status-notices">
+			<div
+				id="label-purchase-status-notices"
+				style={ { display: 'contents' } }
+			>
 				{ /* Render PurchaseNotice when we have a successful label OR when a request is in progress (retry scenario) */ }
 				{ ( hasNonErrorLabel || isAnyRequestInProgress ) && (
 					<PurchaseNotice />
@@ -81,7 +84,7 @@ const ShipmentContentV2Component = ( {
 		) ?? undefined;
 
 	return (
-		<Grid columns={ 1 } rowGap="24px">
+		<Flex direction="column" gap="24px">
 			<LabelPurchaseStatusNotices />
 			<AddressesCard
 				order={ order }
@@ -115,7 +118,7 @@ const ShipmentContentV2Component = ( {
 					</ErrorBoundaryNext>,
 					portal
 				) }
-		</Grid>
+		</Flex>
 	);
 };
 

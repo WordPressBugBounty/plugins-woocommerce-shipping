@@ -550,10 +550,6 @@ return array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/src/ScanForm/ScanFormHistoryRESTController.php'
 	),
-	'Automattic\\WCShipping\\ScanForm\\ScanFormOnboardingNotice' => array(
-		'version' => 'dev-trunk',
-		'path'    => $baseDir . '/src/ScanForm/ScanFormOnboardingNotice.php'
-	),
 	'Automattic\\WCShipping\\ScanForm\\ScanFormRESTController' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/src/ScanForm/ScanFormRESTController.php'

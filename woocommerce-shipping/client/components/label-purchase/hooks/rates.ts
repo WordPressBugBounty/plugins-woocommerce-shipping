@@ -34,7 +34,7 @@ import {
 	RATES_FETCH_ABORTED,
 	RATES_FETCH_FAILED,
 } from 'data/label-purchase/action-types';
-import { ADDRESS_TYPES, LABEL_RATE_TYPE } from 'data/constants';
+import { LABEL_RATE_TYPE } from 'data/constants';
 import { DELIVERY_PROPERTIES, SORT_BY } from '../shipping-service/constants';
 
 /**
@@ -355,15 +355,6 @@ export function useRatesState( {
 				isLetter?: boolean;
 			}
 		) => {
-			// Early return to prevent unnecessary API calls when destination is unverified.
-			// No state changes needed as the UI already indicates the address needs verification.
-			const isDestinationVerified = select(
-				addressStore
-			).getIsAddressVerified( ADDRESS_TYPES.DESTINATION );
-			if ( ! isDestinationVerified ) {
-				return;
-			}
-
 			// Early return when all origin addresses are unverified (or none exist).
 			const originAddresses = select( addressStore ).getOriginAddresses();
 			if ( areAllOriginsUnverified( originAddresses ) ) {

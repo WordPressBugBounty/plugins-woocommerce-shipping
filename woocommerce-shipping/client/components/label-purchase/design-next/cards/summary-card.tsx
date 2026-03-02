@@ -46,7 +46,10 @@ const SummaryCardComponent = ( {
 							gap={ 2 }
 							style={ { padding: '8px 16px' } }
 						>
-							<Text style={ { width: 360, textAlign: 'center' } }>
+							<Text
+								variant="muted"
+								style={ { width: 360, textAlign: 'center' } }
+							>
 								{ __(
 									"Your shipping details and final costs will appear here once you've configured your package above.",
 									'woocommerce-shipping'

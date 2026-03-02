@@ -146,7 +146,7 @@ class ScanFormHistoryRESTController extends WCShippingRESTController {
 		if ( empty( $scan_form_id ) || ! preg_match( '/^[a-zA-Z0-9_]+$/', $scan_form_id ) ) {
 			return new WP_Error(
 				'invalid_scan_form_id',
-				__( 'Invalid ScanForm ID format', 'woocommerce-shipping' ),
+				__( 'Invalid SCAN Form ID format', 'woocommerce-shipping' ),
 				array( 'status' => 400 )
 			);
 		}

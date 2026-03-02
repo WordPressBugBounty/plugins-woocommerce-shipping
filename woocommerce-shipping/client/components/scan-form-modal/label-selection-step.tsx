@@ -147,14 +147,14 @@ export const LabelSelectionStep = ( {
 		<>
 			<p className="scan-form-modal__step-description">
 				{ __(
-					'Select the USPS labels you want to include in this ScanForm. Only labels with the same ship-from address are shown here.',
+					'Select the USPS labels you want to include in this SCAN Form. Only labels with the same ship-from address are shown here.',
 					'woocommerce-shipping'
 				) }
 			</p>
 
 			<Notice status="warning" isDismissible={ false }>
 				{ __(
-					'After creation, ScanForm cannot be edited or updated.',
+					'After creation, SCAN Form cannot be edited or updated.',
 					'woocommerce-shipping'
 				) }
 			</Notice>

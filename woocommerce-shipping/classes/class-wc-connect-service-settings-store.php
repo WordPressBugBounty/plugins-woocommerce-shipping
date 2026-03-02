@@ -130,7 +130,7 @@ class WC_Connect_Service_Settings_Store {
 		}
 
 		if ( ! isset( $result['scanform_enabled'] ) ) {
-			$result['scanform_enabled'] = false;
+			$result['scanform_enabled'] = true;
 		}
 
 		if ( Utils::is_next() ) {

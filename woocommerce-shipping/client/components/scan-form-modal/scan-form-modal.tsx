@@ -107,7 +107,7 @@ export const ScanFormModal = ( { onClose }: ScanFormModalProps ) => {
 			return __( 'Select labels', 'woocommerce-shipping' );
 		}
 
-		return __( 'Create USPS ScanForm', 'woocommerce-shipping' );
+		return __( 'Create USPS® SCAN Form', 'woocommerce-shipping' );
 	};
 
 	return (
@@ -151,7 +151,7 @@ export const ScanFormModal = ( { onClose }: ScanFormModalProps ) => {
 							</p>
 							<p>
 								{ __(
-									'All selected labels are ineligible for ScanForm creation. Labels must have EasyPost shipment IDs, shipment dates must be today or later, and must not already be manifested.',
+									'All selected labels are ineligible for SCAN Form creation. Labels must have EasyPost shipment IDs, shipment dates must be today or later, and must not already be manifested.',
 									'woocommerce-shipping'
 								) }
 							</p>
@@ -183,8 +183,8 @@ export const ScanFormModal = ( { onClose }: ScanFormModalProps ) => {
 									? sprintf(
 											/* translators: %d is number of labels */
 											_n(
-												'%d label has already been included in a ScanForm or has been shipped.',
-												'%d labels have already been included in a ScanForm or have been shipped.',
+												'%d label has already been included in a SCAN Form or has been shipped.',
+												'%d labels have already been included in a SCAN Form or have been shipped.',
 												failedLabelsError.failed_labels
 													.length,
 												'woocommerce-shipping'
@@ -195,8 +195,8 @@ export const ScanFormModal = ( { onClose }: ScanFormModalProps ) => {
 									: sprintf(
 											/* translators: %d is number of labels */
 											_n(
-												'%d label could not be included in the ScanForm (it may have been refunded or deleted).',
-												'%d labels could not be included in the ScanForm (they may have been refunded or deleted).',
+												'%d label could not be included in the SCAN Form (it may have been refunded or deleted).',
+												'%d labels could not be included in the SCAN Form (they may have been refunded or deleted).',
 												failedLabelsError.failed_labels
 													.length,
 												'woocommerce-shipping'
@@ -209,8 +209,8 @@ export const ScanFormModal = ( { onClose }: ScanFormModalProps ) => {
 								{ sprintf(
 									/* translators: %d is number of valid labels */
 									_n(
-										'You still have %d valid label. Would you like to create a ScanForm with the remaining valid label?',
-										'You still have %d valid labels. Would you like to create a ScanForm with the remaining valid labels?',
+										'You still have %d valid label. Would you like to create a SCAN Form with the remaining valid label?',
+										'You still have %d valid labels. Would you like to create a SCAN Form with the remaining valid labels?',
 										failedLabelsError.valid_labels.length,
 										'woocommerce-shipping'
 									),
@@ -383,7 +383,7 @@ export const ScanFormModal = ( { onClose }: ScanFormModalProps ) => {
 											}
 										>
 											{ __(
-												'Create ScanForm',
+												'Create SCAN Form',
 												'woocommerce-shipping'
 											) }
 										</Button>

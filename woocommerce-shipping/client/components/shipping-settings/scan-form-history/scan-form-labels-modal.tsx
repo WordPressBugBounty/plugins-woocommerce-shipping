@@ -154,7 +154,7 @@ export const ScanFormLabelsModal = ( {
 			{ /* Description */ }
 			<p className="scan-form-modal__step-description">
 				{ __(
-					'This ScanForm includes the following USPS labels. All labels share the same ship-from address and were created together as part of this ScanForm.',
+					'This SCAN Form includes the following USPS labels. All labels share the same ship-from address and were created together as part of this SCAN Form.',
 					'woocommerce-shipping'
 				) }
 			</p>
@@ -231,7 +231,7 @@ export const ScanFormLabelsModal = ( {
 			{ ! isLoading && ! error && labels.length === 0 && (
 				<p>
 					{ __(
-						'No labels found for this ScanForm.',
+						'No labels found for this SCAN Form.',
 						'woocommerce-shipping'
 					) }
 				</p>

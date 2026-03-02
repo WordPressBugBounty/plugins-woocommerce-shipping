@@ -68,7 +68,7 @@ class ScanForm {
 		}
 
 		?>
-		<button type="button" class="button action" id="wc-shipping-scanform-trigger"><?php esc_html_e( 'Create USPS ScanForm', 'woocommerce-shipping' ); ?></button>
+		<button type="button" class="button action" id="wc-shipping-scanform-trigger"><?php esc_html_e( 'Create USPS® SCAN Form', 'woocommerce-shipping' ); ?></button>
 		<?php
 	}
 

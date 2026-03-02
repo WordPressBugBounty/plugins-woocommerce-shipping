@@ -162,7 +162,7 @@ const ItemsCard = ( {
 				</Flex>
 			</CardHeader>
 			{ isOpen && (
-				<CardBody style={ { paddingTop: 0 } }>
+				<CardBody style={ { padding: '0 24px' } }>
 					{ isCurrentTabPurchasingExtraLabel() ? (
 						<Flex
 							className="label-purchase__additional-label"

@@ -71,12 +71,12 @@ export const ScanFormHistoryList = () => {
 			<Flex direction="column">
 				<Spacer marginTop={ 6 } marginBottom={ 0 } />
 				<Heading level={ 4 }>
-					{ __( 'ScanForm History', 'woocommerce-shipping' ) }
+					{ __( 'SCAN Form History', 'woocommerce-shipping' ) }
 				</Heading>
 
 				<Text>
 					{ __(
-						'View and download previously created USPS ScanForms.',
+						'View and download previously created USPS® SCAN Forms.',
 						'woocommerce-shipping'
 					) }
 				</Text>
@@ -84,7 +84,7 @@ export const ScanFormHistoryList = () => {
 
 			<TableCard
 				className="wcshipping-settings__card"
-				title={ __( 'ScanForms', 'woocommerce-shipping' ) }
+				title={ __( 'SCAN Forms', 'woocommerce-shipping' ) }
 				rows={ tableData.rows }
 				headers={ tableHeaders }
 				rowsPerPage={ perPage }
@@ -96,7 +96,7 @@ export const ScanFormHistoryList = () => {
 				emptyMessage={
 					error ??
 					__(
-						'No ScanForms found. Create your first ScanForm from the orders page.',
+						'No SCAN Forms found. Create your first SCAN Form from the orders page.',
 						'woocommerce-shipping'
 					)
 				}

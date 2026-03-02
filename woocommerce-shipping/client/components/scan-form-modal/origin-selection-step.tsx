@@ -70,7 +70,7 @@ export const OriginSelectionStep = ( {
 		<>
 			<p className="scan-form-modal__step-description">
 				{ __(
-					'All shipments in a ScanForm must share the same origin address. Select one address to continue.',
+					'All shipments in a SCAN Form must share the same origin address. Select one address to continue.',
 					'woocommerce-shipping'
 				) }
 			</p>

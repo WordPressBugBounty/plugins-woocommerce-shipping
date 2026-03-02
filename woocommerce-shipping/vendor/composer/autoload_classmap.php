@@ -134,7 +134,6 @@ return array(
     'Automattic\\WCShipping\\Promo\\PromoService' => $baseDir . '/src/Promo/PromoService.php',
     'Automattic\\WCShipping\\ScanForm\\ScanForm' => $baseDir . '/src/ScanForm/ScanForm.php',
     'Automattic\\WCShipping\\ScanForm\\ScanFormHistoryRESTController' => $baseDir . '/src/ScanForm/ScanFormHistoryRESTController.php',
-    'Automattic\\WCShipping\\ScanForm\\ScanFormOnboardingNotice' => $baseDir . '/src/ScanForm/ScanFormOnboardingNotice.php',
     'Automattic\\WCShipping\\ScanForm\\ScanFormRESTController' => $baseDir . '/src/ScanForm/ScanFormRESTController.php',
     'Automattic\\WCShipping\\ScanForm\\ScanFormService' => $baseDir . '/src/ScanForm/ScanFormService.php',
     'Automattic\\WCShipping\\ServiceData\\ServiceSchemasFetcherService' => $baseDir . '/src/ServiceData/ServiceSchemasFetcherService.php',

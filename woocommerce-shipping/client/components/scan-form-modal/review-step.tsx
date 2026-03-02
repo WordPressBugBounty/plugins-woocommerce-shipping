@@ -48,7 +48,7 @@ export const ReviewStep = ( {
 		<>
 			<p className="scan-form-modal__step-description">
 				{ __(
-					'Review the results below before creating the ScanForm.',
+					'Review the results below before creating the SCAN Form.',
 					'woocommerce-shipping'
 				) }
 			</p>
@@ -60,8 +60,8 @@ export const ReviewStep = ( {
 						{ sprintf(
 							/* translators: %d is number of eligible labels */
 							_n(
-								'%d label is eligible for ScanForm creation.',
-								'%d labels are eligible for ScanForm creation.',
+								'%d label is eligible for SCAN Form creation.',
+								'%d labels are eligible for SCAN Form creation.',
 								reviewResult.eligible.length,
 								'woocommerce-shipping'
 							),
@@ -81,8 +81,8 @@ export const ReviewStep = ( {
 						{ sprintf(
 							/* translators: %d is number of already scanned labels */
 							_n(
-								'%d label has already been included in a ScanForm and will be skipped.',
-								'%d labels have already been included in a ScanForm and will be skipped.',
+								'%d label has already been included in a SCAN Form and will be skipped.',
+								'%d labels have already been included in a SCAN Form and will be skipped.',
 								reviewResult.already_scanned.length,
 								'woocommerce-shipping'
 							),

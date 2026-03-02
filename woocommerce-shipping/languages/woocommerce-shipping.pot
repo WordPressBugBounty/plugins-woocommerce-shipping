@@ -2,14 +2,14 @@
 # This file is distributed under the GPL v2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: WooCommerce Shipping 2.2.1\n"
+"Project-Id-Version: WooCommerce Shipping 2.2.3\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/woocommerce-shipping\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-02-23T13:08:37+00:00\n"
+"POT-Creation-Date: 2026-03-02T08:22:53+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: woocommerce-shipping\n"
@@ -139,7 +139,7 @@ msgid "<strong>\"%2$s\" is missing weight, length, width, or height.</strong><br
 msgstr ""
 
 #: classes/class-wc-connect-error-notice.php:102
-#: src/Loader.php:2083
+#: src/Loader.php:2079
 #: src/Promo/PromoService.php:143
 msgid "Dismiss this notice"
 msgstr ""
@@ -200,7 +200,7 @@ msgstr ""
 
 #: classes/class-wc-connect-help-view.php:264
 #: classes/class-wc-connect-settings-pages.php:57
-#: src/Loader.php:909
+#: src/Loader.php:908
 #: src/Onboarding/SettingsPage.php:74
 msgctxt "The WooCommerce Shipping brandname"
 msgid "WooCommerce Shipping"
@@ -975,47 +975,47 @@ msgid "The provided phone number is not valid"
 msgstr ""
 
 #. translators: %s WC download URL link.
-#: src/Loader.php:757
+#: src/Loader.php:756
 #, php-format
 msgid "WooCommerce Shipping requires the WooCommerce plugin to be installed and active. You can download %s here."
 msgstr ""
 
-#: src/Loader.php:1097
+#: src/Loader.php:1096
 msgid "Settings"
 msgstr ""
 
-#: src/Loader.php:1104
+#: src/Loader.php:1103
 msgid "Documentation"
 msgstr ""
 
-#: src/Loader.php:1105
+#: src/Loader.php:1104
 #: dist/woocommerce-shipping-admin-status.js:14
 msgid "Support"
 msgstr ""
 
-#: src/Loader.php:1630
-#: src/Loader.php:1638
+#: src/Loader.php:1626
+#: src/Loader.php:1634
 msgid "Tracking"
 msgstr ""
 
-#: src/Loader.php:1642
+#: src/Loader.php:1638
 msgid "Provider"
 msgstr ""
 
-#: src/Loader.php:1644
+#: src/Loader.php:1640
 msgid "Tracking number"
 msgstr ""
 
-#: src/Loader.php:1773
+#: src/Loader.php:1769
 msgid "Shipping Label"
 msgstr ""
 
-#: src/Loader.php:1785
+#: src/Loader.php:1781
 msgid "Shipment Tracking"
 msgstr ""
 
-#: src/Loader.php:1840
-#: src/Loader.php:1869
+#: src/Loader.php:1836
+#: src/Loader.php:1865
 #: dist/next/366.js:1
 #: dist/woocommerce-shipping-create-shipping-label.js:75
 #: dist/woocommerce-shipping-create-shipping-label.js:256
@@ -1024,7 +1024,7 @@ msgstr ""
 msgid "Phone"
 msgstr ""
 
-#: src/Loader.php:2112
+#: src/Loader.php:2108
 msgid "WooCommerce Shipping & Tax has been deactivated. Your data and settings have been carried over to the dedicated WooCommerce Shipping and WooCommerce Tax extensions.<br />For support, please <a href=\"https://woocommerce.com/my-account/create-a-ticket/\">contact our Happiness Engineers</a>."
 msgstr ""
 
@@ -1258,29 +1258,15 @@ msgstr ""
 
 #: src/ScanForm/ScanForm.php:71
 #: dist/woocommerce-shipping-scanform.js:195
-msgid "Create USPS ScanForm"
+msgid "Create USPS® SCAN Form"
 msgstr ""
 
 #: src/ScanForm/ScanFormHistoryRESTController.php:149
-msgid "Invalid ScanForm ID format"
-msgstr ""
-
-#. translators: %1$s: opening strong tag, %2$s: closing strong tag, %3$s: line break
-#: src/ScanForm/ScanFormOnboardingNotice.php:76
-#, php-format
-msgid "%1$sNew: USPS ScanForm is now available.%2$s Create a single barcode for all USPS packages scheduled for pickup.%3$sTo use it, select your orders and click Create ScanForm."
-msgstr ""
-
-#: src/ScanForm/ScanFormOnboardingNotice.php:85
-msgid "Try it now"
-msgstr ""
-
-#: src/ScanForm/ScanFormOnboardingNotice.php:88
-msgid "Got it"
+msgid "Invalid SCAN Form ID format"
 msgstr ""
 
 #: src/ScanForm/ScanFormRESTController.php:302
-msgid "Failed to create ScanForm"
+msgid "Failed to create SCAN Form"
 msgstr ""
 
 #: src/ScanForm/ScanFormRESTController.php:383
@@ -1759,13 +1745,13 @@ msgstr ""
 #: dist/next/366.js:1
 #: dist/woocommerce-shipping-create-shipping-label.js:256
 #: dist/woocommerce-shipping-plugin.js:228
-msgid "This address could not be validated. Proceeding without validation may result in delivery delays or failures."
+msgid "This address could not be validated. By proceeding, you confirm the address is correct and deliverable. Incorrect addresses may result in delivery issues and are not eligible for refunds."
 msgstr ""
 
 #: dist/next/366.js:1
 #: dist/woocommerce-shipping-create-shipping-label.js:256
 #: dist/woocommerce-shipping-plugin.js:228
-msgid "Save anyway"
+msgid "Approve and save anyway"
 msgstr ""
 
 #: dist/next/366.js:1
@@ -1872,12 +1858,6 @@ msgstr ""
 #: dist/woocommerce-shipping-create-shipping-label.js:1
 #: dist/woocommerce-shipping-plugin.js:1
 msgid "Please provide a valid name or company name."
-msgstr ""
-
-#: dist/next/woocommerce-shipping-next.js:1
-#: dist/woocommerce-shipping-create-shipping-label.js:1
-#: dist/woocommerce-shipping-plugin.js:1
-msgid "Invalid postal code format"
 msgstr ""
 
 #: dist/next/woocommerce-shipping-next.js:1
@@ -3734,12 +3714,12 @@ msgstr ""
 
 #: dist/woocommerce-shipping-create-shipping-label.js:316
 #: dist/woocommerce-shipping-plugin.js:294
-msgid "No payment method selected for this site. Please select a payment method to purchase a label. <ManageLink/>"
+msgid "A payment method is required to purchase shipping labels. <ManageLink/>"
 msgstr ""
 
 #: dist/woocommerce-shipping-create-shipping-label.js:316
 #: dist/woocommerce-shipping-plugin.js:294
-msgid "Manage payment methods."
+msgid "Add a payment method"
 msgstr ""
 
 #: dist/woocommerce-shipping-create-shipping-label.js:316
@@ -4123,7 +4103,7 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: dist/woocommerce-shipping-scanform.js:9
-msgid "All shipments in a ScanForm must share the same origin address. Select one address to continue."
+msgid "All shipments in a SCAN Form must share the same origin address. Select one address to continue."
 msgstr ""
 
 #. translators: 1: Filter name.
@@ -4155,11 +4135,11 @@ msgid "Label Created"
 msgstr ""
 
 #: dist/woocommerce-shipping-scanform.js:186
-msgid "Select the USPS labels you want to include in this ScanForm. Only labels with the same ship-from address are shown here."
+msgid "Select the USPS labels you want to include in this SCAN Form. Only labels with the same ship-from address are shown here."
 msgstr ""
 
 #: dist/woocommerce-shipping-scanform.js:186
-msgid "After creation, ScanForm cannot be edited or updated."
+msgid "After creation, SCAN Form cannot be edited or updated."
 msgstr ""
 
 #: dist/woocommerce-shipping-scanform.js:186
@@ -4180,22 +4160,22 @@ msgid "Label ID: %d"
 msgstr ""
 
 #: dist/woocommerce-shipping-scanform.js:188
-msgid "Review the results below before creating the ScanForm."
+msgid "Review the results below before creating the SCAN Form."
 msgstr ""
 
 #. translators: %d is number of eligible labels
 #: dist/woocommerce-shipping-scanform.js:189
 #, js-format
-msgid "%d label is eligible for ScanForm creation."
-msgid_plural "%d labels are eligible for ScanForm creation."
+msgid "%d label is eligible for SCAN Form creation."
+msgid_plural "%d labels are eligible for SCAN Form creation."
 msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %d is number of already scanned labels
 #: dist/woocommerce-shipping-scanform.js:190
 #, js-format
-msgid "%d label has already been included in a ScanForm and will be skipped."
-msgid_plural "%d labels have already been included in a ScanForm and will be skipped."
+msgid "%d label has already been included in a SCAN Form and will be skipped."
+msgid_plural "%d labels have already been included in a SCAN Form and will be skipped."
 msgstr[0] ""
 msgstr[1] ""
 
@@ -4230,7 +4210,7 @@ msgid "Order #%1$s - %2$s - %3$s"
 msgstr ""
 
 #: dist/woocommerce-shipping-scanform.js:194
-msgid "View ScanForm PDF"
+msgid "View SCAN Form PDF"
 msgstr ""
 
 #: dist/woocommerce-shipping-scanform.js:194
@@ -4252,17 +4232,17 @@ msgstr ""
 #. translators: %d is number of labels
 #: dist/woocommerce-shipping-scanform.js:195
 #, js-format
-msgid "ScanForm created successfully for %d label!"
-msgid_plural "ScanForm created successfully for %d labels!"
+msgid "SCAN Form created successfully for %d label!"
+msgid_plural "SCAN Form created successfully for %d labels!"
 msgstr[0] ""
 msgstr[1] ""
 
 #: dist/woocommerce-shipping-scanform.js:195
-msgid "Failed to create ScanForm."
+msgid "Failed to create SCAN Form."
 msgstr ""
 
 #: dist/woocommerce-shipping-scanform.js:195
-msgid "No eligible labels to create ScanForm."
+msgid "No eligible labels to create SCAN Form."
 msgstr ""
 
 #: dist/woocommerce-shipping-scanform.js:195
@@ -4274,7 +4254,7 @@ msgid "No Valid Labels Found"
 msgstr ""
 
 #: dist/woocommerce-shipping-scanform.js:195
-msgid "All selected labels are ineligible for ScanForm creation. Labels must have EasyPost shipment IDs, shipment dates must be today or later, and must not already be manifested."
+msgid "All selected labels are ineligible for SCAN Form creation. Labels must have EasyPost shipment IDs, shipment dates must be today or later, and must not already be manifested."
 msgstr ""
 
 #: dist/woocommerce-shipping-scanform.js:195
@@ -4288,24 +4268,24 @@ msgstr ""
 #. translators: %d is number of labels
 #: dist/woocommerce-shipping-scanform.js:196
 #, js-format
-msgid "%d label has already been included in a ScanForm or has been shipped."
-msgid_plural "%d labels have already been included in a ScanForm or have been shipped."
+msgid "%d label has already been included in a SCAN Form or has been shipped."
+msgid_plural "%d labels have already been included in a SCAN Form or have been shipped."
 msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %d is number of labels
 #: dist/woocommerce-shipping-scanform.js:197
 #, js-format
-msgid "%d label could not be included in the ScanForm (it may have been refunded or deleted)."
-msgid_plural "%d labels could not be included in the ScanForm (they may have been refunded or deleted)."
+msgid "%d label could not be included in the SCAN Form (it may have been refunded or deleted)."
+msgid_plural "%d labels could not be included in the SCAN Form (they may have been refunded or deleted)."
 msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %d is number of valid labels
 #: dist/woocommerce-shipping-scanform.js:198
 #, js-format
-msgid "You still have %d valid label. Would you like to create a ScanForm with the remaining valid label?"
-msgid_plural "You still have %d valid labels. Would you like to create a ScanForm with the remaining valid labels?"
+msgid "You still have %d valid label. Would you like to create a SCAN Form with the remaining valid label?"
+msgid_plural "You still have %d valid labels. Would you like to create a SCAN Form with the remaining valid labels?"
 msgstr[0] ""
 msgstr[1] ""
 
@@ -4342,7 +4322,7 @@ msgid "Back"
 msgstr ""
 
 #: dist/woocommerce-shipping-scanform.js:200
-msgid "Create ScanForm"
+msgid "Create SCAN Form"
 msgstr ""
 
 #: dist/woocommerce-shipping-scanform.js:200

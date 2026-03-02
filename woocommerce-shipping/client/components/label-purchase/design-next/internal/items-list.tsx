@@ -321,6 +321,14 @@ export const ItemsList = ( {
 				.wcship-items-data-view colgroup col:nth-child(1) {
 					width: 100% !important;
 				}
+				.wcship-items-data-view td:first-child,
+				.wcship-items-data-view th:first-child {
+					padding-inline-start: 0 !important;
+				}
+				.wcship-items-data-view th:last-child,
+				.wcship-items-data-view td:last-child {
+					padding-inline-end: 0 !important;
+				}
 				.wcship-items-data-view .dataviews-view-table__cell-content-wrapper:not(.dataviews-column-primary__media) {
 					min-width: 10ch !important;
 				}

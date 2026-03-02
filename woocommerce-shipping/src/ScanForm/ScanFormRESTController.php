@@ -299,7 +299,7 @@ class ScanFormRESTController extends WCShippingRESTController {
 		// Check if response has error.
 		if ( isset( $response->error ) ) {
 			$error_code    = $response->error->code ?? 'scan_form_error';
-			$error_message = $response->error->message ?? __( 'Failed to create ScanForm', 'woocommerce-shipping' );
+			$error_message = $response->error->message ?? __( 'Failed to create SCAN Form', 'woocommerce-shipping' );
 
 			// Parse error for failed shipments/labels.
 			$failed_info = $this->scanform_service->parse_scan_form_error( $error_message, $label_ids );

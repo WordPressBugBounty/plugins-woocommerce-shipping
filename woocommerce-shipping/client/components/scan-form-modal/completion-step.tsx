@@ -73,7 +73,7 @@ export const CompletionStep = ( {
 							)
 						}
 					>
-						{ __( 'View ScanForm PDF', 'woocommerce-shipping' ) }
+						{ __( 'View SCAN Form PDF', 'woocommerce-shipping' ) }
 					</Button>
 				</div>
 			) }

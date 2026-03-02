@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInitbb81dbe696cc282e0dd9e56ef55e05a8
+class ComposerStaticInitd37a4439fcb10559befeb6bfe325934e
 {
     public static $files = array (
         '3773ef3f09c37da5478d578e32b03a4b' => __DIR__ . '/..' . '/automattic/jetpack-assets/actions.php',
@@ -159,7 +159,6 @@ class ComposerStaticInitbb81dbe696cc282e0dd9e56ef55e05a8
         'Automattic\\WCShipping\\Promo\\PromoService' => __DIR__ . '/../..' . '/src/Promo/PromoService.php',
         'Automattic\\WCShipping\\ScanForm\\ScanForm' => __DIR__ . '/../..' . '/src/ScanForm/ScanForm.php',
         'Automattic\\WCShipping\\ScanForm\\ScanFormHistoryRESTController' => __DIR__ . '/../..' . '/src/ScanForm/ScanFormHistoryRESTController.php',
-        'Automattic\\WCShipping\\ScanForm\\ScanFormOnboardingNotice' => __DIR__ . '/../..' . '/src/ScanForm/ScanFormOnboardingNotice.php',
         'Automattic\\WCShipping\\ScanForm\\ScanFormRESTController' => __DIR__ . '/../..' . '/src/ScanForm/ScanFormRESTController.php',
         'Automattic\\WCShipping\\ScanForm\\ScanFormService' => __DIR__ . '/../..' . '/src/ScanForm/ScanFormService.php',
         'Automattic\\WCShipping\\ServiceData\\ServiceSchemasFetcherService' => __DIR__ . '/../..' . '/src/ServiceData/ServiceSchemasFetcherService.php',
@@ -196,9 +195,9 @@ class ComposerStaticInitbb81dbe696cc282e0dd9e56ef55e05a8
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInitbb81dbe696cc282e0dd9e56ef55e05a8::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInitbb81dbe696cc282e0dd9e56ef55e05a8::$prefixDirsPsr4;
-            $loader->classMap = ComposerStaticInitbb81dbe696cc282e0dd9e56ef55e05a8::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInitd37a4439fcb10559befeb6bfe325934e::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInitd37a4439fcb10559befeb6bfe325934e::$prefixDirsPsr4;
+            $loader->classMap = ComposerStaticInitd37a4439fcb10559befeb6bfe325934e::$classMap;
 
         }, null, ClassLoader::class);
     }

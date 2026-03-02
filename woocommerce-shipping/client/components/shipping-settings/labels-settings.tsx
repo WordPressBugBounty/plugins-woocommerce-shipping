@@ -292,7 +292,7 @@ export const LabelsSettingsComponent = () => {
 						<Spacer marginTop={ 0 } marginBottom={ 3 } />
 						<CheckboxControl
 							label={ __(
-								'Enable USPS ScanForm feature',
+								'Enable USPS® SCAN Form feature',
 								'woocommerce-shipping'
 							) }
 							help={ __(

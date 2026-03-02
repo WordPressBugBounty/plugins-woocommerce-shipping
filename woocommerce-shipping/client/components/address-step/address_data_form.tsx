@@ -379,14 +379,7 @@ export function AddressDataForm<
 			validity: adjustedValidity,
 			isValid: isFormValidCheck( adjustedValidity ),
 		};
-	}, [
-		rawValidity,
-		formData,
-		type,
-		originCountry,
-		formData.name,
-		formData.company,
-	] );
+	}, [ rawValidity, formData, type, originCountry ] );
 
 	/**
 	 * Trigger inline validation on mount for pre-filled fields.
@@ -410,7 +403,8 @@ export function AddressDataForm<
 		) {
 			formRef.current?.checkValidity();
 		}
-	}, [ initialValue ] );
+		// eslint-disable-next-line react-hooks/exhaustive-deps -- Intentionally track current form node reference for mount-time validity checks.
+	}, [ initialValue, formRef.current ] );
 
 	const handleChange = useCallback(
 		( value: DeepPartial< T > ) => {

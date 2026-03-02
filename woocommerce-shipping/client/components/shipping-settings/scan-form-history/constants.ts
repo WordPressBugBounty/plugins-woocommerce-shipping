@@ -3,7 +3,7 @@ import { __ } from '@wordpress/i18n';
 export const tableHeaders = [
 	{
 		key: 'scanFormId',
-		label: __( 'ScanForm', 'woocommerce-shipping' ).toUpperCase(),
+		label: __( 'SCAN Form', 'woocommerce-shipping' ).toUpperCase(),
 		isLeftAligned: true,
 		isSortable: false,
 		required: true,

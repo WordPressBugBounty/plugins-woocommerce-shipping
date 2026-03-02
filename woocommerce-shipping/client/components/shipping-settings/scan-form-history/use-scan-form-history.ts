@@ -30,13 +30,13 @@ export const useScanFormHistory = () => {
 					setScanForms( response.scan_forms );
 					setTotal( response.total );
 				} else {
-					setError( 'Failed to fetch ScanForm history.' );
+					setError( 'Failed to fetch SCAN Form history.' );
 				}
 			} catch ( err ) {
 				setError(
 					err instanceof Error
 						? err.message
-						: 'Failed to fetch ScanForm history.'
+						: 'Failed to fetch SCAN Form history.'
 				);
 			} finally {
 				setIsLoading( false );
