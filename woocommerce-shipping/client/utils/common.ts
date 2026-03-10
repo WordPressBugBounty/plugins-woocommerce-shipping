@@ -38,7 +38,7 @@ export const findClosestIndex = (
 	);
 
 export const renderWhenDOMReady = ( callback: () => void ) => {
-	if ( document.readyState === 'complete' ) {
+	if ( document.readyState !== 'loading' ) {
 		callback();
 	} else {
 		document.addEventListener( 'DOMContentLoaded', callback );

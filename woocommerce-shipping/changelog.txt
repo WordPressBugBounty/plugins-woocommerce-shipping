@@ -1,5 +1,13 @@
 *** WooCommerce Shipping Changelog ***
 
+= 2.2.4 - 2026-03-10 =
+* Fix   - Automatically refresh shipping rates when weight or package details change after initial fetch.
+* Tweak - Add telemetry tracking for button interactions on the CIAB Shipping settings page.
+* Tweak - Update payment method notices in the label purchase panel to use the new UI component design.
+* Dev   - Add @wordpress/ui package dependency.
+* Tweak - Show what the customer paid for shipping and profit/loss per rate during label purchase.
+* Tweak - WooCommerce 10.6 Compatibility.
+
 = 2.2.3 - 2026-03-02 =
 * Fix   - Allow rate fetching for addresses that fail validation when manually approved by the merchant.
 * Fix   - Update USPS ScanForm branding to USPS® SCAN Form and add documentation link to onboarding banner.

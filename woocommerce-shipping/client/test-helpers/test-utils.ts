@@ -186,15 +186,6 @@ export const mockUtils = ( overrides?: object ) => {
 		getOriginAddresses: jest.fn().mockReturnValue( [ address ] ),
 		getFirstSelectableOriginAddress: () => ( {} ),
 		getCustomsInformation: () => '',
-		getCarrierStrategies: () => ( {
-			upsdap: {
-				originAddress: {
-					1: {
-						has_agreed_to_tos: true,
-					},
-				},
-			},
-		} ),
 		getCurrentOrder: () => ( {
 			id: 1,
 			shipping_methods: 'Flat Rate',
@@ -220,6 +211,7 @@ export const mockUtils = ( overrides?: object ) => {
 		} ),
 		getPromotion: jest.fn(),
 		getPromoDiscount: jest.fn(),
+		applyPromo: jest.fn( ( rate: number ) => rate ),
 		...( overrides ?? {} ), // this overrides should remain at the end
 	};
 };

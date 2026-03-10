@@ -19,11 +19,6 @@ jest.mock( '../../data/label-purchase', () => ( {
 	registerLabelPurchaseStore: jest.fn(),
 } ) );
 
-jest.mock( '../../data/carrier-strategy', () => ( {
-	carrierStrategyStore: {},
-	registerCarrierStrategyStore: jest.fn(),
-} ) );
-
 jest.mock( '../../components/label-purchase/label-purchase-tabs', () => ( {
 	LabelPurchaseTabs: jest.fn( () => <div>Label Purchase Tabs</div> ),
 } ) );

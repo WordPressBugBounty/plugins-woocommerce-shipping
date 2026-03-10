@@ -18,6 +18,12 @@ class Garden {
 		/**
 		 * Filter whether Garden config is enabled.
 		 *
+		 * Internal hook used by WooCommerce Shipping test/bootstrap infrastructure.
+		 * It is not designed for third-party plugin integrations and may change or
+		 * be removed in future releases without notice.
+		 *
+		 * @internal
+		 *
 		 * @param bool $is_enabled Whether Garden config is enabled.
 		 */
 		return apply_filters( 'wcshipping_garden_is_config_enabled', function_exists( 'garden_get_wpcloud_config' ) );
@@ -38,6 +44,12 @@ class Garden {
 
 		/**
 		 * Filter the WPCloud config value.
+		 *
+		 * Internal hook used by WooCommerce Shipping test/bootstrap infrastructure.
+		 * It is not designed for third-party plugin integrations and may change or
+		 * be removed in future releases without notice.
+		 *
+		 * @internal
 		 *
 		 * @param mixed  $value The config value.
 		 * @param string $key   The config key.

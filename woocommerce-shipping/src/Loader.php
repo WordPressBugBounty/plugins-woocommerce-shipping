@@ -6,7 +6,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-use Automattic\WCShipping\Carrier\CarrierStrategyService;
 use Automattic\WCShipping\Carrier\UPSDAP\UPSDAPCarrierStrategyRESTController;
 use Automattic\WCShipping\Carrier\UPSDAP\UPSDAPCarrierStrategyService;
 use Automattic\WCShipping\Checkout\CheckoutController;
@@ -91,6 +90,8 @@ use Automattic\WCShipping\Shipments\ShipmentsService;
 use Automattic\WCShipping\StoreApi\Extensions\BlocksCheckoutAddressValidationExtension;
 use Automattic\WCShipping\StoreApi\StoreApiExtendSchema;
 use Automattic\WCShipping\StoreApi\StoreApiExtensionController;
+use Automattic\WCShipping\Testing\WCConnectE2EAPIClientMock;
+use Automattic\WCShipping\Testing\WCConnectE2EConnectionShim;
 use Automattic\WCShipping\Utils as WCShippingUtils;
 use Automattic\WCShipping\WPCOMConnection\WPCOMConnectionRESTController;
 use Automattic\WCShipping\WCShippingRESTController;
@@ -106,7 +107,6 @@ use Automattic\WCShipping\Fulfillments\ShippingFulfillmentsDataStore;
 use Automattic\WCShipping\RestApi\Routes\V2\Addresses\Controller as AddressesV2Controller;
 
 use Exception;
-use WC_Connect_API_Client_Local_Test_Mock;
 use WC_Data_Store;
 use WC_Logger;
 use WC_Order;
@@ -357,13 +357,6 @@ class Loader {
 	 * @var OriginAddressService
 	 */
 	protected OriginAddressService $origin_address_service;
-
-	/**
-	 * Carrier strategy service instance.
-	 *
-	 * @var CarrierStrategyService
-	 */
-	protected CarrierStrategyService $carrier_strategy_service;
 
 	/**
 	 * Plugin deactivation hook.
@@ -829,13 +822,21 @@ class Loader {
 		add_action( 'plugin_action_links_' . plugin_basename( WCSHIPPING_PLUGIN_FILE ), array( $this, 'add_plugin_action_links' ) );
 		add_action( 'plugin_row_meta', array( $this, 'add_plugin_description_links' ), 10, 2 );
 
-		$tos_accepted = WC_Connect_Options::get_option( 'tos_accepted' );
+		$tos_accepted                        = WC_Connect_Options::get_option( 'tos_accepted' );
+		$wcshipping_e2e_mock_connect_enabled =
+			class_exists( WCConnectE2EConnectionShim::class ) &&
+			WCConnectE2EConnectionShim::is_enabled();
 
 		// Prevent presenting users with TOS they've already
 		// accepted in the core WC Setup Wizard or on WP.com.
 		if ( ! $tos_accepted && WC_Connect_Jetpack::is_atomic_site() ) {
 			WC_Connect_Options::update_option( 'tos_accepted', true );
 
+			$tos_accepted = true;
+		}
+
+		if ( ! $tos_accepted && $wcshipping_e2e_mock_connect_enabled ) {
+			WC_Connect_Options::update_option( 'tos_accepted', true );
 			$tos_accepted = true;
 		}
 
@@ -1013,9 +1014,12 @@ class Loader {
 
 		$validator = new WC_Connect_Service_Schemas_Validator();
 
-		if ( defined( 'WOOCOMMERCE_SERVICES_LOCAL_TEST_MODE' ) ) {
-			require_once WCSHIPPING_PLUGIN_DIR . '/classes/test-mocks/class-wc-connect-api-client-local-test-mock.php';
-			$api_client = new WC_Connect_API_Client_Local_Test_Mock( $validator, $this );
+		$wcshipping_test_mode_enabled =
+			defined( 'WOOCOMMERCE_SERVICES_LOCAL_TEST_MODE' ) &&
+			WOOCOMMERCE_SERVICES_LOCAL_TEST_MODE;
+
+		if ( $wcshipping_test_mode_enabled ) {
+			$api_client = new WCConnectE2EAPIClientMock( $validator, $this );
 		} else {
 			require_once WCSHIPPING_PLUGIN_DIR . '/classes/class-wc-connect-api-client-live.php';
 			$api_client = new WC_Connect_API_Client_Live( $validator, $this );
@@ -1034,8 +1038,7 @@ class Loader {
 		$shipments_service                     = new ShipmentsService( $settings_store );
 		$this->origin_address_service          = new OriginAddressService();
 		$this->view_service                    = new ViewService( $this->account_settings, $schemas_store );
-		$this->upsdap_carrier_strategy_service = new UPSDAPCarrierStrategyService( $this->origin_address_service, $api_client );
-		$this->carrier_strategy_service        = new CarrierStrategyService( $this->upsdap_carrier_strategy_service );
+		$this->upsdap_carrier_strategy_service = new UPSDAPCarrierStrategyService( $api_client );
 		$promo_service                         = new PromoService( $schemas_store, $settings_store );
 		$this->address_normalization_service   = new AddressNormalizationService( $settings_store, $api_client, $logger, $this->origin_address_service );
 		$this->fulfillments_service            = new FulfillmentsService( $this->shipping_fulfillments_data_store );
@@ -1047,7 +1050,6 @@ class Loader {
 			$shipments_service,
 			$this->origin_address_service,
 			$this->view_service,
-			$this->carrier_strategy_service,
 			$this->account_settings,
 			$promo_service,
 			$this->address_normalization_service,
@@ -1110,11 +1112,10 @@ class Loader {
 	 * Load admin-only plugin dependencies.
 	 */
 	public function load_admin_dependencies() {
-		$schema                   = $this->get_service_schemas_store();
-		$settings                 = $this->get_service_settings_store();
-		$logger                   = $this->get_logger();
-		$payment_methods          = $this->get_payment_methods_store();
-		$carrier_strategy_service = $this->carrier_strategy_service;
+		$schema          = $this->get_service_schemas_store();
+		$settings        = $this->get_service_settings_store();
+		$logger          = $this->get_logger();
+		$payment_methods = $this->get_payment_methods_store();
 
 		require_once WCSHIPPING_PLUGIN_DIR . '/classes/class-wc-connect-debug-tools.php';
 		new WC_Connect_Debug_Tools( $this->api_client );
@@ -1129,8 +1130,7 @@ class Loader {
 			$this->get_service_schemas_store(),
 			$this->origin_address_service,
 			$settings,
-			$payment_methods,
-			$carrier_strategy_service
+			$payment_methods
 		);
 		$this->set_settings_pages( $settings_pages );
 		$this->set_help_view( new WC_Connect_Help_View( $schema, $settings, $logger ) );
@@ -1402,8 +1402,7 @@ class Loader {
 
 		( new AddressRESTController(
 			$this->address_normalization_service,
-			$origin_addresses_service,
-			$this->upsdap_carrier_strategy_service
+			$origin_addresses_service
 		) )->register_routes();
 
 		( new LabelRateRESTController( $this->label_rate_service ) )->register_routes();
@@ -1432,7 +1431,7 @@ class Loader {
 		$rest_label_preview_controller->register_routes();
 
 		( new AssetsRESTController() )->register_routes();
-		( new ConfigRESTController( $this->shipping_label, $this->account_settings, $this->origin_address_service, $this->carrier_strategy_service ) )->register_routes();
+		( new ConfigRESTController( $this->shipping_label, $this->account_settings, $this->origin_address_service ) )->register_routes();
 
 		( new UPSDAPCarrierStrategyRESTController( $this->upsdap_carrier_strategy_service ) )->register_routes();
 		// Ensure all shipping endpoints are not cached.

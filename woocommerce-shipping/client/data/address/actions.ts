@@ -49,8 +49,6 @@ import {
 	UpdateShipmentAddressAction,
 	UpdateShipmentAddressFailedAction,
 } from './types.d';
-import { dispatch } from '@wordpress/data';
-import { carrierStrategyStore } from '../carrier-strategy';
 
 export function* verifyOrderShippingAddress( {
 	orderId,
@@ -234,10 +232,6 @@ export function* updateShipmentAddress(
 			data: requestData,
 		} );
 		if ( success ) {
-			dispatch( carrierStrategyStore ).updateUPSDAPStrategySuccess( {
-				addressId: resultAddress.id,
-				confirmed: false,
-			} );
 			return {
 				type: UPDATE_SHIPMENT_ADDRESS,
 				payload: {

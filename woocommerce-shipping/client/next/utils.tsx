@@ -3,7 +3,6 @@ import { useState, useEffect } from '@wordpress/element';
 import { NAMESPACE } from 'data/constants';
 import { registerAddressStore } from 'data/address';
 import { registerSettingsStore } from 'data/settings';
-import { registerCarrierStrategyStore } from 'data/carrier-strategy';
 import type { WCShippingConfig } from 'types';
 import { __dangerousOptInToUnstableAPIsOnlyForCoreModules } from '@wordpress/private-apis';
 
@@ -15,7 +14,6 @@ export const loadConfig = async (): Promise< WCShippingConfig > => {
 		// navigating from "Buy a shipping label" to "Shipping operations").
 		registerAddressStore( false );
 		registerSettingsStore();
-		registerCarrierStrategyStore();
 		return window.WCShipping_Config as WCShippingConfig;
 	}
 	configPromise ??= ( async () => {
@@ -25,7 +23,6 @@ export const loadConfig = async (): Promise< WCShippingConfig > => {
 		window.WCShipping_Config = config;
 		registerAddressStore( false );
 		registerSettingsStore();
-		registerCarrierStrategyStore();
 		return config as WCShippingConfig;
 	} )();
 	return configPromise;

@@ -65,6 +65,7 @@ export interface WCShippingConfig {
 	origin_addresses: LocationResponse[];
 	eu_countries: string[];
 	constants: Constants;
+	/** @deprecated Kept for backward compatibility. Always returns an empty structure. */
 	carrier_strategies: {
 		upsdap: {
 			origin_address: Record<

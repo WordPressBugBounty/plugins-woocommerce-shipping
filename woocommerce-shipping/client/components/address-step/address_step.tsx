@@ -1,17 +1,8 @@
 import React from 'react';
 import { isEmpty } from 'lodash';
 
-import {
-	__experimentalSpacer as Spacer,
-	__experimentalText as Text,
-	Button,
-	Flex,
-	FlexItem,
-	Modal,
-	Notice,
-} from '@wordpress/components';
+import { Button, Flex, FlexItem, Modal } from '@wordpress/components';
 import { useEffect, useState } from '@wordpress/element';
-import { Icon, caution as warning } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
 import { dispatch, useSelect } from '@wordpress/data';
 import { Form } from '@woocommerce/components';
@@ -42,7 +33,6 @@ import {
 } from 'types';
 import { addressStore } from 'data/address';
 import { withBoundary } from 'components/HOC';
-import { carrierStrategyStore } from '../../data/carrier-strategy';
 import { AddressDataForm } from './address_data_form';
 
 interface AddressStepProps< T = Destination > {
@@ -54,6 +44,7 @@ interface AddressStepProps< T = Destination > {
 	isAdd: boolean; // if the form is used to add an address
 	originCountry?: string; // origin country is only needed for destination address for validations
 	nextDesign?: boolean; // whether to use the next design for the address step
+	surfaceArea?: string; // telemetry surface area identifier for CIAB tracking
 }
 
 export const AddressStep = withBoundary(
@@ -66,6 +57,7 @@ export const AddressStep = withBoundary(
 		orderId,
 		originCountry,
 		nextDesign = false,
+		surfaceArea,
 	}: AddressStepProps< T > ) => {
 		const [ isSuggestionModalOpen, setIsSuggestionModalOpen ] =
 			useState( false );
@@ -330,20 +322,6 @@ export const AddressStep = withBoundary(
 			return ! isDirty;
 		};
 
-		const hasApprovedUPSDAPTOS = useSelect(
-			( select ) => {
-				if ( type === ADDRESS_TYPES.DESTINATION ) {
-					return false;
-				}
-				return select(
-					carrierStrategyStore
-				).getUPSDAPCarrierStrategyForAddressId( address.id )
-					.hasAgreedToTos;
-			},
-			[ address.id, type ]
-		);
-
-		const showUPSDAPTOSWarning = isAdd ? false : hasApprovedUPSDAPTOS;
 		return (
 			<div>
 				{ nextDesign ? (
@@ -357,11 +335,11 @@ export const AddressStep = withBoundary(
 								isUpdating={ isUpdating }
 								isVerified={ isVerified }
 								validationErrors={ validationErrors }
-								showUPSDAPTOSWarning={ showUPSDAPTOSWarning }
 								originCountry={ originCountry }
 								onSaveWithoutValidation={
 									handleSaveWithoutValidation
 								}
+								surfaceArea={ surfaceArea }
 							/>
 						) }
 					</>
@@ -391,32 +369,6 @@ export const AddressStep = withBoundary(
 											validationErrors,
 										} }
 									>
-										{ showUPSDAPTOSWarning && (
-											<>
-												<Notice
-													status="warning"
-													isDismissible={ false }
-												>
-													<Flex align="flex-start">
-														<Icon
-															icon={ warning }
-															style={ {
-																minWidth:
-																	'20px',
-															} }
-														/>
-														<Text>
-															{ __(
-																'You have accepted the UPS® Terms of Service for this address. If you update the address, the acceptance will be revoked, and you will need to accept the Terms of Service again before purchasing additional UPS® labels.',
-																'woocommerce-shipping'
-															) }
-														</Text>
-													</Flex>
-												</Notice>
-												<Spacer marginBottom={ 3 } />
-											</>
-										) }
-
 										<p>
 											{ __(
 												"Please complete all required fields and click the 'Validate and save' button below to confirm and validate your address details.",
@@ -524,6 +476,7 @@ export const AddressStep = withBoundary(
 								errors={ validationErrors }
 								nextDesign={ nextDesign }
 								isUpdating={ isUpdating }
+								surfaceArea={ surfaceArea }
 							></AddressSuggestion>
 						</Modal>
 					) }

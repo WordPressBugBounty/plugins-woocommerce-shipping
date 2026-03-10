@@ -16,7 +16,8 @@ namespace Automattic\WCShipping\Fulfillments;
 defined( 'ABSPATH' ) || exit;
 
 // Only extend the parent class if it exists (requires WooCommerce 10.1+)
-if ( class_exists( '\Automattic\WooCommerce\Internal\DataStores\Fulfillments\FulfillmentsDataStore' ) ) {
+// The Base\FulfillmentsDataStore alias is created by FulfillmentsClassResolver.php
+if ( class_exists( Base\FulfillmentsDataStore::class ) ) {
 	/**
 	 * Shipping Fulfillments Data Store Class
 	 *
@@ -25,7 +26,7 @@ if ( class_exists( '\Automattic\WooCommerce\Internal\DataStores\Fulfillments\Ful
 	 *
 	 * @since 1.9.0
 	 */
-	class ShippingFulfillmentsDataStore extends \Automattic\WooCommerce\Internal\DataStores\Fulfillments\FulfillmentsDataStore {
+	class ShippingFulfillmentsDataStore extends Base\FulfillmentsDataStore {
 
 		/**
 		 * Read fulfillments from the database.

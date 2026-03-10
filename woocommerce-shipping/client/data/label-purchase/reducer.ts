@@ -1,9 +1,7 @@
 import { mapKeys, mapValues } from 'lodash';
 import {
-	camelCaseKeys,
 	camelCasePackageResponse,
 	createReducer,
-	getCarrierStrategies,
 	getConfig,
 	getCustomsInformation,
 	getLabelDestinations,
@@ -63,9 +61,6 @@ const defaultState = (): LabelPurchaseState =>
 		selectedOrigins: getLabelOrigins(),
 		purchaseAPIErrors: {},
 		customsInformation: getCustomsInformation(),
-		carrierStrategies: mapValues( getCarrierStrategies(), ( value ) =>
-			camelCaseKeys( value )
-		),
 		selectedRateOptions: getSelectedRateOptions(),
 	} ) as const;
 

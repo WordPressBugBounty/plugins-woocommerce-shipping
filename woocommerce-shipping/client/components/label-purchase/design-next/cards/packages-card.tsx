@@ -7,6 +7,7 @@ import {
 	__experimentalText as Text,
 	__experimentalSpacer as Spacer,
 } from '@wordpress/components';
+import { Badge } from '@wordpress/ui';
 import { __, sprintf } from '@wordpress/i18n';
 import { select, dispatch } from '@wordpress/data';
 import { isEmpty } from 'lodash';
@@ -20,7 +21,7 @@ import {
 import { useLabelPurchaseContext } from 'context/label-purchase';
 import { recordEvent } from 'utils/tracks';
 import { useCollapsibleCard } from '../internal/useCollapsibleCard';
-import { Badge } from 'components/wp';
+
 import { uspsHazmatCategories } from 'components/label-purchase/hazmat/usps-hazmat-categories';
 import { Hazmat } from 'components/label-purchase/hazmat';
 import PackageTypeSelect from '../internal/package-type-select';
@@ -87,7 +88,7 @@ const PackagesCardComponent = () => {
 		if ( currentPackageTab === TAB_NAMES.CUSTOM_PACKAGE ) {
 			if ( packageNeedsDimensions() ) {
 				return (
-					<Badge intent="warning-alt">
+					<Badge intent="low">
 						{ __( 'Needs dimensions', 'woocommerce-shipping' ) }
 					</Badge>
 				);
@@ -124,7 +125,7 @@ const PackagesCardComponent = () => {
 				);
 			}
 			return (
-				<Badge intent="warning-alt">
+				<Badge intent="low">
 					{ __( 'Needs dimensions', 'woocommerce-shipping' ) }
 				</Badge>
 			);

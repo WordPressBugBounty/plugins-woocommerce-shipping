@@ -10,6 +10,7 @@ import {
 	Flex,
 	Spinner,
 } from '@wordpress/components';
+import { Badge } from '@wordpress/ui';
 import { __ } from '@wordpress/i18n';
 import { useCollapsibleCard } from '../internal/useCollapsibleCard';
 import { addressStore } from 'data/address';
@@ -28,7 +29,6 @@ import {
 } from 'utils';
 import { AddressStep } from 'components/address-step';
 import { pencil as edit } from '@wordpress/icons';
-import { Badge } from 'components/wp';
 import { Destination, Order, OriginAddress } from 'types';
 import { ShipFromSelectV2 } from '../internal/ship-from-select-v2';
 import { withBoundaryNext } from 'components/HOC/error-boundary/with-boundary-next';
@@ -285,19 +285,19 @@ const AddressesCardComponent = ( {
 							) : (
 								<>
 									{ ! isDestinationAddressVerified && (
-										<Badge intent="warning-alt">
+										<Badge intent="low">
 											{ __(
 												'Review recipient address',
 												'woocommerce-shipping'
-											) }{ ' ' }
+											) }
 										</Badge>
 									) }
 									{ allOriginsUnverified && (
-										<Badge intent="warning-alt">
+										<Badge intent="low">
 											{ __(
 												'Review sender address',
 												'woocommerce-shipping'
-											) }{ ' ' }
+											) }
 										</Badge>
 									) }
 								</>
@@ -419,7 +419,10 @@ const AddressesCardComponent = ( {
 													marginBottom: '-4px',
 												} }
 											>
-												<Badge intent="warning-alt">
+												<Badge
+													intent="low"
+													render={ <div /> }
+												>
 													{ __(
 														'Not validated',
 														'woocommerce-shipping'
@@ -520,7 +523,10 @@ const AddressesCardComponent = ( {
 													marginBottom: '-4px',
 												} }
 											>
-												<Badge intent="warning-alt">
+												<Badge
+													intent="low"
+													render={ <div /> }
+												>
 													{ __(
 														'Not validated',
 														'woocommerce-shipping'

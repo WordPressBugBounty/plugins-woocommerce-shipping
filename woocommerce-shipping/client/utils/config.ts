@@ -54,9 +54,6 @@ export const getPluginRelativeDirectory = ( forWooCommerce = false ) =>
 		? getConfig().constants.WC_PLUGIN_RELATIVE_DIR
 		: getConfig().constants.WCSHIPPING_RELATIVE_PLUGIN_DIR;
 
-export const getCarrierStrategies = ( { carrier_strategies } = getConfig() ) =>
-	carrier_strategies;
-
 export const shouldAutomaticallyOpenPrintDialog = ( config = getConfig() ) =>
 	getAccountSettings( config ).purchaseSettings
 		.automatically_open_print_dialog;

@@ -7,7 +7,6 @@ import {
 } from '@wordpress/element';
 import {
 	__experimentalSpacer as Spacer,
-	__experimentalText as Text,
 	Button,
 	Flex,
 	Notice,
@@ -24,6 +23,7 @@ import {
 } from '@wordpress/dataviews/wp';
 import { AddressContextProvider } from './context';
 import { getCountryNames, getStateNames, isMailAndPhoneRequired } from 'utils';
+import { recordEvent } from 'utils/tracks';
 import { ADDRESS_TYPES } from 'data/constants';
 import {
 	CamelCaseType,
@@ -119,9 +119,9 @@ interface AddressDataFormProps< T = Destination > {
 	isUpdating: boolean;
 	isVerified: boolean;
 	validationErrors: Record< string, string >;
-	showUPSDAPTOSWarning: boolean;
 	originCountry?: string;
 	onSaveWithoutValidation?: ( values: T ) => Promise< void >;
+	surfaceArea?: string;
 }
 
 export function AddressDataForm<
@@ -133,8 +133,8 @@ export function AddressDataForm<
 	onCancel,
 	isUpdating,
 	validationErrors,
-	showUPSDAPTOSWarning,
 	originCountry,
+	surfaceArea,
 }: AddressDataFormProps< T > ) {
 	// State for DataForm
 	const [ formData, setFormData ] = useState< T >( initialValue );
@@ -418,30 +418,38 @@ export function AddressDataForm<
 
 	// Handle form submission
 	const handleDataFormSubmit = async () => {
+		if ( surfaceArea ) {
+			recordEvent( `${ surfaceArea }_button_click`, {
+				button_label: 'validate_and_save',
+				card_section: 'sender_addresses',
+			} );
+		}
 		if ( ! dataFormIsValid ) {
 			// Trigger native invalid events on all inputs so that
 			// ControlWithError shows the inline error messages.
 			formRef.current?.checkValidity();
 			return;
 		}
-		await onSubmit( formData );
+		try {
+			await onSubmit( formData );
+		} catch ( error ) {
+			if ( surfaceArea ) {
+				const errorCode =
+					error instanceof Error
+						? error.message
+						: ( error as Record< string, unknown > )?.code ??
+						  'unknown_error';
+				recordEvent( `${ surfaceArea }_button_error`, {
+					button_label: 'validate_and_save',
+					error_code: String( errorCode ),
+					card_section: 'sender_addresses',
+				} );
+			}
+		}
 	};
 
 	return (
 		<form ref={ formRef } noValidate>
-			{ showUPSDAPTOSWarning && (
-				<>
-					<Notice status="warning" isDismissible={ false }>
-						<Text>
-							{ __(
-								'You have accepted the UPS® Terms of Service for this address. If you update the address, the acceptance will be revoked, and you will need to accept the Terms of Service again before purchasing additional UPS® labels.',
-								'woocommerce-shipping'
-							) }
-						</Text>
-					</Notice>
-					<Spacer marginBottom={ 3 } />
-				</>
-			) }
 			<AddressContextProvider
 				initialValue={ {
 					isUpdating,
@@ -489,7 +497,15 @@ export function AddressDataForm<
 			<Flex justify="flex-end" align={ 'center' } as="footer">
 				<Button
 					type="button"
-					onClick={ onCancel }
+					onClick={ () => {
+						if ( surfaceArea ) {
+							recordEvent( `${ surfaceArea }_button_click`, {
+								button_label: 'cancel',
+								card_section: 'sender_addresses',
+							} );
+						}
+						onCancel?.();
+					} }
 					isBusy={ isUpdating }
 					variant="tertiary"
 				>

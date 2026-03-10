@@ -7,6 +7,7 @@ import {
 	Modal,
 	__experimentalText as Text,
 } from '@wordpress/components';
+import { Badge } from '@wordpress/ui';
 import {
 	createInterpolateElement,
 	useCallback,
@@ -30,7 +31,6 @@ import { AddressStep } from 'components/address-step';
 import { addressStore } from 'data/address';
 import { settingsPageUrl } from 'components/label-purchase/constants';
 import { SHIPPING_OPERATIONS_PATH } from 'next/data';
-import { Badge } from 'components/wp';
 
 interface ShipFromSelectProps {
 	disabled: boolean;
@@ -114,7 +114,7 @@ const AddressLine = ( {
 						display: 'block',
 					} }
 				>
-					<Badge intent="warning-alt">
+					<Badge intent="low">
 						{ __( 'Not validated', 'woocommerce-shipping' ) }
 					</Badge>
 				</span>
@@ -225,7 +225,7 @@ export const ShipFromSelectV2 = ( { disabled }: ShipFromSelectProps ) => {
 											  ) }
 									</Text>
 									{ ! getShipmentOrigin()?.isVerified && (
-										<Badge intent="warning-alt">
+										<Badge intent="low">
 											{ __(
 												'Not validated',
 												'woocommerce-shipping'

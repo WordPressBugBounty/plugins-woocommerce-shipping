@@ -4,14 +4,20 @@ import {
 	Flex,
 	Icon,
 } from '@wordpress/components';
+import { Badge } from '@wordpress/ui';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import { TAB_NAMES } from 'components/label-purchase/packages';
 import { useLabelPurchaseContext } from 'context/label-purchase';
 import { Destination, OriginAddress, Rate, RateWithParent } from 'types';
-import { addressToString, isDeliveryDateValid } from 'utils';
+import {
+	addressToString,
+	applyPromo,
+	getCurrentOrder,
+	isDeliveryDateValid,
+} from 'utils';
 import { dateI18n } from '@wordpress/date';
-import { Badge } from 'components/wp';
 import { subline } from 'components/icons';
+import { customerPaidBannerStyles } from 'components/label-purchase/constants';
 
 interface ShippingSummaryProps {
 	destinationAddress: OriginAddress | Destination;
@@ -68,6 +74,21 @@ export const ShippingSummary = ( {
 
 	const discount = selectedRate
 		? selectedRate.rate.retailRate - selectedRate.rate.rate
+		: 0;
+
+	const currentOrder = getCurrentOrder();
+	const customerPaidShipping = parseFloat(
+		currentOrder?.total_shipping ?? '0'
+	);
+
+	const effectiveRate = selectedRate
+		? applyPromo( selectedRate.rate.rate, selectedRate.rate.promoId )
+		: 0;
+	const totalLabelCost = selectedRate
+		? Object.values( selectedRateOptions ?? {} ).reduce(
+				( acc, option ) => acc + ( option.surcharge ?? 0 ),
+				effectiveRate
+		  )
 		: 0;
 
 	/* translators: Text explaining the rate discount. %s is the discount amount, e.g. "$1.00". */
@@ -259,14 +280,7 @@ export const ShippingSummary = ( {
 							<Text weight={ 500 }>
 								{ selectedRate
 									? storeCurrency.formatAmount(
-											Object.values(
-												selectedRateOptions ?? {}
-											).reduce(
-												( acc, option ) =>
-													acc +
-													( option.surcharge ?? 0 ),
-												selectedRate.rate.rate
-											)
+											totalLabelCost
 									  )
 									: '-' }
 							</Text>
@@ -287,6 +301,41 @@ export const ShippingSummary = ( {
 						</Badge>
 					</Flex>
 				) }
+				{ ! isNaN( customerPaidShipping ) &&
+					customerPaidShipping > 0 && (
+						<div
+							className="customer-paid-shipping-banner"
+							style={ customerPaidBannerStyles.container }
+						>
+							<Text
+								size={ 13 }
+								style={ customerPaidBannerStyles.text }
+							>
+								{ currentOrder?.shipping_methods
+									? sprintf(
+											// translators: %1$s: the amount the customer paid for shipping, %2$s: the shipping method name
+											__(
+												'Customer paid: %1$s for shipping (%2$s)',
+												'woocommerce-shipping'
+											),
+											storeCurrency.formatAmount(
+												customerPaidShipping
+											),
+											currentOrder.shipping_methods
+									  )
+									: sprintf(
+											// translators: %s: the amount the customer paid for shipping
+											__(
+												'Customer paid: %s for shipping',
+												'woocommerce-shipping'
+											),
+											storeCurrency.formatAmount(
+												customerPaidShipping
+											)
+									  ) }
+							</Text>
+						</div>
+					) }
 				<Text variant="muted">
 					{ __(
 						'This order will be fulfilled after you buy the shipping label.',

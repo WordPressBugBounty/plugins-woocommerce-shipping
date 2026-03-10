@@ -6,6 +6,7 @@ import {
 	Card,
 	CardBody,
 } from '@wordpress/components';
+import { Badge as NextBadge } from '@wordpress/ui';
 import { dateI18n } from '@wordpress/date';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import { withBoundary } from 'components/HOC';
@@ -205,34 +206,20 @@ export const RateRow = withBoundary(
 										{ title }
 									</Text>
 									{ isCheapest && (
-										<Badge
-											intent="default"
-											style={ {
-												fontSize: '12px',
-												color: '#1F2C70',
-												backgroundColor: '#ECEEFB',
-											} }
-										>
+										<NextBadge intent="informational">
 											{ __(
 												'Lowest price',
 												'woocommerce-shipping'
 											) }
-										</Badge>
+										</NextBadge>
 									) }
 									{ isFastest && (
-										<Badge
-											intent="default"
-											style={ {
-												fontSize: '12px',
-												color: '#1F2C70',
-												backgroundColor: '#ECEEFB',
-											} }
-										>
+										<NextBadge intent="informational">
 											{ __(
 												'Fastest delivery',
 												'woocommerce-shipping'
 											) }
-										</Badge>
+										</NextBadge>
 									) }
 								</Flex>
 								{ rateCaveatText && (

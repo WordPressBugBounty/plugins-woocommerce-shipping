@@ -7,7 +7,6 @@
 
 namespace Automattic\WCShipping\LabelPurchase;
 
-use Automattic\WCShipping\Carrier\UPSDAP\UPSDAPCarrierStrategyService;
 use Automattic\WCShipping\Exceptions\RESTRequestException;
 use Automattic\WCShipping\OriginAddresses\OriginAddressService;
 use Automattic\WCShipping\WCShippingRESTController;
@@ -49,12 +48,10 @@ class AddressRESTController extends WCShippingRESTController {
 	 */
 	public function __construct(
 		AddressNormalizationService $normalization_service,
-		OriginAddressService $origin_address_service,
-		UPSDAPCarrierStrategyService $upsdap_carrier_service
+		OriginAddressService $origin_address_service
 	) {
 		$this->normalization_service  = $normalization_service;
 		$this->origin_address_service = $origin_address_service;
-		$this->upsdap_carrier_service = $upsdap_carrier_service;
 	}
 
 	/**

@@ -10,7 +10,6 @@ export const useRatesEffects = ( {
 	shipment: { getCurrentShipmentDate },
 	weight: { getShipmentTotalWeight },
 	packages: { getCustomPackage, getSelectedPackage, currentPackageTab },
-	nextDesign,
 }: LabelPurchaseContextType ) => {
 	// Update rates when isCustomsNeeded changes
 	useThrottledStateChange( isCustomsNeeded(), updateRates );
@@ -37,7 +36,6 @@ export const useRatesEffects = ( {
 	// Memoize the custom package state to avoid unnecessary re-renders
 	const customPackageState = useCallback( () => {
 		if (
-			nextDesign &&
 			customPackage &&
 			currentPackageTab === TAB_NAMES.CUSTOM_PACKAGE &&
 			hasValidWeight( totalWeight ) &&
@@ -48,7 +46,6 @@ export const useRatesEffects = ( {
 		return null;
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [
-		nextDesign,
 		customPackage?.type,
 		customPackage?.width,
 		customPackage?.height,
@@ -65,16 +62,16 @@ export const useRatesEffects = ( {
 	// Memoize the selected package state to avoid unnecessary re-renders
 	const selectedPackageState = useCallback( () => {
 		if (
-			nextDesign &&
 			selectedPackage &&
 			hasValidWeight( totalWeight ) &&
-			currentPackageTab === TAB_NAMES.CARRIER_PACKAGE
+			( currentPackageTab === TAB_NAMES.CARRIER_PACKAGE ||
+				currentPackageTab === TAB_NAMES.SAVED_TEMPLATES )
 		) {
 			return selectedPackage.id + '-' + totalWeight;
 		}
 		return null;
-	}, [ nextDesign, selectedPackage?.id, totalWeight, currentPackageTab ] ); // eslint-disable-line react-hooks/exhaustive-deps
+	}, [ selectedPackage?.id, totalWeight, currentPackageTab ] ); // eslint-disable-line react-hooks/exhaustive-deps
 
-	// Update rates when the selected package changes
+	// Update rates when the selected package or weight changes
 	useThrottledStateChange( selectedPackageState(), updateRates );
 };

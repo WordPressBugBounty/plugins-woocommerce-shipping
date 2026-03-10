@@ -5,9 +5,9 @@ Requires Plugins: woocommerce
 Requires PHP: 7.4
 Requires at least: 6.8
 Tested up to: 6.9
-WC requires at least: 10.3
-WC tested up to: 10.5
-Stable tag: 2.2.3
+WC requires at least: 10.4
+WC tested up to: 10.6
+Stable tag: 2.2.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -127,6 +127,14 @@ Absolutely! You can read our Terms of Service [here](https://wordpress.com/tos).
 6. WooCommerce Shipping address validation at checkout suggestion.
 
 == Changelog ==
+
+= 2.2.4 - 2026-03-10 =
+* Fix   - Automatically refresh shipping rates when weight or package details change after initial fetch.
+* Tweak - Add telemetry tracking for button interactions on the CIAB Shipping settings page.
+* Tweak - Update payment method notices in the label purchase panel to use the new UI component design.
+* Dev   - Add @wordpress/ui package dependency.
+* Tweak - Show what the customer paid for shipping and profit/loss per rate during label purchase.
+* Tweak - WooCommerce 10.6 Compatibility.
 
 = 2.2.3 - 2026-03-02 =
 * Fix   - Allow rate fetching for addresses that fail validation when manually approved by the merchant.

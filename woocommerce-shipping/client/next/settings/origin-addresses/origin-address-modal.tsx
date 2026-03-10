@@ -64,6 +64,7 @@ const OriginAddressModalContent = ( {
 				onCancelCallback={ onClose }
 				isAdd={ ! address }
 				nextDesign
+				surfaceArea="settings_shipping"
 			/>
 		</Modal>
 	);

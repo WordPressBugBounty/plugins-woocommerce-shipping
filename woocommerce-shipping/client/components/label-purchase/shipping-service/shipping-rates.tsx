@@ -2,10 +2,11 @@ import React from 'react';
 import {
 	__experimentalHeading as Heading,
 	__experimentalSpacer as Spacer,
+	__experimentalText as Text,
 	Flex,
 	Notice,
 } from '@wordpress/components';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import {
 	useCallback,
 	useEffect,
@@ -16,10 +17,14 @@ import {
 import { usePrevious } from '@wordpress/compose';
 import { intersection } from 'lodash';
 import { useLabelPurchaseContext } from 'context/label-purchase';
+import { getCurrentOrder } from 'utils';
 import { CarrierRates } from './carrier-rates';
 import { RatesSorter } from './rates-sorter';
 import { DELIVERY_PROPERTIES, SORT_BY } from './constants';
-import { mainModalContentSelector } from '../constants';
+import {
+	customerPaidBannerStyles,
+	mainModalContentSelector,
+} from '../constants';
 import { SHIPPING_SERVICE_SECTION } from '../essential-details/constants';
 import { Carrier, Rate } from 'types';
 import clsx from 'clsx';
@@ -46,8 +51,14 @@ export const ShippingRates = ( {
 		shipment: { shipments },
 		essentialDetails: { focusArea: essentialDetailsFocusArea },
 		rates: { sortRates },
+		storeCurrency,
 		nextDesign,
 	} = useLabelPurchaseContext();
+
+	const currentOrder = getCurrentOrder();
+	const customerPaidShipping = parseFloat(
+		currentOrder?.total_shipping ?? '0'
+	);
 
 	const [ selectedCarriers, setSelectedCarriers ] = useState< Carrier[] >(
 		Object.keys( availableRates ) as Carrier[]
@@ -185,6 +196,41 @@ export const ShippingRates = ( {
 						nextDesign={ nextDesign }
 					/>
 				</Flex>
+				{ ! isNaN( customerPaidShipping ) &&
+					customerPaidShipping > 0 && (
+						<div
+							className="customer-paid-shipping-banner"
+							style={ customerPaidBannerStyles.container }
+						>
+							<Text
+								size={ 13 }
+								style={ customerPaidBannerStyles.text }
+							>
+								{ currentOrder?.shipping_methods
+									? sprintf(
+											// translators: %1$s: the amount the customer paid for shipping, %2$s: the shipping method name
+											__(
+												'Customer paid: %1$s for shipping (%2$s)',
+												'woocommerce-shipping'
+											),
+											storeCurrency.formatAmount(
+												customerPaidShipping
+											),
+											currentOrder.shipping_methods
+									  )
+									: sprintf(
+											// translators: %s: the amount the customer paid for shipping
+											__(
+												'Customer paid: %s for shipping',
+												'woocommerce-shipping'
+											),
+											storeCurrency.formatAmount(
+												customerPaidShipping
+											)
+									  ) }
+							</Text>
+						</div>
+					) }
 				<CarrierRates rates={ sortRates( getRates(), sortingBy ) } />
 				{ nextDesign && carriers.some( ( c ) => c.id === 'upsdap' ) ? (
 					<p className="upsdap-trademark-notice upsdap-trademark-notice--desktop">

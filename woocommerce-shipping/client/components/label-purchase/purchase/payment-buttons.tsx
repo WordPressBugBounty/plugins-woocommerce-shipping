@@ -8,7 +8,7 @@ import {
 	ExternalLink,
 	Flex,
 	FlexBlock,
-	Notice,
+	Notice as LegacyNotice,
 } from '@wordpress/components';
 import {
 	createInterpolateElement,
@@ -54,6 +54,7 @@ import apiFetch from '@wordpress/api-fetch';
 import { getCarrierStrategyPath } from 'data/routes';
 import { getChangePaymentMethodUrl } from 'components/shipping-settings/constants';
 import { usePaymentMethodPolling } from './use-payment-method-polling';
+import { Notice } from '@wordpress/ui';
 
 interface PaymentButtonsProps {
 	order: Order;
@@ -609,31 +610,31 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 								className={ className }
 								style={ { marginBottom: '16px' } }
 							>
-								<Notice status="error" isDismissible={ false }>
-									{ createInterpolateElement(
-										__(
-											'A payment method is required to purchase shipping labels. <ManageLink/>',
+								<Notice.Root intent="error">
+									<Notice.Description>
+										{ __(
+											'A payment method is required to purchase shipping labels.',
 											'woocommerce-shipping'
-										),
-										{
-											ManageLink: (
-												<ExternalLink
-													href={
-														changePaymentMethodUrl
-													}
-													onClick={
-														startPaymentMethodPolling
-													}
-												>
-													{ __(
-														'Add a payment method',
-														'woocommerce-shipping'
-													) }
-												</ExternalLink>
-											),
-										}
-									) }
-								</Notice>
+										) }
+									</Notice.Description>
+									<Notice.Actions>
+										<Notice.ActionButton
+											onClick={ () => {
+												startPaymentMethodPolling();
+												window.open(
+													changePaymentMethodUrl,
+													'_blank',
+													'noreferrer'
+												);
+											} }
+										>
+											{ __(
+												'Add a payment method',
+												'woocommerce-shipping'
+											) }
+										</Notice.ActionButton>
+									</Notice.Actions>
+								</Notice.Root>
 							</div>
 						) }
 					</Animate>,
@@ -644,11 +645,15 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 				createPortal(
 					<Flex className="purchase-label-errors" direction="column">
 						{ errors && Object.keys( errors ).length > 0 && (
-							<Notice status="error" isDismissible={ false }>
-								{ uniq( errors.message ).map( ( m, index ) => (
-									<Text key={ index }>{ m }</Text>
-								) ) }
-							</Notice>
+							<Notice.Root intent="error">
+								<Notice.Description>
+									{ uniq( errors.message ).map(
+										( m, index ) => (
+											<Text key={ index }>{ m }</Text>
+										)
+									) }
+								</Notice.Description>
+							</Notice.Root>
 						) }
 					</Flex>,
 					document.getElementById( 'label-purchase-status-notices' )!
@@ -742,12 +747,15 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 								buttonDescription={ addCardButtonDescription }
 							/>
 						) : (
-							<Notice status="warning" isDismissible={ false }>
+							<LegacyNotice
+								status="warning"
+								isDismissible={ false }
+							>
 								{ __(
 									'Please contact your site administrator to add a payment method.',
 									'woocommerce-shipping'
 								) }
-							</Notice>
+							</LegacyNotice>
 						) }
 					</>
 				) }
@@ -766,7 +774,7 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 									}
 								/>
 							) : (
-								<Notice
+								<LegacyNotice
 									status="warning"
 									isDismissible={ false }
 								>
@@ -774,7 +782,7 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 										'Please contact your site administrator to set a default payment method.',
 										'woocommerce-shipping'
 									) }
-								</Notice>
+								</LegacyNotice>
 							) }
 						</>
 					) }
@@ -782,7 +790,7 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 
 			<Spacer />
 			{ errors && Object.keys( errors ).length > 0 && (
-				<Notice
+				<LegacyNotice
 					status="error"
 					actions={ uniq( errors.actions ) }
 					onDismiss={ resetErrors }
@@ -790,7 +798,7 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 					{ uniq( errors.message ).map( ( m, index ) => (
 						<p key={ index }>{ m }</p>
 					) ) }
-				</Notice>
+				</LegacyNotice>
 			) }
 		</>
 	);

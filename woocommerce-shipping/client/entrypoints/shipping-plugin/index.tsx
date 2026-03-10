@@ -3,10 +3,6 @@ import {
 	registerLabelPurchaseStore,
 } from '../../data/label-purchase';
 import { addressStore, registerAddressStore } from '../../data/address';
-import {
-	carrierStrategyStore,
-	registerCarrierStrategyStore,
-} from '../../data/carrier-strategy';
 import { getConfig } from './../../utils';
 import { memo, useCallback, useMemo, useRef } from 'react';
 import { LabelPurchaseContextProvider } from '../../context/label-purchase';
@@ -60,7 +56,6 @@ const PurchaseShippingLabelPluginExport = memo(
 		// showing data from a previous order.
 		dispatch( addressStore ).stateReset();
 		dispatch( labelPurchaseStore ).stateReset();
-		dispatch( carrierStrategyStore ).stateReset();
 
 		return (
 			<LabelPurchaseContextProvider orderId={ orderId } nextDesign>
@@ -87,14 +82,6 @@ const WCShippingPlugin = memo( () => {
 			// Store is already registered
 		}
 	}
-	if ( ! carrierStrategyStore ) {
-		try {
-			registerCarrierStrategyStore();
-		} catch {
-			// Store is already registered
-		}
-	}
-
 	const config = getConfig();
 	const mode = config.mode ?? 'label-purchase';
 

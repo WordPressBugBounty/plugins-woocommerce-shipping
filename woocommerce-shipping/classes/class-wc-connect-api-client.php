@@ -602,6 +602,17 @@ abstract class WC_Connect_API_Client {
 
 	protected function authorization_header() {
 		$token = WC_Connect_Jetpack::get_blog_access_token();
+		/**
+		 * Filter the Jetpack access token used for Connect Server requests.
+		 *
+		 * Internal hook used by WooCommerce Shipping test/bootstrap infrastructure.
+		 * It is not designed for third-party plugin integrations and may change or
+		 * be removed in future releases without notice.
+		 *
+		 * @internal
+		 *
+		 * @param object|false $token Jetpack blog access token.
+		 */
 		$token = apply_filters( 'wcshipping_jetpack_access_token', $token );
 		if ( ! $token || empty( $token->secret ) ) {
 			return new WP_Error(

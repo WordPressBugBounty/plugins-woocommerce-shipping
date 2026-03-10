@@ -5,6 +5,7 @@ import {
 	Flex,
 	__experimentalText as Text,
 } from '@wordpress/components';
+import { Badge } from '@wordpress/ui';
 import { useSelect } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';
 
@@ -13,7 +14,6 @@ import { useLabelPurchaseContext } from 'context/label-purchase';
 import { labelPurchaseStore } from 'data/label-purchase';
 import { isEmpty } from 'lodash';
 import { useCollapsibleCard } from '../internal/useCollapsibleCard';
-import { Badge } from 'components/wp';
 import { NoRatesAvailableV2 } from '../internal/no-rates-available-v2';
 import { withBoundaryNext } from 'components/HOC/error-boundary/with-boundary-next';
 import { useMemo, useState } from 'react';
@@ -136,7 +136,7 @@ const ShippingRatesCardComponent = () => {
 						{ __( 'Shipping rates', 'woocommerce-shipping' ) }
 					</Text>
 					{ ! isOpen && ! isPackageSpecified() && (
-						<Badge intent="warning">
+						<Badge intent="low">
 							{ __(
 								'Missing package info',
 								'woocommerce-shipping'

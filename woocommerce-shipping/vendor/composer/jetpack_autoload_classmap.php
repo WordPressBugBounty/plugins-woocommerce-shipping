@@ -294,14 +294,6 @@ return array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/src/Banners/Banners.php'
 	),
-	'Automattic\\WCShipping\\Carrier\\CarrierStrategyService' => array(
-		'version' => 'dev-trunk',
-		'path'    => $baseDir . '/src/Carrier/CarrierStrategyService.php'
-	),
-	'Automattic\\WCShipping\\Carrier\\CarrierStrategyServiceInterface' => array(
-		'version' => 'dev-trunk',
-		'path'    => $baseDir . '/src/Carrier/CarrierStrategyServiceInterface.php'
-	),
 	'Automattic\\WCShipping\\Carrier\\UPSDAP\\UPSDAPCarrierStrategyRESTController' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/src/Carrier/UPSDAP/UPSDAPCarrierStrategyRESTController.php'
@@ -613,6 +605,18 @@ return array(
 	'Automattic\\WCShipping\\StoreApi\\StoreApiExtensionController' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/src/StoreApi/StoreApiExtensionController.php'
+	),
+	'Automattic\\WCShipping\\Testing\\E2ESeedData' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/src/Testing/E2ESeedData.php'
+	),
+	'Automattic\\WCShipping\\Testing\\WCConnectE2EAPIClientMock' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/src/Testing/WCConnectE2EAPIClientMock.php'
+	),
+	'Automattic\\WCShipping\\Testing\\WCConnectE2EConnectionShim' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/src/Testing/WCConnectE2EConnectionShim.php'
 	),
 	'Automattic\\WCShipping\\Tests\\Analytics\\LabelsServiceTest' => array(
 		'version' => 'dev-trunk',

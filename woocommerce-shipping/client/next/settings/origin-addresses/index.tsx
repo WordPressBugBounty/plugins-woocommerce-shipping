@@ -31,6 +31,7 @@ import { useConfigLoader, unlock } from 'next/utils';
 import { ADDRESS_ENTITY } from 'next/data';
 import { OriginAddressModal } from './origin-address-modal';
 import { Badge } from 'components/wp';
+import { recordEvent } from 'utils/tracks';
 
 import './style.scss';
 
@@ -62,11 +63,19 @@ export const OriginAddresses = () => {
 	} );
 
 	const handleEdit = ( id: string ) => {
+		recordEvent( 'settings_shipping_button_click', {
+			button_label: 'edit',
+			card_section: 'sender_addresses',
+		} );
 		setSelectedAddressId( id );
 		setIsModalOpen( true );
 	};
 
 	const handleAdd = () => {
+		recordEvent( 'settings_shipping_button_click', {
+			button_label: 'add_sender_address',
+			card_section: 'sender_addresses',
+		} );
 		setIsModalOpen( true );
 	};
 
@@ -98,6 +107,10 @@ export const OriginAddresses = () => {
 	};
 
 	const handleDelete = async ( id: string ) => {
+		recordEvent( 'settings_shipping_button_click', {
+			button_label: 'delete',
+			card_section: 'sender_addresses',
+		} );
 		try {
 			await deleteEntityRecord(
 				ADDRESS_ENTITY.kind,
@@ -111,7 +124,17 @@ export const OriginAddresses = () => {
 				__( 'Address deleted', 'woocommerce-shipping' ),
 				{ type: 'snackbar' }
 			);
-		} catch {
+		} catch ( error ) {
+			const errorCode =
+				error instanceof Error
+					? error.message
+					: ( error as Record< string, unknown > )?.code ??
+					  'unknown_error';
+			recordEvent( 'settings_shipping_button_error', {
+				button_label: 'delete',
+				error_code: String( errorCode ),
+				card_section: 'sender_addresses',
+			} );
 			createErrorNotice(
 				__( 'Error deleting address', 'woocommerce-shipping' ),
 				{ type: 'snackbar' }

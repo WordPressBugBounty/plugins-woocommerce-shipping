@@ -18,7 +18,8 @@ use Automattic\WCShipping\Fulfillments\FulfillmentNotificationType;
 defined( 'ABSPATH' ) || exit;
 
 // Only extend the parent class if it exists (requires WooCommerce 10.1+)
-if ( class_exists( '\Automattic\WooCommerce\Internal\Fulfillments\Fulfillment' ) ) {
+// The Base\Fulfillment alias is created by FulfillmentsClassResolver.php
+if ( class_exists( Base\Fulfillment::class ) ) {
 	/**
 	 * Shipping Fulfillment Class
 	 *
@@ -27,7 +28,7 @@ if ( class_exists( '\Automattic\WooCommerce\Internal\Fulfillments\Fulfillment' )
 	 *
 	 * @since 1.9.0
 	 */
-	class ShippingFulfillment extends \Automattic\WooCommerce\Internal\Fulfillments\Fulfillment {
+	class ShippingFulfillment extends Base\Fulfillment {
 
 		/**
 		 * The type of notification to send to the customer.

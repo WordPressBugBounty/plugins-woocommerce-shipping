@@ -11,7 +11,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-use Automattic\WCShipping\Carrier\CarrierStrategyService;
 use Automattic\WCShipping\Connect\WC_Connect_Account_Settings;
 use Automattic\WCShipping\Connect\WC_Connect_Continents;
 use Automattic\WCShipping\Exceptions\RESTRequestException;
@@ -57,13 +56,6 @@ class ConfigRESTController extends WCShippingRESTController {
 	private $origin_address_service;
 
 	/**
-	 * Carrier strategy service instance.
-	 *
-	 * @var CarrierStrategyService
-	 */
-	private $carrier_service;
-
-	/**
 	 * Continents instance.
 	 *
 	 * @var WC_Connect_Continents
@@ -76,13 +68,11 @@ class ConfigRESTController extends WCShippingRESTController {
 	 * @param View                        $shipping_label_view Shipping label view instance.
 	 * @param WC_Connect_Account_Settings $account_settings Account settings instance.
 	 * @param OriginAddressService        $origin_address_service Origin address service instance.
-	 * @param CarrierStrategyService      $carrier_service Carrier strategy service instance.
 	 */
-	public function __construct( View $shipping_label_view, WC_Connect_Account_Settings $account_settings, OriginAddressService $origin_address_service, CarrierStrategyService $carrier_service ) {
+	public function __construct( View $shipping_label_view, WC_Connect_Account_Settings $account_settings, OriginAddressService $origin_address_service ) {
 		$this->shipping_label_view    = $shipping_label_view;
 		$this->account_settings       = $account_settings;
 		$this->origin_address_service = $origin_address_service;
-		$this->carrier_service        = $carrier_service;
 
 		$this->continents = new WC_Connect_Continents();
 	}
@@ -173,7 +163,11 @@ class ConfigRESTController extends WCShippingRESTController {
 		try {
 			$config = array(
 				'accountSettings'    => $this->account_settings->get( true ),
-				'carrier_strategies' => $this->carrier_service->get_strategies(),
+				'carrier_strategies' => array(
+					'upsdap' => array(
+						'origin_address' => array(),
+					),
+				),
 				'continents'         => $this->continents->get(),
 				'origin_addresses'   => $this->origin_address_service->get_origin_addresses(),
 			);

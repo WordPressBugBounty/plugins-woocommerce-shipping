@@ -12,6 +12,7 @@ import {
 import { __ } from '@wordpress/i18n';
 import { Destination, OriginAddress } from 'types';
 import { addressToString } from 'utils';
+import { recordEvent } from 'utils/tracks';
 import { withBoundary } from 'components/HOC';
 import { DataForm } from '@wordpress/dataviews/wp';
 import { close, caution as warning } from '@wordpress/icons';
@@ -25,6 +26,7 @@ interface AddressSuggestionProps {
 	errors: Record< string, string >;
 	nextDesign?: boolean;
 	isUpdating?: boolean;
+	surfaceArea?: string;
 }
 
 export const AddressSuggestion = withBoundary(
@@ -37,6 +39,7 @@ export const AddressSuggestion = withBoundary(
 		errors,
 		nextDesign = false,
 		isUpdating = false,
+		surfaceArea,
 	}: AddressSuggestionProps ) => {
 		const [ selectedAddress, setSelectedAddress ] = useState(
 			normalizedAddress ? 'normalized' : 'original'
@@ -158,16 +161,40 @@ export const AddressSuggestion = withBoundary(
 				<Spacer marginBottom={ 4 } />
 				<Flex justify="flex-end" align={ 'center' } as="footer">
 					<Button
-						onClick={ editAddress }
+						onClick={ () => {
+							if ( surfaceArea ) {
+								recordEvent(
+									`${ surfaceArea }_modal_button_click`,
+									{
+										modal_title: 'confirm_address',
+										button_label: 'edit_address',
+									}
+								);
+							}
+							editAddress();
+						} }
 						variant="tertiary"
 						disabled={ isUpdating }
 					>
 						{ __( 'Edit address', 'woocommerce-shipping' ) }
 					</Button>
 					<Button
-						onClick={ () =>
-							confirmAddress( selectedAddress === 'normalized' )
-						}
+						onClick={ () => {
+							if ( surfaceArea ) {
+								const label =
+									selectedAddress === 'normalized'
+										? 'use_selected_address'
+										: 'confirm_unverified_address';
+								recordEvent(
+									`${ surfaceArea }_modal_button_click`,
+									{
+										modal_title: 'confirm_address',
+										button_label: label,
+									}
+								);
+							}
+							confirmAddress( selectedAddress === 'normalized' );
+						} }
 						variant="primary"
 						isBusy={ isUpdating }
 						disabled={ isUpdating }
