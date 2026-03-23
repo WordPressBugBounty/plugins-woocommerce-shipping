@@ -124,7 +124,7 @@ export const AddressFields = withBoundary(
 											  )
 									}
 									placeholder={ __(
-										'e.g., +1 (212) 555-0123 or 2125550123',
+										'e.g., +1 (212) 555–0123 or 2125550123',
 										'woocommerce-shipping'
 									) }
 									disabled={ isUpdating }

@@ -37,6 +37,7 @@ import { ITEMS_SECTION } from './essential-details/constants';
 import { mainModalContentSelector } from './constants';
 import { SelectableItems } from './split-shipment/selectable-items';
 import { StaticHeader } from './split-shipment/header/static-header';
+import { ServiceStatusNotices } from 'components/service-status';
 
 interface ShipmentContentProps {
 	items: unknown[];
@@ -284,6 +285,7 @@ export const ShipmentContent = ( {
 						{ ! isCustomsNeeded() && <Divider margin="12" /> }
 						<Packages />
 						<Divider margin="12" />
+						<ServiceStatusNotices />
 						{ ! Boolean( availableRates ) && (
 							<Animate
 								type={ isFetching ? 'loading' : undefined }
@@ -312,7 +314,7 @@ export const ShipmentContent = ( {
 												),
 												getShipmentHazmat().isHazmat
 													? __(
-															'the selected HAZMAT category, ',
+															'the selected HAZMAT category,',
 															'woocommerce-shipping'
 													  )
 													: '',
@@ -336,7 +338,7 @@ export const ShipmentContent = ( {
 												),
 												getShipmentHazmat().isHazmat
 													? __(
-															'the selected HAZMAT category, ',
+															'the selected HAZMAT category,',
 															'woocommerce-shipping'
 													  )
 													: '',

@@ -119,7 +119,9 @@ export const ReturnLabelButton = ( {
 
 			const itemsAvailableForReturn = shipmentItems.filter(
 				( orderItem ) => {
-					if ( orderItem === null ) return false;
+					if ( orderItem === null ) {
+						return false;
+					}
 					// Check if this specific order item has already been returned
 					return ! returnedItemIds.has( orderItem.id );
 				}

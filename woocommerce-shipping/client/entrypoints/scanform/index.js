@@ -55,7 +55,9 @@ const mountModal = () => {
  */
 const initScanFormButton = () => {
 	const button = document.getElementById( 'wc-shipping-scanform-trigger' );
-	if ( ! button ) return;
+	if ( ! button ) {
+		return;
+	}
 
 	button.removeEventListener( 'click', mountModal );
 	button.addEventListener( 'click', mountModal );

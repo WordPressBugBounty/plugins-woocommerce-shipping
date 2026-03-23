@@ -66,15 +66,15 @@ export const getShipmentSummaryText = (
 				{ sprintf(
 					// translators: %1$d: number of items fulfilled
 					_n(
-						'%1$d item was fulfilled, ',
-						'%1$d items were fulfilled, ',
+						'%1$d item was fulfilled,',
+						'%1$d items were fulfilled,',
 						purchasedLabelProductCount,
 						'woocommerce-shipping'
 					),
 					purchasedLabelProductCount
-				) }
+				) }{ ' ' }
 				{ sprintf(
-					// translators: %1$d: number of items to be fulfilled
+					// translators: %d: number of items to be fulfilled
 					_n(
 						'%d item still requires fulfillment.',
 						'%d items still require fulfillment.',

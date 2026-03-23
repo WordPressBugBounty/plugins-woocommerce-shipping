@@ -648,7 +648,9 @@ export function useLabelsState( {
 
 	const updatePurchaseStatus = useCallback(
 		async ( labelId: number ) => {
-			if ( isUpdatingStatus ) return;
+			if ( isUpdatingStatus ) {
+				return;
+			}
 			setIsUpdatingStatus( true );
 			try {
 				await new Promise< void >( ( resolve, reject ) =>

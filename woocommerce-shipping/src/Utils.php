@@ -98,6 +98,24 @@ class Utils {
 	}
 
 	/**
+	 * Filter out dev-only dependencies that are injected by build tools during HMR
+	 * but are not registered as WordPress script handles.
+	 *
+	 * @param array $dependencies The dependencies array from an asset.php file.
+	 * @return array Filtered dependencies.
+	 */
+	public static function filter_dev_dependencies( array $dependencies ): array {
+		return array_values(
+			array_filter(
+				$dependencies,
+				static function ( $dep ) {
+					return 'wp-react-refresh-runtime' !== $dep;
+				}
+			)
+		);
+	}
+
+	/**
 	 * Get the plugin directory path.
 	 * This is a helper function to get the plugin directory path for either the main plugin or the WooCommerce plugin.
 	 *

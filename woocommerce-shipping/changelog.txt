@@ -1,5 +1,8 @@
 *** WooCommerce Shipping Changelog ***
 
+= 2.2.5 - 2026-03-23 =
+* Add   - Display service status notices in label purchase modal for carrier incidents.
+
 = 2.2.4 - 2026-03-10 =
 * Fix   - Automatically refresh shipping rates when weight or package details change after initial fetch.
 * Tweak - Add telemetry tracking for button interactions on the CIAB Shipping settings page.

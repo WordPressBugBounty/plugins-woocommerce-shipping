@@ -56,6 +56,7 @@ use Automattic\WCShipping\LabelSettings\SelfHelpRestController;
 use Automattic\WCShipping\LabelSettings\ServiceDataRefreshRestController;
 use Automattic\WCShipping\ServiceData\ServicesErrorNotice;
 use Automattic\WCShipping\ServiceData\ServiceSchemasFetcherService;
+use Automattic\WCShipping\ServiceData\ServiceStatusRESTController;
 use Automattic\WCShipping\LegacyAPIControllers\WC_REST_Connect_Account_Settings_Controller;
 use Automattic\WCShipping\LegacyAPIControllers\WC_REST_Connect_Address_Normalization_Controller;
 use Automattic\WCShipping\LegacyAPIControllers\WC_REST_Connect_Assets_Controller;
@@ -1444,6 +1445,8 @@ class Loader {
 
 		( new PromoRESTController( $this->promo_service ) )->register_routes();
 
+		( new ServiceStatusRESTController( $this->api_client ) )->register_routes();
+
 		if ( FeatureFlags::is_scanform_enabled() ) {
 			$scanform_service = new ScanFormService();
 
@@ -1947,7 +1950,7 @@ class Loader {
 		$script_asset_path   = WCSHIPPING_PLUGIN_DIST_DIR . $handle . '.asset.php';
 		$script_asset        = file_exists( $script_asset_path )
 			? require $script_asset_path : array();  // nosemgrep: audit.php.lang.security.file.inclusion-arg --- This is a safe file inclusion.
-		$script_dependencies = $script_asset['dependencies'] ?? array();
+		$script_dependencies = Utils::filter_dev_dependencies( $script_asset['dependencies'] ?? array() );
 		$script_version      = $script_asset['version'] ?? Utils::get_file_version( $script_path );
 
 		// Enqueue the entry point script.
@@ -2003,7 +2006,7 @@ class Loader {
 		$script_asset = file_exists( $script_asset_path )
 			? require $script_asset_path : array();  // nosemgrep: audit.php.lang.security.file.inclusion-arg --- This is a safe file inclusion.
 
-		$script_dependencies = $script_asset['dependencies'] ?? array();
+		$script_dependencies = Utils::filter_dev_dependencies( $script_asset['dependencies'] ?? array() );
 
 		foreach ( $script_dependencies as $key => $dependency ) {
 			if ( false === wp_script_is( $dependency, 'enqueued' ) ) {

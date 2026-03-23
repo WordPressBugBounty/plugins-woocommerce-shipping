@@ -55,12 +55,13 @@ export const printDocument = (
 	const blobUrl =
 		getPDFSupport() !== 'ie' ? URL.createObjectURL( blob ) : null; // IE has no use for "blob:" URLs
 
-	if ( ! blobUrl )
+	if ( ! blobUrl ) {
 		return Promise.reject(
 			new Error(
 				__( 'Unable to create blob url', 'woocommerce-shipping' )
 			)
 		);
+	}
 	switch ( getPDFSupport() ) {
 		case 'native':
 			// Happy case where everything can happen automatically. Supported in Chrome and Safari

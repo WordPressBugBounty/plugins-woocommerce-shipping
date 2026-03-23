@@ -70,3 +70,5 @@ export const getScanFormHistoryPath = ( page: number, per_page: number ) =>
 
 export const getScanFormLabelsPath = ( scanFormId: string ) =>
 	`${ NAMESPACE }/scan-form/${ scanFormId }/labels`;
+
+export const getServiceStatusPath = () => `${ NAMESPACE }/service-status`;

@@ -40,7 +40,7 @@ export const LegacyWarning = () => {
 					),
 					hasCustomsForm
 						? _x(
-								' and customs form',
+								'and customs form',
 								'Migrated Label Description',
 								'woocommerce-shipping'
 						  )

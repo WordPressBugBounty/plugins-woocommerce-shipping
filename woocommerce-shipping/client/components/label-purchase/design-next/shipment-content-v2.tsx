@@ -16,6 +16,7 @@ import { SummaryCard } from './cards/summary-card';
 import { PaymentButtons } from '../purchase';
 import { AddressesCard } from './cards/addresses-card';
 import { ErrorBoundaryNext } from 'components/HOC/error-boundary/error-boundary-next';
+import { ServiceStatusNotices } from 'components/service-status';
 import { withBoundaryNext } from 'components/HOC';
 import { PaymentMethodSummary } from './internal/payment-method-summary';
 
@@ -103,6 +104,7 @@ const ShipmentContentV2Component = ( {
 			{ ! hasPurchasedLabel( false ) && (
 				<>
 					<PackagesCard />
+					<ServiceStatusNotices />
 					<ShippingRatesCard />
 				</>
 			) }

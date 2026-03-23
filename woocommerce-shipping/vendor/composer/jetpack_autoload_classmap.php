@@ -554,6 +554,10 @@ return array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/src/ServiceData/ServiceSchemasFetcherService.php'
 	),
+	'Automattic\\WCShipping\\ServiceData\\ServiceStatusRESTController' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/src/ServiceData/ServiceStatusRESTController.php'
+	),
 	'Automattic\\WCShipping\\ServiceData\\ServicesErrorNotice' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/src/ServiceData/ServicesErrorNotice.php'
@@ -665,6 +669,10 @@ return array(
 	'Automattic\\WCShipping\\Tests\\Promo\\PromoServiceTest' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/tests/php/Promo/PromoServiceTest.php'
+	),
+	'Automattic\\WCShipping\\Tests\\ServiceData\\ServiceStatusRESTControllerTest' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/tests/php/ServiceData/ServiceStatusRESTControllerTest.php'
 	),
 	'Automattic\\WCShipping\\Tests\\ServiceData\\ServicesErrorNoticeTest' => array(
 		'version' => 'dev-trunk',

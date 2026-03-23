@@ -203,7 +203,9 @@ export function usePackageState(
 	}, [ savedPackages, getSelectedPackage ] );
 
 	const isPackageSpecified = () => {
-		if ( totalWeight === 0 ) return false;
+		if ( totalWeight === 0 ) {
+			return false;
+		}
 
 		if ( currentPackageTab === TAB_NAMES.CUSTOM_PACKAGE ) {
 			const { width, height, length } = getCustomPackage();
@@ -227,7 +229,9 @@ export function usePackageState(
 	 */
 	const createCustomPackageFromLabel = useCallback(
 		( preservedPackage: ReturnShipmentInfo[ 'preservedPackage' ] ) => {
-			if ( ! preservedPackage ) return null;
+			if ( ! preservedPackage ) {
+				return null;
+			}
 
 			// Convert package weight from stored unit (oz) to store's configured unit
 			let boxWeight = preservedPackage.packageWeight ?? 0;
@@ -266,7 +270,9 @@ export function usePackageState(
 	 */
 	const hasLabelPackageData = useCallback(
 		( preservedPackage: ReturnShipmentInfo[ 'preservedPackage' ] ) => {
-			if ( ! preservedPackage ) return false;
+			if ( ! preservedPackage ) {
+				return false;
+			}
 			return (
 				preservedPackage.packageWeight !== undefined ||
 				preservedPackage.packageLength !== undefined ||
@@ -377,7 +383,9 @@ export function usePackageState(
 								break;
 							}
 						}
-						if ( foundCarrierId ) break;
+						if ( foundCarrierId ) {
+							break;
+						}
 					}
 
 					// Switch to carrier package tab

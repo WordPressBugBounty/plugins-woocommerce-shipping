@@ -1,4 +1,3 @@
-import { numberFormat } from '@woocommerce/number';
 import {
 	Flex,
 	FlexBlock,
@@ -18,14 +17,7 @@ import {
 import { useLabelPurchaseContext } from 'context/label-purchase';
 import { WeightUnit } from 'types';
 
-const formatNumber = ( val: string | number ) =>
-	numberFormat(
-		{
-			precision: 2,
-			thousandSeparator: '',
-		},
-		Number( val )
-	);
+const formatNumber = ( val: string | number ) => Number( val ).toFixed( 2 );
 export const TotalWeight = ( { packageWeight = 0 } ) => {
 	const defaultUnit = getWeightUnit();
 	const {
@@ -137,7 +129,7 @@ export const TotalWeight = ( { packageWeight = 0 } ) => {
 					...errors,
 					[ fieldName ]: {
 						message: sprintf(
-							// translators: %s: minimum weight, %s: weight unit
+							// translators: %1$s: minimum weight, %2$s: weight unit
 							__(
 								'Weight must be greater than or equal to %1$s %2$s',
 								'woocommerce-shipping'

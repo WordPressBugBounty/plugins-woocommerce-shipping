@@ -172,7 +172,7 @@ export const LabelsSettingsComponent = () => {
 								'woocommerce-shipping'
 							) }
 							help={ sprintf(
-								// translators: %s is the store owner's username, %s is the store owner's login, %s is the store owner's email address.
+								// translators: %1$s: store owner's username, %2$s: store owner's login, %3$s: store owner's email address.
 								__(
 									`Email the label purchase receipts to %1$s (%2$s) at %3$s`,
 									'woocommerce-shipping'

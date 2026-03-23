@@ -135,6 +135,7 @@ return array(
     'Automattic\\WCShipping\\ScanForm\\ScanFormRESTController' => $baseDir . '/src/ScanForm/ScanFormRESTController.php',
     'Automattic\\WCShipping\\ScanForm\\ScanFormService' => $baseDir . '/src/ScanForm/ScanFormService.php',
     'Automattic\\WCShipping\\ServiceData\\ServiceSchemasFetcherService' => $baseDir . '/src/ServiceData/ServiceSchemasFetcherService.php',
+    'Automattic\\WCShipping\\ServiceData\\ServiceStatusRESTController' => $baseDir . '/src/ServiceData/ServiceStatusRESTController.php',
     'Automattic\\WCShipping\\ServiceData\\ServicesErrorNotice' => $baseDir . '/src/ServiceData/ServicesErrorNotice.php',
     'Automattic\\WCShipping\\Shipment\\Address' => $baseDir . '/src/Shipment/Address.php',
     'Automattic\\WCShipping\\Shipment\\ShipmentFromLabelGenerator' => $baseDir . '/src/Shipment/ShipmentFromLabelGenerator.php',
