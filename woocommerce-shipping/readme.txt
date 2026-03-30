@@ -7,7 +7,7 @@ Requires at least: 6.8
 Tested up to: 6.9
 WC requires at least: 10.4
 WC tested up to: 10.6
-Stable tag: 2.2.5
+Stable tag: 2.2.6
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -127,6 +127,9 @@ Absolutely! You can read our Terms of Service [here](https://wordpress.com/tos).
 6. WooCommerce Shipping address validation at checkout suggestion.
 
 == Changelog ==
+
+= 2.2.6 - 2026-03-30 =
+* Fix   - Invalidate cached shipping rates when customs item values change to prevent stale data on Commercial Invoices.
 
 = 2.2.5 - 2026-03-23 =
 * Add   - Display service status notices in label purchase modal for carrier incidents.

@@ -6,13 +6,16 @@ import { useCallback } from '@wordpress/element';
 
 export const useRatesEffects = ( {
 	rates: { updateRates, fetchRates },
-	customs: { isCustomsNeeded },
+	customs: { isCustomsNeeded, customsFingerprint },
 	shipment: { getCurrentShipmentDate },
 	weight: { getShipmentTotalWeight },
 	packages: { getCustomPackage, getSelectedPackage, currentPackageTab },
 }: LabelPurchaseContextType ) => {
 	// Update rates when isCustomsNeeded changes
 	useThrottledStateChange( isCustomsNeeded(), updateRates );
+
+	// Update rates when customs item values change (price, weight, quantity, etc.)
+	useThrottledStateChange( customsFingerprint, updateRates );
 
 	// Update rates when the shipment dates changes
 	useThrottledStateChange( getCurrentShipmentDate(), updateRates );

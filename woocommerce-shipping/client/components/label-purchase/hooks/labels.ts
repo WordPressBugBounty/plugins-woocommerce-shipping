@@ -436,9 +436,7 @@ export function useLabelsState( {
 			}
 
 			const label =
-				select( labelPurchaseStore ).getPurchasedLabel(
-					currentShipmentId
-				);
+				select( labelPurchaseStore ).getLabelByLabelId( labelId );
 
 			if ( ! label ) {
 				setIsUpdatingStatus( false );

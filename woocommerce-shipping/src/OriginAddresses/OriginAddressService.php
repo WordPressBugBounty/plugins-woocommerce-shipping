@@ -33,6 +33,14 @@ class OriginAddressService {
 			$addresses[0]['default_return_address'] = true;
 		}
 
+		// Ensure verified addresses have a non-empty email field.
+		// Skip this check for approved addresses (CIAB), as they go through a separate approval flow.
+		foreach ( $addresses as &$address ) {
+			if ( ! empty( $address['is_verified'] ) && empty( $address['email'] ) && empty( $address['is_approved'] ) ) {
+				$address['is_verified'] = false;
+			}
+		}
+
 		return $addresses;
 	}
 

@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from '@wordpress/element';
+import {
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from '@wordpress/element';
 import { isEmpty, isEqual } from 'lodash';
 import {
 	CustomsItem,
@@ -166,6 +172,46 @@ export function useCustomsState(
 		() => state[ currentShipmentId ],
 		[ state, currentShipmentId ]
 	);
+
+	/**
+	 * Memoized fingerprint of the current customs state for rate invalidation.
+	 * Only recomputes when the customs state for the current shipment changes.
+	 */
+	const customsFingerprint = useMemo( () => {
+		if ( ! isCustomsNeeded() ) {
+			return null;
+		}
+		const customs = state[ currentShipmentId ];
+		if ( ! customs?.items?.length ) {
+			return null;
+		}
+		return JSON.stringify( {
+			items: customs.items.map(
+				( {
+					price,
+					weight,
+					quantity,
+					description,
+					hsTariffNumber,
+					originCountry,
+				} ) => ( {
+					price,
+					weight,
+					quantity,
+					description,
+					hsTariffNumber,
+					originCountry,
+				} )
+			),
+			contentsType: customs.contentsType,
+			contentsExplanation: customs.contentsExplanation,
+			restrictionType: customs.restrictionType,
+			restrictionComments: customs.restrictionComments,
+			itn: customs.itn,
+			isReturnToSender: customs.isReturnToSender,
+		} );
+	}, [ isCustomsNeeded, state, currentShipmentId ] );
+
 	const setCustomsState = useCallback(
 		( newState: CustomsState ) => {
 			setState( ( prev ) => ( {
@@ -419,6 +465,7 @@ export function useCustomsState(
 
 	return {
 		getCustomsState,
+		customsFingerprint,
 		setCustomsState,
 		maybeApplyCustomsToPackage,
 		hasErrors,

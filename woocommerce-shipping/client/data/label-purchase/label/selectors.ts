@@ -25,6 +25,20 @@ const findBestLabel = ( labels: Label[] ): Label | undefined => {
 	return labels.find( ( l ) => ! l.refund );
 };
 
+export const getLabelByLabelId = (
+	state: LabelPurchaseState,
+	labelId: string | number
+): Label | undefined => {
+	const labels = state.labels;
+	if ( ! labels ) {
+		return undefined;
+	}
+
+	return Object.values( labels )
+		.flat()
+		.find( ( l ) => l.labelId === labelId );
+};
+
 export const getPurchasedLabel = (
 	state: LabelPurchaseState,
 	shipmentId: string | number
