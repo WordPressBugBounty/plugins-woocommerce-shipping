@@ -17,6 +17,7 @@ import {
 	useEffect,
 	useLayoutEffect,
 	useMemo,
+	useRef,
 	useState,
 } from '@wordpress/element';
 import { Link } from 'components/wc';
@@ -28,6 +29,7 @@ import {
 	getParentIdFromSubItemId,
 	getUPSDAPTosApprovedVersionsFromError,
 	hasPaymentMethod,
+	isFedExTosError,
 	hasSelectedPaymentMethod,
 	mapAddressForRequest,
 } from 'utils';
@@ -50,6 +52,7 @@ import { EssentialDetails } from '../essential-details';
 import { recordEvent } from 'utils/tracks';
 import { LABEL_PURCHASE_STATUS } from 'data/constants';
 import { UPSDAPTos } from 'components/carrier/upsdap/upsdap-tos';
+import { FedExTos } from 'components/carrier/fedex/fedex-tos';
 import apiFetch from '@wordpress/api-fetch';
 import { getCarrierStrategyPath } from 'data/routes';
 import { getChangePaymentMethodUrl } from 'components/shipping-settings/constants';
@@ -110,6 +113,11 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 
 	const selectedRate = getSelectedRate();
 	const [ UPSDAPTosError, setUPSDAPTosError ] =
+		useState< LabelPurchaseError | null >( null );
+	const [ fedExTosError, setFedExTosError ] =
+		useState< LabelPurchaseError | null >( null );
+	const fedExTosSelectedRateRef = useRef< RateWithParent | null >( null );
+	const [ fedExTosConfirmError, setFedExTosConfirmError ] =
 		useState< LabelPurchaseError | null >( null );
 	const [ isTOSConfirming, setIsTOSConfirming ] = useState( false );
 	const canManagePayments = canManagePaymentsUtil( { accountSettings } );
@@ -412,6 +420,13 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 				return;
 			}
 
+			if ( isFedExTosError( error ) ) {
+				setPurchaseStartTime( null );
+				fedExTosSelectedRateRef.current = rate;
+				setFedExTosError( error );
+				return;
+			}
+
 			if ( nextDesign ) {
 				setPurchaseStartTime( null );
 				const errorCode =
@@ -512,6 +527,83 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 		},
 	};
 
+	const handleFedExTos = {
+		close: () => {
+			setFedExTosError( null );
+			setFedExTosConfirmError( null );
+			setErrors( {
+				cause: 'carrier_error',
+				message: [
+					__(
+						'You must agree to the FedEx Terms of Service to purchase a FedEx label.',
+						'woocommerce-shipping'
+					),
+				],
+			} );
+		},
+		confirm: async () => {
+			resetErrors();
+			setFedExTosConfirmError( null );
+
+			try {
+				const response: { success: boolean } = await apiFetch( {
+					path: getCarrierStrategyPath( 'fedex' ),
+					method: 'POST',
+					data: {
+						confirmed: true,
+					},
+				} );
+
+				if ( ! response.success ) {
+					throw new Error(
+						__(
+							'We were unable to record your acceptance of the FedEx Terms of Service. Please try again later or contact WooCommerce support if the issue persists.',
+							'woocommerce-shipping'
+						)
+					);
+				}
+			} catch {
+				setFedExTosConfirmError( {
+					cause: 'carrier_error',
+					message: [
+						__(
+							'We were unable to record your acceptance of the FedEx Terms of Service. Please try again later or contact WooCommerce support if the issue persists.',
+							'woocommerce-shipping'
+						),
+					],
+				} );
+				setIsTOSConfirming( false );
+				return;
+			}
+
+			// TOS accepted successfully. Close the modal and retry the purchase.
+			setFedExTosError( null );
+			setIsTOSConfirming( false );
+
+			await fetchRates( getPackageForRequest() );
+
+			const rateBeforeTos = fedExTosSelectedRateRef.current;
+			fedExTosSelectedRateRef.current = null;
+
+			if ( rateBeforeTos ) {
+				const switchedRate = matchAndSelectRate( rateBeforeTos );
+				if ( switchedRate ) {
+					purchaseLabel( switchedRate );
+				} else {
+					setErrors( {
+						cause: 'rate_mismatch',
+						message: [
+							__(
+								'The shipping rate has changed significantly. Please review the available rates and select one to continue.',
+								'woocommerce-shipping'
+							),
+						],
+					} );
+				}
+			}
+		},
+	};
+
 	const markAsCompletedCheckboxHandler = () => {
 		// If the checkbox is checked, set the markOrderAsCompleted state to true
 		// and set the accountCompleteOrder state to true.
@@ -521,6 +613,13 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 
 	// Reset errors when shipment origin changes
 	useEffect( resetErrors, [ shipmentOrigin ] );
+
+	// Reset purchase errors when a new rate fetch begins (e.g. user clicks "Get Rates")
+	useEffect( () => {
+		if ( isFetching ) {
+			resetErrors();
+		}
+	}, [ isFetching ] );
 
 	// Fire the success event only after the full purchase cycle completes,
 	// including any async status polling (PURCHASE_IN_PROGRESS → PURCHASED).
@@ -561,6 +660,15 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 					acceptedVersions={ getUPSDAPTosApprovedVersionsFromError(
 						UPSDAPTosError
 					) }
+					isConfirming={ isTOSConfirming }
+					setIsConfirming={ setIsTOSConfirming }
+				/>
+			) }
+			{ fedExTosError && (
+				<FedExTos
+					close={ handleFedExTos.close }
+					confirm={ handleFedExTos.confirm }
+					error={ fedExTosConfirmError }
 					isConfirming={ isTOSConfirming }
 					setIsConfirming={ setIsTOSConfirming }
 				/>
@@ -669,6 +777,15 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 					acceptedVersions={ getUPSDAPTosApprovedVersionsFromError(
 						UPSDAPTosError
 					) }
+					isConfirming={ isTOSConfirming }
+					setIsConfirming={ setIsTOSConfirming }
+				/>
+			) }
+			{ fedExTosError && (
+				<FedExTos
+					close={ handleFedExTos.close }
+					confirm={ handleFedExTos.confirm }
+					error={ fedExTosConfirmError }
 					isConfirming={ isTOSConfirming }
 					setIsConfirming={ setIsTOSConfirming }
 				/>

@@ -241,6 +241,16 @@ abstract class WC_Connect_API_Client {
 	}
 
 	/**
+	 * Send FedEx TOS acceptance to the WooCommerce Shipping Server.
+	 *
+	 * @param array $body Request body.
+	 * @return mixed|WP_Error Response from the server.
+	 */
+	public function send_fedex_tos_acceptance( $body ) {
+		return $this->request( 'POST', '/tos/shipping-fedex', $body );
+	}
+
+	/**
 	 * Retrieve Sift configurations.
 	 *
 	 * @return object|WP_Error

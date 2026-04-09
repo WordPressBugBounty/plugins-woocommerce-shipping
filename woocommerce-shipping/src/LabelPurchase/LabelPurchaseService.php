@@ -267,8 +267,19 @@ class LabelPurchaseService {
 			$error_data['success'] = false;
 			$error_data['message'] = $label_response->get_error_message();
 
+			// Restore the original carrier TOS code if it was rewritten by
+			// FedExTosErrorInterceptor to pass through the API client's
+			// UPS DAP-only TOS passthrough.
+			$error_code = $label_response->get_error_code();
+			if (
+				'missing_upsdap_terms_of_service_acceptance' === $error_code
+				&& ! empty( $error_data['carrier_tos_code'] )
+			) {
+				$error_code = $error_data['carrier_tos_code'];
+			}
+
 			$error = new WP_Error(
-				$label_response->get_error_code(),
+				$error_code,
 				$label_response->get_error_message(),
 				$error_data
 			);

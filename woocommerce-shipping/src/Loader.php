@@ -6,6 +6,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+use Automattic\WCShipping\Carrier\FedEx\FedExCarrierStrategyRESTController;
+use Automattic\WCShipping\Carrier\FedEx\FedExCarrierStrategyService;
+use Automattic\WCShipping\Carrier\FedEx\FedExTosErrorInterceptor;
 use Automattic\WCShipping\Carrier\UPSDAP\UPSDAPCarrierStrategyRESTController;
 use Automattic\WCShipping\Carrier\UPSDAP\UPSDAPCarrierStrategyService;
 use Automattic\WCShipping\Checkout\CheckoutController;
@@ -332,6 +335,11 @@ class Loader {
 	 * @var CheckoutService
 	 */
 	protected CheckoutService $checkout_service;
+
+	/**
+	 * @var FedExCarrierStrategyService
+	 */
+	private $fedex_carrier_strategy_service;
 
 	/**
 	 * @var UPSDAPCarrierStrategyService
@@ -1040,6 +1048,8 @@ class Loader {
 		$this->origin_address_service          = new OriginAddressService();
 		$this->view_service                    = new ViewService( $this->account_settings, $schemas_store );
 		$this->upsdap_carrier_strategy_service = new UPSDAPCarrierStrategyService( $api_client );
+		$this->fedex_carrier_strategy_service  = new FedExCarrierStrategyService( $api_client );
+		FedExTosErrorInterceptor::init();
 		$promo_service                         = new PromoService( $schemas_store, $settings_store );
 		$this->address_normalization_service   = new AddressNormalizationService( $settings_store, $api_client, $logger, $this->origin_address_service );
 		$this->fulfillments_service            = new FulfillmentsService( $this->shipping_fulfillments_data_store );
@@ -1435,6 +1445,7 @@ class Loader {
 		( new ConfigRESTController( $this->shipping_label, $this->account_settings, $this->origin_address_service ) )->register_routes();
 
 		( new UPSDAPCarrierStrategyRESTController( $this->upsdap_carrier_strategy_service ) )->register_routes();
+		( new FedExCarrierStrategyRESTController( $this->fedex_carrier_strategy_service ) )->register_routes();
 		// Ensure all shipping endpoints are not cached.
 		WCShippingRESTController::prevent_route_caching();
 

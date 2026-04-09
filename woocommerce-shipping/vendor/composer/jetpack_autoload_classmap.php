@@ -294,6 +294,18 @@ return array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/src/Banners/Banners.php'
 	),
+	'Automattic\\WCShipping\\Carrier\\FedEx\\FedExCarrierStrategyRESTController' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/src/Carrier/FedEx/FedExCarrierStrategyRESTController.php'
+	),
+	'Automattic\\WCShipping\\Carrier\\FedEx\\FedExCarrierStrategyService' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/src/Carrier/FedEx/FedExCarrierStrategyService.php'
+	),
+	'Automattic\\WCShipping\\Carrier\\FedEx\\FedExTosErrorInterceptor' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/src/Carrier/FedEx/FedExTosErrorInterceptor.php'
+	),
 	'Automattic\\WCShipping\\Carrier\\UPSDAP\\UPSDAPCarrierStrategyRESTController' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/src/Carrier/UPSDAP/UPSDAPCarrierStrategyRESTController.php'

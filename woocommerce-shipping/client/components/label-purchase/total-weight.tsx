@@ -40,10 +40,18 @@ export const TotalWeight = ( { packageWeight = 0 } ) => {
 			return defaultUnit;
 		}
 
-		const isMetric =
-			defaultUnit === WEIGHT_UNITS.KG || defaultUnit === WEIGHT_UNITS.G;
+		// Only auto-switch to a smaller display unit when the store is set to a
+		// larger unit (lbs or kg). If the store is already set to oz or g, respect
+		// that setting without switching, regardless of the weight value.
+		if (
+			defaultUnit === WEIGHT_UNITS.OZ ||
+			defaultUnit === WEIGHT_UNITS.G
+		) {
+			return defaultUnit;
+		}
+
+		const isMetric = defaultUnit === WEIGHT_UNITS.KG;
 		const smallerUnit = isMetric ? WEIGHT_UNITS.G : WEIGHT_UNITS.OZ;
-		const largerUnit = isMetric ? WEIGHT_UNITS.KG : WEIGHT_UNITS.LBS;
 		const threshold = isMetric ? 1000 : 16;
 
 		const smallerValue = convertWeightToUnit(
@@ -51,7 +59,7 @@ export const TotalWeight = ( { packageWeight = 0 } ) => {
 			defaultUnit,
 			smallerUnit
 		);
-		return smallerValue < threshold ? smallerUnit : largerUnit;
+		return smallerValue < threshold ? smallerUnit : defaultUnit;
 	} );
 
 	const minValue = Math.max(

@@ -27,4 +27,5 @@ export * from './url';
 export * from './api-fetch';
 export * from './date';
 export * from './upsdap';
+export * from './fedex';
 export * from './promo';
