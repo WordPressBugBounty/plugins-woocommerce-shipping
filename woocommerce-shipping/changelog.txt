@@ -1,5 +1,8 @@
 *** WooCommerce Shipping Changelog ***
 
+= 2.2.8 - 2026-04-13 =
+* Tweak - WooCommerce 10.7 Compatibility.
+
 = 2.2.7 - 2026-04-09 =
 * Add   - FedEx Terms of Service acceptance checkbox before first FedEx label purchase.
 * Fix   - Shipment weight selector no longer switches to lbs when weight exceeds 16 oz and store unit is set to oz.

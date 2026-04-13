@@ -18,7 +18,7 @@ class FeatureFlags {
 	 *
 	 * @var string[]
 	 */
-	const FEATURES_SUPPORTED_BY_STORE = array( 'upsdap' );
+	const FEATURES_SUPPORTED_BY_STORE = array( 'upsdap', 'fedex' );
 
 	public function register_hooks() {
 		add_filter( 'wcshipping_api_client_body', array( $this, 'decorate_api_request_body_with_feature_flags' ) );
@@ -29,9 +29,15 @@ class FeatureFlags {
 		$body['settings']['features_supported_by_store'] = apply_filters( 'wcshipping_features_supported_by_store', array() );
 
 		// Pass `features_supported_by_client` as part of `settings`.
+		// When no client features are provided (e.g. during schema fetch), default to the
+		// store's supported features so the connect server includes all relevant data in
+		// the cached schema. Per-request filtering in get_predefined_packages_schema()
+		// ensures only clients that declare feature support will see the data.
 		if ( isset( $body['features_supported_by_client'] ) ) {
 			$body['settings']['features_supported_by_client'] = $body['features_supported_by_client'];
 			unset( $body['features_supported_by_client'] );
+		} else {
+			$body['settings']['features_supported_by_client'] = $body['settings']['features_supported_by_store'];
 		}
 
 		return $body;

@@ -5,9 +5,9 @@ Requires Plugins: woocommerce
 Requires PHP: 7.4
 Requires at least: 6.8
 Tested up to: 6.9
-WC requires at least: 10.4
-WC tested up to: 10.6
-Stable tag: 2.2.7
+WC requires at least: 10.5
+WC tested up to: 10.7
+Stable tag: 2.2.8
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -127,6 +127,9 @@ Absolutely! You can read our Terms of Service [here](https://wordpress.com/tos).
 6. WooCommerce Shipping address validation at checkout suggestion.
 
 == Changelog ==
+
+= 2.2.8 - 2026-04-13 =
+* Tweak - WooCommerce 10.7 Compatibility.
 
 = 2.2.7 - 2026-04-09 =
 * Add   - FedEx Terms of Service acceptance checkbox before first FedEx label purchase.
