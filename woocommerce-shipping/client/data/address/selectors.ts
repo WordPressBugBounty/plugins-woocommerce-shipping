@@ -73,6 +73,10 @@ export const getPreparedDestination = ( state: AddressState ) => {
 			address_2: address2,
 			address: rawDestination.address,
 		} ),
+		// Explicit user override wins; otherwise infer from company
+		// presence. Drives FedEx rate accuracy and service availability
+		// (e.g., Ground Home Delivery).
+		residential: rawDestination.residential ?? ! rawDestination.company,
 	};
 	// eslint-disable-next-line no-unused-vars
 	return destination;

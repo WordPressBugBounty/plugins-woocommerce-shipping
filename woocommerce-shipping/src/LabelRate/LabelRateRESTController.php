@@ -130,61 +130,66 @@ class LabelRateRESTController extends WCShippingRESTController {
 	 */
 	private function get_shipment_properties() {
 		return array(
-			'company'   => array(
+			'company'     => array(
 				'description' => __( 'Company name.', 'woocommerce-shipping' ),
 				'type'        => 'string',
 				'context'     => array( 'view', 'edit' ),
 			),
-			'name'      => array(
+			'name'        => array(
 				'description' => __( 'Name of the shipper.', 'woocommerce-shipping' ),
 				'type'        => 'string',
 				'context'     => array( 'view', 'edit' ),
 				'required'    => true,
 			),
-			'address'   => array(
+			'address'     => array(
 				'description' => __( 'Address line', 'woocommerce-shipping' ),
 				'type'        => 'string',
 				'context'     => array( 'view', 'edit' ),
 				'required'    => true,
 			),
-			'address_1' => array(
+			'address_1'   => array(
 				'description' => __( 'Address line 1', 'woocommerce-shipping' ),
 				'type'        => 'string',
 				'context'     => array( 'view', 'edit' ),
 				'required'    => true,
 			),
-			'address_2' => array(
+			'address_2'   => array(
 				'description' => __( 'Address line 2', 'woocommerce-shipping' ),
 				'type'        => 'string',
 				'context'     => array( 'view', 'edit' ),
 			),
-			'city'      => array(
+			'city'        => array(
 				'description' => __( 'City name.', 'woocommerce-shipping' ),
 				'type'        => 'string',
 				'context'     => array( 'view', 'edit' ),
 			),
-			'state'     => array(
+			'state'       => array(
 				'description' => __( 'ISO code or name of the state, province or district.', 'woocommerce-shipping' ),
 				'type'        => 'string',
 				'context'     => array( 'view', 'edit' ),
 			),
-			'postcode'  => array(
+			'postcode'    => array(
 				'description' => __( 'Postal code.', 'woocommerce-shipping' ),
 				'type'        => 'string',
 				'context'     => array( 'view', 'edit' ),
 				'required'    => true,
 			),
-			'country'   => array(
+			'country'     => array(
 				'description' => __( 'ISO code of the country.', 'woocommerce-shipping' ),
 				'type'        => 'string',
 				'context'     => array( 'view', 'edit' ),
 				'required'    => true,
 			),
-			'phone'     => array(
+			'phone'       => array(
 				'description' => __( 'Phone number.', 'woocommerce-shipping' ),
 				'type'        => 'string',
 				'context'     => array( 'view', 'edit' ),
 				'required'    => true,
+			),
+			'residential' => array(
+				'description' => __( 'Whether the address is residential. Optional; when omitted, EasyPost applies its own classification.', 'woocommerce-shipping' ),
+				'type'        => 'boolean',
+				'context'     => array( 'view', 'edit' ),
 			),
 		);
 	}
@@ -360,6 +365,10 @@ class LabelRateRESTController extends WCShippingRESTController {
 			'name'    => sanitize_text_field( $param['name'] ),
 			'phone'   => sanitize_text_field( $param['phone'] ),
 		);
+
+		if ( isset( $param['residential'] ) ) {
+			$original_param['residential'] = rest_sanitize_boolean( $param['residential'] );
+		}
 
 		$address = new Address( $param );
 

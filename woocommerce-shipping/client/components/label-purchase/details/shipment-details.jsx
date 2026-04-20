@@ -10,6 +10,7 @@ import {
 	__experimentalText as Text,
 	BaseControl,
 	Button,
+	CheckboxControl,
 	Modal,
 	Notice,
 } from '@wordpress/components';
@@ -226,6 +227,16 @@ export const ShipmentDetails = withBoundary(
 			</BaseControl>
 		);
 
+		const isDestinationResidential =
+			destinationAddress?.residential ?? ! destinationAddress?.company;
+
+		const purchasedDestination = hasPurchasedLabel( false )
+			? getShipmentDestination()
+			: null;
+		const isPurchasedDestinationResidential =
+			purchasedDestination?.residential ??
+			! purchasedDestination?.company;
+
 		const ShipToControl = ( { label } ) => (
 			<BaseControl
 				id="ship-to"
@@ -235,27 +246,80 @@ export const ShipmentDetails = withBoundary(
 				__nextHasNoMarginBottom={ true }
 			>
 				{ ! hasPurchasedLabel( false ) && (
-					<Text display="flex">
-						<Button
-							onClick={ () => setIsAddressModalOpen( true ) }
-							icon={ edit }
-							className="ship-to-edit-icon"
-							title={ __(
-								'Click to change address',
-								'woocommerce-shipping'
-							) }
-						/>
-						{ addressToString( destinationAddress ) }
-						<AddressVerifiedIcon
-							isVerified={ isDestinationAddressVerified }
-							onClick={ () => setIsAddressModalOpen( true ) }
-							addressType={ ADDRESS_TYPES.DESTINATION }
-						></AddressVerifiedIcon>
-					</Text>
+					<div className="purchase-label__ship-to-value">
+						<Text display="flex">
+							<Button
+								onClick={ () => setIsAddressModalOpen( true ) }
+								icon={ edit }
+								className="ship-to-edit-icon"
+								title={ __(
+									'Click to change address',
+									'woocommerce-shipping'
+								) }
+							/>
+							{ addressToString( destinationAddress ) }
+							<AddressVerifiedIcon
+								isVerified={ isDestinationAddressVerified }
+								onClick={ () => setIsAddressModalOpen( true ) }
+								addressType={ ADDRESS_TYPES.DESTINATION }
+							></AddressVerifiedIcon>
+						</Text>
+						{ ! getCurrentShipmentIsReturn() && (
+							<div className="purchase-label__residential-toggle-row">
+								<CheckboxControl
+									__nextHasNoMarginBottom
+									className="purchase-label__residential-toggle"
+									label={ __(
+										'Residential address',
+										'woocommerce-shipping'
+									) }
+									checked={ isDestinationResidential }
+									onChange={ ( checked ) => {
+										dispatch(
+											addressStore
+										).setDestinationResidential( checked );
+										updateRates();
+									} }
+								/>
+								<span className="purchase-label__residential-toggle-help">
+									<ControlledPopover
+										icon="info-outline"
+										withArrow={ false }
+										popoverOptions={ {
+											placement: 'top-end',
+											offset: 16,
+											className:
+												'purchase-label__residential-toggle-popover',
+										} }
+									>
+										{ __(
+											'Applies residential FedEx rates and services. Uncheck for commercial destinations.',
+											'woocommerce-shipping'
+										) }
+									</ControlledPopover>
+								</span>
+							</div>
+						) }
+					</div>
 				) }
-				{ hasPurchasedLabel( false ) &&
-					getShipmentDestination() &&
-					addressToString( getShipmentDestination() ) }
+				{ purchasedDestination && (
+					<div className="purchase-label__ship-to-value">
+						{ addressToString( purchasedDestination ) }
+						{ ! getCurrentShipmentIsReturn() && (
+							<span className="purchase-label__ship-to-residential">
+								{ isPurchasedDestinationResidential
+									? __(
+											'Residential',
+											'woocommerce-shipping'
+									  )
+									: __(
+											'Commercial',
+											'woocommerce-shipping'
+									  ) }
+							</span>
+						) }
+					</div>
+				) }
 			</BaseControl>
 		);
 

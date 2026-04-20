@@ -1,5 +1,9 @@
 *** WooCommerce Shipping Changelog ***
 
+= 2.2.9 - 2026-04-20 =
+* Add - Residential/commercial address toggle on the label purchase screen, used by FedEx for accurate rates and service availability.
+* Tweak - Update FedEx Terms of Service checkbox copy to reference the general Terms of Service, which now covers shipping services.
+
 = 2.2.8 - 2026-04-13 =
 * Tweak - WooCommerce 10.7 Compatibility.
 

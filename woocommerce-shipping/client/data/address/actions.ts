@@ -8,6 +8,7 @@ import {
 	DELETE_ORIGIN_ADDRESS,
 	FETCH_ORIGIN_ADDRESSES,
 	RESET_ADDRESS_NORMALIZATION,
+	SET_DESTINATION_RESIDENTIAL,
 	STATE_RESET,
 	UPDATE_SHIPMENT_ADDRESS,
 	UPDATE_SHIPMENT_ADDRESS_FAILED,
@@ -42,6 +43,7 @@ import {
 	DeleteOriginAddressAction,
 	NormalizationAddressAction,
 	NormalizationAddressFailedAction,
+	SetDestinationResidentialAction,
 	ShippingAddressVerifyAction,
 	ShippingAddressVerifyFailedAction,
 	ShippingAddressVerifyStartAction,
@@ -381,5 +383,14 @@ export function* fetchOriginAddresses() {
 export function stateReset(): StateResetAction {
 	return {
 		type: STATE_RESET,
+	};
+}
+
+export function setDestinationResidential(
+	residential: boolean | undefined
+): SetDestinationResidentialAction {
+	return {
+		type: SET_DESTINATION_RESIDENTIAL,
+		payload: { residential },
 	};
 }

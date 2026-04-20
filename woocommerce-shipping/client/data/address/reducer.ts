@@ -15,6 +15,7 @@ import {
 	DELETE_ORIGIN_ADDRESS,
 	FETCH_ORIGIN_ADDRESSES,
 	RESET_ADDRESS_NORMALIZATION,
+	SET_DESTINATION_RESIDENTIAL,
 	STATE_RESET,
 	UPDATE_SHIPMENT_ADDRESS,
 	UPDATE_SHIPMENT_ADDRESS_FAILED,
@@ -30,6 +31,7 @@ import {
 	FetchOriginAddressesAction,
 	NormalizationAddressAction,
 	NormalizationAddressFailedAction,
+	SetDestinationResidentialAction,
 	ShippingAddressVerifyAction,
 	ShippingAddressVerifyFailedAction,
 	ShippingAddressVerifyStartAction,
@@ -365,6 +367,27 @@ export const getReducer = ( withDestination: boolean ) => {
 					addresses,
 				},
 			} )
+		)
+		.on(
+			SET_DESTINATION_RESIDENTIAL,
+			(
+				state,
+				{ payload: { residential } }: SetDestinationResidentialAction
+			) => {
+				if ( ! state.destination ) {
+					return state;
+				}
+				return {
+					...state,
+					destination: {
+						...state.destination,
+						address: {
+							...state.destination.address,
+							residential,
+						},
+					},
+				};
+			}
 		)
 		.on( STATE_RESET, () => ( {
 			...getDefaultState(),

@@ -7,7 +7,7 @@ Requires at least: 6.8
 Tested up to: 6.9
 WC requires at least: 10.5
 WC tested up to: 10.7
-Stable tag: 2.2.8
+Stable tag: 2.2.9
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -127,6 +127,10 @@ Absolutely! You can read our Terms of Service [here](https://wordpress.com/tos).
 6. WooCommerce Shipping address validation at checkout suggestion.
 
 == Changelog ==
+
+= 2.2.9 - 2026-04-20 =
+* Add - Residential/commercial address toggle on the label purchase screen, used by FedEx for accurate rates and service availability.
+* Tweak - Update FedEx Terms of Service checkbox copy to reference the general Terms of Service, which now covers shipping services.
 
 = 2.2.8 - 2026-04-13 =
 * Tweak - WooCommerce 10.7 Compatibility.

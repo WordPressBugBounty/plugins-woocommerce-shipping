@@ -12,7 +12,7 @@ class ComposerStaticInite5a73c3f4943dc34fc499f2e4d5bc2a0
     );
 
     public static $prefixLengthsPsr4 = array (
-        'A' => 
+        'A' =>
         array (
             'Automattic\\WCShipping\\' => 22,
             'Automattic\\Jetpack\\Autoloader\\' => 30,
@@ -20,11 +20,11 @@ class ComposerStaticInite5a73c3f4943dc34fc499f2e4d5bc2a0
     );
 
     public static $prefixDirsPsr4 = array (
-        'Automattic\\WCShipping\\' => 
+        'Automattic\\WCShipping\\' =>
         array (
             0 => __DIR__ . '/../..' . '/src',
         ),
-        'Automattic\\Jetpack\\Autoloader\\' => 
+        'Automattic\\Jetpack\\Autoloader\\' =>
         array (
             0 => __DIR__ . '/..' . '/automattic/jetpack-autoloader/src',
         ),

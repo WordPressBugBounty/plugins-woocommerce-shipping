@@ -5,6 +5,7 @@ import {
 	DELETE_ORIGIN_ADDRESS_FAILED,
 	FETCH_ORIGIN_ADDRESSES,
 	INVALIDATE_ADDRESS_STORE,
+	SET_DESTINATION_RESIDENTIAL,
 	UPDATE_SHIPMENT_ADDRESS,
 	UPDATE_SHIPMENT_ADDRESS_FAILED,
 	VERIFY_ORDER_SHIPPING_ADDRESS,
@@ -86,6 +87,13 @@ export interface UpdateShipmentAddressFailedAction extends Action {
 	};
 }
 
+export interface SetDestinationResidentialAction extends Action {
+	type: SET_DESTINATION_RESIDENTIAL;
+	payload: {
+		residential: boolean | undefined;
+	};
+}
+
 export interface AddOriginAddressAction extends Action {
 	type: ADD_ORIGIN_ADDRESS;
 	payload: {
@@ -128,4 +136,5 @@ export type AddressActions =
 	| UpdateShipmentAddressAction
 	| UpdateShipmentAddressFailedAction
 	| NormalizationAddressAction
-	| ShippingAddressVerifyStartAction;
+	| ShippingAddressVerifyStartAction
+	| SetDestinationResidentialAction;

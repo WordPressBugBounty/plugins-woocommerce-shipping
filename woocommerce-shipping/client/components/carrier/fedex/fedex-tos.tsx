@@ -66,18 +66,30 @@ export const FedExTos = ( {
 					// @ts-ignore
 					label={ createInterpolateElement(
 						__(
-							'I agree to the <a>FedEx Terms of Service</a>.',
+							'I agree to the <tos>Terms of Service</tos> (including the <shipping>terms on shipping services</shipping>).',
 							'woocommerce-shipping'
 						),
 						{
-							a: (
+							tos: (
 								<a
 									href="https://wordpress.com/tos/"
 									target="_blank"
 									rel="noreferrer"
 								>
 									{ __(
-										'FedEx Terms of Service',
+										'Terms of Service',
+										'woocommerce-shipping'
+									) }
+								</a>
+							),
+							shipping: (
+								<a
+									href="https://wordpress.com/tos/#:~:text=More%20on%20Shipping%20Services%20Specifically"
+									target="_blank"
+									rel="noreferrer"
+								>
+									{ __(
+										'terms on shipping services',
 										'woocommerce-shipping'
 									) }
 								</a>
