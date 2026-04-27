@@ -7,7 +7,7 @@ Requires at least: 6.8
 Tested up to: 6.9
 WC requires at least: 10.5
 WC tested up to: 10.7
-Stable tag: 2.2.9
+Stable tag: 2.3.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -128,9 +128,14 @@ Absolutely! You can read our Terms of Service [here](https://wordpress.com/tos).
 
 == Changelog ==
 
+= 2.3.0 - 2026-04-27 =
+* New   - FedEx Rate Purchasing is now available! Merchants can compare and purchase FedEx labels directly from WooCommerce Shipping.
+* Fix   - Automatically split mixed domestic and international labels into separate USPS SCAN Forms.
+
 = 2.2.9 - 2026-04-20 =
-* Add - Residential/commercial address toggle on the label purchase screen, used by FedEx for accurate rates and service availability.
+* Add   - Residential/commercial address toggle on the label purchase screen, used by FedEx for accurate rates and service availability.
 * Tweak - Update FedEx Terms of Service checkbox copy to reference the general Terms of Service, which now covers shipping services.
+* Fix   - Prevent fatal TypeError when completing orders with shipping labels that have no tracking number.
 
 = 2.2.8 - 2026-04-13 =
 * Tweak - WooCommerce 10.7 Compatibility.

@@ -76,6 +76,9 @@ export interface WCShippingConfig {
 			>;
 		};
 	};
+	is_main_origin_in_sync_with_store?: boolean;
+	formatted_store_address?: string;
+	store_address_draft?: LocationResponse | null;
 	custom_fulfillment_summary: string;
 	promotion?: Promotion;
 	should_use_fulfillment_api: boolean;

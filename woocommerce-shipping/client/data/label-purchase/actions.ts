@@ -92,7 +92,7 @@ export function* getRates<
 					destination,
 					origin: mapAddressForRequest( origin ),
 					...restOfPayload,
-					features_supported_by_client: [ 'upsdap' ],
+					features_supported_by_client: [ 'upsdap', 'fedex' ],
 				},
 			},
 			'get-rates'

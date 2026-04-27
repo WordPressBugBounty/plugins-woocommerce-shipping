@@ -1,12 +1,14 @@
 import { isObject, mapValues } from 'lodash';
 import {
+	LocationResponse,
+	OriginAddress,
 	RateExtraOptions,
 	ShipmentRecord,
 	WCShippingAnalyticsConfig,
 	WCShippingConfig,
 	WCShippingConfigAccountSettings,
 } from 'types';
-import { camelCaseKeys } from 'utils';
+import { camelCaseKeys, composeAddress, composeName } from 'utils';
 
 export const getConfig = (): WCShippingConfig =>
 	( window.WCShipping_Config || {} ) as WCShippingConfig;
@@ -93,3 +95,47 @@ export const getPromotion = () => {
 export const shouldUseFulfillmentApi = (
 	{ should_use_fulfillment_api } = getConfig()
 ) => should_use_fulfillment_api;
+
+export const isMainOriginInSyncWithStore = (
+	{ is_main_origin_in_sync_with_store } = getConfig()
+) => is_main_origin_in_sync_with_store ?? false;
+
+export const getFormattedStoreAddress = (
+	{ formatted_store_address } = getConfig()
+) => formatted_store_address ?? '';
+
+/**
+ * Convert a snake_case LocationResponse to a camelCase OriginAddress.
+ */
+export const normalizeStoreAddressDraft = (
+	draft: LocationResponse
+): OriginAddress => ( {
+	id: draft.id,
+	city: draft.city,
+	email: draft.email,
+	firstName: draft.first_name,
+	lastName: draft.last_name,
+	phone: draft.phone,
+	postcode: draft.postcode,
+	state: draft.state,
+	country: draft.country,
+	address1: draft.address_1 ?? '',
+	address2: draft.address_2 ?? '',
+	address: composeAddress( draft ),
+	name: composeName( draft ),
+	company: draft.company,
+	isVerified: draft.is_verified,
+	defaultAddress: draft.default_address,
+	defaultReturnAddress: draft.default_return_address,
+	isApproved: draft.is_approved,
+} );
+
+export const getStoreAddressDraft = (
+	{ store_address_draft } = getConfig()
+): OriginAddress | undefined => {
+	if ( ! store_address_draft ) {
+		return undefined;
+	}
+
+	return normalizeStoreAddressDraft( store_address_draft );
+};

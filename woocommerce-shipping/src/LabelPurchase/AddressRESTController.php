@@ -146,6 +146,8 @@ class AddressRESTController extends WCShippingRESTController {
 			return rest_ensure_response( $error->get_error_response() );
 		}
 
+		$clear_store_address_drift = (bool) $request->get_param( 'clearStoreAddressDrift' );
+
 		/**
 		 * Always set is_approved to true when updating an origin address.
 		 * Note: is_verified indicates whether the verified address is being used.
@@ -155,7 +157,13 @@ class AddressRESTController extends WCShippingRESTController {
 			array( 'is_approved' => true )
 		);
 
-		return rest_ensure_response( $this->normalization_service->update_origin_address( $origin ) );
+		$response = $this->normalization_service->update_origin_address( $origin );
+
+		if ( $clear_store_address_drift && ! is_wp_error( $response ) && ! empty( $response['success'] ) ) {
+			$this->origin_address_service->mark_main_origin_store_address_in_sync();
+		}
+
+		return rest_ensure_response( $response );
 	}
 
 	/**

@@ -97,7 +97,7 @@ export function* purchaseLabel(
 			hazmat: hazmatState,
 			customs: customsState,
 			user_meta: userMeta,
-			features_supported_by_client: [ 'upsdap' ],
+			features_supported_by_client: [ 'upsdap', 'fedex' ],
 			selected_rate: selectedRate,
 			is_return: isReturn,
 			shipment_options: shipmentOptions,

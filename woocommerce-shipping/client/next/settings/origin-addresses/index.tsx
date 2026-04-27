@@ -2,7 +2,7 @@
  * WordPress dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useState } from '@wordpress/element';
+import { useState, useEffect } from '@wordpress/element';
 import { useDispatch, useSelect } from '@wordpress/data';
 import {
 	store as coreStore,
@@ -30,8 +30,11 @@ import { getItemId, getAddressDetail, getAddressTitle } from './utils';
 import { useConfigLoader, unlock } from 'next/utils';
 import { ADDRESS_ENTITY } from 'next/data';
 import { OriginAddressModal } from './origin-address-modal';
+import { StoreAddressSyncNotice } from 'components/store-address-sync-notice';
 import { Badge } from 'components/wp';
+import { addressStore } from 'data/address';
 import { recordEvent } from 'utils/tracks';
+import type { OriginAddress } from 'types';
 
 import './style.scss';
 
@@ -40,6 +43,9 @@ const { useEntityRecordsWithPermissions } = unlock( coreDataPrivateApis );
 export const OriginAddresses = () => {
 	const [ isModalOpen, setIsModalOpen ] = useState( false );
 	const [ selectedAddressId, setSelectedAddressId ] = useState< string >();
+	const [ draftAddress, setDraftAddress ] = useState< OriginAddress >();
+	const [ clearStoreAddressDriftOnSave, setClearStoreAddressDriftOnSave ] =
+		useState( false );
 
 	// Ensure config and address store are loaded when this screen mounts
 	// (e.g. when navigating from "Buy a shipping label" without the filter having run).
@@ -50,6 +56,14 @@ export const OriginAddresses = () => {
 		useDispatch( coreStore );
 	const { createSuccessNotice, createErrorNotice } =
 		useDispatch( noticesStore );
+	const { refreshStoreAddressSyncFromApi } = useDispatch( addressStore );
+
+	useEffect( () => {
+		void refreshStoreAddressSyncFromApi();
+		// Mount only: bound action is stable; avoids duplicate dispatches when the
+		// reference identity changes. Overlapping sync-meta HTTP is still deduped in the store.
+		// eslint-disable-next-line react-hooks/exhaustive-deps -- see comment
+	}, [] );
 	const { records: addresses, isResolving } = useEntityRecordsWithPermissions(
 		ADDRESS_ENTITY.kind,
 		ADDRESS_ENTITY.name
@@ -67,6 +81,8 @@ export const OriginAddresses = () => {
 			button_label: 'edit',
 			card_section: 'sender_addresses',
 		} );
+		setDraftAddress( undefined );
+		setClearStoreAddressDriftOnSave( false );
 		setSelectedAddressId( id );
 		setIsModalOpen( true );
 	};
@@ -76,12 +92,16 @@ export const OriginAddresses = () => {
 			button_label: 'add_sender_address',
 			card_section: 'sender_addresses',
 		} );
+		setDraftAddress( undefined );
+		setClearStoreAddressDriftOnSave( false );
 		setIsModalOpen( true );
 	};
 
 	const handleModalClose = async () => {
 		setIsModalOpen( false );
 		setSelectedAddressId( undefined );
+		setDraftAddress( undefined );
+		setClearStoreAddressDriftOnSave( false );
 	};
 
 	const handleModalComplete = async () => {
@@ -104,6 +124,7 @@ export const OriginAddresses = () => {
 			ADDRESS_ENTITY.name,
 			{},
 		] );
+		void refreshStoreAddressSyncFromApi();
 	};
 
 	const handleDelete = async ( id: string ) => {
@@ -149,6 +170,10 @@ export const OriginAddresses = () => {
 					onClose={ handleModalClose }
 					onComplete={ handleModalComplete }
 					addressId={ selectedAddressId }
+					initialAddress={ draftAddress }
+					clearStoreAddressDriftOnSave={
+						clearStoreAddressDriftOnSave
+					}
 				/>
 			) }
 			<CardHeader isBorderless>
@@ -156,6 +181,14 @@ export const OriginAddresses = () => {
 					<Heading level={ 4 } weight={ 'normal' }>
 						{ __( 'Sender addresses', 'woocommerce-shipping' ) }
 					</Heading>
+					<StoreAddressSyncNotice
+						onEditSenderAddress={ ( address ) => {
+							setSelectedAddressId( address.id );
+							setDraftAddress( address );
+							setClearStoreAddressDriftOnSave( true );
+							setIsModalOpen( true );
+						} }
+					/>
 					<Text variant="muted">
 						{ __(
 							'Add the addresses of any locations you ship from. The sender address you select will be used to calculate shipping rates and delivery times.',

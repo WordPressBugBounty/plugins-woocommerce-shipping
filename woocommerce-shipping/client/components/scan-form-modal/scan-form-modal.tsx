@@ -17,6 +17,7 @@ import { OriginSelectionStep } from './origin-selection-step';
 import { LabelSelectionStep } from './label-selection-step';
 import { ReviewStep } from './review-step';
 import { CompletionStep } from './completion-step';
+import { getExclusionNotice } from 'utils/scan-form';
 import type { ScanFormModalProps } from 'types';
 import './style.scss';
 
@@ -33,9 +34,14 @@ export const ScanFormModal = ( { onClose }: ScanFormModalProps ) => {
 		labels,
 		selectedLabels,
 		reviewResult,
-		pdfUrl,
+		pdfUrls,
 		processedLabelIds,
+		processedLabelBatches,
+		mixedBatchNotice,
+		partialFailureMessage,
+		partialFailureLabelIds,
 		failedLabelsError,
+		excludedLabels,
 		showLabelSelectionStep,
 		showReviewStep,
 		showCompletedStep,
@@ -50,6 +56,7 @@ export const ScanFormModal = ( { onClose }: ScanFormModalProps ) => {
 		goBackToOriginSelection,
 		goBackToLabelSelection,
 		getLabelInfo,
+		getSelectionCounts,
 		retryWithValidLabels,
 		dismissFailedLabelsError,
 	} = useScanFormState();
@@ -96,6 +103,11 @@ export const ScanFormModal = ( { onClose }: ScanFormModalProps ) => {
 		showReviewStep && reviewResult && ! showCompletedStep;
 
 	const isCompletionStepActive = showCompletedStep && successMessage;
+
+	// Compute counts once per render for the label-selection footer.
+	const selectionCounts = isLabelSelectionStep
+		? getSelectionCounts()
+		: { domestic: 0, international: 0 };
 
 	// Dynamic modal title based on step.
 	const getModalTitle = () => {
@@ -271,7 +283,27 @@ export const ScanFormModal = ( { onClose }: ScanFormModalProps ) => {
 				/>
 			) }
 
-			{ /* Step 2: Label Selection */ }
+			{ /* Step 2: Label Selection — exclusion notices */ }
+			{ isLabelSelectionStep &&
+				Object.entries( excludedLabels ).map(
+					( [ reason, labelIds ] ) => {
+						if ( ! labelIds || labelIds.length === 0 ) {
+							return null;
+						}
+						return (
+							<Notice
+								key={ reason }
+								status="warning"
+								isDismissible={ false }
+							>
+								{ getExclusionNotice(
+									reason,
+									labelIds.length
+								) }
+							</Notice>
+						);
+					}
+				) }
 			{ isLabelSelectionStep && labels.length > 0 && (
 				<LabelSelectionStep
 					selectedOrigin={ selectedOrigin }
@@ -286,6 +318,7 @@ export const ScanFormModal = ( { onClose }: ScanFormModalProps ) => {
 				<ReviewStep
 					reviewResult={ reviewResult }
 					getLabelInfo={ getLabelInfo }
+					mixedBatchNotice={ mixedBatchNotice }
 				/>
 			) }
 
@@ -294,7 +327,10 @@ export const ScanFormModal = ( { onClose }: ScanFormModalProps ) => {
 				<CompletionStep
 					successMessage={ successMessage }
 					processedLabelIds={ processedLabelIds }
-					pdfUrl={ pdfUrl }
+					processedLabelBatches={ processedLabelBatches }
+					pdfUrls={ pdfUrls }
+					partialFailureMessage={ partialFailureMessage }
+					partialFailureLabelIds={ partialFailureLabelIds }
 					getLabelInfo={ getLabelInfo }
 				/>
 			) }
@@ -303,18 +339,34 @@ export const ScanFormModal = ( { onClose }: ScanFormModalProps ) => {
 			<Flex justify="space-between" align="flex-end" as="footer">
 				{ isLabelSelectionStep && (
 					<FlexItem>
-						<span className="scan-form-modal__label-count">
-							{ sprintf(
-								/* translators: %d is number of selected labels */
-								_n(
-									'%d label selected',
-									'%d labels selected',
-									selectedLabels.size,
-									'woocommerce-shipping'
-								),
-								selectedLabels.size
-							) }
-						</span>
+						<div className="scan-form-modal__label-count">
+							<span>
+								{ sprintf(
+									/* translators: %d is number of selected labels */
+									_n(
+										'%d label selected',
+										'%d labels selected',
+										selectedLabels.size,
+										'woocommerce-shipping'
+									),
+									selectedLabels.size
+								) }
+							</span>
+							{ selectionCounts.domestic > 0 &&
+								selectionCounts.international > 0 && (
+									<span className="scan-form-modal__label-count-breakdown">
+										{ sprintf(
+											/* translators: 1: domestic count, 2: international count */
+											__(
+												'%1$d domestic + %2$d international',
+												'woocommerce-shipping'
+											),
+											selectionCounts.domestic,
+											selectionCounts.international
+										) }
+									</span>
+								) }
+						</div>
 					</FlexItem>
 				) }
 				<FlexItem>

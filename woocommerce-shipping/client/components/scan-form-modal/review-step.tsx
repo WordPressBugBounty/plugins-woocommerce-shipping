@@ -5,16 +5,19 @@
 import { Notice } from '@wordpress/components';
 import { __, sprintf, _n } from '@wordpress/i18n';
 import { useCallback } from '@wordpress/element';
+import { getExclusionNotice } from 'utils/scan-form';
 import type { ReviewResult, ScanFormLabel } from 'types';
 
 interface ReviewStepProps {
 	reviewResult: ReviewResult;
 	getLabelInfo: ( labelId: number ) => ScanFormLabel | null;
+	mixedBatchNotice: string | null;
 }
 
 export const ReviewStep = ( {
 	reviewResult,
 	getLabelInfo,
+	mixedBatchNotice,
 }: ReviewStepProps ) => {
 	/**
 	 * Render review list item
@@ -52,6 +55,40 @@ export const ReviewStep = ( {
 					'woocommerce-shipping'
 				) }
 			</p>
+
+			{ /* Info notice: mixed batch and/or excluded labels */ }
+			{ ( ( mixedBatchNotice ?? false ) ||
+				Object.values( reviewResult.excluded_labels ).some(
+					( ids ) => ids && ids.length > 0
+				) ) && (
+				<div className="scan-form-modal__review-section">
+					<Notice status="info" isDismissible={ false }>
+						{ mixedBatchNotice && <p>{ mixedBatchNotice }</p> }
+						{ Object.entries( reviewResult.excluded_labels ).map(
+							( [ reason, labelIds ] ) =>
+								labelIds && labelIds.length > 0 ? (
+									<p key={ reason }>
+										{ getExclusionNotice(
+											reason,
+											labelIds.length
+										) }
+									</p>
+								) : null
+						) }
+					</Notice>
+					{ Object.entries( reviewResult.excluded_labels ).map(
+						( [ reason, labelIds ] ) =>
+							labelIds && labelIds.length > 0 ? (
+								<ul
+									key={ reason }
+									className="scan-form-modal__review-list"
+								>
+									{ labelIds.map( renderReviewListItem ) }
+								</ul>
+							) : null
+					) }
+				</div>
+			) }
 
 			{ /* Eligible Labels */ }
 			{ reviewResult.eligible.length > 0 && (

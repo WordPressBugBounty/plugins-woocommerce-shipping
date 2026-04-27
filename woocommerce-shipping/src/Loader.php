@@ -1224,7 +1224,7 @@ class Loader {
 
 		$origin_address_service = new OriginAddressService();
 		foreach ( $address_options as $option ) {
-			add_action( "update_option_{$option}", array( $origin_address_service, 'sync_origin_addresses_with_woocommerce_store_address' ), 10, 3 );
+			add_action( "update_option_{$option}", array( $origin_address_service, 'on_woocommerce_store_address_option_updated' ), 10, 3 );
 		}
 
 		add_action( 'rest_api_init', array( $this, 'rest_api_init' ) );
@@ -1602,13 +1602,13 @@ class Loader {
 			$carrier         = $label['carrier_id'];
 			$carrier_service = $this->get_service_schemas_store()->get_service_schema_by_id( $carrier );
 			$carrier_label   = ( ! $carrier_service || empty( $carrier_service->carrier_name ) ) ? strtoupper( $carrier ) : $carrier_service->carrier_name;
-			$tracking        = $label['tracking'];
+			$tracking        = $label['tracking'] ?? null;
 			$error           = array_key_exists( 'error', $label );
 			$refunded        = array_key_exists( 'refund', $label );
 			$return          = $label['is_return'] ?? false;
 
-			// If the label has an error, is refunded, or is a return, move to the next label.
-			if ( $error || $refunded || $return ) {
+			// Skip labels with errors, refunds, returns, or no tracking number (tracking can be null/missing, which would fatal Utils::get_tracking_url()).
+			if ( $error || $refunded || $return || empty( $tracking ) ) {
 				continue;
 			}
 

@@ -6,6 +6,7 @@ import {
 	FETCH_ORIGIN_ADDRESSES,
 	INVALIDATE_ADDRESS_STORE,
 	SET_DESTINATION_RESIDENTIAL,
+	SET_STORE_ADDRESS_SYNC_STATUS,
 	UPDATE_SHIPMENT_ADDRESS,
 	UPDATE_SHIPMENT_ADDRESS_FAILED,
 	VERIFY_ORDER_SHIPPING_ADDRESS,
@@ -121,11 +122,23 @@ export interface FetchOriginAddressesAction extends Action {
 	type: FETCH_ORIGIN_ADDRESSES;
 	payload: {
 		addresses: OriginAddress[];
+		isMainOriginInSyncWithStore?: boolean;
+		formattedStoreAddress?: string;
+		storeAddressDraft?: OriginAddress | null;
 	};
 }
 
 export interface StateResetAction extends SimpleAction {
 	type: typeof INVALIDATE_ADDRESS_STORE;
+}
+
+export interface SetStoreAddressSyncStatusAction extends Action {
+	type: SET_STORE_ADDRESS_SYNC_STATUS;
+	payload: {
+		isMainOriginInSyncWithStore: boolean;
+		formattedStoreAddress: string;
+		storeAddressDraft?: OriginAddress | null;
+	};
 }
 
 export type AddressActions =
@@ -137,4 +150,5 @@ export type AddressActions =
 	| UpdateShipmentAddressFailedAction
 	| NormalizationAddressAction
 	| ShippingAddressVerifyStartAction
-	| SetDestinationResidentialAction;
+	| SetDestinationResidentialAction
+	| SetStoreAddressSyncStatusAction;

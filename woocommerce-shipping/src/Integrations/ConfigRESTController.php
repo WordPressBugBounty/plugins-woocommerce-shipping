@@ -162,14 +162,17 @@ class ConfigRESTController extends WCShippingRESTController {
 	public function get_settings() {
 		try {
 			$config = array(
-				'accountSettings'    => $this->account_settings->get( true ),
-				'carrier_strategies' => array(
+				'accountSettings'                   => $this->account_settings->get( true ),
+				'carrier_strategies'                => array(
 					'upsdap' => array(
 						'origin_address' => array(),
 					),
 				),
-				'continents'         => $this->continents->get(),
-				'origin_addresses'   => $this->origin_address_service->get_origin_addresses(),
+				'continents'                        => $this->continents->get(),
+				'origin_addresses'                  => $this->origin_address_service->get_origin_addresses(),
+				'is_main_origin_in_sync_with_store' => $this->origin_address_service->is_main_origin_address_in_sync_with_store(),
+				'formatted_store_address'           => $this->origin_address_service->get_formatted_store_address(),
+				'store_address_draft'               => $this->origin_address_service->get_store_details_origin_address_draft(),
 			);
 
 			return rest_ensure_response(

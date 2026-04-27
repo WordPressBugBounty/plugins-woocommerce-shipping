@@ -183,6 +183,7 @@ class ComposerStaticInite5a73c3f4943dc34fc499f2e4d5bc2a0
         'Automattic\\WCShipping\\Tracks' => __DIR__ . '/../..' . '/src/Tracks.php',
         'Automattic\\WCShipping\\Utilities\\AddressUtils' => __DIR__ . '/../..' . '/src/Utilities/AddressUtils.php',
         'Automattic\\WCShipping\\Utilities\\BaseModel' => __DIR__ . '/../..' . '/src/Utilities/BaseModel.php',
+        'Automattic\\WCShipping\\Utilities\\USPSTerritories' => __DIR__ . '/../..' . '/src/Utilities/USPSTerritories.php',
         'Automattic\\WCShipping\\Utils' => __DIR__ . '/../..' . '/src/Utils.php',
         'Automattic\\WCShipping\\Validators' => __DIR__ . '/../..' . '/src/Validators.php',
         'Automattic\\WCShipping\\WCShippingRESTController' => __DIR__ . '/../..' . '/src/WCShippingRESTController.php',

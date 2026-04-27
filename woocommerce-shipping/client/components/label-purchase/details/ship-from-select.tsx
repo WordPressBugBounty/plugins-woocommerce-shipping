@@ -145,10 +145,7 @@ export const ShipFromSelect = ( { disabled }: ShipFromSelectProps ) => {
 					onRequestClose={ () => openAddressForEdit( false ) }
 					focusOnMount
 					shouldCloseOnClickOutside={ false }
-					title={ __(
-						'Edit origin address',
-						'woocommerce-shipping'
-					) }
+					title={ __( 'Edit address', 'woocommerce-shipping' ) }
 				>
 					<AddressStep
 						type={ 'origin' }

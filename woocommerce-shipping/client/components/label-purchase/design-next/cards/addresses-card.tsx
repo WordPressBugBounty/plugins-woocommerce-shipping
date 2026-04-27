@@ -10,7 +10,7 @@ import {
 	Flex,
 	Spinner,
 } from '@wordpress/components';
-import { Badge } from '@wordpress/ui';
+import { Badge, Notice } from '@wordpress/ui';
 import { __ } from '@wordpress/i18n';
 import { useCollapsibleCard } from '../internal/useCollapsibleCard';
 import { addressStore } from 'data/address';
@@ -32,6 +32,7 @@ import { pencil as edit } from '@wordpress/icons';
 import { Destination, Order, OriginAddress } from 'types';
 import { ShipFromSelectV2 } from '../internal/ship-from-select-v2';
 import { withBoundaryNext } from 'components/HOC/error-boundary/with-boundary-next';
+import { StoreAddressSyncNotice } from 'components/store-address-sync-notice';
 
 const firstFilled = ( arr: ( string | undefined )[] ) => {
 	for ( const item of arr ) {
@@ -120,7 +121,10 @@ const AddressesCardComponent = ( {
 } ) => {
 	const [ isDestinationModalOpen, setIsDestinationModalOpen ] =
 		useState( false );
-	const [ isOriginModalOpen, setIsOriginModalOpen ] = useState( false );
+	const [ originAddressForEdit, setOriginAddressForEdit ] =
+		useState< OriginAddress | null >( null );
+	const [ clearStoreAddressDriftOnSave, setClearStoreAddressDriftOnSave ] =
+		useState( false );
 	const [ isRecipientAddressHovered, setIsRecipientAddressHovered ] =
 		useState( false );
 	const [ isOriginAddressHovered, setIsOriginAddressHovered ] =
@@ -156,7 +160,6 @@ const AddressesCardComponent = ( {
 		( select ) => select( addressStore ).getOriginAddresses(),
 		[]
 	);
-
 	const allOriginsUnverified = areAllOriginsUnverified( origins );
 
 	// Refresh origin addresses on mount so we pick up changes made on the settings page.
@@ -167,6 +170,8 @@ const AddressesCardComponent = ( {
 	const originAddress = ! hasPurchasedLabel( false )
 		? ( getShipmentOrigin() as OriginAddress )
 		: ( getShipmentPurchaseOrigin() as OriginAddress );
+	const shouldShowStoreAddressSyncNotice =
+		originAddress?.id === 'store_details';
 
 	/**
 	 * 1) We need to run the auto verification process only once but the useEffect runs on every render. So we use a ref
@@ -251,8 +256,15 @@ const AddressesCardComponent = ( {
 	};
 
 	const onOriginCompleteCallback = () => {
-		setIsOriginModalOpen( false );
+		setOriginAddressForEdit( null );
+		setClearStoreAddressDriftOnSave( false );
+		dispatch( addressStore ).fetchOriginAddresses();
 		updateRates();
+	};
+
+	const closeOriginModal = () => {
+		setOriginAddressForEdit( null );
+		setClearStoreAddressDriftOnSave( false );
 	};
 
 	const { CardHeader, isOpen } = useCollapsibleCard( true );
@@ -369,9 +381,14 @@ const AddressesCardComponent = ( {
 									( isOriginAddressHovered ||
 										allOriginsUnverified ) ? (
 										<Button
-											onClick={ () =>
-												setIsOriginModalOpen( true )
-											}
+											onClick={ () => {
+												setOriginAddressForEdit(
+													originAddress
+												);
+												setClearStoreAddressDriftOnSave(
+													false
+												);
+											} }
 											icon={ edit }
 											iconSize={ 24 }
 											title={ __(
@@ -433,6 +450,14 @@ const AddressesCardComponent = ( {
 									</Flex>
 								) }
 							</Flex>
+							{ shouldShowStoreAddressSyncNotice && (
+								<StoreAddressSyncNotice
+									onEditSenderAddress={ ( address ) => {
+										setOriginAddressForEdit( address );
+										setClearStoreAddressDriftOnSave( true );
+									} }
+								/>
+							) }
 						</Spacer>
 						<Spacer marginBottom={ 0 } marginX={ 6 }>
 							<CardDivider />
@@ -540,35 +565,48 @@ const AddressesCardComponent = ( {
 					</Flex>
 				</CardBody>
 			) }
-			{ isOriginModalOpen && originAddress && (
+			{ originAddressForEdit && (
 				<Modal
-					onRequestClose={ () => setIsOriginModalOpen( false ) }
+					onRequestClose={ closeOriginModal }
 					focusOnMount
 					shouldCloseOnClickOutside={ false }
 					size="medium"
 					title={
-						originAddress.isVerified
-							? __(
-									'Edit origin address',
-									'woocommerce-shipping'
-							  )
+						originAddressForEdit.isVerified
+							? __( 'Edit address', 'woocommerce-shipping' )
 							: __(
 									'Validate sender details',
 									'woocommerce-shipping'
 							  )
 					}
 				>
+					{ clearStoreAddressDriftOnSave && (
+						<>
+							<Notice.Root intent="warning">
+								<Notice.Description>
+									{ __(
+										'The store address is already filled in below. Validate and save this sender address if you want to sync it with your store address.',
+										'woocommerce-shipping'
+									) }
+								</Notice.Description>
+							</Notice.Root>
+							<Spacer marginBottom={ 4 } />
+						</>
+					) }
 					<AddressStep
 						type={ 'origin' }
 						address={ camelCaseKeys(
 							formatAddressFields(
-								snakeCaseKeys( originAddress )
+								snakeCaseKeys( originAddressForEdit )
 							)
 						) }
 						isAdd={ false }
 						onCompleteCallback={ onOriginCompleteCallback }
-						onCancelCallback={ () => setIsOriginModalOpen( false ) }
+						onCancelCallback={ closeOriginModal }
 						nextDesign={ true }
+						clearStoreAddressDriftOnSave={
+							clearStoreAddressDriftOnSave
+						}
 					/>
 				</Modal>
 			) }

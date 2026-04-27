@@ -158,6 +158,7 @@ return array(
     'Automattic\\WCShipping\\Tracks' => $baseDir . '/src/Tracks.php',
     'Automattic\\WCShipping\\Utilities\\AddressUtils' => $baseDir . '/src/Utilities/AddressUtils.php',
     'Automattic\\WCShipping\\Utilities\\BaseModel' => $baseDir . '/src/Utilities/BaseModel.php',
+    'Automattic\\WCShipping\\Utilities\\USPSTerritories' => $baseDir . '/src/Utilities/USPSTerritories.php',
     'Automattic\\WCShipping\\Utils' => $baseDir . '/src/Utils.php',
     'Automattic\\WCShipping\\Validators' => $baseDir . '/src/Validators.php',
     'Automattic\\WCShipping\\WCShippingRESTController' => $baseDir . '/src/WCShippingRESTController.php',

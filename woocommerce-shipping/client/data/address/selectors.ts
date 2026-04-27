@@ -88,3 +88,12 @@ export function getIsAddressVerificationInProgress(
 ) {
 	return state[ type ]?.isAddressVerificationInProgress ?? false;
 }
+
+export const getIsMainOriginInSyncWithStore = ( state: AddressState ) =>
+	state.isMainOriginInSyncWithStore;
+
+export const getFormattedStoreAddress = ( state: AddressState ) =>
+	state.formattedStoreAddress;
+
+export const getStoreAddressDraft = ( state: AddressState ) =>
+	state.storeAddressDraft;

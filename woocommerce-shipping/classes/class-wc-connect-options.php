@@ -36,6 +36,7 @@ class WC_Connect_Options {
 					'upsdap_strategies',
 					'tax_identifiers',
 					'use_fulfillment_api',
+					'main_origin_store_address_drift',
 				);
 			case 'shipping_method':
 				return array(

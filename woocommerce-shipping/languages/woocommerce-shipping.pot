@@ -2,14 +2,14 @@
 # This file is distributed under the GPL v2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: WooCommerce Shipping 2.2.9\n"
+"Project-Id-Version: WooCommerce Shipping 2.3.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/woocommerce-shipping\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-04-20T13:15:22+00:00\n"
+"POT-Creation-Date: 2026-04-27T10:56:51+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: woocommerce-shipping\n"
@@ -1028,7 +1028,7 @@ msgstr ""
 
 #: src/Loader.php:1849
 #: src/Loader.php:1878
-#: dist/next/366.js:1
+#: dist/next/903.js:1
 #: dist/woocommerce-shipping-create-shipping-label.js:75
 #: dist/woocommerce-shipping-create-shipping-label.js:256
 #: dist/woocommerce-shipping-plugin.js:47
@@ -1269,7 +1269,7 @@ msgid "Indicates if the address has been approved by the merchant."
 msgstr ""
 
 #: src/ScanForm/ScanForm.php:71
-#: dist/woocommerce-shipping-scanform.js:195
+#: dist/woocommerce-shipping-scanform.js:202
 msgid "Create USPS® SCAN Form"
 msgstr ""
 
@@ -1277,12 +1277,12 @@ msgstr ""
 msgid "Invalid SCAN Form ID format"
 msgstr ""
 
-#: src/ScanForm/ScanFormRESTController.php:302
+#: src/ScanForm/ScanFormRESTController.php:340
 msgid "Failed to create SCAN Form"
 msgstr ""
 
-#: src/ScanForm/ScanFormRESTController.php:383
-#: src/ScanForm/ScanFormRESTController.php:384
+#: src/ScanForm/ScanFormRESTController.php:469
+#: src/ScanForm/ScanFormRESTController.php:470
 msgid "Failed to review labels"
 msgstr ""
 
@@ -1429,48 +1429,46 @@ msgstr ""
 msgid "Download"
 msgstr ""
 
-#: dist/next/366.js:1
+#: dist/next/903.js:1
 #: dist/woocommerce-shipping-create-shipping-label.js:75
 #: dist/woocommerce-shipping-create-shipping-label.js:256
-#: dist/woocommerce-shipping-create-shipping-label.js:335
 #: dist/woocommerce-shipping-plugin.js:47
 #: dist/woocommerce-shipping-plugin.js:228
 #: dist/woocommerce-shipping-plugin.js:316
 msgid "Address"
 msgstr ""
 
-#: dist/next/366.js:1
-#: dist/woocommerce-shipping-create-shipping-label.js:335
+#: dist/next/903.js:1
 #: dist/woocommerce-shipping-plugin.js:316
 msgid "Addresses"
 msgstr ""
 
 #. translators: accessibility text
-#: dist/next/366.js:1
+#: dist/next/903.js:1
 #: dist/woocommerce-shipping-create-shipping-label.js:9
 #: dist/woocommerce-shipping-plugin.js:8
 msgid "The component <mark/> encountered an error"
 msgstr ""
 
-#: dist/next/366.js:1
+#: dist/next/903.js:1
 #: dist/woocommerce-shipping-create-shipping-label.js:9
 #: dist/woocommerce-shipping-plugin.js:8
 msgid "Please report the following error by <feedbackform>submitting a crash report</feedbackform> or contacting <a>WooCommerce Shipping Support</a>"
 msgstr ""
 
-#: dist/next/366.js:1
+#: dist/next/903.js:1
 #: dist/woocommerce-shipping-create-shipping-label.js:9
 #: dist/woocommerce-shipping-plugin.js:8
 msgid "submitting a crash report"
 msgstr ""
 
-#: dist/next/366.js:1
+#: dist/next/903.js:1
 #: dist/woocommerce-shipping-create-shipping-label.js:9
 #: dist/woocommerce-shipping-plugin.js:8
 msgid "WooCommerce Shipping Support"
 msgstr ""
 
-#: dist/next/366.js:1
+#: dist/next/903.js:1
 #: dist/woocommerce-shipping-create-shipping-label.js:75
 #: dist/woocommerce-shipping-create-shipping-label.js:256
 #: dist/woocommerce-shipping-plugin.js:47
@@ -1478,7 +1476,7 @@ msgstr ""
 msgid "Name"
 msgstr ""
 
-#: dist/next/366.js:1
+#: dist/next/903.js:1
 #: dist/woocommerce-shipping-create-shipping-label.js:75
 #: dist/woocommerce-shipping-create-shipping-label.js:256
 #: dist/woocommerce-shipping-plugin.js:47
@@ -1486,19 +1484,19 @@ msgstr ""
 msgid "Company"
 msgstr ""
 
-#: dist/next/366.js:1
+#: dist/next/903.js:1
 #: dist/woocommerce-shipping-create-shipping-label.js:75
 #: dist/woocommerce-shipping-plugin.js:47
 msgid "Email address"
 msgstr ""
 
-#: dist/next/366.js:1
+#: dist/next/903.js:1
 #: dist/woocommerce-shipping-create-shipping-label.js:75
 #: dist/woocommerce-shipping-plugin.js:47
 msgid "e.g., +1 (212) 555–0123 or 2125550123"
 msgstr ""
 
-#: dist/next/366.js:1
+#: dist/next/903.js:1
 #: dist/woocommerce-shipping-create-shipping-label.js:75
 #: dist/woocommerce-shipping-create-shipping-label.js:256
 #: dist/woocommerce-shipping-plugin.js:47
@@ -1506,7 +1504,7 @@ msgstr ""
 msgid "Country"
 msgstr ""
 
-#: dist/next/366.js:1
+#: dist/next/903.js:1
 #: dist/woocommerce-shipping-create-shipping-label.js:75
 #: dist/woocommerce-shipping-create-shipping-label.js:256
 #: dist/woocommerce-shipping-plugin.js:47
@@ -1514,7 +1512,7 @@ msgstr ""
 msgid "City"
 msgstr ""
 
-#: dist/next/366.js:1
+#: dist/next/903.js:1
 #: dist/woocommerce-shipping-create-shipping-label.js:75
 #: dist/woocommerce-shipping-create-shipping-label.js:256
 #: dist/woocommerce-shipping-plugin.js:47
@@ -1522,13 +1520,13 @@ msgstr ""
 msgid "State"
 msgstr ""
 
-#: dist/next/366.js:1
+#: dist/next/903.js:1
 #: dist/woocommerce-shipping-create-shipping-label.js:75
 #: dist/woocommerce-shipping-plugin.js:47
 msgid "Postal code"
 msgstr ""
 
-#: dist/next/366.js:1
+#: dist/next/903.js:1
 #: dist/woocommerce-shipping-create-shipping-label.js:75
 #: dist/woocommerce-shipping-create-shipping-label.js:256
 #: dist/woocommerce-shipping-plugin.js:47
@@ -1536,7 +1534,7 @@ msgstr ""
 msgid "Save as default sender address"
 msgstr ""
 
-#: dist/next/366.js:1
+#: dist/next/903.js:1
 #: dist/woocommerce-shipping-create-shipping-label.js:75
 #: dist/woocommerce-shipping-create-shipping-label.js:256
 #: dist/woocommerce-shipping-plugin.js:47
@@ -1545,158 +1543,161 @@ msgid "Save as default return address"
 msgstr ""
 
 #. translators: %d: Number of fields that need attention
-#: dist/next/366.js:1
+#: dist/next/903.js:1
 #: dist/woocommerce-shipping-create-shipping-label.js:256
 #: dist/woocommerce-shipping-plugin.js:228
 msgid "We have slightly modified the address entered. If correct, please use the suggested address to ensure accurate delivery."
 msgstr ""
 
-#: dist/next/366.js:1
+#: dist/next/903.js:1
 #: dist/woocommerce-shipping-create-shipping-label.js:256
 #: dist/woocommerce-shipping-plugin.js:228
 msgid "We were unable to verify the address entered. It may still be a valid address, but we cannot ensure accurate delivery to this address as entered. Please confirm if you would like to continue with the address as entered or return to edit the address."
 msgstr ""
 
-#: dist/next/366.js:1
+#: dist/next/903.js:1
 #: dist/woocommerce-shipping-create-shipping-label.js:256
 #: dist/woocommerce-shipping-plugin.js:228
 msgid "Use selected address"
 msgstr ""
 
-#: dist/next/366.js:1
+#: dist/next/903.js:1
 #: dist/woocommerce-shipping-create-shipping-label.js:256
 #: dist/woocommerce-shipping-plugin.js:228
 msgid "Confirm unverified address"
 msgstr ""
 
-#: dist/next/366.js:1
+#: dist/next/903.js:1
 #: dist/woocommerce-shipping-create-shipping-label.js:256
 #: dist/woocommerce-shipping-plugin.js:228
 msgid "Confirm Address"
 msgstr ""
 
-#: dist/next/366.js:1
+#: dist/next/903.js:1
 #: dist/woocommerce-shipping-create-shipping-label.js:256
 #: dist/woocommerce-shipping-plugin.js:228
 msgid "Close modal"
 msgstr ""
 
-#: dist/next/366.js:1
+#: dist/next/903.js:1
 #: dist/woocommerce-shipping-create-shipping-label.js:256
 #: dist/woocommerce-shipping-plugin.js:228
 msgid "We found a similar address, Please review the suggestion below, or proceed with your original address."
 msgstr ""
 
-#: dist/next/366.js:1
+#: dist/next/903.js:1
 #: dist/woocommerce-shipping-create-shipping-label.js:256
 #: dist/woocommerce-shipping-plugin.js:228
-#: dist/woocommerce-shipping-scanform.js:9
+#: dist/woocommerce-shipping-scanform.js:12
 msgid "Choose an address"
 msgstr ""
 
-#: dist/next/366.js:1
+#: dist/next/903.js:1
 #: dist/woocommerce-shipping-create-shipping-label.js:256
 #: dist/woocommerce-shipping-plugin.js:228
 msgid "Keep my address"
 msgstr ""
 
-#: dist/next/366.js:1
+#: dist/next/903.js:1
 #: dist/woocommerce-shipping-create-shipping-label.js:256
 #: dist/woocommerce-shipping-plugin.js:228
 msgid "Suggested address"
 msgstr ""
 
-#: dist/next/366.js:1
+#: dist/next/903.js:1
 #: dist/woocommerce-shipping-create-shipping-label.js:256
+#: dist/woocommerce-shipping-create-shipping-label.js:259
 #: dist/woocommerce-shipping-plugin.js:228
+#: dist/woocommerce-shipping-plugin.js:231
+#: dist/woocommerce-shipping-plugin.js:316
 msgid "Edit address"
 msgstr ""
 
-#: dist/next/366.js:1
+#: dist/next/903.js:1
 #: dist/woocommerce-shipping-create-shipping-label.js:256
 #: dist/woocommerce-shipping-plugin.js:228
 msgid "What you entered"
 msgstr ""
 
-#: dist/next/366.js:1
+#: dist/next/903.js:1
 #: dist/woocommerce-shipping-create-shipping-label.js:256
 #: dist/woocommerce-shipping-plugin.js:228
 msgid "Suggested"
 msgstr ""
 
-#: dist/next/366.js:1
+#: dist/next/903.js:1
 #: dist/woocommerce-shipping-create-shipping-label.js:256
 #: dist/woocommerce-shipping-plugin.js:228
 msgid "Unverified address"
 msgstr ""
 
-#: dist/next/366.js:1
+#: dist/next/903.js:1
 #: dist/woocommerce-shipping-create-shipping-label.js:256
 #: dist/woocommerce-shipping-plugin.js:228
 msgid "Address verified"
 msgstr ""
 
-#: dist/next/366.js:1
+#: dist/next/903.js:1
 #: dist/woocommerce-shipping-create-shipping-label.js:256
 #: dist/woocommerce-shipping-plugin.js:228
 msgid "Validating…"
 msgstr ""
 
-#: dist/next/366.js:1
+#: dist/next/903.js:1
 #: dist/woocommerce-shipping-create-shipping-label.js:256
 #: dist/woocommerce-shipping-plugin.js:228
 msgid "Verifying address…"
 msgstr ""
 
-#: dist/next/366.js:1
+#: dist/next/903.js:1
 #: dist/woocommerce-shipping-create-shipping-label.js:256
 #: dist/woocommerce-shipping-plugin.js:228
 msgid "Recipient Name"
 msgstr ""
 
-#: dist/next/366.js:1
+#: dist/next/903.js:1
 #: dist/woocommerce-shipping-create-shipping-label.js:256
 #: dist/woocommerce-shipping-plugin.js:228
 msgid "Name must be at least 3 characters long."
 msgstr ""
 
-#: dist/next/366.js:1
+#: dist/next/903.js:1
 #: dist/woocommerce-shipping-create-shipping-label.js:256
 #: dist/woocommerce-shipping-plugin.js:228
 msgid "Shipping Address"
 msgstr ""
 
-#: dist/next/366.js:1
+#: dist/next/903.js:1
 #: dist/woocommerce-shipping-create-shipping-label.js:256
 #: dist/woocommerce-shipping-plugin.js:228
 msgid "Apartment, suite, etc."
 msgstr ""
 
-#: dist/next/366.js:1
+#: dist/next/903.js:1
 #: dist/woocommerce-shipping-create-shipping-label.js:256
 #: dist/woocommerce-shipping-plugin.js:228
 msgid "Postal Code"
 msgstr ""
 
-#: dist/next/366.js:1
+#: dist/next/903.js:1
 #: dist/woocommerce-shipping-create-shipping-label.js:256
 #: dist/woocommerce-shipping-plugin.js:228
 msgid "Email"
 msgstr ""
 
-#: dist/next/366.js:1
+#: dist/next/903.js:1
 #: dist/woocommerce-shipping-create-shipping-label.js:256
 #: dist/woocommerce-shipping-plugin.js:228
 msgid "Email (optional)"
 msgstr ""
 
-#: dist/next/366.js:1
+#: dist/next/903.js:1
 #: dist/woocommerce-shipping-create-shipping-label.js:256
 #: dist/woocommerce-shipping-plugin.js:228
 msgid "Phone (optional)"
 msgstr ""
 
-#: dist/next/366.js:1
+#: dist/next/903.js:1
 #: dist/woocommerce-shipping-create-shipping-label.js:256
 #: dist/woocommerce-shipping-plugin.js:228
 msgid "Please fix the error below to continue:"
@@ -1704,7 +1705,7 @@ msgid_plural "Please fix the errors below to continue:"
 msgstr[0] ""
 msgstr[1] ""
 
-#: dist/next/366.js:1
+#: dist/next/903.js:1
 #: dist/woocommerce-shipping-create-shipping-label.js:34
 #: dist/woocommerce-shipping-create-shipping-label.js:45
 #: dist/woocommerce-shipping-create-shipping-label.js:75
@@ -1712,120 +1713,145 @@ msgstr[1] ""
 #: dist/woocommerce-shipping-plugin.js:30
 #: dist/woocommerce-shipping-plugin.js:41
 #: dist/woocommerce-shipping-plugin.js:228
-#: dist/woocommerce-shipping-scanform.js:198
-#: dist/woocommerce-shipping-scanform.js:200
+#: dist/woocommerce-shipping-scanform.js:205
+#: dist/woocommerce-shipping-scanform.js:208
 msgid "Cancel"
 msgstr ""
 
-#: dist/next/366.js:1
+#: dist/next/903.js:1
 #: dist/woocommerce-shipping-create-shipping-label.js:256
 #: dist/woocommerce-shipping-plugin.js:228
 msgid "Validate and save"
 msgstr ""
 
-#: dist/next/366.js:1
+#: dist/next/903.js:1
 #: dist/woocommerce-shipping-create-shipping-label.js:256
 #: dist/woocommerce-shipping-plugin.js:228
 msgid "Unvalidated address"
 msgstr ""
 
-#: dist/next/366.js:1
+#: dist/next/903.js:1
 #: dist/woocommerce-shipping-create-shipping-label.js:256
 #: dist/woocommerce-shipping-plugin.js:228
 msgid "Please complete all required fields and click the 'Validate and save' button below to confirm and validate your address details."
 msgstr ""
 
-#: dist/next/366.js:1
+#: dist/next/903.js:1
 #: dist/woocommerce-shipping-create-shipping-label.js:256
 #: dist/woocommerce-shipping-plugin.js:228
 msgid "Save without validating"
 msgstr ""
 
-#: dist/next/366.js:1
+#: dist/next/903.js:1
 #: dist/woocommerce-shipping-create-shipping-label.js:256
 #: dist/woocommerce-shipping-plugin.js:228
 msgid "Confirm address"
 msgstr ""
 
-#: dist/next/366.js:1
+#: dist/next/903.js:1
 #: dist/woocommerce-shipping-create-shipping-label.js:256
 #: dist/woocommerce-shipping-plugin.js:228
 msgid "Save without validation?"
 msgstr ""
 
-#: dist/next/366.js:1
+#: dist/next/903.js:1
 #: dist/woocommerce-shipping-create-shipping-label.js:256
 #: dist/woocommerce-shipping-plugin.js:228
 msgid "This address could not be validated. By proceeding, you confirm the address is correct and deliverable. Incorrect addresses may result in delivery issues and are not eligible for refunds."
 msgstr ""
 
-#: dist/next/366.js:1
+#: dist/next/903.js:1
 #: dist/woocommerce-shipping-create-shipping-label.js:256
 #: dist/woocommerce-shipping-plugin.js:228
 msgid "Approve and save anyway"
 msgstr ""
 
-#: dist/next/366.js:1
+#: dist/next/903.js:1
 msgid "Email Address"
 msgstr ""
 
-#: dist/next/366.js:1
+#: dist/next/903.js:1
 msgid "mail@example.com"
 msgstr ""
 
-#: dist/next/366.js:1
+#: dist/next/903.js:1
 msgid "123456789"
 msgstr ""
 
-#: dist/next/366.js:1
+#: dist/next/903.js:1
 msgid "Add address"
 msgstr ""
 
-#: dist/next/366.js:1
+#: dist/next/903.js:1
+#: dist/woocommerce-shipping-plugin.js:316
+msgid "The store address is already filled in below. Validate and save this sender address if you want to sync it with your store address."
+msgstr ""
+
+#: dist/next/903.js:1
+#: dist/woocommerce-shipping-plugin.js:316
+msgid "Your store address has been updated to <strong />. Your sender address is different. You can update it now."
+msgstr ""
+
+#: dist/next/903.js:1
+#: dist/woocommerce-shipping-plugin.js:316
+msgid "Failed to open sender address editor"
+msgstr ""
+
+#: dist/next/903.js:1
+#: dist/woocommerce-shipping-plugin.js:316
+msgid "Update sender address"
+msgstr ""
+
+#: dist/next/903.js:1
+#: dist/woocommerce-shipping-plugin.js:316
+msgid "Keep current address"
+msgstr ""
+
+#: dist/next/903.js:1
 msgid "Address updated"
 msgstr ""
 
-#: dist/next/366.js:1
+#: dist/next/903.js:1
 msgid "Address added"
 msgstr ""
 
-#: dist/next/366.js:1
+#: dist/next/903.js:1
 msgid "Sender addresses"
 msgstr ""
 
-#: dist/next/366.js:1
+#: dist/next/903.js:1
 msgid "Add the addresses of any locations you ship from. The sender address you select will be used to calculate shipping rates and delivery times."
 msgstr ""
 
-#: dist/next/366.js:1
+#: dist/next/903.js:1
 msgid "Default sender"
 msgstr ""
 
-#: dist/next/366.js:1
+#: dist/next/903.js:1
 msgid "Default return"
 msgstr ""
 
-#: dist/next/366.js:1
+#: dist/next/903.js:1
 #: dist/woocommerce-shipping-create-shipping-label.js:259
 #: dist/woocommerce-shipping-plugin.js:231
 msgid "Edit"
 msgstr ""
 
-#: dist/next/366.js:1
+#: dist/next/903.js:1
 #: dist/woocommerce-shipping-create-shipping-label.js:34
 #: dist/woocommerce-shipping-plugin.js:30
 msgid "Delete"
 msgstr ""
 
-#: dist/next/366.js:1
+#: dist/next/903.js:1
 msgid "Address deleted"
 msgstr ""
 
-#: dist/next/366.js:1
+#: dist/next/903.js:1
 msgid "Error deleting address"
 msgstr ""
 
-#: dist/next/366.js:1
+#: dist/next/903.js:1
 msgid "Add sender address"
 msgstr ""
 
@@ -2072,7 +2098,7 @@ msgid "Close"
 msgstr ""
 
 #: dist/woocommerce-shipping-create-shipping-label.js:7
-#: dist/woocommerce-shipping-create-shipping-label.js:336
+#: dist/woocommerce-shipping-create-shipping-label.js:334
 msgid "Create shipping label"
 msgid_plural "Create shipping labels"
 msgstr[0] ""
@@ -2293,16 +2319,6 @@ msgstr ""
 #: dist/woocommerce-shipping-create-shipping-label.js:34
 #: dist/woocommerce-shipping-plugin.js:30
 msgid "Please select"
-msgstr ""
-
-#: dist/woocommerce-shipping-create-shipping-label.js:34
-#: dist/woocommerce-shipping-plugin.js:30
-msgid "Collapse"
-msgstr ""
-
-#: dist/woocommerce-shipping-create-shipping-label.js:34
-#: dist/woocommerce-shipping-plugin.js:30
-msgid "Expand"
 msgstr ""
 
 #: dist/woocommerce-shipping-create-shipping-label.js:34
@@ -2529,6 +2545,16 @@ msgstr ""
 #: dist/woocommerce-shipping-plugin.js:31
 #: dist/woocommerce-shipping-plugin.js:32
 msgid "Saved templates"
+msgstr ""
+
+#: dist/woocommerce-shipping-create-shipping-label.js:35
+#: dist/woocommerce-shipping-plugin.js:30
+msgid "Collapse"
+msgstr ""
+
+#: dist/woocommerce-shipping-create-shipping-label.js:35
+#: dist/woocommerce-shipping-plugin.js:30
+msgid "Expand"
 msgstr ""
 
 #: dist/woocommerce-shipping-create-shipping-label.js:35
@@ -2921,7 +2947,6 @@ msgid "Product"
 msgstr ""
 
 #: dist/woocommerce-shipping-create-shipping-label.js:51
-#: dist/woocommerce-shipping-create-shipping-label.js:334
 #: dist/woocommerce-shipping-plugin.js:306
 #: dist/woocommerce-shipping-plugin.js:315
 msgid "Qty"
@@ -3057,21 +3082,18 @@ msgid "Verify to use this address"
 msgstr ""
 
 #: dist/woocommerce-shipping-create-shipping-label.js:259
-#: dist/woocommerce-shipping-create-shipping-label.js:335
 #: dist/woocommerce-shipping-plugin.js:231
 #: dist/woocommerce-shipping-plugin.js:316
 msgid "You have no verified origin address, <a>visit settings</a> to add one"
 msgstr ""
 
 #: dist/woocommerce-shipping-create-shipping-label.js:259
-#: dist/woocommerce-shipping-create-shipping-label.js:335
 #: dist/woocommerce-shipping-plugin.js:231
 #: dist/woocommerce-shipping-plugin.js:316
 msgid "visit settings"
 msgstr ""
 
 #: dist/woocommerce-shipping-create-shipping-label.js:259
-#: dist/woocommerce-shipping-create-shipping-label.js:335
 #: dist/woocommerce-shipping-plugin.js:231
 #: dist/woocommerce-shipping-plugin.js:316
 msgid "Choose a ship from address"
@@ -3080,13 +3102,6 @@ msgstr ""
 #: dist/woocommerce-shipping-create-shipping-label.js:259
 #: dist/woocommerce-shipping-plugin.js:231
 msgid "Validate your address"
-msgstr ""
-
-#: dist/woocommerce-shipping-create-shipping-label.js:259
-#: dist/woocommerce-shipping-create-shipping-label.js:335
-#: dist/woocommerce-shipping-plugin.js:231
-#: dist/woocommerce-shipping-plugin.js:316
-msgid "Edit origin address"
 msgstr ""
 
 #: dist/woocommerce-shipping-create-shipping-label.js:259
@@ -3329,7 +3344,6 @@ msgid "WooCommerce Shipping gives you access to commercial pricing, which is dis
 msgstr ""
 
 #: dist/woocommerce-shipping-create-shipping-label.js:286
-#: dist/woocommerce-shipping-create-shipping-label.js:335
 #: dist/woocommerce-shipping-plugin.js:258
 #: dist/woocommerce-shipping-plugin.js:316
 msgid "Edit destination address"
@@ -3887,7 +3901,6 @@ msgid "View status page"
 msgstr ""
 
 #: dist/woocommerce-shipping-create-shipping-label.js:328
-#: dist/woocommerce-shipping-create-shipping-label.js:335
 #: dist/woocommerce-shipping-plugin.js:309
 #: dist/woocommerce-shipping-plugin.js:316
 msgid "Items"
@@ -3904,14 +3917,12 @@ msgid "You can select the products the customer wishes to return to help gauge t
 msgstr ""
 
 #: dist/woocommerce-shipping-create-shipping-label.js:328
-#: dist/woocommerce-shipping-create-shipping-label.js:335
 #: dist/woocommerce-shipping-plugin.js:309
 #: dist/woocommerce-shipping-plugin.js:316
 msgid "Select the items you want to include in the new shipment."
 msgstr ""
 
 #: dist/woocommerce-shipping-create-shipping-label.js:328
-#: dist/woocommerce-shipping-create-shipping-label.js:335
 #: dist/woocommerce-shipping-plugin.js:309
 #: dist/woocommerce-shipping-plugin.js:316
 msgid "The following lists shows all the items in the current order. You can select multiple items from the list."
@@ -3957,186 +3968,30 @@ msgstr ""
 
 #: dist/woocommerce-shipping-create-shipping-label.js:334
 #: dist/woocommerce-shipping-plugin.js:315
-msgid "In this shipment"
-msgstr ""
-
-#: dist/woocommerce-shipping-create-shipping-label.js:334
-#: dist/woocommerce-shipping-plugin.js:315
-msgid "Order total"
-msgstr ""
-
-#: dist/woocommerce-shipping-create-shipping-label.js:334
-#: dist/woocommerce-shipping-plugin.js:315
-msgid "Products"
-msgstr ""
-
-#: dist/woocommerce-shipping-create-shipping-label.js:334
-#: dist/woocommerce-shipping-plugin.js:315
-msgid "Total Weight"
-msgstr ""
-
-#: dist/woocommerce-shipping-create-shipping-label.js:334
-#: dist/woocommerce-shipping-plugin.js:315
-msgid "Total Value"
-msgstr ""
-
-#. translators: %d: number of items
-#: dist/woocommerce-shipping-create-shipping-label.js:335
-#: dist/woocommerce-shipping-plugin.js:316
-#, js-format
-msgid "%d item"
-msgid_plural "%d items"
-msgstr[0] ""
-msgstr[1] ""
-
-#: dist/woocommerce-shipping-create-shipping-label.js:335
-#: dist/woocommerce-shipping-plugin.js:316
-msgid "No rates available for this HAZMAT shipment. Check your shipment details and try again."
-msgstr ""
-
-#: dist/woocommerce-shipping-create-shipping-label.js:335
-#: dist/woocommerce-shipping-plugin.js:316
-msgid "No rates available for this package. Check the details, weight, and destination."
-msgstr ""
-
-#: dist/woocommerce-shipping-create-shipping-label.js:335
-#: dist/woocommerce-shipping-plugin.js:316
-msgid "No rates available for this package. Check the weight, destination, or try another."
-msgstr ""
-
-#: dist/woocommerce-shipping-create-shipping-label.js:335
-#: dist/woocommerce-shipping-plugin.js:316
-msgid "Add package details to see available shipping rates."
-msgstr ""
-
-#: dist/woocommerce-shipping-create-shipping-label.js:335
-#: dist/woocommerce-shipping-plugin.js:316
-msgid "Checking available shipping rates. Usually just a moment."
-msgstr ""
-
-#: dist/woocommerce-shipping-create-shipping-label.js:335
-#: dist/woocommerce-shipping-plugin.js:316
-msgid "Shipping rates"
-msgstr ""
-
-#: dist/woocommerce-shipping-create-shipping-label.js:335
-#: dist/woocommerce-shipping-plugin.js:316
-msgid "Missing package info"
-msgstr ""
-
-#: dist/woocommerce-shipping-create-shipping-label.js:335
-#: dist/woocommerce-shipping-plugin.js:316
-msgid "Review"
-msgstr ""
-
-#: dist/woocommerce-shipping-create-shipping-label.js:335
-#: dist/woocommerce-shipping-plugin.js:316
-msgid "Your shipping details and final costs will appear here once you've configured your package above."
-msgstr ""
-
-#: dist/woocommerce-shipping-create-shipping-label.js:335
-#: dist/woocommerce-shipping-plugin.js:316
-msgid "Not validated"
-msgstr ""
-
-#: dist/woocommerce-shipping-create-shipping-label.js:335
-#: dist/woocommerce-shipping-plugin.js:316
-msgid "Manage Address"
-msgstr ""
-
-#: dist/woocommerce-shipping-create-shipping-label.js:335
-#: dist/woocommerce-shipping-plugin.js:316
-msgid "No name provided"
-msgstr ""
-
-#: dist/woocommerce-shipping-create-shipping-label.js:335
-#: dist/woocommerce-shipping-plugin.js:316
-msgid "No address provided"
-msgstr ""
-
-#: dist/woocommerce-shipping-create-shipping-label.js:335
-#: dist/woocommerce-shipping-plugin.js:316
-msgid "No phone provided"
-msgstr ""
-
-#: dist/woocommerce-shipping-create-shipping-label.js:335
-#: dist/woocommerce-shipping-plugin.js:316
-msgid "Validating address…"
-msgstr ""
-
-#: dist/woocommerce-shipping-create-shipping-label.js:335
-#: dist/woocommerce-shipping-plugin.js:316
-msgid "Review recipient address"
-msgstr ""
-
-#: dist/woocommerce-shipping-create-shipping-label.js:335
-#: dist/woocommerce-shipping-plugin.js:316
-msgid "Review sender address"
-msgstr ""
-
-#: dist/woocommerce-shipping-create-shipping-label.js:335
-#: dist/woocommerce-shipping-plugin.js:316
-msgid "Sender"
-msgstr ""
-
-#: dist/woocommerce-shipping-create-shipping-label.js:335
-#: dist/woocommerce-shipping-plugin.js:316
-msgid "Click to update address"
-msgstr ""
-
-#: dist/woocommerce-shipping-create-shipping-label.js:335
-#: dist/woocommerce-shipping-plugin.js:316
-msgid "Recipient"
-msgstr ""
-
-#: dist/woocommerce-shipping-create-shipping-label.js:335
-#: dist/woocommerce-shipping-plugin.js:316
-msgid "Validate sender details"
-msgstr ""
-
-#: dist/woocommerce-shipping-create-shipping-label.js:335
-#: dist/woocommerce-shipping-plugin.js:316
-msgid "Validate recipient details"
-msgstr ""
-
-#. translators: 1: Card type (e.g., Visa), 2: Masked card digits (e.g., •••• 4242)
-#: dist/woocommerce-shipping-create-shipping-label.js:336
-#: dist/woocommerce-shipping-plugin.js:317
-#, js-format
-msgid "Label will be charged to %1$s %2$s"
-msgstr ""
-
-#: dist/woocommerce-shipping-create-shipping-label.js:336
-#: dist/woocommerce-shipping-plugin.js:317
-msgid "Manage payment method"
-msgstr ""
-
-#: dist/woocommerce-shipping-create-shipping-label.js:336
-#: dist/woocommerce-shipping-plugin.js:317
 msgid "This order has been fulfilled"
 msgstr ""
 
-#: dist/woocommerce-shipping-create-shipping-label.js:336
-#: dist/woocommerce-shipping-plugin.js:317
+#: dist/woocommerce-shipping-create-shipping-label.js:334
+#: dist/woocommerce-shipping-plugin.js:315
 msgid "A shipping label can't be created for an order<br/> that's already been fulfilled."
 msgstr ""
 
-#: dist/woocommerce-shipping-create-shipping-label.js:336
-#: dist/woocommerce-shipping-plugin.js:317
+#: dist/woocommerce-shipping-create-shipping-label.js:334
+#: dist/woocommerce-shipping-plugin.js:315
 msgid "Back to the order details"
 msgstr ""
 
-#: dist/woocommerce-shipping-create-shipping-label.js:336
-#: dist/woocommerce-shipping-plugin.js:317
+#: dist/woocommerce-shipping-create-shipping-label.js:334
+#: dist/woocommerce-shipping-plugin.js:315
 msgid "Split shipment"
 msgstr ""
 
-#: dist/woocommerce-shipping-create-shipping-label.js:336
-#: dist/woocommerce-shipping-plugin.js:317
+#: dist/woocommerce-shipping-create-shipping-label.js:334
+#: dist/woocommerce-shipping-plugin.js:315
 msgid "Add shipment"
 msgstr ""
 
-#: dist/woocommerce-shipping-create-shipping-label.js:336
+#: dist/woocommerce-shipping-create-shipping-label.js:334
 msgid "View or add shipment"
 msgid_plural "View or add shipments"
 msgstr[0] ""
@@ -4183,26 +4038,176 @@ msgstr ""
 msgid "With WooCommerce Shipping, critical services are hosted on Automattic’s best-in-class infrastructure, rather than relying on your store’s hosting. That means your store will be more stable and faster."
 msgstr ""
 
-#. translators: %d is number of labels
+#: dist/woocommerce-shipping-plugin.js:315
+msgid "In this shipment"
+msgstr ""
+
+#: dist/woocommerce-shipping-plugin.js:315
+msgid "Order total"
+msgstr ""
+
+#: dist/woocommerce-shipping-plugin.js:315
+msgid "Products"
+msgstr ""
+
+#: dist/woocommerce-shipping-plugin.js:315
+msgid "Total Weight"
+msgstr ""
+
+#: dist/woocommerce-shipping-plugin.js:315
+msgid "Total Value"
+msgstr ""
+
+#. translators: %d: number of items
+#: dist/woocommerce-shipping-plugin.js:316
+#, js-format
+msgid "%d item"
+msgid_plural "%d items"
+msgstr[0] ""
+msgstr[1] ""
+
+#: dist/woocommerce-shipping-plugin.js:316
+msgid "No rates available for this HAZMAT shipment. Check your shipment details and try again."
+msgstr ""
+
+#: dist/woocommerce-shipping-plugin.js:316
+msgid "No rates available for this package. Check the details, weight, and destination."
+msgstr ""
+
+#: dist/woocommerce-shipping-plugin.js:316
+msgid "No rates available for this package. Check the weight, destination, or try another."
+msgstr ""
+
+#: dist/woocommerce-shipping-plugin.js:316
+msgid "Add package details to see available shipping rates."
+msgstr ""
+
+#: dist/woocommerce-shipping-plugin.js:316
+msgid "Checking available shipping rates. Usually just a moment."
+msgstr ""
+
+#: dist/woocommerce-shipping-plugin.js:316
+msgid "Shipping rates"
+msgstr ""
+
+#: dist/woocommerce-shipping-plugin.js:316
+msgid "Missing package info"
+msgstr ""
+
+#: dist/woocommerce-shipping-plugin.js:316
+msgid "Review"
+msgstr ""
+
+#: dist/woocommerce-shipping-plugin.js:316
+msgid "Your shipping details and final costs will appear here once you've configured your package above."
+msgstr ""
+
+#: dist/woocommerce-shipping-plugin.js:316
+msgid "Not validated"
+msgstr ""
+
+#: dist/woocommerce-shipping-plugin.js:316
+msgid "Manage Address"
+msgstr ""
+
+#: dist/woocommerce-shipping-plugin.js:316
+msgid "No name provided"
+msgstr ""
+
+#: dist/woocommerce-shipping-plugin.js:316
+msgid "No address provided"
+msgstr ""
+
+#: dist/woocommerce-shipping-plugin.js:316
+msgid "No phone provided"
+msgstr ""
+
+#: dist/woocommerce-shipping-plugin.js:316
+msgid "Validating address…"
+msgstr ""
+
+#: dist/woocommerce-shipping-plugin.js:316
+msgid "Review recipient address"
+msgstr ""
+
+#: dist/woocommerce-shipping-plugin.js:316
+msgid "Review sender address"
+msgstr ""
+
+#: dist/woocommerce-shipping-plugin.js:316
+msgid "Sender"
+msgstr ""
+
+#: dist/woocommerce-shipping-plugin.js:316
+msgid "Click to update address"
+msgstr ""
+
+#: dist/woocommerce-shipping-plugin.js:316
+msgid "Recipient"
+msgstr ""
+
+#: dist/woocommerce-shipping-plugin.js:316
+msgid "Validate sender details"
+msgstr ""
+
+#: dist/woocommerce-shipping-plugin.js:316
+msgid "Validate recipient details"
+msgstr ""
+
+#. translators: 1: Card type (e.g., Visa), 2: Masked card digits (e.g., •••• 4242)
+#: dist/woocommerce-shipping-plugin.js:317
+#, js-format
+msgid "Label will be charged to %1$s %2$s"
+msgstr ""
+
+#: dist/woocommerce-shipping-plugin.js:317
+msgid "Manage payment method"
+msgstr ""
+
+#. translators: %d is number of labels excluded due to missing destination country
 #: dist/woocommerce-shipping-scanform.js:9
+#, js-format
+msgid "%d label was excluded because its destination country could not be determined and cannot be added to a SCAN Form."
+msgid_plural "%d labels were excluded because their destination country could not be determined and cannot be added to a SCAN Form."
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %d is number of envelope labels excluded from SCAN Form
+#: dist/woocommerce-shipping-scanform.js:10
+#, js-format
+msgid "%d label is an envelope shipment and cannot be included in a SCAN Form."
+msgid_plural "%d labels are envelope shipments and cannot be included in a SCAN Form."
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %d is number of labels that could not be added
+#: dist/woocommerce-shipping-scanform.js:11
+#, js-format
+msgid "%d label could not be added to a SCAN Form."
+msgid_plural "%d labels could not be added to a SCAN Form."
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %d is number of labels
+#: dist/woocommerce-shipping-scanform.js:12
 #, js-format
 msgid "%d eligible label"
 msgid_plural "%d eligible labels"
 msgstr[0] ""
 msgstr[1] ""
 
-#: dist/woocommerce-shipping-scanform.js:9
+#: dist/woocommerce-shipping-scanform.js:12
 msgid "All shipments in a SCAN Form must share the same origin address. Select one address to continue."
 msgstr ""
 
 #. translators: 1: Filter name.
-#: dist/woocommerce-shipping-scanform.js:184
-#: dist/woocommerce-shipping-scanform.js:195
+#: dist/woocommerce-shipping-scanform.js:187
+#: dist/woocommerce-shipping-scanform.js:202
 msgid "Select labels"
 msgstr ""
 
 #. translators: %d is number of eligible labels
-#: dist/woocommerce-shipping-scanform.js:185
+#: dist/woocommerce-shipping-scanform.js:188
 #, js-format
 msgid "Select All (%d Eligible label)"
 msgid_plural "Select All (%d Eligible labels)"
@@ -4210,50 +4215,51 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %s is order number
-#: dist/woocommerce-shipping-scanform.js:186
+#: dist/woocommerce-shipping-scanform.js:189
 #, js-format
 msgid "#%s"
 msgstr ""
 
-#: dist/woocommerce-shipping-scanform.js:186
+#: dist/woocommerce-shipping-scanform.js:189
 msgid "Ship Date"
 msgstr ""
 
-#: dist/woocommerce-shipping-scanform.js:186
+#: dist/woocommerce-shipping-scanform.js:189
 msgid "Label Created"
 msgstr ""
 
-#: dist/woocommerce-shipping-scanform.js:186
+#: dist/woocommerce-shipping-scanform.js:189
 msgid "Select the USPS labels you want to include in this SCAN Form. Only labels with the same ship-from address are shown here."
 msgstr ""
 
-#: dist/woocommerce-shipping-scanform.js:186
+#: dist/woocommerce-shipping-scanform.js:189
 msgid "After creation, SCAN Form cannot be edited or updated."
 msgstr ""
 
-#: dist/woocommerce-shipping-scanform.js:186
+#: dist/woocommerce-shipping-scanform.js:189
 msgid "Ship from:"
 msgstr ""
 
 #. translators: %1$s is order number, %2$s is tracking number
-#: dist/woocommerce-shipping-scanform.js:187
+#: dist/woocommerce-shipping-scanform.js:190
 #, js-format
 msgid "Order #%1$s - %2$s"
 msgstr ""
 
 #. translators: %d is label ID
-#: dist/woocommerce-shipping-scanform.js:188
-#: dist/woocommerce-shipping-scanform.js:194
+#: dist/woocommerce-shipping-scanform.js:191
+#: dist/woocommerce-shipping-scanform.js:197
+#: dist/woocommerce-shipping-scanform.js:199
 #, js-format
 msgid "Label ID: %d"
 msgstr ""
 
-#: dist/woocommerce-shipping-scanform.js:188
+#: dist/woocommerce-shipping-scanform.js:191
 msgid "Review the results below before creating the SCAN Form."
 msgstr ""
 
 #. translators: %d is number of eligible labels
-#: dist/woocommerce-shipping-scanform.js:189
+#: dist/woocommerce-shipping-scanform.js:192
 #, js-format
 msgid "%d label is eligible for SCAN Form creation."
 msgid_plural "%d labels are eligible for SCAN Form creation."
@@ -4261,7 +4267,7 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %d is number of already scanned labels
-#: dist/woocommerce-shipping-scanform.js:190
+#: dist/woocommerce-shipping-scanform.js:193
 #, js-format
 msgid "%d label has already been included in a SCAN Form and will be skipped."
 msgid_plural "%d labels have already been included in a SCAN Form and will be skipped."
@@ -4269,7 +4275,7 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %d is number of not found labels
-#: dist/woocommerce-shipping-scanform.js:191
+#: dist/woocommerce-shipping-scanform.js:194
 #, js-format
 msgid "%d label was not found and will be skipped."
 msgid_plural "%d labels were not found and will be skipped."
@@ -4277,85 +4283,112 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %d is number of invalid site labels
-#: dist/woocommerce-shipping-scanform.js:192
+#: dist/woocommerce-shipping-scanform.js:195
 #, js-format
 msgid "%d label belongs to a different site and will be skipped."
 msgid_plural "%d labels belong to a different site and will be skipped."
 msgstr[0] ""
 msgstr[1] ""
 
-#: dist/woocommerce-shipping-scanform.js:192
+#: dist/woocommerce-shipping-scanform.js:195
 msgid "No eligible labels found. Please go back and select different labels."
 msgstr ""
 
-#: dist/woocommerce-shipping-scanform.js:192
-msgid "Processed Labels:"
-msgstr ""
-
 #. translators: %1$s is order number, %2$s is tracking number, %3$s is service name
-#: dist/woocommerce-shipping-scanform.js:193
+#: dist/woocommerce-shipping-scanform.js:196
+#: dist/woocommerce-shipping-scanform.js:198
 #, js-format
 msgid "Order #%1$s - %2$s - %3$s"
 msgstr ""
 
-#: dist/woocommerce-shipping-scanform.js:194
+#: dist/woocommerce-shipping-scanform.js:197
+msgid "Processed Labels:"
+msgstr ""
+
+#: dist/woocommerce-shipping-scanform.js:199
+msgid "Domestic"
+msgstr ""
+
+#: dist/woocommerce-shipping-scanform.js:199
+msgid "International"
+msgstr ""
+
+#. translators: %1$s is the scan form type (Domestic/International)
+#: dist/woocommerce-shipping-scanform.js:200
+#, js-format
+msgid "View USPS SCAN Form — %1$s"
+msgstr ""
+
+#: dist/woocommerce-shipping-scanform.js:200
 msgid "View SCAN Form PDF"
 msgstr ""
 
-#: dist/woocommerce-shipping-scanform.js:194
+#: dist/woocommerce-shipping-scanform.js:200
 msgid "No eligible labels found. Please ensure you have USPS labels with tracking numbers that have not been refunded."
 msgstr ""
 
-#: dist/woocommerce-shipping-scanform.js:194
+#: dist/woocommerce-shipping-scanform.js:200
 msgid "Failed to fetch origin addresses."
 msgstr ""
 
-#: dist/woocommerce-shipping-scanform.js:194
+#: dist/woocommerce-shipping-scanform.js:200
+msgid "Your selected labels include both domestic and international shipments. This will create 2 USPS SCAN Forms: one for domestic labels and one for international labels."
+msgstr ""
+
+#: dist/woocommerce-shipping-scanform.js:200
 msgid "Failed to review labels."
 msgstr ""
 
-#: dist/woocommerce-shipping-scanform.js:194
+#: dist/woocommerce-shipping-scanform.js:200
 msgid "Please select at least one label."
 msgstr ""
 
+#: dist/woocommerce-shipping-scanform.js:200
+msgid "No eligible labels to create SCAN Form."
+msgstr ""
+
+#: dist/woocommerce-shipping-scanform.js:200
+msgid "Failed to create SCAN Form."
+msgstr ""
+
 #. translators: %d is number of labels
-#: dist/woocommerce-shipping-scanform.js:195
+#: dist/woocommerce-shipping-scanform.js:201
 #, js-format
 msgid "SCAN Form created successfully for %d label!"
 msgid_plural "SCAN Form created successfully for %d labels!"
 msgstr[0] ""
 msgstr[1] ""
 
-#: dist/woocommerce-shipping-scanform.js:195
-msgid "Failed to create SCAN Form."
-msgstr ""
+#. translators: %d is number of labels that failed
+#: dist/woocommerce-shipping-scanform.js:202
+#, js-format
+msgid "%d label could not be added to a SCAN Form and will need to be retried."
+msgid_plural "%d labels could not be added to a SCAN Form and will need to be retried."
+msgstr[0] ""
+msgstr[1] ""
 
-#: dist/woocommerce-shipping-scanform.js:195
-msgid "No eligible labels to create SCAN Form."
-msgstr ""
-
-#: dist/woocommerce-shipping-scanform.js:195
+#: dist/woocommerce-shipping-scanform.js:202
 msgid "Select ship-from address"
 msgstr ""
 
-#: dist/woocommerce-shipping-scanform.js:195
+#: dist/woocommerce-shipping-scanform.js:202
 msgid "No Valid Labels Found"
 msgstr ""
 
-#: dist/woocommerce-shipping-scanform.js:195
+#: dist/woocommerce-shipping-scanform.js:202
 msgid "All selected labels are ineligible for SCAN Form creation. Labels must have EasyPost shipment IDs, shipment dates must be today or later, and must not already be manifested."
 msgstr ""
 
-#: dist/woocommerce-shipping-scanform.js:195
+#: dist/woocommerce-shipping-scanform.js:202
 msgid "OK"
 msgstr ""
 
-#: dist/woocommerce-shipping-scanform.js:195
+#: dist/woocommerce-shipping-scanform.js:202
 msgid "Some Labels Could Not Be Processed"
 msgstr ""
 
 #. translators: %d is number of labels
-#: dist/woocommerce-shipping-scanform.js:196
+#: dist/woocommerce-shipping-scanform.js:203
 #, js-format
 msgid "%d label has already been included in a SCAN Form or has been shipped."
 msgid_plural "%d labels have already been included in a SCAN Form or have been shipped."
@@ -4363,7 +4396,7 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %d is number of labels
-#: dist/woocommerce-shipping-scanform.js:197
+#: dist/woocommerce-shipping-scanform.js:204
 #, js-format
 msgid "%d label could not be included in the SCAN Form (it may have been refunded or deleted)."
 msgid_plural "%d labels could not be included in the SCAN Form (they may have been refunded or deleted)."
@@ -4371,7 +4404,7 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %d is number of valid labels
-#: dist/woocommerce-shipping-scanform.js:198
+#: dist/woocommerce-shipping-scanform.js:205
 #, js-format
 msgid "You still have %d valid label. Would you like to create a SCAN Form with the remaining valid label?"
 msgid_plural "You still have %d valid labels. Would you like to create a SCAN Form with the remaining valid labels?"
@@ -4379,42 +4412,48 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %d is number of valid labels
-#: dist/woocommerce-shipping-scanform.js:199
+#: dist/woocommerce-shipping-scanform.js:206
 #, js-format
 msgid "Proceed with %d Valid Label"
 msgid_plural "Proceed with %d Valid Labels"
 msgstr[0] ""
 msgstr[1] ""
 
-#: dist/woocommerce-shipping-scanform.js:199
+#: dist/woocommerce-shipping-scanform.js:206
 msgid "No eligible USPS labels found in the selected orders. Labels must be USPS, have a tracking number, and not be refunded."
 msgstr ""
 
 #. translators: %d is number of selected labels
-#: dist/woocommerce-shipping-scanform.js:200
+#: dist/woocommerce-shipping-scanform.js:207
 #, js-format
 msgid "%d label selected"
 msgid_plural "%d labels selected"
 msgstr[0] ""
 msgstr[1] ""
 
-#: dist/woocommerce-shipping-scanform.js:200
+#. translators: 1: domestic count, 2: international count
+#: dist/woocommerce-shipping-scanform.js:208
+#, js-format
+msgid "%1$d domestic + %2$d international"
+msgstr ""
+
+#: dist/woocommerce-shipping-scanform.js:208
 msgid "Done"
 msgstr ""
 
-#: dist/woocommerce-shipping-scanform.js:200
+#: dist/woocommerce-shipping-scanform.js:208
 msgid "Continue"
 msgstr ""
 
-#: dist/woocommerce-shipping-scanform.js:200
+#: dist/woocommerce-shipping-scanform.js:208
 msgid "Back"
 msgstr ""
 
-#: dist/woocommerce-shipping-scanform.js:200
+#: dist/woocommerce-shipping-scanform.js:208
 msgid "Create SCAN Form"
 msgstr ""
 
-#: dist/woocommerce-shipping-scanform.js:200
+#: dist/woocommerce-shipping-scanform.js:208
 msgid "Review Labels"
 msgstr ""
 

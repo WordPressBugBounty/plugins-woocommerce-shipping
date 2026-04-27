@@ -9,6 +9,7 @@ import {
 	FETCH_ORIGIN_ADDRESSES,
 	RESET_ADDRESS_NORMALIZATION,
 	SET_DESTINATION_RESIDENTIAL,
+	SET_STORE_ADDRESS_SYNC_STATUS,
 	STATE_RESET,
 	UPDATE_SHIPMENT_ADDRESS,
 	UPDATE_SHIPMENT_ADDRESS_FAILED,
@@ -20,6 +21,7 @@ import {
 	getAddressNormalizationPath,
 	getDeleteOriginAddressPath,
 	getOriginAddressesPath,
+	getStoreAddressSyncPath,
 	getUpdateDestinationPath,
 	getUpdateOriginPath,
 	getVerifyOrderShippingAddressPath,
@@ -28,6 +30,7 @@ import {
 	camelCaseKeys,
 	composeAddress,
 	composeName,
+	normalizeStoreAddressDraft,
 	snakeCaseKeys,
 } from 'utils';
 import { ADDRESS_TYPES } from 'data/constants';
@@ -44,6 +47,7 @@ import {
 	NormalizationAddressAction,
 	NormalizationAddressFailedAction,
 	SetDestinationResidentialAction,
+	SetStoreAddressSyncStatusAction,
 	ShippingAddressVerifyAction,
 	ShippingAddressVerifyFailedAction,
 	ShippingAddressVerifyStartAction,
@@ -179,10 +183,12 @@ export function* updateShipmentAddress(
 		orderId,
 		address,
 		isVerified,
+		clearStoreAddressDrift = false,
 	}: {
 		orderId: string;
 		address: Destination | OriginAddress;
 		isVerified: boolean;
+		clearStoreAddressDrift?: boolean;
 	},
 	type: AddressTypes
 ): Generator<
@@ -214,6 +220,7 @@ export function* updateShipmentAddress(
 				name: composeName( snakeCaseAddress ),
 			},
 			isVerified,
+			clearStoreAddressDrift,
 		};
 
 		if ( type === ADDRESS_TYPES.ORIGIN ) {
@@ -368,6 +375,29 @@ export function* fetchOriginAddresses() {
 	const addresses: LocationResponse[] = yield apiFetch( {
 		path: getOriginAddressesPath(),
 	} );
+
+	let isMainOriginInSyncWithStore: boolean | undefined;
+	let formattedStoreAddress: string | undefined;
+	let storeAddressDraft: OriginAddress | null | undefined;
+
+	try {
+		const syncMeta: {
+			is_main_origin_in_sync_with_store: boolean;
+			formatted_store_address: string;
+			store_address_draft?: LocationResponse | null;
+		} = yield apiFetch( {
+			path: getStoreAddressSyncPath(),
+		} );
+		isMainOriginInSyncWithStore =
+			syncMeta.is_main_origin_in_sync_with_store;
+		formattedStoreAddress = syncMeta.formatted_store_address ?? '';
+		storeAddressDraft = syncMeta.store_address_draft
+			? normalizeStoreAddressDraft( syncMeta.store_address_draft )
+			: null;
+	} catch {
+		// Older servers without the v2 meta route: keep existing Redux sync fields.
+	}
+
 	return {
 		type: FETCH_ORIGIN_ADDRESSES,
 		payload: {
@@ -376,6 +406,34 @@ export function* fetchOriginAddresses() {
 				address: composeAddress( addr ),
 				name: composeName( addr ),
 			} ) ),
+			isMainOriginInSyncWithStore,
+			formattedStoreAddress,
+			storeAddressDraft,
+		},
+	};
+}
+
+/**
+ * Refreshes is_main_origin_in_sync_with_store and formatted_store_address from the REST API.
+ */
+export function* refreshStoreAddressSyncFromApi() {
+	const syncMeta: {
+		is_main_origin_in_sync_with_store: boolean;
+		formatted_store_address: string;
+		store_address_draft?: LocationResponse | null;
+	} = yield apiFetch( {
+		path: getStoreAddressSyncPath(),
+	} );
+
+	return {
+		type: SET_STORE_ADDRESS_SYNC_STATUS,
+		payload: {
+			isMainOriginInSyncWithStore:
+				syncMeta.is_main_origin_in_sync_with_store,
+			formattedStoreAddress: syncMeta.formatted_store_address ?? '',
+			storeAddressDraft: syncMeta.store_address_draft
+				? normalizeStoreAddressDraft( syncMeta.store_address_draft )
+				: null,
 		},
 	};
 }
@@ -383,6 +441,21 @@ export function* fetchOriginAddresses() {
 export function stateReset(): StateResetAction {
 	return {
 		type: STATE_RESET,
+	};
+}
+
+export function setStoreAddressSyncStatus(
+	isMainOriginInSyncWithStore: boolean,
+	formattedStoreAddress: string,
+	storeAddressDraft?: OriginAddress | null
+): SetStoreAddressSyncStatusAction {
+	return {
+		type: SET_STORE_ADDRESS_SYNC_STATUS,
+		payload: {
+			isMainOriginInSyncWithStore,
+			formattedStoreAddress,
+			storeAddressDraft,
+		},
 	};
 }
 

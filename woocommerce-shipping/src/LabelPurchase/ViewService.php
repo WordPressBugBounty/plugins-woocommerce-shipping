@@ -3,6 +3,7 @@
 namespace Automattic\WCShipping\LabelPurchase;
 
 use Automattic\WCShipping\Utils;
+use Automattic\WCShipping\Utilities\USPSTerritories;
 use WC_Order;
 use WC_Order_Item_Product;
 use Automattic\WCShipping\Connect\WC_Connect_Account_Settings;
@@ -18,7 +19,7 @@ class ViewService {
 		/**
 		 * @var array Supported countries by USPS, see: https://webpmt.usps.gov/pmt010.cfm
 		 */
-	private $supported_countries = array( 'US', 'AS', 'PR', 'VI', 'GU', 'MP', 'UM', 'FM', 'MH' );
+	private $supported_countries = USPSTerritories::DOMESTIC_MAIL_TERRITORIES;
 
 	/**
 	 * @var array Supported currencies

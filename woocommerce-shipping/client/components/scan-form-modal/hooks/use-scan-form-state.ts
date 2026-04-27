@@ -2,7 +2,7 @@
  * Custom hook for managing ScanForm state
  */
 
-import { useState, useCallback } from '@wordpress/element';
+import { useState, useCallback, useMemo } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
 import { __, sprintf, _n } from '@wordpress/i18n';
 import type {
@@ -15,6 +15,7 @@ import type {
 	ScanFormApiError,
 	ScanFormErrorData,
 } from 'types';
+import { splitLabelsByDestination } from 'utils/scan-form';
 import {
 	getCreateScanFormPath,
 	getScanFormOriginsPath,
@@ -36,18 +37,39 @@ export const useScanFormState = () => {
 	const [ selectedOrigin, setSelectedOrigin ] =
 		useState< ScanFormOrigin | null >( null );
 	const [ labels, setLabels ] = useState< ScanFormLabel[] >( [] );
+
+	const labelMap = useMemo( () => {
+		const map = new Map< number, ScanFormLabel >();
+		labels.forEach( ( l ) => map.set( l.label_id, l ) );
+		return map;
+	}, [ labels ] );
 	const [ selectedLabels, setSelectedLabels ] = useState< Set< number > >(
 		new Set()
 	);
 	const [ reviewResult, setReviewResult ] = useState< ReviewResult | null >(
 		null
 	);
-	const [ pdfUrl, setPdfUrl ] = useState< string | null >( null );
+	const [ pdfUrls, setPdfUrls ] = useState< string[] >( [] );
 	const [ processedLabelIds, setProcessedLabelIds ] = useState< number[] >(
 		[]
 	);
+	const [ processedLabelBatches, setProcessedLabelBatches ] = useState<
+		number[][]
+	>( [] );
 	const [ failedLabelsError, setFailedLabelsError ] =
 		useState< ScanFormErrorData | null >( null );
+	const [ excludedLabels, setExcludedLabels ] = useState<
+		Partial< Record< string, number[] > >
+	>( {} );
+	const [ mixedBatchNotice, setMixedBatchNotice ] = useState< string | null >(
+		null
+	);
+	const [ partialFailureMessage, setPartialFailureMessage ] = useState<
+		string | null
+	>( null );
+	const [ partialFailureLabelIds, setPartialFailureLabelIds ] = useState<
+		number[]
+	>( [] );
 
 	// Step states
 	const [ showLabelSelectionStep, setShowLabelSelectionStep ] =
@@ -70,6 +92,7 @@ export const useScanFormState = () => {
 
 			if ( response.success && response.origins ) {
 				setOrigins( response.origins );
+				setExcludedLabels( response.excluded_labels ?? {} );
 			} else {
 				setError(
 					__(
@@ -146,6 +169,7 @@ export const useScanFormState = () => {
 		setIsReviewing( true );
 		setError( null );
 		setReviewResult( null );
+		setMixedBatchNotice( null );
 
 		try {
 			const response = await apiFetch< ReviewApiResponse >( {
@@ -157,12 +181,29 @@ export const useScanFormState = () => {
 			} );
 
 			if ( response.success ) {
+				const eligible = response.eligible ?? [];
 				setReviewResult( {
-					eligible: response.eligible ?? [],
+					eligible,
 					already_scanned: response.already_scanned ?? [],
 					not_found: response.not_found ?? [],
 					invalid_site: response.invalid_site ?? [],
+					excluded_labels: response.excluded_labels ?? {},
 				} );
+
+				// Check if the eligible batch spans domestic and international.
+				const { domestic, international } = splitLabelsByDestination(
+					eligible,
+					labels
+				);
+				if ( domestic.length > 0 && international.length > 0 ) {
+					setMixedBatchNotice(
+						__(
+							'Your selected labels include both domestic and international shipments. This will create 2 USPS SCAN Forms: one for domestic labels and one for international labels.',
+							'woocommerce-shipping'
+						)
+					);
+				}
+
 				setShowReviewStep( true );
 			} else {
 				setError(
@@ -178,7 +219,7 @@ export const useScanFormState = () => {
 		} finally {
 			setIsReviewing( false );
 		}
-	}, [ selectedLabels ] );
+	}, [ selectedLabels, labels ] );
 
 	/**
 	 * Create ScanForm from eligible labels (or specific label IDs if provided)
@@ -201,69 +242,148 @@ export const useScanFormState = () => {
 			setError( null );
 			setSuccessMessage( null );
 			setFailedLabelsError( null );
+			setPartialFailureMessage( null );
+			setPartialFailureLabelIds( [] );
+			setPdfUrls( [] );
+			setProcessedLabelIds( [] );
+			setProcessedLabelBatches( [] );
+
+			// Split labels into domestic and international batches.
+			const { domestic, international } = splitLabelsByDestination(
+				labelsToProcess,
+				labels
+			);
+			const batches: number[][] = [];
+			if ( domestic.length > 0 ) {
+				batches.push( domestic );
+			}
+			if ( international.length > 0 ) {
+				batches.push( international );
+			}
+
+			const isSingleBatch = batches.length === 1;
+			const successfulPdfs: string[] = [];
+			const successfulBatches: number[][] = [];
+			const allProcessedIds: number[] = [];
+			const failedIds: number[] = [];
+			const batchErrors: {
+				message: string;
+				failedLabels?: number[];
+				validLabels?: number[];
+			}[] = [];
 
 			try {
-				const response = await apiFetch< CreateApiResponse >( {
-					path: getCreateScanFormPath(),
-					method: 'POST',
-					data: {
-						label_ids: labelsToProcess,
-					},
-				} );
+				for ( const batch of batches ) {
+					try {
+						const response = await apiFetch< CreateApiResponse >( {
+							path: getCreateScanFormPath(),
+							method: 'POST',
+							data: {
+								label_ids: batch,
+							},
+						} );
 
-				if ( response.success && response.scan_form ) {
-					const { pdf_url, label_count } = response.scan_form;
+						if ( response.success && response.scan_form ) {
+							if ( response.scan_form.pdf_url ) {
+								successfulPdfs.push(
+									response.scan_form.pdf_url
+								);
+								successfulBatches.push( batch );
+							}
+							allProcessedIds.push( ...batch );
+						} else {
+							failedIds.push( ...batch );
+							batchErrors.push( {
+								message: __(
+									'Failed to create SCAN Form.',
+									'woocommerce-shipping'
+								),
+							} );
+						}
+					} catch ( err ) {
+						const apiError = err as ScanFormApiError;
+						// In single-batch mode, surface structured label errors via the retry modal.
+						if (
+							isSingleBatch &&
+							apiError.data?.failed_labels &&
+							apiError.data?.valid_labels
+						) {
+							setFailedLabelsError( apiError.data );
+							return;
+						}
+						failedIds.push( ...batch );
+						batchErrors.push( {
+							message:
+								apiError.data?.message ??
+								( err instanceof Error ? err.message : null ) ??
+								( err as { message?: string } ).message ??
+								__(
+									'Failed to create SCAN Form.',
+									'woocommerce-shipping'
+								),
+							failedLabels: apiError.data?.failed_labels,
+							validLabels: apiError.data?.valid_labels,
+						} );
+					}
+				}
 
+				if ( allProcessedIds.length > 0 ) {
+					// At least one batch succeeded — show the completion step.
 					setSuccessMessage(
 						sprintf(
 							/* translators: %d is number of labels */
 							_n(
 								'SCAN Form created successfully for %d label!',
 								'SCAN Form created successfully for %d labels!',
-								label_count,
+								allProcessedIds.length,
 								'woocommerce-shipping'
 							),
-							label_count
+							allProcessedIds.length
 						)
 					);
-
-					setPdfUrl( pdf_url || null );
-					setProcessedLabelIds( labelsToProcess );
+					setPdfUrls( successfulPdfs );
+					setProcessedLabelIds( allProcessedIds );
+					setProcessedLabelBatches( successfulBatches );
 					setShowReviewStep( false );
 					setShowCompletedStep( true );
-				} else {
-					setError(
-						__(
-							'Failed to create SCAN Form.',
-							'woocommerce-shipping'
-						)
+
+					if ( batchErrors.length > 0 ) {
+						// Surface partial-failure details inside the completion step.
+						// Dedupe messages so identical errors across batches aren't repeated,
+						// then join with a separator so every distinct batch error is visible.
+						const uniqueMessages = Array.from(
+							new Set( batchErrors.map( ( e ) => e.message ) )
+						);
+						setPartialFailureLabelIds( failedIds );
+						setPartialFailureMessage(
+							[
+								sprintf(
+									/* translators: %d is number of labels that failed */
+									_n(
+										'%d label could not be added to a SCAN Form and will need to be retried.',
+										'%d labels could not be added to a SCAN Form and will need to be retried.',
+										failedIds.length,
+										'woocommerce-shipping'
+									),
+									failedIds.length
+								),
+								...uniqueMessages,
+							].join( ' ' )
+						);
+					}
+				} else if ( batchErrors.length > 0 ) {
+					// No batch succeeded — keep merchant on the review step to retry.
+					// Join all distinct batch errors so per-batch context isn't lost.
+					const uniqueMessages = Array.from(
+						new Set( batchErrors.map( ( e ) => e.message ) )
 					);
-				}
-			} catch ( err ) {
-				// Check if error contains failed_labels and valid_labels data
-				const apiError = err as ScanFormApiError;
-				if (
-					apiError.data?.failed_labels &&
-					apiError.data?.valid_labels
-				) {
-					// Set the failed labels error for confirmation
-					setFailedLabelsError( apiError.data );
-				} else {
-					// Regular error handling
-					const errorMessage =
-						err instanceof Error
-							? err.message
-							: __(
-									'Failed to create SCAN Form.',
-									'woocommerce-shipping'
-							  );
-					setError( errorMessage );
+					setError( uniqueMessages.join( ' ' ) );
 				}
 			} finally {
 				setIsCreating( false );
 			}
 		},
-		[ reviewResult ]
+		[ reviewResult, labels ]
 	);
 
 	/**
@@ -299,17 +419,16 @@ export const useScanFormState = () => {
 	const goBackToLabelSelection = useCallback( () => {
 		setShowReviewStep( false );
 		setReviewResult( null );
+		setMixedBatchNotice( null );
 	}, [] );
 
 	/**
 	 * Get label info by label ID
 	 */
 	const getLabelInfo = useCallback(
-		( labelId: number ): ScanFormLabel | null => {
-			const label = labels.find( ( l ) => l.label_id === labelId );
-			return label ?? null;
-		},
-		[ labels ]
+		( labelId: number ): ScanFormLabel | null =>
+			labelMap.get( labelId ) ?? null,
+		[ labelMap ]
 	);
 
 	/**
@@ -346,6 +465,20 @@ export const useScanFormState = () => {
 		setSelectedOrigin( origin );
 	}, [] );
 
+	/**
+	 * Get domestic/international counts for the selected labels.
+	 */
+	const getSelectionCounts = useCallback( () => {
+		const { domestic, international } = splitLabelsByDestination(
+			Array.from( selectedLabels ),
+			labels
+		);
+		return {
+			domestic: domestic.length,
+			international: international.length,
+		};
+	}, [ selectedLabels, labels ] );
+
 	return {
 		// States
 		isLoading,
@@ -358,9 +491,14 @@ export const useScanFormState = () => {
 		labels,
 		selectedLabels,
 		reviewResult,
-		pdfUrl,
+		pdfUrls,
 		processedLabelIds,
+		processedLabelBatches,
 		failedLabelsError,
+		excludedLabels,
+		mixedBatchNotice,
+		partialFailureMessage,
+		partialFailureLabelIds,
 		showLabelSelectionStep,
 		showReviewStep,
 		showCompletedStep,
@@ -377,6 +515,7 @@ export const useScanFormState = () => {
 		goBackToOriginSelection,
 		goBackToLabelSelection,
 		getLabelInfo,
+		getSelectionCounts,
 		retryWithValidLabels,
 		dismissFailedLabelsError,
 		setError,

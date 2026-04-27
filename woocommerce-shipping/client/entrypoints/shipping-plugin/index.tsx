@@ -8,6 +8,7 @@ import { memo, useCallback, useMemo, useRef } from 'react';
 import { LabelPurchaseContextProvider } from '../../context/label-purchase';
 import { LabelPurchaseEffects } from '../../effects/label-purchase';
 import { LabelPurchaseTabs } from '../../components/label-purchase/label-purchase-tabs';
+import { ShipmentContentV2 } from '../../components/label-purchase/design-next/shipment-content-v2';
 import { dispatch } from '@wordpress/data';
 import { AddressStep } from '../../components/address-step/address_step';
 import { ADDRESS_TYPES } from '../../data/constants';
@@ -60,7 +61,11 @@ const PurchaseShippingLabelPluginExport = memo(
 		return (
 			<LabelPurchaseContextProvider orderId={ orderId } nextDesign>
 				<LabelPurchaseEffects />
-				<LabelPurchaseTabs ref={ ref } setStartSplitShipment={ noop } />
+				<LabelPurchaseTabs
+					ref={ ref }
+					setStartSplitShipment={ noop }
+					ContentComponent={ ShipmentContentV2 }
+				/>
 			</LabelPurchaseContextProvider>
 		);
 	},

@@ -100,6 +100,18 @@ class Controller extends AbstractController {
 
 		register_rest_route(
 			$this->namespace,
+			'/' . $this->rest_base . '/store-address-sync',
+			array(
+				array(
+					'methods'             => \WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_store_address_sync' ),
+					'permission_callback' => array( $this, 'ensure_rest_permission' ),
+				),
+			)
+		);
+
+		register_rest_route(
+			$this->namespace,
 			'/' . $this->rest_base . '/(?P<id>[\w]+)',
 			array(
 				array(
@@ -176,6 +188,22 @@ class Controller extends AbstractController {
 		$address = $this->item_schema->get_item_response( $merged_address, $request );
 
 		return $this->prepare_item_for_response( $this->origin_address_service->update_origin_addresses( $address ), $request );
+	}
+
+	/**
+	 * Current store-address vs main sender sync state for the address Redux store.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 * @return \WP_REST_Response
+	 */
+	public function get_store_address_sync( $request ) {
+		return rest_ensure_response(
+			array(
+				'is_main_origin_in_sync_with_store' => $this->origin_address_service->is_main_origin_address_in_sync_with_store(),
+				'formatted_store_address'           => $this->origin_address_service->get_formatted_store_address(),
+				'store_address_draft'               => $this->origin_address_service->get_store_details_origin_address_draft(),
+			)
+		);
 	}
 
 	/**

@@ -13,6 +13,7 @@ export type ScanFormLabel = Pick<
 	order_id: number;
 	order_number: string;
 	shipping_date: string;
+	is_domestic?: boolean;
 };
 
 /**
@@ -35,11 +36,13 @@ export interface ReviewResult {
 	already_scanned: number[];
 	not_found: number[];
 	invalid_site: number[];
+	excluded_labels: Partial< Record< string, number[] > >;
 }
 
 export interface OriginsApiResponse {
 	success: boolean;
 	origins?: ScanFormOrigin[];
+	excluded_labels?: Partial< Record< string, number[] > >;
 }
 
 export interface ReviewApiResponse {
@@ -48,12 +51,15 @@ export interface ReviewApiResponse {
 	already_scanned?: number[];
 	not_found?: number[];
 	invalid_site?: number[];
+	excluded_labels?: Partial< Record< string, number[] > >;
 }
 
 export interface CreateApiResponse {
 	success: boolean;
 	scan_form?: {
-		pdf_url: string;
+		scan_form_id: string | null;
+		pdf_url: string | null;
+		created: string;
 		label_count: number;
 	};
 }

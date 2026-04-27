@@ -8,6 +8,11 @@ import {
 	isOriginAddress,
 } from 'utils';
 import {
+	getFormattedStoreAddress,
+	isMainOriginInSyncWithStore,
+	getStoreAddressDraft,
+} from 'utils/config';
+import {
 	ADD_ORIGIN_ADDRESS,
 	ADD_ORIGIN_ADDRESS_FAILED,
 	ADDRESS_NORMALIZATION,
@@ -16,6 +21,7 @@ import {
 	FETCH_ORIGIN_ADDRESSES,
 	RESET_ADDRESS_NORMALIZATION,
 	SET_DESTINATION_RESIDENTIAL,
+	SET_STORE_ADDRESS_SYNC_STATUS,
 	STATE_RESET,
 	UPDATE_SHIPMENT_ADDRESS,
 	UPDATE_SHIPMENT_ADDRESS_FAILED,
@@ -32,6 +38,7 @@ import {
 	NormalizationAddressAction,
 	NormalizationAddressFailedAction,
 	SetDestinationResidentialAction,
+	SetStoreAddressSyncStatusAction,
 	ShippingAddressVerifyAction,
 	ShippingAddressVerifyFailedAction,
 	ShippingAddressVerifyStartAction,
@@ -45,6 +52,7 @@ export const getReducer = ( withDestination: boolean ) => {
 	const getDefaultState = (): AddressState => {
 		const originAddresses = getOriginAddresses();
 		const firstSelectableAddress = getFirstSelectableOriginAddress();
+		const storeAddressDraft = getStoreAddressDraft();
 
 		// Provide a default empty address if none exist
 		const defaultOriginAddress = firstSelectableAddress ?? {
@@ -79,6 +87,9 @@ export const getReducer = ( withDestination: boolean ) => {
 				formErrors: {},
 			},
 			storeOrigin: getStoreOrigin(),
+			isMainOriginInSyncWithStore: isMainOriginInSyncWithStore(),
+			formattedStoreAddress: getFormattedStoreAddress(),
+			storeAddressDraft,
 		} as const;
 
 		if ( withDestination ) {
@@ -359,13 +370,47 @@ export const getReducer = ( withDestination: boolean ) => {
 			FETCH_ORIGIN_ADDRESSES,
 			(
 				state,
-				{ payload: { addresses } }: FetchOriginAddressesAction
+				{
+					payload: {
+						addresses,
+						isMainOriginInSyncWithStore: inSync,
+						formattedStoreAddress,
+						storeAddressDraft,
+					},
+				}: FetchOriginAddressesAction
 			) => ( {
 				...state,
 				origin: {
 					...state.origin,
 					addresses,
 				},
+				...( inSync !== undefined && {
+					isMainOriginInSyncWithStore: inSync,
+				} ),
+				...( formattedStoreAddress !== undefined && {
+					formattedStoreAddress,
+				} ),
+				...( storeAddressDraft !== undefined && {
+					storeAddressDraft,
+				} ),
+			} )
+		)
+		.on(
+			SET_STORE_ADDRESS_SYNC_STATUS,
+			(
+				state,
+				{
+					payload: {
+						isMainOriginInSyncWithStore: inSync,
+						formattedStoreAddress,
+						storeAddressDraft,
+					},
+				}: SetStoreAddressSyncStatusAction
+			) => ( {
+				...state,
+				isMainOriginInSyncWithStore: inSync,
+				formattedStoreAddress,
+				storeAddressDraft,
 			} )
 		)
 		.on(

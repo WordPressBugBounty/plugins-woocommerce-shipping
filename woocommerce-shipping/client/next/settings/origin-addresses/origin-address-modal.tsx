@@ -2,8 +2,13 @@
  * WordPress dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Modal, Spinner } from '@wordpress/components';
+import {
+	Modal,
+	__experimentalSpacer as Spacer,
+	Spinner,
+} from '@wordpress/components';
 import { useSelect } from '@wordpress/data';
+import { Notice } from '@wordpress/ui';
 
 /*
  * Internal dependencies
@@ -17,8 +22,10 @@ import { defaultAddress } from './constants';
 
 interface OriginAddressModalProps {
 	addressId?: string;
+	initialAddress?: OriginAddress;
 	onClose: () => void;
 	onComplete: () => void;
+	clearStoreAddressDriftOnSave?: boolean;
 }
 
 /**
@@ -28,8 +35,10 @@ interface OriginAddressModalProps {
  */
 const OriginAddressModalContent = ( {
 	addressId,
+	initialAddress,
 	onClose,
 	onComplete,
+	clearStoreAddressDriftOnSave,
 }: OriginAddressModalProps ) => {
 	const origins = useSelect( ( select ) => {
 		const store = select( ADDRESS_STORE_NAME ) as {
@@ -38,9 +47,9 @@ const OriginAddressModalContent = ( {
 		return store.getOriginAddresses();
 	}, [] );
 
-	const address = origins.find(
-		( origin: OriginAddress ) => origin.id === addressId
-	);
+	const address =
+		initialAddress ??
+		origins.find( ( origin: OriginAddress ) => origin.id === addressId );
 	const isAdd = ! address;
 
 	return (
@@ -53,6 +62,19 @@ const OriginAddressModalContent = ( {
 					: __( 'Edit address', 'woocommerce-shipping' )
 			}
 		>
+			{ clearStoreAddressDriftOnSave && (
+				<>
+					<Notice.Root intent="warning">
+						<Notice.Description>
+							{ __(
+								'The store address is already filled in below. Validate and save this sender address if you want to sync it with your store address.',
+								'woocommerce-shipping'
+							) }
+						</Notice.Description>
+					</Notice.Root>
+					<Spacer marginBottom={ 4 } />
+				</>
+			) }
 			<AddressStep
 				type={ 'origin' }
 				address={ camelCaseKeys(
@@ -65,6 +87,7 @@ const OriginAddressModalContent = ( {
 				isAdd={ ! address }
 				nextDesign
 				surfaceArea="settings_shipping"
+				clearStoreAddressDriftOnSave={ clearStoreAddressDriftOnSave }
 			/>
 		</Modal>
 	);

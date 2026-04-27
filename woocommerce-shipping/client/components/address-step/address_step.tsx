@@ -45,6 +45,7 @@ interface AddressStepProps< T = Destination > {
 	originCountry?: string; // origin country is only needed for destination address for validations
 	nextDesign?: boolean; // whether to use the next design for the address step
 	surfaceArea?: string; // telemetry surface area identifier for CIAB tracking
+	clearStoreAddressDriftOnSave?: boolean;
 }
 
 export const AddressStep = withBoundary(
@@ -58,6 +59,7 @@ export const AddressStep = withBoundary(
 		originCountry,
 		nextDesign = false,
 		surfaceArea,
+		clearStoreAddressDriftOnSave = false,
 	}: AddressStepProps< T > ) => {
 		const [ isSuggestionModalOpen, setIsSuggestionModalOpen ] =
 			useState( false );
@@ -179,6 +181,9 @@ export const AddressStep = withBoundary(
 							orderId: orderId ?? '',
 							address: toAddressShape( vals ),
 							isVerified: verified,
+							clearStoreAddressDrift:
+								type === ADDRESS_TYPES.ORIGIN &&
+								clearStoreAddressDriftOnSave,
 						},
 						type
 					);
@@ -227,10 +232,25 @@ export const AddressStep = withBoundary(
 			if ( normalizedAddress && submittedAddress ) {
 				normalizedAddress.email = submittedAddress.email;
 				normalizedAddress.phone = submittedAddress.phone;
-				normalizedAddress.defaultAddress =
-					submittedAddress.defaultAddress;
-				normalizedAddress.defaultReturnAddress =
-					submittedAddress.defaultReturnAddress;
+				if ( type === ADDRESS_TYPES.ORIGIN ) {
+					const normalizedOriginAddress =
+						normalizedAddress as OriginAddress;
+					const submittedOriginAddress =
+						submittedAddress as OriginAddress;
+
+					normalizedOriginAddress.id = submittedOriginAddress.id;
+					normalizedOriginAddress.name = submittedOriginAddress.name;
+					normalizedOriginAddress.company =
+						submittedOriginAddress.company;
+					normalizedOriginAddress.firstName =
+						submittedOriginAddress.firstName;
+					normalizedOriginAddress.lastName =
+						submittedOriginAddress.lastName;
+					normalizedOriginAddress.defaultAddress =
+						submittedOriginAddress.defaultAddress;
+					normalizedOriginAddress.defaultReturnAddress =
+						submittedOriginAddress.defaultReturnAddress;
+				}
 			}
 
 			const selectedAddress = isNormalizedAddress
@@ -254,6 +274,9 @@ export const AddressStep = withBoundary(
 						orderId: orderId ?? '',
 						address: selectedAddress,
 						isVerified: true, // Either the address is verified or the normalized address is selected
+						clearStoreAddressDrift:
+							type === ADDRESS_TYPES.ORIGIN &&
+							clearStoreAddressDriftOnSave,
 					},
 					type
 				);

@@ -21,13 +21,17 @@ import { getConfig, getCurrentOrder, getCurrentOrderItems } from 'utils';
 import { getShipmentTitle } from './utils';
 import { __ } from '@wordpress/i18n';
 import { check } from '@wordpress/icons';
-import { ShipmentContentV2 } from './design-next/shipment-content-v2';
 import { curvedInfo } from 'components/icons';
+
 interface LabelPurchaseTabsProps {
 	setStartSplitShipment: ( startSplitShipment: boolean ) => void;
+	ContentComponent?: React.ComponentType< { items: unknown[] } >;
 }
 export const LabelPurchaseTabs = forwardRef(
-	( { setStartSplitShipment }: LabelPurchaseTabsProps, ref ) => {
+	(
+		{ setStartSplitShipment, ContentComponent }: LabelPurchaseTabsProps,
+		ref
+	) => {
 		const orderItems = getCurrentOrderItems();
 		const order = getCurrentOrder();
 		const count = order.total_line_items_quantity;
@@ -248,9 +252,13 @@ export const LabelPurchaseTabs = forwardRef(
 
 			updateCustomsItems();
 		};
-		return nextDesign ? (
-			<ShipmentContentV2 items={ shipments[ currentShipmentId ] } />
-		) : (
+		if ( nextDesign && ContentComponent ) {
+			return (
+				<ContentComponent items={ shipments[ currentShipmentId ] } />
+			);
+		}
+
+		return (
 			<TabPanel
 				key={ currentShipmentId }
 				ref={ ref }

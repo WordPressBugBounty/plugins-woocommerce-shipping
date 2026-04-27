@@ -862,6 +862,10 @@ return array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/src/Utilities/BaseModel.php'
 	),
+	'Automattic\\WCShipping\\Utilities\\USPSTerritories' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/src/Utilities/USPSTerritories.php'
+	),
 	'Automattic\\WCShipping\\Utils' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/src/Utils.php'
@@ -993,6 +997,10 @@ return array(
 	'UPSDAPCarrierStrategyServiceTest' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/tests/php/Carrier/UPSDAP/UPSDAPCarrierStrategyServiceTest.php'
+	),
+	'USPSTerritoriesTest' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/tests/php/Utilities/USPSTerritoriesTest.php'
 	),
 	'Version_Loader' => array(
 		'version' => '5.0.15',

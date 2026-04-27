@@ -335,6 +335,21 @@ class ScanFormService {
 	}
 
 	/**
+	 * Check if a label is an envelope shipment.
+	 *
+	 * Envelope labels (is_letter = true) are created via PC Postage and are not
+	 * compatible with USPS SCAN Forms. This is a temporary limitation while
+	 * USPS Ship adds envelope support.
+	 *
+	 * @param array $label Label data.
+	 *
+	 * @return bool True if the label is an envelope shipment.
+	 */
+	public function is_envelope_label( array $label ): bool {
+		return ! empty( $label['is_letter'] );
+	}
+
+	/**
 	 * Check if a label is eligible for ScanForm creation.
 	 *
 	 * Based on EasyPost requirements:

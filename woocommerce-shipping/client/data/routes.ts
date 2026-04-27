@@ -5,6 +5,12 @@ export const getRatesPath = () => `${ NAMESPACE }/label/rate`;
 
 export const getOriginAddressesPath = () => `${ NAMESPACE }/address/origins`;
 
+/**
+ * Store address vs main sender sync meta (v2). Used to refresh the address Redux store.
+ */
+export const getStoreAddressSyncPath = () =>
+	'/wcshipping/v2/addresses/store-address-sync';
+
 export const getUpdateOriginPath = () => `${ NAMESPACE }/address/update_origin`;
 
 export const getUpdateDestinationPath = ( orderId: string ) =>
