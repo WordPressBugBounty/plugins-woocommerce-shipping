@@ -49,7 +49,13 @@ class FeatureFlags {
 	 * @return string[]
 	 */
 	public function get_features_supported_by_store(): array {
-		return self::FEATURES_SUPPORTED_BY_STORE;
+		$features = self::FEATURES_SUPPORTED_BY_STORE;
+
+		if ( self::is_bulk_labels_enabled() ) {
+			$features[] = 'bulk_labels';
+		}
+
+		return $features;
 	}
 
 	/**
@@ -69,5 +75,25 @@ class FeatureFlags {
 		 * @param bool $enable_scanform Whether to enable the ScanForm feature. Defaults to the user setting value.
 		 */
 		return apply_filters( 'wcshipping_enable_scanform_feature', $enabled_by_setting );
+	}
+
+	/**
+	 * Check if the bulk label printing feature is enabled.
+	 *
+	 * Defaults to disabled while the feature is in development. Flip on per environment via the
+	 * `wcshipping_enable_bulk_labels_feature` filter (for example in a local mu-plugin).
+	 *
+	 * When enabled, `'bulk_labels'` is advertised to the Connect Server through
+	 * `features_supported_by_store`, which lets Connect Server handlers gate bulk-only behavior.
+	 *
+	 * @return bool
+	 */
+	public static function is_bulk_labels_enabled(): bool {
+		/**
+		 * Filter to enable the bulk label printing feature.
+		 *
+		 * @param bool $enable_bulk_labels Whether to enable bulk label printing. Defaults to false.
+		 */
+		return (bool) apply_filters( 'wcshipping_enable_bulk_labels_feature', false );
 	}
 }

@@ -16,6 +16,7 @@ use Automattic\WCShipping\Connect\WC_Connect_Jetpack;
 use Automattic\WCShipping\OriginAddresses\OriginAddressService;
 use Automattic\WCShipping\Shipments\ShipmentsService;
 use Automattic\WCShipping\DOM\Manipulation as DOM_Manipilation;
+use Automattic\WCShipping\FeatureFlags\FeatureFlags;
 use Automattic\WCShipping\Promo\PromoService;
 use Automattic\WCShipping\Utils;
 use Automattic\WCShipping\Fulfillments\FulfillmentsService;
@@ -373,6 +374,7 @@ class View {
 				 */
 				'custom_fulfillment_summary'          => apply_filters( 'wcshipping_fulfillment_summary', '', $order->get_id(), $label_data ),
 				'should_use_fulfillment_api'          => Utils::should_use_fulfillment_api(),
+				'bulk_labels_enabled'                 => FeatureFlags::is_bulk_labels_enabled(),
 			),
 			$args,
 			$order,

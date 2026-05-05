@@ -83,6 +83,7 @@ export interface WCShippingConfig {
 	promotion?: Promotion;
 	should_use_fulfillment_api: boolean;
 	scanFormEnabled?: boolean;
+	bulk_labels_enabled?: boolean;
 	mode?: 'label-purchase' | 'address-editor';
 	address?: unknown;
 	onAddressComplete?: ( address: unknown ) => void;

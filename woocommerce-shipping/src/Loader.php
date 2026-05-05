@@ -13,8 +13,8 @@ use Automattic\WCShipping\Carrier\UPSDAP\UPSDAPCarrierStrategyRESTController;
 use Automattic\WCShipping\Carrier\UPSDAP\UPSDAPCarrierStrategyService;
 use Automattic\WCShipping\Checkout\CheckoutController;
 use Automattic\WCShipping\Checkout\CheckoutService;
+use Automattic\WCShipping\Bulk\BatchableApiClient;
 use Automattic\WCShipping\Connect\WC_Connect_API_Client;
-use Automattic\WCShipping\Connect\WC_Connect_API_Client_Live;
 use Automattic\WCShipping\Connect\WC_Connect_Debug_Tools;
 use Automattic\WCShipping\Connect\WC_Connect_Error_Notice;
 use Automattic\WCShipping\Connect\WC_Connect_Extension_Compatibility;
@@ -1031,7 +1031,7 @@ class Loader {
 			$api_client = new WCConnectE2EAPIClientMock( $validator, $this );
 		} else {
 			require_once WCSHIPPING_PLUGIN_DIR . '/classes/class-wc-connect-api-client-live.php';
-			$api_client = new WC_Connect_API_Client_Live( $validator, $this );
+			$api_client = new BatchableApiClient( $validator, $this );
 		}
 		$this->shipping_fulfillments_data_store = new ShippingFulfillmentsDataStore();
 		$services_error_notice                  = null;
@@ -1050,10 +1050,10 @@ class Loader {
 		$this->upsdap_carrier_strategy_service = new UPSDAPCarrierStrategyService( $api_client );
 		$this->fedex_carrier_strategy_service  = new FedExCarrierStrategyService( $api_client );
 		FedExTosErrorInterceptor::init();
-		$promo_service                         = new PromoService( $schemas_store, $settings_store );
-		$this->address_normalization_service   = new AddressNormalizationService( $settings_store, $api_client, $logger, $this->origin_address_service );
-		$this->fulfillments_service            = new FulfillmentsService( $this->shipping_fulfillments_data_store );
-		$shipping_label                        = new View(
+		$promo_service                       = new PromoService( $schemas_store, $settings_store );
+		$this->address_normalization_service = new AddressNormalizationService( $settings_store, $api_client, $logger, $this->origin_address_service );
+		$this->fulfillments_service          = new FulfillmentsService( $this->shipping_fulfillments_data_store );
+		$shipping_label                      = new View(
 			$api_client,
 			$settings_store,
 			$schemas_store,

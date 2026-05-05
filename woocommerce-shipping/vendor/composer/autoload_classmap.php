@@ -74,6 +74,7 @@ return array(
     'Automattic\\WCShipping\\Analytics\\ShippingLabelRESTController' => $baseDir . '/src/Analytics/ShippingLabelRESTController.php',
     'Automattic\\WCShipping\\Autoloader' => $baseDir . '/src/Autoloader.php',
     'Automattic\\WCShipping\\Banners\\Banners' => $baseDir . '/src/Banners/Banners.php',
+    'Automattic\\WCShipping\\Bulk\\BatchableApiClient' => $baseDir . '/src/Bulk/BatchableApiClient.php',
     'Automattic\\WCShipping\\Carrier\\FedEx\\FedExCarrierStrategyRESTController' => $baseDir . '/src/Carrier/FedEx/FedExCarrierStrategyRESTController.php',
     'Automattic\\WCShipping\\Carrier\\FedEx\\FedExCarrierStrategyService' => $baseDir . '/src/Carrier/FedEx/FedExCarrierStrategyService.php',
     'Automattic\\WCShipping\\Carrier\\FedEx\\FedExTosErrorInterceptor' => $baseDir . '/src/Carrier/FedEx/FedExTosErrorInterceptor.php',

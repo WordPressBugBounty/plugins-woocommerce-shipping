@@ -294,6 +294,10 @@ return array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/src/Banners/Banners.php'
 	),
+	'Automattic\\WCShipping\\Bulk\\BatchableApiClient' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/src/Bulk/BatchableApiClient.php'
+	),
 	'Automattic\\WCShipping\\Carrier\\FedEx\\FedExCarrierStrategyRESTController' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/src/Carrier/FedEx/FedExCarrierStrategyRESTController.php'

@@ -263,26 +263,7 @@ class LabelPurchaseService {
 		);
 
 		if ( is_wp_error( $label_response ) ) {
-			$error_data            = (array) $label_response->get_error_data();
-			$error_data['success'] = false;
-			$error_data['message'] = $label_response->get_error_message();
-
-			// Restore the original carrier TOS code if it was rewritten by
-			// FedExTosErrorInterceptor to pass through the API client's
-			// UPS DAP-only TOS passthrough.
-			$error_code = $label_response->get_error_code();
-			if (
-				'missing_upsdap_terms_of_service_acceptance' === $error_code
-				&& ! empty( $error_data['carrier_tos_code'] )
-			) {
-				$error_code = $error_data['carrier_tos_code'];
-			}
-
-			$error = new WP_Error(
-				$error_code,
-				$label_response->get_error_message(),
-				$error_data
-			);
+			$error = $this->restore_carrier_tos_error_code( $label_response );
 			$this->logger->log( $error, __CLASS__ );
 			return $error;
 		}
@@ -500,6 +481,170 @@ class LabelPurchaseService {
 			'package_dimensions'   => $selected_meta[ self::PACKAGE_DIMENSIONS ],
 			'success'              => true,
 		);
+	}
+
+	/**
+	 * Purchase labels for many shipments in one batch.
+	 *
+	 * Each shipment is dispatched in parallel via the BatchableApiClient (concurrency cap 5).
+	 * Per-shipment failures are returned as WP_Error in the response map; they do not abort
+	 * the rest of the batch.
+	 *
+	 * Skeleton scope (WOOSHIP-2149): happy-path dispatch + per-order parsing into label meta.
+	 * Persistence to the fulfillment entity, the `is_return` email path, and partial-failure
+	 * UX live in WOOSHIP-2150.
+	 *
+	 * @param array $origin    Shared origin address for the whole batch.
+	 * @param array $shipments List of per-shipment payloads. Each item:
+	 *                         { order_id, destination, packages, selected_rate,
+	 *                           selected_rate_options, hazmat, customs,
+	 *                           features_supported_by_client?, shipment_options?,
+	 *                           is_return?, parent_shipment_id? }
+	 *
+	 * @return array Map of `order_<id>` => label meta array (success) or WP_Error (failure).
+	 *               Invalid shipments use a placeholder key `invalid_order_<index>`.
+	 *               String prefix avoids JSON-array coercion in clients when keys are numeric,
+	 *               and keeps the contract identifier-style for future Fulfillment-id keys.
+	 *               TODO(WOOSHIP-2150+): switch the success key to a Fulfillment object id once
+	 *               that entity exists, so multi-shipment-per-order doesn't collide on `order_<id>`.
+	 */
+	public function purchase_labels_batch( array $origin, array $shipments ): array {
+		$settings   = $this->settings_store->get_account_settings();
+		$payment_id = $this->settings_store->get_selected_payment_method_id();
+
+		// Strip origin metadata that the Connect Server does not accept on the wire.
+		$origin_for_request = $origin;
+		unset( $origin_for_request['id'], $origin_for_request['is_verified'] );
+
+		$bodies  = array();
+		$context = array(); // numeric index => { order_id, request_packages, service_names, parent_shipment_id }
+
+		$invalid_shipments = array();
+
+		foreach ( $shipments as $shipment_index => $shipment ) {
+			$order_id = is_array( $shipment ) && isset( $shipment['order_id'] ) ? (int) $shipment['order_id'] : 0;
+			if ( $order_id <= 0 ) {
+				// Surface invalid shipments under a stable placeholder key so callers always get an
+				// explicit result per input (matches the rate-quote batch path's behavior).
+				$invalid_shipments[ "invalid_order_{$shipment_index}" ] = new WP_Error(
+					'invalid_shipment_shape',
+					__( 'Shipment is missing a valid `order_id` (must be a positive integer).', 'woocommerce-shipping' )
+				);
+				continue;
+			}
+
+			// Defensive: a malformed payload could send non-array `packages`/`shipment_options`,
+			// which would TypeError inside array_column / prepare_packages_for_purchase. WOOSHIP-2150
+			// will return per-shipment errors for these cases; for now coerce so we 200 with empty
+			// label purchase results rather than 500.
+			$packages         = isset( $shipment['packages'] ) && is_array( $shipment['packages'] ) ? $shipment['packages'] : array();
+			$service_names    = array_column( $packages, 'service_name' );
+			$request_packages = $this->prepare_packages_for_purchase( $packages );
+			$shipment_options = isset( $shipment['shipment_options'] ) && is_array( $shipment['shipment_options'] ) ? $shipment['shipment_options'] : array();
+			$label_date       = $shipment_options['label_date'] ?? null;
+			$is_return        = ! empty( $shipment['is_return'] );
+
+			$index = count( $bodies );
+
+			$bodies[ $index ] = array(
+				'async'                        => true,
+				'email_receipt'                => $settings['email_receipts'] ?? false,
+				'origin'                       => $origin_for_request,
+				'destination'                  => $shipment['destination'] ?? array(),
+				'payment_method_id'            => $payment_id,
+				'order_id'                     => $order_id,
+				'packages'                     => $request_packages,
+				'features_supported_by_client' => $shipment['features_supported_by_client'] ?? array(),
+				'shipment_options'             => array(
+					'label_date' => $label_date,
+				),
+				'is_return'                    => $is_return,
+			);
+
+			$context[ $index ] = array(
+				'order_id'           => $order_id,
+				'request_packages'   => $request_packages,
+				'service_names'      => $service_names,
+				'parent_shipment_id' => $shipment['parent_shipment_id'] ?? null,
+			);
+		}
+
+		if ( empty( $bodies ) ) {
+			return $invalid_shipments;
+		}
+
+		// Live (BatchableApiClient) implements purchase_labels_batch() for parallel dispatch.
+		// E2E/mocks only inherit send_shipping_label_request() from the abstract parent, so fall
+		// back to a sequential loop there instead of fataling. Per-order results stay aligned
+		// with $context indices.
+		if ( method_exists( $this->api_client, 'purchase_labels_batch' ) ) {
+			$responses = $this->api_client->purchase_labels_batch( $bodies );
+		} else {
+			$responses = array();
+			foreach ( $bodies as $index => $body ) {
+				$responses[ $index ] = $this->api_client->send_shipping_label_request( $body );
+			}
+		}
+
+		$results = $invalid_shipments;
+		foreach ( $context as $index => $ctx ) {
+			$order_id  = $ctx['order_id'];
+			$result_id = "order_{$order_id}";
+			$response  = $responses[ $index ] ?? null;
+
+			if ( is_wp_error( $response ) ) {
+				$results[ $result_id ] = $this->restore_carrier_tos_error_code( $response );
+				$this->logger->log( $results[ $result_id ], __CLASS__ );
+				continue;
+			}
+
+			$labels_meta = $this->get_labels_meta_from_response(
+				$response,
+				$ctx['request_packages'],
+				$ctx['service_names'],
+				$order_id,
+				$ctx['parent_shipment_id']
+			);
+
+			if ( is_wp_error( $labels_meta ) ) {
+				$this->logger->log( $labels_meta, __CLASS__ );
+				$results[ $result_id ] = $labels_meta;
+				continue;
+			}
+
+			$results[ $result_id ] = $labels_meta;
+		}
+
+		return $results;
+	}
+
+	/**
+	 * Wrap a WP_Error with the same error_data shape the single-order path returns,
+	 * and restore the original carrier TOS code when FedExTosErrorInterceptor rewrote
+	 * it to the UPS DAP code so the API client's TOS passthrough could keep it typed.
+	 *
+	 * Used by both single-order and batch paths so the error contract is consistent.
+	 * Note: on the batch path the FedExTosErrorInterceptor http_response filter does
+	 * not currently fire (Requests::request_multiple bypasses WP_Http), so this is a
+	 * defensive no-op for FedEx today; the wiring lands in WOOSHIP-2150.
+	 *
+	 * @param WP_Error $label_response Error returned by the Connect Server response.
+	 * @return WP_Error Normalized WP_Error.
+	 */
+	private function restore_carrier_tos_error_code( WP_Error $label_response ): WP_Error {
+		$error_data            = (array) $label_response->get_error_data();
+		$error_data['success'] = false;
+		$error_data['message'] = $label_response->get_error_message();
+
+		$error_code = $label_response->get_error_code();
+		if (
+			'missing_upsdap_terms_of_service_acceptance' === $error_code
+			&& ! empty( $error_data['carrier_tos_code'] )
+		) {
+			$error_code = $error_data['carrier_tos_code'];
+		}
+
+		return new WP_Error( $error_code, $label_response->get_error_message(), $error_data );
 	}
 
 	/**
