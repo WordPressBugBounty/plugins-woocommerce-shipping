@@ -481,29 +481,21 @@ class LabelRateRESTController extends WCShippingRESTController {
 			}
 		}
 
-		// Reject duplicate `order_id`s up front. Results are keyed by `order_id`, so duplicates would
-		// silently overwrite earlier entries and produce a non-deterministic response.
-		$seen_order_ids = array();
-		foreach ( $orders as $order ) {
-			if ( ! is_array( $order ) || ! isset( $order['order_id'] ) ) {
-				continue;
-			}
-			$candidate = (int) $order['order_id'];
-			if ( $candidate <= 0 ) {
-				continue;
-			}
-			if ( isset( $seen_order_ids[ $candidate ] ) ) {
-				return new WP_Error(
-					'invalid_batch_payload',
-					sprintf(
-						/* translators: %d: duplicated order_id */
-						__( 'Duplicate `order_id` %d in batch rate-quote request; each order must appear at most once.', 'woocommerce-shipping' ),
-						$candidate
-					),
-					array( 'status' => 400 )
-				);
-			}
-			$seen_order_ids[ $candidate ] = true;
+		/**
+		 * Reject duplicate `order_id`s up front. Results are keyed by `order_id`, so duplicates would
+		 * silently overwrite earlier entries and produce a non-deterministic response.
+		 */
+		$duplicate_order_id = $this->get_duplicate_positive_order_id( $orders );
+		if ( null !== $duplicate_order_id ) {
+			return new WP_Error(
+				'invalid_batch_payload',
+				sprintf(
+					/* translators: %d: duplicated order_id */
+					__( 'Duplicate `order_id` %d in batch rate-quote request; each order must appear at most once.', 'woocommerce-shipping' ),
+					$duplicate_order_id
+				),
+				array( 'status' => 400 )
+			);
 		}
 
 		// Partition the batch by basic structural shape so malformed orders receive per-order errors

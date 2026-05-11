@@ -56,7 +56,8 @@ interface UseLabelsStateProps {
 	getShipmentHazmat: ReturnType<
 		typeof useHazmatState
 	>[ 'getShipmentHazmat' ];
-	updateRates: ReturnType< typeof useRatesState >[ 'updateRates' ];
+	isFetching: ReturnType< typeof useRatesState >[ 'isFetching' ];
+	resetRates: ReturnType< typeof useRatesState >[ 'resetRates' ];
 	getShipmentOrigin: ReturnType<
 		typeof useShipmentState
 	>[ 'getShipmentOrigin' ];
@@ -119,7 +120,8 @@ export function useLabelsState( {
 	getSelectionItems,
 	totalWeight,
 	getShipmentHazmat,
-	updateRates,
+	isFetching,
+	resetRates,
 	getShipmentOrigin,
 	customs: { maybeApplyCustomsToPackage, getCustomsState },
 	applyHazmatToPackage,
@@ -185,6 +187,14 @@ export function useLabelsState( {
 	const [ labelStatusUpdateErrors, setLabelStatusUpdateErrors ] = useState<
 		string[]
 	>( [] );
+
+	// Dismiss the top-of-view purchase error notice when the merchant kicks
+	// off a fresh rate fetch — they've moved on from the failed attempt.
+	useEffect( () => {
+		if ( isFetching ) {
+			setLabelStatusUpdateErrors( [] );
+		}
+	}, [ isFetching ] );
 
 	const hasPurchasedLabel = useCallback(
 		(
@@ -259,9 +269,6 @@ export function useLabelsState( {
 			! currentShipmentLabel ||
 			currentShipmentLabel.status === LABEL_PURCHASE_STATUS.PURCHASE_ERROR
 		) {
-			// The purchase might not be successful yet.
-			updateRates(); // Update rates so that the same shipment id is not used again
-
 			// Remove the current shipment if it has no purchased label and was created for a failed purchase
 			if (
 				removeShipment &&
@@ -272,7 +279,6 @@ export function useLabelsState( {
 		}
 	}, [
 		currentShipmentLabel,
-		updateRates,
 		hasPurchasedLabel,
 		currentShipmentId,
 		removeShipment,
@@ -447,6 +453,12 @@ export function useLabelsState( {
 
 			if ( label.status === LABEL_PURCHASE_STATUS.PURCHASE_ERROR ) {
 				setIsUpdatingStatus( false );
+				// Clear fetched rates and the rate-fetch warning so the merchant
+				// must explicitly request rates again after a failed purchase;
+				// the previous rates may reference a shipment id that's no
+				// longer reusable, and any prior fetch warning is no longer
+				// relevant to an empty rates panel.
+				resetRates();
 				maybeUpdateRates();
 				// Reset retry count
 				resetLabelRetryCount( labelId );
@@ -502,6 +514,7 @@ export function useLabelsState( {
 			maybePrintLabel,
 			labelStatusRetryCount,
 			resetLabelRetryCount,
+			resetRates,
 		]
 	);
 

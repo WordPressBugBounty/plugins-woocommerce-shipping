@@ -294,6 +294,10 @@ return array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/src/Banners/Banners.php'
 	),
+	'Automattic\\WCShipping\\Banners\\BulkLabelsBanner' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/src/Banners/BulkLabelsBanner.php'
+	),
 	'Automattic\\WCShipping\\Bulk\\BatchableApiClient' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/src/Bulk/BatchableApiClient.php'
@@ -654,6 +658,10 @@ return array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/tests/php/Banners/BannersTest.php'
 	),
+	'Automattic\\WCShipping\\Tests\\Banners\\BulkLabelsBannerTest' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/tests/php/Banners/BulkLabelsBannerTest.php'
+	),
 	'Automattic\\WCShipping\\Tests\\ConfigRESTControllerTest' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/tests/php/Integrations/ConfigRESTControllerTest.php'
@@ -737,6 +745,10 @@ return array(
 	'Automattic\\WCShipping\\Tests\\php\\LabelPurchase\\AddressRESTControllerTest' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/tests/php/LabelPurchase/AddressRESTControllerTest.php'
+	),
+	'Automattic\\WCShipping\\Tests\\php\\LabelPurchase\\BatchFixturesTrait' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/tests/php/LabelPurchase/BatchFixturesTrait.php'
 	),
 	'Automattic\\WCShipping\\Tests\\php\\LabelPurchase\\EligibilityRESTControllerTest' => array(
 		'version' => 'dev-trunk',

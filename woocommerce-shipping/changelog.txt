@@ -1,5 +1,8 @@
 *** WooCommerce Shipping Changelog ***
 
+= 2.3.2 - 2026-05-11 =
+* Fix   - Clear fetched rates after a failed label purchase and dismiss the top purchase error notice when the merchant requests rates again.
+
 = 2.3.1 - 2026-05-05 =
 * Fix   - Render multi-line rate fetch errors as separate paragraphs and surface them as a warning so available carrier rates remain visible.
 

@@ -488,11 +488,9 @@ class LabelPurchaseService {
 	 *
 	 * Each shipment is dispatched in parallel via the BatchableApiClient (concurrency cap 5).
 	 * Per-shipment failures are returned as WP_Error in the response map; they do not abort
-	 * the rest of the batch.
-	 *
-	 * Skeleton scope (WOOSHIP-2149): happy-path dispatch + per-order parsing into label meta.
-	 * Persistence to the fulfillment entity, the `is_return` email path, and partial-failure
-	 * UX live in WOOSHIP-2150.
+	 * the rest of the batch. Successful purchases are persisted to the order's fulfillment
+	 * record. The `is_return` email-receipt path used by the single-order flow is not yet
+	 * fired for bulk purchases (deferred).
 	 *
 	 * @param array $origin    Shared origin address for the whole batch.
 	 * @param array $shipments List of per-shipment payloads. Each item:
@@ -501,14 +499,28 @@ class LabelPurchaseService {
 	 *                           features_supported_by_client?, shipment_options?,
 	 *                           is_return?, parent_shipment_id? }
 	 *
-	 * @return array Map of `order_<id>` => label meta array (success) or WP_Error (failure).
-	 *               Invalid shipments use a placeholder key `invalid_order_<index>`.
-	 *               String prefix avoids JSON-array coercion in clients when keys are numeric,
-	 *               and keeps the contract identifier-style for future Fulfillment-id keys.
-	 *               TODO(WOOSHIP-2150+): switch the success key to a Fulfillment object id once
-	 *               that entity exists, so multi-shipment-per-order doesn't collide on `order_<id>`.
+	 * @return array|WP_Error Map of `order_<id>` => label meta array (success) or WP_Error (failure).
+	 *                       Invalid shipments use a placeholder key `invalid_order_<index>`.
+	 *                       String prefix avoids JSON-array coercion in clients when keys are numeric,
+	 *                       and keeps the contract identifier-style for future Fulfillment-id keys.
+	 *                       Returns a top-level WP_Error (`fulfillment_api_required`) when the
+	 *                       fulfillment API is disabled. Bulk paths are fulfillment-only and
+	 *                       have no legacy fallback.
 	 */
-	public function purchase_labels_batch( array $origin, array $shipments ): array {
+	public function purchase_labels_batch( array $origin, array $shipments ) {
+		if ( ! Utils::should_use_fulfillment_api() ) {
+			$error = new WP_Error(
+				'fulfillment_api_required',
+				__( 'Bulk label purchase requires the fulfillment API. Enable it before using this endpoint.', 'woocommerce-shipping' ),
+				array(
+					'success' => false,
+					'status'  => 400,
+				)
+			);
+			$this->logger->log( $error, __CLASS__ );
+			return $error;
+		}
+
 		$settings   = $this->settings_store->get_account_settings();
 		$payment_id = $this->settings_store->get_selected_payment_method_id();
 
@@ -516,27 +528,55 @@ class LabelPurchaseService {
 		$origin_for_request = $origin;
 		unset( $origin_for_request['id'], $origin_for_request['is_verified'] );
 
-		$bodies  = array();
-		$context = array(); // numeric index => { order_id, request_packages, service_names, parent_shipment_id }
+		$bodies              = array();
+		$context             = array(); // numeric index => { order_id, request_packages, service_names, parent_shipment_id }
+		$shipments_by_index  = array();
+		$fulfillments_by_idx = array(); // numeric index => ShippingFulfillment resolved at preflight time.
 
-		$invalid_shipments = array();
+		// Pre-dispatch results: shipments rejected before reaching the Connect Server, keyed by
+		// either invalid_order_<index> (bad order_id) or order_<id> (preflight resolved no
+		// usable fulfillment). The dispatch loop only sees shipments that survive preflight, so
+		// the customer is never charged for a label we cannot persist.
+		$pre_dispatch_results = array();
 
 		foreach ( $shipments as $shipment_index => $shipment ) {
 			$order_id = is_array( $shipment ) && isset( $shipment['order_id'] ) ? (int) $shipment['order_id'] : 0;
 			if ( $order_id <= 0 ) {
 				// Surface invalid shipments under a stable placeholder key so callers always get an
 				// explicit result per input (matches the rate-quote batch path's behavior).
-				$invalid_shipments[ "invalid_order_{$shipment_index}" ] = new WP_Error(
+				$pre_dispatch_results[ "invalid_order_{$shipment_index}" ] = new WP_Error(
 					'invalid_shipment_shape',
 					__( 'Shipment is missing a valid `order_id` (must be a positive integer).', 'woocommerce-shipping' )
 				);
 				continue;
 			}
 
+			// Preflight fulfillment readiness BEFORE we ask the Connect Server to print a label.
+			// If the order cannot be persisted (no shippable items, multiple existing fulfillments,
+			// or a non-WC_Order id), skip the wire request entirely so the customer is not charged
+			// for a label we cannot save against the order. Mirrors the single-order path which
+			// resolves the fulfillment before send_shipping_label_request().
+			$fulfillment = $this->fulfillments_service->ensure_order_has_fulfillment( $order_id );
+			if ( is_array( $fulfillment ) && count( $fulfillment ) === 1 ) {
+				$fulfillment = $fulfillment[0];
+			}
+			if ( ! $fulfillment instanceof ShippingFulfillment ) {
+				$error = new WP_Error(
+					'fulfillment_unavailable',
+					__( 'Could not load or create a fulfillment record for the order.', 'woocommerce-shipping' ),
+					array(
+						'success'  => false,
+						'order_id' => $order_id,
+					)
+				);
+				$this->logger->log( $error, __CLASS__ );
+				$pre_dispatch_results[ "order_{$order_id}" ] = $error;
+				continue;
+			}
+
 			// Defensive: a malformed payload could send non-array `packages`/`shipment_options`,
-			// which would TypeError inside array_column / prepare_packages_for_purchase. WOOSHIP-2150
-			// will return per-shipment errors for these cases; for now coerce so we 200 with empty
-			// label purchase results rather than 500.
+			// which would TypeError inside array_column / prepare_packages_for_purchase. Coerce
+			// so the batch keeps going for valid shipments rather than 500ing the whole request.
 			$packages         = isset( $shipment['packages'] ) && is_array( $shipment['packages'] ) ? $shipment['packages'] : array();
 			$service_names    = array_column( $packages, 'service_name' );
 			$request_packages = $this->prepare_packages_for_purchase( $packages );
@@ -567,16 +607,18 @@ class LabelPurchaseService {
 				'service_names'      => $service_names,
 				'parent_shipment_id' => $shipment['parent_shipment_id'] ?? null,
 			);
+
+			$shipments_by_index[ $index ]  = $shipment;
+			$fulfillments_by_idx[ $index ] = $fulfillment;
 		}
 
 		if ( empty( $bodies ) ) {
-			return $invalid_shipments;
+			return $pre_dispatch_results;
 		}
 
-		// Live (BatchableApiClient) implements purchase_labels_batch() for parallel dispatch.
-		// E2E/mocks only inherit send_shipping_label_request() from the abstract parent, so fall
-		// back to a sequential loop there instead of fataling. Per-order results stay aligned
-		// with $context indices.
+		// BatchableApiClient implements parallel dispatch; mocks/E2E clients only have the
+		// single-order send_shipping_label_request(), so fall back to a sequential loop.
+		// Indices stay aligned with $context.
 		if ( method_exists( $this->api_client, 'purchase_labels_batch' ) ) {
 			$responses = $this->api_client->purchase_labels_batch( $bodies );
 		} else {
@@ -586,11 +628,38 @@ class LabelPurchaseService {
 			}
 		}
 
-		$results = $invalid_shipments;
+		// A transport-level top-level WP_Error (today only the in-batch Jetpack guards return
+		// per-index errors, but a future client could surface one) would crash the per-shipment
+		// loop on $responses[ $index ]. Fan it out to per-shipment errors so each order surfaces
+		// the same WP_Error and the loop stays single-shape.
+		if ( is_wp_error( $responses ) ) {
+			$responses = array_fill_keys( array_keys( $bodies ), $responses );
+		}
+
+		$results = $pre_dispatch_results;
 		foreach ( $context as $index => $ctx ) {
 			$order_id  = $ctx['order_id'];
 			$result_id = "order_{$order_id}";
-			$response  = $responses[ $index ] ?? null;
+
+			if ( ! array_key_exists( $index, $responses ) ) {
+				// BatchableApiClient should always return one slot per input index, so a missing
+				// slot is an upstream dispatch inconsistency. Synthesize a per-order error and
+				// log it explicitly here rather than fataling on $response->labels below.
+				$results[ $result_id ] = $this->restore_carrier_tos_error_code(
+					new WP_Error(
+						'wcc_server_no_response',
+						__( 'Missing API response for shipment.', 'woocommerce-shipping' ),
+						array(
+							'success'  => false,
+							'order_id' => $order_id,
+						)
+					)
+				);
+				$this->logger->log( $results[ $result_id ], __CLASS__ );
+				continue;
+			}
+
+			$response = $responses[ $index ];
 
 			if ( is_wp_error( $response ) ) {
 				$results[ $result_id ] = $this->restore_carrier_tos_error_code( $response );
@@ -612,7 +681,77 @@ class LabelPurchaseService {
 				continue;
 			}
 
-			$results[ $result_id ] = $labels_meta;
+			// Persist the successful purchase against the order's fulfillment record. The bulk
+			// path is fulfillment-only (WOOSHIP-2166), so there is no add_labels_to_order()
+			// fallback here. Per-order failures above already skipped this block.
+			$shipment_payload    = $shipments_by_index[ $index ] ?? array();
+			$selected_rate_in    = isset( $shipment_payload['selected_rate'] ) && is_array( $shipment_payload['selected_rate'] ) ? $shipment_payload['selected_rate'] : array();
+			$selected_rate_inner = isset( $selected_rate_in['rate'] ) && is_array( $selected_rate_in['rate'] ) ? $selected_rate_in['rate'] : array();
+			$selected_options_in = isset( $shipment_payload['selected_rate_options'] ) && is_array( $shipment_payload['selected_rate_options'] ) ? $shipment_payload['selected_rate_options'] : array();
+			$hazmat_in           = isset( $shipment_payload['hazmat'] ) && is_array( $shipment_payload['hazmat'] ) ? $shipment_payload['hazmat'] : array();
+			$customs_in          = isset( $shipment_payload['customs'] ) && is_array( $shipment_payload['customs'] ) ? $shipment_payload['customs'] : array();
+			$shipment_options_in = isset( $shipment_payload['shipment_options'] ) && is_array( $shipment_payload['shipment_options'] ) ? $shipment_payload['shipment_options'] : array();
+			$shipping_label_date = $shipment_options_in['label_date'] ?? null;
+			$destination_in      = isset( $shipment_payload['destination'] ) && is_array( $shipment_payload['destination'] ) ? $shipment_payload['destination'] : array();
+
+			$selected_rate = array(
+				'rate'             => array_merge(
+					(array) ( $response->rates[0] ?? new \stdClass() ),
+					array(
+						'type' => $selected_rate_inner['type'] ?? '',
+					)
+				),
+				'parent'           => isset( $selected_rate_in['parent'] ) ? (array) $selected_rate_in['parent'] : null,
+				'shipment_options' => $selected_options_in,
+			);
+
+			$origin_address = array_merge(
+				$origin,
+				array(
+					'id'          => $origin['id'] ?? 'UNKNOWN_ORIGIN_ID',
+					'is_verified' => $origin['is_verified'] ?? true,
+				)
+			);
+
+			$shipment_dates = array(
+				'shipping_date'           => $shipping_label_date,
+				'estimated_delivery_date' => null,
+			);
+
+			// Pick the first hazmat/customs entry without re-indexing the array twice.
+			$hazmat_first  = ! empty( $hazmat_in ) ? array_values( $hazmat_in )[0] : null;
+			$customs_first = ! empty( $customs_in ) ? array_values( $customs_in )[0] : null;
+			$hazmat_data   = is_array( $hazmat_first ) ? $hazmat_first : array();
+			$customs_data  = is_array( $customs_first ) ? $customs_first : array();
+
+			// Multi-package shipments would lose hazmat/customs entries beyond the first one.
+			// Log so the operator sees a signal instead of silent data loss.
+			if ( count( $hazmat_in ) > 1 || count( $customs_in ) > 1 ) {
+				$this->logger->log(
+					sprintf(
+						'Bulk persistence kept only the first hazmat/customs entry for order %d (%d hazmat / %d customs entries received).',
+						$order_id,
+						count( $hazmat_in ),
+						count( $customs_in )
+					),
+					__CLASS__
+				);
+			}
+
+			// Fulfillment was resolved at preflight; orders without a usable record never
+			// reached the dispatch loop, so the cached value is always a ShippingFulfillment.
+			$fulfillment = $fulfillments_by_idx[ $index ];
+
+			$results[ $result_id ] = $this->store_purchased_label_to_fulfillment(
+				$fulfillment,
+				$labels_meta,
+				$selected_rate,
+				$hazmat_data,
+				$origin_address,
+				$destination_in,
+				$customs_data,
+				$shipment_dates
+			);
 		}
 
 		return $results;
@@ -624,9 +763,10 @@ class LabelPurchaseService {
 	 * it to the UPS DAP code so the API client's TOS passthrough could keep it typed.
 	 *
 	 * Used by both single-order and batch paths so the error contract is consistent.
-	 * Note: on the batch path the FedExTosErrorInterceptor http_response filter does
-	 * not currently fire (Requests::request_multiple bypasses WP_Http), so this is a
-	 * defensive no-op for FedEx today; the wiring lands in WOOSHIP-2150.
+	 * Note: on the batch path FedEx TOS rewriting via FedExTosErrorInterceptor does not
+	 * yet fire (BatchableApiClient uses Requests::request_multiple, which bypasses WP_Http
+	 * hooks). UPS DAP TOS handling still works here; FedEx remap on the batch path is
+	 * pending.
 	 *
 	 * @param WP_Error $label_response Error returned by the Connect Server response.
 	 * @return WP_Error Normalized WP_Error.

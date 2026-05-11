@@ -12,7 +12,7 @@ class ComposerStaticInite5a73c3f4943dc34fc499f2e4d5bc2a0
     );
 
     public static $prefixLengthsPsr4 = array (
-        'A' =>
+        'A' => 
         array (
             'Automattic\\WCShipping\\' => 22,
             'Automattic\\Jetpack\\Autoloader\\' => 30,
@@ -20,11 +20,11 @@ class ComposerStaticInite5a73c3f4943dc34fc499f2e4d5bc2a0
     );
 
     public static $prefixDirsPsr4 = array (
-        'Automattic\\WCShipping\\' =>
+        'Automattic\\WCShipping\\' => 
         array (
             0 => __DIR__ . '/../..' . '/src',
         ),
-        'Automattic\\Jetpack\\Autoloader\\' =>
+        'Automattic\\Jetpack\\Autoloader\\' => 
         array (
             0 => __DIR__ . '/..' . '/automattic/jetpack-autoloader/src',
         ),
@@ -99,6 +99,7 @@ class ComposerStaticInite5a73c3f4943dc34fc499f2e4d5bc2a0
         'Automattic\\WCShipping\\Analytics\\ShippingLabelRESTController' => __DIR__ . '/../..' . '/src/Analytics/ShippingLabelRESTController.php',
         'Automattic\\WCShipping\\Autoloader' => __DIR__ . '/../..' . '/src/Autoloader.php',
         'Automattic\\WCShipping\\Banners\\Banners' => __DIR__ . '/../..' . '/src/Banners/Banners.php',
+        'Automattic\\WCShipping\\Banners\\BulkLabelsBanner' => __DIR__ . '/../..' . '/src/Banners/BulkLabelsBanner.php',
         'Automattic\\WCShipping\\Bulk\\BatchableApiClient' => __DIR__ . '/../..' . '/src/Bulk/BatchableApiClient.php',
         'Automattic\\WCShipping\\Carrier\\FedEx\\FedExCarrierStrategyRESTController' => __DIR__ . '/../..' . '/src/Carrier/FedEx/FedExCarrierStrategyRESTController.php',
         'Automattic\\WCShipping\\Carrier\\FedEx\\FedExCarrierStrategyService' => __DIR__ . '/../..' . '/src/Carrier/FedEx/FedExCarrierStrategyService.php',

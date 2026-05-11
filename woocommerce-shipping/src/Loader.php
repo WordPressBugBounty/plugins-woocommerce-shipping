@@ -14,6 +14,7 @@ use Automattic\WCShipping\Carrier\UPSDAP\UPSDAPCarrierStrategyService;
 use Automattic\WCShipping\Checkout\CheckoutController;
 use Automattic\WCShipping\Checkout\CheckoutService;
 use Automattic\WCShipping\Bulk\BatchableApiClient;
+use Automattic\WCShipping\Banners\BulkLabelsBanner;
 use Automattic\WCShipping\Connect\WC_Connect_API_Client;
 use Automattic\WCShipping\Connect\WC_Connect_Debug_Tools;
 use Automattic\WCShipping\Connect\WC_Connect_Error_Notice;
@@ -1133,6 +1134,10 @@ class Loader {
 
 		if ( FeatureFlags::is_scanform_enabled() ) {
 			new ScanForm();
+		}
+
+		if ( FeatureFlags::is_bulk_labels_enabled() ) {
+			new BulkLabelsBanner();
 		}
 
 		require_once WCSHIPPING_PLUGIN_DIR . '/classes/class-wc-connect-settings-pages.php';

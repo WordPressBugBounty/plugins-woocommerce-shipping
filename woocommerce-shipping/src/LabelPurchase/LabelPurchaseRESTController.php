@@ -254,7 +254,31 @@ class LabelPurchaseRESTController extends WCShippingRESTController {
 			}
 		}
 
+		/**
+		 * Reject duplicate `order_id`s before any label purchase call. Results are keyed by
+		 * `order_<id>`, and repeated orders would overwrite earlier entries and scalar fulfillment
+		 * shipping metadata after the customer had already been charged for both labels.
+		 */
+		$duplicate_order_id = $this->get_duplicate_positive_order_id( $shipments );
+		if ( null !== $duplicate_order_id ) {
+			return new WP_Error(
+				'invalid_batch_payload',
+				sprintf(
+					/* translators: %d: duplicated order_id */
+					__( 'Duplicate `order_id` %d in batch label-purchase request; each order must appear at most once.', 'woocommerce-shipping' ),
+					$duplicate_order_id
+				),
+				array( 'status' => 400 )
+			);
+		}
+
 		$results_by_id = $this->label_service->purchase_labels_batch( $origin, $shipments );
+
+		// Service may return a top-level WP_Error (e.g. fulfillment_api_required) instead of a
+		// per-order map. Forward it so REST clients see the carried status, not an empty 200.
+		if ( is_wp_error( $results_by_id ) ) {
+			return $results_by_id;
+		}
 
 		$response = array();
 		foreach ( $results_by_id as $result_id => $result ) {

@@ -2,16 +2,16 @@
 # This file is distributed under the GPL v2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: WooCommerce Shipping 2.3.1\n"
+"Project-Id-Version: WooCommerce Shipping 2.3.2\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/woocommerce-shipping\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-05-05T09:23:36+00:00\n"
+"POT-Creation-Date: 2026-05-11T15:40:10+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"X-Generator: WP-CLI 2.11.0\n"
+"X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: woocommerce-shipping\n"
 
 #. Plugin Name of the plugin
@@ -69,18 +69,21 @@ msgstr ""
 #. translators: %d: HTTP response code
 #: classes/class-wc-connect-api-client-live.php:90
 #: src/Bulk/BatchableApiClient.php:213
+#, php-format
 msgid "Error: The WooCommerce Shipping server returned HTTP code: %d"
 msgstr ""
 
 #. translators: %d: HTTP response code
 #: classes/class-wc-connect-api-client-live.php:112
 #: src/Bulk/BatchableApiClient.php:228
+#, php-format
 msgid "Error: The WooCommerce Shipping server returned ( %d ) and an empty response body."
 msgstr ""
 
 #. translators: %1$s: error code, %2$s: error message, %3$d: HTTP response code
 #: classes/class-wc-connect-api-client-live.php:143
 #: src/Bulk/BatchableApiClient.php:251
+#, php-format
 msgid "Error: The WooCommerce Shipping server returned: %1$s %2$s ( %3$d )"
 msgstr ""
 
@@ -90,11 +93,13 @@ msgstr ""
 
 #. translators: %d: Product ID.
 #: classes/class-wc-connect-api-client.php:105
+#, php-format
 msgid "Product ( ID: %d ) did not include a weight. Shipping rates cannot be calculated."
 msgstr ""
 
 #. translators: %d: Product ID.
 #: classes/class-wc-connect-api-client.php:121
+#, php-format
 msgid "Product ( ID: %d ) is missing a dimension value. Shipping rates cannot be calculated."
 msgstr ""
 
@@ -136,11 +141,12 @@ msgstr ""
 
 #. translators: %1$s: link to product edit page, %2$s: product name
 #: classes/class-wc-connect-error-notice.php:85
+#, php-format
 msgid "<strong>\"%2$s\" is missing weight, length, width, or height.</strong><br />Shipping rates cannot be calculated. <a href=\"%1$s\">Enter dimensions and weight for %2$s</a> so your customers can purchase this item."
 msgstr ""
 
 #: classes/class-wc-connect-error-notice.php:102
-#: src/Loader.php:2092
+#: src/Loader.php:2097
 #: src/Promo/PromoService.php:143
 msgid "Dismiss this notice"
 msgstr ""
@@ -151,6 +157,7 @@ msgstr ""
 
 #. translators: %1$s: minimum WooCommerce version, %2$s: current WooCommerce version
 #: classes/class-wc-connect-help-view.php:64
+#, php-format
 msgid "WooCommerce %1$s or higher is required (You are running %2$s)"
 msgstr ""
 
@@ -160,6 +167,7 @@ msgstr ""
 
 #. translators: %s: current WooCommerce version
 #: classes/class-wc-connect-help-view.php:79
+#, php-format
 msgid "WooCommerce %s is configured correctly"
 msgstr ""
 
@@ -189,6 +197,7 @@ msgstr ""
 
 #. translators: %s: shipping zone name
 #: classes/class-wc-connect-help-view.php:163
+#, php-format
 msgid "%s Shipping Zone"
 msgstr ""
 
@@ -198,7 +207,7 @@ msgstr ""
 
 #: classes/class-wc-connect-help-view.php:264
 #: classes/class-wc-connect-settings-pages.php:50
-#: src/Loader.php:918
+#: src/Loader.php:919
 #: src/Onboarding/SettingsPage.php:74
 msgctxt "The WooCommerce Shipping brandname"
 msgid "WooCommerce Shipping"
@@ -229,6 +238,7 @@ msgstr ""
 #. translators: %s: list of features, potentially comma separated
 #: classes/class-wc-connect-nux.php:435
 #: classes/class-wc-connect-nux.php:540
+#, php-format
 msgid "Connect your store to activate <strong>WooCommerce Shipping</strong>. Once you connect your store to WordPress.com, you'll have access to %s."
 msgstr ""
 
@@ -239,6 +249,7 @@ msgstr ""
 
 #. translators: %s: list of features, potentially comma separated
 #: classes/class-wc-connect-nux.php:479
+#, php-format
 msgid "You can now enjoy %s."
 msgstr ""
 
@@ -248,11 +259,13 @@ msgstr ""
 
 #. translators: %1$s: "Terms of Service", %2$s: "https://wordpress.com/tos/", %3$s: "https://automattic.com/privacy/"
 #: classes/class-wc-connect-nux.php:602
+#, php-format
 msgid "By clicking \"%1$s\", you agree to the <a href=\"%2$s\">Terms of Service</a> and have read our <a href=\"%3$s\">Privacy Policy</a>"
 msgstr ""
 
 #. translators: %s: link to privacy policy
 #: classes/class-wc-connect-privacy.php:43
+#, php-format
 msgid "By using this extension, you may be storing personal data or sharing data with external services. <a href=\"%s\" target=\"_blank\">Learn more about how this works, including what you may want to include in your privacy policy.</a>"
 msgstr ""
 
@@ -331,17 +344,20 @@ msgstr ""
 
 #. translators: %d: Deleted Product ID
 #: classes/class-wc-connect-utils.php:34
+#, php-format
 msgid "#%d - [Deleted product]"
 msgstr ""
 
 #. translators: %1$d: Product ID, %2$s: Product Name
 #: classes/class-wc-connect-utils.php:38
+#, php-format
 msgid "#%1$d - %2$s"
 msgstr ""
 
 #. translators: %s: error message
 #: classes/legacy-api-controllers/class-wc-rest-connect-account-settings-controller.php:66
 #: src/LabelSettings/AccountSettingsRestController.php:89
+#, php-format
 msgid "Unable to update settings. %s"
 msgstr ""
 
@@ -382,6 +398,7 @@ msgstr ""
 
 #. translators: %s: error message
 #: classes/legacy-api-controllers/class-wc-rest-connect-services-controller.php:97
+#, php-format
 msgid "Unable to update service settings. Validation failed. %s"
 msgstr ""
 
@@ -394,12 +411,12 @@ msgid "Order not found"
 msgstr ""
 
 #: classes/legacy-api-controllers/class-wc-rest-connect-shipping-label-controller.php:151
-#: src/LabelPurchase/LabelPurchaseService.php:715
+#: src/LabelPurchase/LabelPurchaseService.php:855
 msgid "Individual packaging"
 msgstr ""
 
 #: classes/legacy-api-controllers/class-wc-rest-connect-shipping-label-controller.php:155
-#: src/LabelPurchase/LabelPurchaseService.php:719
+#: src/LabelPurchase/LabelPurchaseService.php:859
 msgid "Unknown package"
 msgstr ""
 
@@ -521,6 +538,10 @@ msgstr ""
 msgid "Shipping Labels"
 msgstr ""
 
+#: src/Banners/BulkLabelsBanner.php:61
+msgid "Fulfill with labels"
+msgstr ""
+
 #: src/Bulk/BatchableApiClient.php:197
 msgid "No response received from the WooCommerce Shipping server."
 msgstr ""
@@ -548,11 +569,13 @@ msgstr ""
 
 #. translators: 1: address, 2: button
 #: src/Checkout/CheckoutService.php:392
+#, php-format
 msgid "We couldn't verify your shipping address. Did you mean %1$s? %2$s"
 msgstr ""
 
 #. translators: %s is a link to the status page.
 #: src/DOM/Manipulation.php:34
+#, php-format
 msgid "Section not loading? Visit the <a href=\"%s\">status page</a> for troubleshooting steps."
 msgstr ""
 
@@ -580,6 +603,7 @@ msgstr ""
 
 #. translators: %s: admin email address
 #: src/Emails/WC_Admin_Return_Label_Email.php:172
+#, php-format
 msgid "Enter recipients (comma separated) for this email. Defaults to %s."
 msgstr ""
 
@@ -596,6 +620,7 @@ msgstr ""
 #: src/Emails/WC_Return_Label_Email.php:185
 #: src/Emails/WC_Return_Label_Email.php:194
 #: src/Emails/WC_Return_Label_Email.php:201
+#, php-format
 msgid "Available placeholders: %s"
 msgstr ""
 
@@ -701,11 +726,13 @@ msgstr ""
 
 #. translators: %s is the order number.
 #: src/LabelPurchase/LabelPrintService.php:246
+#, php-format
 msgid "Order #%s"
 msgstr ""
 
 #. translators: %1$s is the shipment number, %2$s is the total shipments.
 #: src/LabelPurchase/LabelPrintService.php:252
+#, php-format
 msgid "Shipment #%1$s of %2$s"
 msgstr ""
 
@@ -715,16 +742,19 @@ msgstr ""
 
 #. translators: %s is the service name.
 #: src/LabelPurchase/LabelPrintService.php:265
+#, php-format
 msgid "Service: %s"
 msgstr ""
 
 #. translators: %s is the tracking number.
 #: src/LabelPurchase/LabelPrintService.php:270
+#, php-format
 msgid "Tracking #: %s"
 msgstr ""
 
 #. translators: %s is the package name.
 #: src/LabelPurchase/LabelPrintService.php:275
+#, php-format
 msgid "Package: %s"
 msgstr ""
 
@@ -798,6 +828,7 @@ msgstr ""
 
 #. translators: %d: maximum number of shipments per batch label-purchase request
 #: src/LabelPurchase/LabelPurchaseRESTController.php:237
+#, php-format
 msgid "Batch label-purchase requests are limited to %d shipments."
 msgstr ""
 
@@ -805,19 +836,37 @@ msgstr ""
 msgid "Per-shipment `origin` is not allowed in bulk mode. Move `origin` to the batch root."
 msgstr ""
 
-#: src/LabelPurchase/LabelPurchaseService.php:531
+#. translators: %d: duplicated order_id
+#: src/LabelPurchase/LabelPurchaseRESTController.php:268
+#, php-format
+msgid "Duplicate `order_id` %d in batch label-purchase request; each order must appear at most once."
+msgstr ""
+
+#: src/LabelPurchase/LabelPurchaseService.php:514
+msgid "Bulk label purchase requires the fulfillment API. Enable it before using this endpoint."
+msgstr ""
+
+#: src/LabelPurchase/LabelPurchaseService.php:549
 msgid "Shipment is missing a valid `order_id` (must be a positive integer)."
 msgstr ""
 
-#: src/LabelPurchase/LabelPurchaseService.php:972
+#: src/LabelPurchase/LabelPurchaseService.php:566
+msgid "Could not load or create a fulfillment record for the order."
+msgstr ""
+
+#: src/LabelPurchase/LabelPurchaseService.php:651
+msgid "Missing API response for shipment."
+msgstr ""
+
+#: src/LabelPurchase/LabelPurchaseService.php:1112
 msgid "Invalid PDF response format"
 msgstr ""
 
-#: src/LabelPurchase/LabelPurchaseService.php:980
+#: src/LabelPurchase/LabelPurchaseService.php:1120
 msgid "Response does not contain valid PDF data"
 msgstr ""
 
-#: src/LabelPurchase/LabelPurchaseService.php:1000
+#: src/LabelPurchase/LabelPurchaseService.php:1140
 msgid "Failed to save PDF file"
 msgstr ""
 
@@ -1002,6 +1051,7 @@ msgstr ""
 
 #. translators: %d: maximum number of orders per batch rate-quote request
 #: src/LabelRate/LabelRateRESTController.php:464
+#, php-format
 msgid "Batch rate-quote requests are limited to %d orders."
 msgstr ""
 
@@ -1010,24 +1060,26 @@ msgid "Per-order `origin` is not allowed in batch rate-quote requests; provide a
 msgstr ""
 
 #. translators: %d: duplicated order_id
-#: src/LabelRate/LabelRateRESTController.php:500
+#: src/LabelRate/LabelRateRESTController.php:494
+#, php-format
 msgid "Duplicate `order_id` %d in batch rate-quote request; each order must appear at most once."
 msgstr ""
 
-#: src/LabelRate/LabelRateRESTController.php:567
+#: src/LabelRate/LabelRateRESTController.php:559
 msgid "Order entry must be an object."
 msgstr ""
 
 #. translators: %s: comma-separated list of missing required keys
-#: src/LabelRate/LabelRateRESTController.php:584
+#: src/LabelRate/LabelRateRESTController.php:576
+#, php-format
 msgid "Order is missing required field(s): %s."
 msgstr ""
 
-#: src/LabelRate/LabelRateRESTController.php:594
+#: src/LabelRate/LabelRateRESTController.php:586
 msgid "Order is missing a valid `order_id` (must be a positive integer)."
 msgstr ""
 
-#: src/LabelRate/LabelRateRESTController.php:603
+#: src/LabelRate/LabelRateRESTController.php:595
 msgid "Order destination and packages must be non-empty arrays."
 msgstr ""
 
@@ -1036,46 +1088,47 @@ msgid "Order is missing a valid order_id and could not be rated."
 msgstr ""
 
 #. translators: %s WC download URL link.
-#: src/Loader.php:758
+#: src/Loader.php:759
+#, php-format
 msgid "WooCommerce Shipping requires the WooCommerce plugin to be installed and active. You can download %s here."
 msgstr ""
 
-#: src/Loader.php:1109
+#: src/Loader.php:1110
 msgid "Settings"
 msgstr ""
 
-#: src/Loader.php:1116
+#: src/Loader.php:1117
 msgid "Documentation"
 msgstr ""
 
-#: src/Loader.php:1117
+#: src/Loader.php:1118
 #: dist/woocommerce-shipping-admin-status.js:14
 msgid "Support"
 msgstr ""
 
-#: src/Loader.php:1639
-#: src/Loader.php:1647
+#: src/Loader.php:1644
+#: src/Loader.php:1652
 msgid "Tracking"
 msgstr ""
 
-#: src/Loader.php:1651
+#: src/Loader.php:1656
 msgid "Provider"
 msgstr ""
 
-#: src/Loader.php:1653
+#: src/Loader.php:1658
 msgid "Tracking number"
 msgstr ""
 
-#: src/Loader.php:1782
+#: src/Loader.php:1787
 msgid "Shipping Label"
 msgstr ""
 
-#: src/Loader.php:1794
+#: src/Loader.php:1799
 msgid "Shipment Tracking"
 msgstr ""
 
-#: src/Loader.php:1849
-#: src/Loader.php:1878
+#: src/Loader.php:1854
+#: src/Loader.php:1883
 #: dist/next/903.js:1
 #: dist/woocommerce-shipping-create-shipping-label.js:75
 #: dist/woocommerce-shipping-create-shipping-label.js:256
@@ -1084,7 +1137,7 @@ msgstr ""
 msgid "Phone"
 msgstr ""
 
-#: src/Loader.php:2121
+#: src/Loader.php:2126
 msgid "WooCommerce Shipping & Tax has been deactivated. Your data and settings have been carried over to the dedicated WooCommerce Shipping and WooCommerce Tax extensions.<br />For support, please <a href=\"https://woocommerce.com/my-account/create-a-ticket/\">contact our Happiness Engineers</a>."
 msgstr ""
 
@@ -1122,6 +1175,7 @@ msgstr ""
 
 #. translators: %d=count of labels pending migration
 #: src/Migration/MigrationController.php:94
+#, php-format
 msgid "This will stop the background process that migrates purchased labels. There are currently <strong>%d label</strong> that can be migrated."
 msgid_plural "This will stop the background process that migrates purchased labels. There are currently <strong>%d labels</strong> that can be migrated."
 msgstr[0] ""
@@ -1133,6 +1187,7 @@ msgstr ""
 
 #. translators: %d is the number of labels. The word "label(s)" is wrapped in <strong> tags.
 #: src/Migration/MigrationController.php:114
+#, php-format
 msgid "There are currently <strong>%d label</strong> that can be migrated."
 msgid_plural "There are currently <strong>%d labels</strong> that can be migrated."
 msgstr[0] ""
@@ -1363,6 +1418,7 @@ msgstr ""
 
 #. translators: %s valid country codes
 #: src/Shipment/Address.php:182
+#, php-format
 msgid "Invalid country code provided. Must be one of: %s"
 msgstr ""
 
@@ -1376,11 +1432,13 @@ msgstr ""
 
 #. translators: %s: Reason for the failure in creating the data model
 #: src/Shipments/ShipmentsService.php:173
+#, php-format
 msgid "Shipment model creation failed after repair attempt: %s"
 msgstr ""
 
 #. translators: %s: Reason for the failure in creating the data model
 #: src/Shipments/ShipmentsService.php:182
+#, php-format
 msgid "Shipment model creation failed with error: %s"
 msgstr ""
 
@@ -1390,11 +1448,13 @@ msgstr ""
 
 #. translators: %s: The missing query parameter.
 #: src/WCShippingRESTController.php:44
+#, php-format
 msgid "Required body parameter is missing: %s"
 msgstr ""
 
 #. translators: %s: The missing query parameter.
 #: src/WCShippingRESTController.php:82
+#, php-format
 msgid "Required parameter is missing: %s"
 msgstr ""
 
@@ -1446,6 +1506,7 @@ msgstr ""
 
 #. translators: %d is the cache expiration in minutes
 #: dist/180.js:4
+#, js-format
 msgid "To improve performance, the data shown here may be up to %d minutes old."
 msgstr ""
 
@@ -2029,6 +2090,7 @@ msgstr ""
 
 #. translators: %s is last update time.
 #: dist/woocommerce-shipping-admin-status.js:11
+#, js-format
 msgid "Last update on %s"
 msgstr ""
 
@@ -2062,6 +2124,7 @@ msgstr ""
 
 #. translators: %d is the number of entries to show.
 #: dist/woocommerce-shipping-admin-status.js:14
+#, js-format
 msgid "Last %d entry"
 msgid_plural "Last %d entries"
 msgstr[0] ""
@@ -2109,6 +2172,50 @@ msgstr ""
 msgid "Print"
 msgstr ""
 
+#: dist/woocommerce-shipping-bulk-labels-banner.js:1
+msgid "Unfulfilled orders selected and ready to fulfill in bulk"
+msgstr ""
+
+#. translators: %d: number of selected orders
+#: dist/woocommerce-shipping-bulk-labels-banner.js:2
+#, js-format
+msgid "%d order selected."
+msgid_plural "%d orders selected."
+msgstr[0] ""
+msgstr[1] ""
+
+#: dist/woocommerce-shipping-bulk-labels-banner.js:2
+msgid "Ready to fulfill in bulk"
+msgstr ""
+
+#. translators: %d: number of eligible orders
+#: dist/woocommerce-shipping-bulk-labels-banner.js:3
+#, js-format
+msgid "%d eligible for shipping labels"
+msgid_plural "%d eligible for shipping labels"
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %d: number of orders needing attention
+#: dist/woocommerce-shipping-bulk-labels-banner.js:4
+#, js-format
+msgid "%d needs attention"
+msgid_plural "%d need attention"
+msgstr[0] ""
+msgstr[1] ""
+
+#: dist/woocommerce-shipping-bulk-labels-banner.js:4
+msgid "Select unfulfilled orders to start purchasing shipping labels"
+msgstr ""
+
+#. translators: %d: number of shipping labels to create
+#: dist/woocommerce-shipping-bulk-labels-banner.js:5
+#, js-format
+msgid "Create %d shipping label"
+msgid_plural "Create %d shipping labels"
+msgstr[0] ""
+msgstr[1] ""
+
 #: dist/woocommerce-shipping-checkout-address-validation.js:1
 msgid "We were unable to update your shipping address. Please verify that the entered address is correct."
 msgstr ""
@@ -2116,12 +2223,14 @@ msgstr ""
 #. translators: %s is the formatted date
 #: dist/woocommerce-shipping-create-shipping-label.js:4
 #: dist/woocommerce-shipping-plugin.js:4
+#, js-format
 msgid "Today (%s)"
 msgstr ""
 
 #. translators: %s is the formatted date
 #: dist/woocommerce-shipping-create-shipping-label.js:7
 #: dist/woocommerce-shipping-plugin.js:7
+#, js-format
 msgid "Tomorrow (%s)"
 msgstr ""
 
@@ -2142,6 +2251,7 @@ msgstr[1] ""
 
 #. translators: %d: order ID
 #: dist/woocommerce-shipping-create-shipping-label.js:8
+#, js-format
 msgid "Order %d"
 msgstr ""
 
@@ -2163,6 +2273,7 @@ msgstr ""
 #. translators: %1$s: minimum weight, %2$s: weight unit
 #: dist/woocommerce-shipping-create-shipping-label.js:12
 #: dist/woocommerce-shipping-plugin.js:11
+#, js-format
 msgid "Weight must be greater than or equal to %1$s %2$s"
 msgstr ""
 
@@ -2198,18 +2309,21 @@ msgstr ""
 
 #. translators: %s: carrier name
 #: dist/woocommerce-shipping-create-shipping-label.js:15
+#, js-format
 msgid "Ship with %s"
 msgstr ""
 
 #. translators: %d: remaining count
 #: dist/woocommerce-shipping-create-shipping-label.js:18
 #: dist/woocommerce-shipping-plugin.js:14
+#, js-format
 msgid "Promo ending soon · %d left"
 msgstr ""
 
 #. translators: %1$s: carrier name, %2$d: remaining count
 #: dist/woocommerce-shipping-create-shipping-label.js:21
 #: dist/woocommerce-shipping-plugin.js:17
+#, js-format
 msgid "%1$s Promo: %2$d remaining"
 msgstr ""
 
@@ -2316,12 +2430,14 @@ msgstr ""
 #. translators: %s: package name
 #: dist/woocommerce-shipping-create-shipping-label.js:31
 #: dist/woocommerce-shipping-plugin.js:27
+#, js-format
 msgid "Delete %s"
 msgstr ""
 
 #. translators: %s: package name
 #: dist/woocommerce-shipping-create-shipping-label.js:34
 #: dist/woocommerce-shipping-plugin.js:30
+#, js-format
 msgid "Remove %s"
 msgstr ""
 
@@ -2553,6 +2669,7 @@ msgstr ""
 #. translators: %s: weight in lbs
 #: dist/woocommerce-shipping-create-shipping-label.js:35
 #: dist/woocommerce-shipping-plugin.js:31
+#, js-format
 msgid "%slb"
 msgstr ""
 
@@ -2604,6 +2721,7 @@ msgstr ""
 #. translators: %1$s: length, %2$s: width, %3$s: height, %4$s: hazmat info
 #: dist/woocommerce-shipping-create-shipping-label.js:36
 #: dist/woocommerce-shipping-plugin.js:32
+#, js-format
 msgid "%1$sin x %2$sin x %3$sin %4$s"
 msgstr ""
 
@@ -2655,12 +2773,14 @@ msgstr ""
 #. translators: %1$s The name of the form section containing the erroneous form field, %2$s is the error message.
 #: dist/woocommerce-shipping-create-shipping-label.js:39
 #: dist/woocommerce-shipping-plugin.js:35
+#, js-format
 msgid "%1$s: %2$s"
 msgstr ""
 
 #. translators: %1$s The name of the form field that has an error (origin address or destination), %2$s is the error message, e.g. "must be greater than 0".
 #: dist/woocommerce-shipping-create-shipping-label.js:42
 #: dist/woocommerce-shipping-plugin.js:38
+#, js-format
 msgid "%1$s %2$s."
 msgstr ""
 
@@ -2742,6 +2862,7 @@ msgstr ""
 #. translators: %s: refundable amount
 #: dist/woocommerce-shipping-create-shipping-label.js:45
 #: dist/woocommerce-shipping-plugin.js:41
+#, js-format
 msgid "Refund label (-%s)"
 msgstr ""
 
@@ -2753,6 +2874,7 @@ msgstr ""
 #. translators: %s: number of days
 #: dist/woocommerce-shipping-create-shipping-label.js:48
 #: dist/woocommerce-shipping-plugin.js:44
+#, js-format
 msgid "Request a refund for your unused shipping label. The refund process for the shipping label will begin immediately and is typically completed within %s business days."
 msgstr ""
 
@@ -2794,6 +2916,7 @@ msgstr ""
 #. translators: %s is filled with `and customs form`, if label has customs form
 #: dist/woocommerce-shipping-create-shipping-label.js:51
 #: dist/woocommerce-shipping-plugin.js:47
+#, js-format
 msgid "The \"WooCommerce Shipping & Tax\" plugin doesn't store as much information about labels as WooCommerce Shipping. Please refer to the label %s for more details. This affects the following label information:"
 msgstr ""
 
@@ -2987,6 +3110,7 @@ msgstr ""
 #. translators: %d: number of items
 #: dist/woocommerce-shipping-create-shipping-label.js:54
 #: dist/woocommerce-shipping-plugin.js:309
+#, js-format
 msgid "Select all (%d)"
 msgstr ""
 
@@ -2998,17 +3122,20 @@ msgstr ""
 #. translators: %1$d is the shipment number, %2$d is the total number of shipments
 #: dist/woocommerce-shipping-create-shipping-label.js:57
 #: dist/woocommerce-shipping-plugin.js:300
+#, js-format
 msgid "Return %1$d/%2$d"
 msgstr ""
 
 #. translators: %1$d is the shipment number, %2$d is the total number of shipments
 #: dist/woocommerce-shipping-create-shipping-label.js:60
 #: dist/woocommerce-shipping-plugin.js:303
+#, js-format
 msgid "Shipment %1$d/%2$d"
 msgstr ""
 
 #. translators: %1$d: number of items
 #: dist/woocommerce-shipping-create-shipping-label.js:63
+#, js-format
 msgid "%1$d item was fulfilled."
 msgid_plural "%1$d items were fulfilled."
 msgstr[0] ""
@@ -3016,6 +3143,7 @@ msgstr[1] ""
 
 #. translators: %1$d: number of items fulfilled
 #: dist/woocommerce-shipping-create-shipping-label.js:66
+#, js-format
 msgid "%1$d item was fulfilled,"
 msgid_plural "%1$d items were fulfilled,"
 msgstr[0] ""
@@ -3023,6 +3151,7 @@ msgstr[1] ""
 
 #. translators: %d: number of items to be fulfilled
 #: dist/woocommerce-shipping-create-shipping-label.js:69
+#, js-format
 msgid "%d item still requires fulfillment."
 msgid_plural "%d items still require fulfillment."
 msgstr[0] ""
@@ -3030,6 +3159,7 @@ msgstr[1] ""
 
 #. translators: %d: number of items
 #: dist/woocommerce-shipping-create-shipping-label.js:72
+#, js-format
 msgid "%d item is ready to be fulfilled"
 msgid_plural "%d items are ready to be fulfilled"
 msgstr[0] ""
@@ -3059,6 +3189,7 @@ msgstr ""
 
 #. translators: %s: error message
 #: dist/woocommerce-shipping-create-shipping-label.js:75
+#, js-format
 msgid "There was an error while updating the shipments. %s"
 msgstr ""
 
@@ -3085,6 +3216,7 @@ msgstr ""
 #. translators: %1$s a user defined name for the address.
 #: dist/woocommerce-shipping-create-shipping-label.js:259
 #: dist/woocommerce-shipping-plugin.js:231
+#, js-format
 msgctxt "Origin address"
 msgid "%1$s (Default Origin)"
 msgstr ""
@@ -3145,6 +3277,7 @@ msgstr ""
 #. translators: %s is the parent rate title
 #: dist/woocommerce-shipping-create-shipping-label.js:262
 #: dist/woocommerce-shipping-plugin.js:234
+#, js-format
 msgid "%s (base fee)"
 msgstr ""
 
@@ -3191,6 +3324,7 @@ msgstr ""
 
 #: dist/woocommerce-shipping-create-shipping-label.js:271
 #: dist/woocommerce-shipping-plugin.js:243
+#, js-format
 msgid "You're saving %s with carrier discounts"
 msgstr ""
 
@@ -3199,6 +3333,7 @@ msgstr ""
 #: dist/woocommerce-shipping-create-shipping-label.js:307
 #: dist/woocommerce-shipping-plugin.js:246
 #: dist/woocommerce-shipping-plugin.js:279
+#, js-format
 msgid "%s business day"
 msgid_plural "%s business days"
 msgstr[0] ""
@@ -3246,6 +3381,7 @@ msgstr ""
 #: dist/woocommerce-shipping-create-shipping-label.js:316
 #: dist/woocommerce-shipping-plugin.js:249
 #: dist/woocommerce-shipping-plugin.js:288
+#, js-format
 msgid "Customer paid: %1$s for shipping (%2$s)"
 msgstr ""
 
@@ -3254,6 +3390,7 @@ msgstr ""
 #: dist/woocommerce-shipping-create-shipping-label.js:319
 #: dist/woocommerce-shipping-plugin.js:252
 #: dist/woocommerce-shipping-plugin.js:291
+#, js-format
 msgid "Customer paid: %s for shipping"
 msgstr ""
 
@@ -3265,12 +3402,14 @@ msgstr ""
 #. translators: %s is the discount amount
 #: dist/woocommerce-shipping-create-shipping-label.js:283
 #: dist/woocommerce-shipping-plugin.js:255
+#, js-format
 msgid "You saved %s with WooCommerce Shipping. <i/>"
 msgstr ""
 
 #. translators: %s is the discount amount
 #: dist/woocommerce-shipping-create-shipping-label.js:286
 #: dist/woocommerce-shipping-plugin.js:258
+#, js-format
 msgid "You save %s with WooCommerce Shipping. <i/>"
 msgstr ""
 
@@ -3358,30 +3497,35 @@ msgstr ""
 #. translators: %s the cost of the additional service.
 #: dist/woocommerce-shipping-create-shipping-label.js:289
 #: dist/woocommerce-shipping-plugin.js:261
+#, js-format
 msgid "Signature required ( +%s )"
 msgstr ""
 
 #. translators: %s the cost of the additional service.
 #: dist/woocommerce-shipping-create-shipping-label.js:292
 #: dist/woocommerce-shipping-plugin.js:264
+#, js-format
 msgid "Adult signature required ( +%s )"
 msgstr ""
 
 #. translators: %s the cost of the additional service.
 #: dist/woocommerce-shipping-create-shipping-label.js:295
 #: dist/woocommerce-shipping-plugin.js:267
+#, js-format
 msgid "Carbon neutral ( +%s )"
 msgstr ""
 
 #. translators: %s the cost of the additional service.
 #: dist/woocommerce-shipping-create-shipping-label.js:298
 #: dist/woocommerce-shipping-plugin.js:270
+#, js-format
 msgid "Additional handling ( +%s )"
 msgstr ""
 
 #. translators: %s the cost of the additional service.
 #: dist/woocommerce-shipping-create-shipping-label.js:301
 #: dist/woocommerce-shipping-plugin.js:273
+#, js-format
 msgid "Saturday delivery ( %s )"
 msgstr ""
 
@@ -3398,6 +3542,7 @@ msgstr ""
 #. translators: %s: insurance amount
 #: dist/woocommerce-shipping-create-shipping-label.js:304
 #: dist/woocommerce-shipping-plugin.js:276
+#, js-format
 msgid "insurance (up to %s)"
 msgstr ""
 
@@ -3439,6 +3584,7 @@ msgstr ""
 #. translators: %s: list of extras
 #: dist/woocommerce-shipping-create-shipping-label.js:310
 #: dist/woocommerce-shipping-plugin.js:282
+#, js-format
 msgid "Includes %s"
 msgstr ""
 
@@ -3452,6 +3598,7 @@ msgstr ""
 #. translators: %s: list of extras
 #: dist/woocommerce-shipping-create-shipping-label.js:313
 #: dist/woocommerce-shipping-plugin.js:285
+#, js-format
 msgid "includes %s"
 msgstr ""
 
@@ -3615,12 +3762,14 @@ msgstr ""
 #. translators: %s is the country name
 #: dist/woocommerce-shipping-create-shipping-label.js:322
 #: dist/woocommerce-shipping-plugin.js:294
+#, js-format
 msgid "International Transaction Number is required for shipments to %s"
 msgstr ""
 
 #. translators: %s is the tariff number
 #: dist/woocommerce-shipping-create-shipping-label.js:325
 #: dist/woocommerce-shipping-plugin.js:297
+#, js-format
 msgid "International Transaction Number is required for shipping items valued over $2,500 per tariff number. Products with tariff number %s add up to more than $2,500."
 msgstr ""
 
@@ -3767,6 +3916,7 @@ msgstr ""
 #. translators: %s is the shipment title as Shipment 1/2, Shipment 2/2, etc.
 #: dist/woocommerce-shipping-create-shipping-label.js:328
 #: dist/woocommerce-shipping-plugin.js:306
+#, js-format
 msgid "Purchase %s"
 msgstr ""
 
@@ -3926,6 +4076,7 @@ msgstr ""
 #. translators: %1$s: HAZMAT part, %2$s: package part
 #: dist/woocommerce-shipping-create-shipping-label.js:331
 #: dist/woocommerce-shipping-plugin.js:312
+#, js-format
 msgid "No shipping rates were found based on the combination of %1$s%2$s and the total shipment weight."
 msgstr ""
 
@@ -3951,6 +4102,7 @@ msgstr ""
 #. translators: %1$s: HAZMAT part, %2$s: package part
 #: dist/woocommerce-shipping-create-shipping-label.js:334
 #: dist/woocommerce-shipping-plugin.js:315
+#, js-format
 msgid "We couldn't find a shipping service for the combination of %1$s%2$s and the total shipment weight. Please adjust your input and try again."
 msgstr ""
 
@@ -3997,11 +4149,13 @@ msgstr ""
 
 #. translators: %s The full country name of the store's address.
 #: dist/woocommerce-shipping-onboarding.js:5
+#, js-format
 msgid "Your country, <strong>%s</strong>, is not supported yet."
 msgstr ""
 
 #. translators: %s The store's selected currency in short-form (e.g. USD).
 #: dist/woocommerce-shipping-onboarding.js:8
+#, js-format
 msgid "Your currency, <strong>%s</strong>, is not supported yet."
 msgstr ""
 
@@ -4051,6 +4205,7 @@ msgstr ""
 
 #. translators: %d: number of items
 #: dist/woocommerce-shipping-plugin.js:316
+#, js-format
 msgid "%d item"
 msgid_plural "%d items"
 msgstr[0] ""
@@ -4146,6 +4301,7 @@ msgstr ""
 
 #. translators: 1: Card type (e.g., Visa), 2: Masked card digits (e.g., •••• 4242)
 #: dist/woocommerce-shipping-plugin.js:317
+#, js-format
 msgid "Label will be charged to %1$s %2$s"
 msgstr ""
 
@@ -4155,6 +4311,7 @@ msgstr ""
 
 #. translators: %d is number of labels excluded due to missing destination country
 #: dist/woocommerce-shipping-scanform.js:9
+#, js-format
 msgid "%d label was excluded because its destination country could not be determined and cannot be added to a SCAN Form."
 msgid_plural "%d labels were excluded because their destination country could not be determined and cannot be added to a SCAN Form."
 msgstr[0] ""
@@ -4162,6 +4319,7 @@ msgstr[1] ""
 
 #. translators: %d is number of envelope labels excluded from SCAN Form
 #: dist/woocommerce-shipping-scanform.js:10
+#, js-format
 msgid "%d label is an envelope shipment and cannot be included in a SCAN Form."
 msgid_plural "%d labels are envelope shipments and cannot be included in a SCAN Form."
 msgstr[0] ""
@@ -4169,6 +4327,7 @@ msgstr[1] ""
 
 #. translators: %d is number of labels that could not be added
 #: dist/woocommerce-shipping-scanform.js:11
+#, js-format
 msgid "%d label could not be added to a SCAN Form."
 msgid_plural "%d labels could not be added to a SCAN Form."
 msgstr[0] ""
@@ -4176,6 +4335,7 @@ msgstr[1] ""
 
 #. translators: %d is number of labels
 #: dist/woocommerce-shipping-scanform.js:12
+#, js-format
 msgid "%d eligible label"
 msgid_plural "%d eligible labels"
 msgstr[0] ""
@@ -4193,6 +4353,7 @@ msgstr ""
 
 #. translators: %d is number of eligible labels
 #: dist/woocommerce-shipping-scanform.js:188
+#, js-format
 msgid "Select All (%d Eligible label)"
 msgid_plural "Select All (%d Eligible labels)"
 msgstr[0] ""
@@ -4200,6 +4361,7 @@ msgstr[1] ""
 
 #. translators: %s is order number
 #: dist/woocommerce-shipping-scanform.js:189
+#, js-format
 msgid "#%s"
 msgstr ""
 
@@ -4225,6 +4387,7 @@ msgstr ""
 
 #. translators: %1$s is order number, %2$s is tracking number
 #: dist/woocommerce-shipping-scanform.js:190
+#, js-format
 msgid "Order #%1$s - %2$s"
 msgstr ""
 
@@ -4232,6 +4395,7 @@ msgstr ""
 #: dist/woocommerce-shipping-scanform.js:191
 #: dist/woocommerce-shipping-scanform.js:197
 #: dist/woocommerce-shipping-scanform.js:199
+#, js-format
 msgid "Label ID: %d"
 msgstr ""
 
@@ -4241,6 +4405,7 @@ msgstr ""
 
 #. translators: %d is number of eligible labels
 #: dist/woocommerce-shipping-scanform.js:192
+#, js-format
 msgid "%d label is eligible for SCAN Form creation."
 msgid_plural "%d labels are eligible for SCAN Form creation."
 msgstr[0] ""
@@ -4248,6 +4413,7 @@ msgstr[1] ""
 
 #. translators: %d is number of already scanned labels
 #: dist/woocommerce-shipping-scanform.js:193
+#, js-format
 msgid "%d label has already been included in a SCAN Form and will be skipped."
 msgid_plural "%d labels have already been included in a SCAN Form and will be skipped."
 msgstr[0] ""
@@ -4255,6 +4421,7 @@ msgstr[1] ""
 
 #. translators: %d is number of not found labels
 #: dist/woocommerce-shipping-scanform.js:194
+#, js-format
 msgid "%d label was not found and will be skipped."
 msgid_plural "%d labels were not found and will be skipped."
 msgstr[0] ""
@@ -4262,6 +4429,7 @@ msgstr[1] ""
 
 #. translators: %d is number of invalid site labels
 #: dist/woocommerce-shipping-scanform.js:195
+#, js-format
 msgid "%d label belongs to a different site and will be skipped."
 msgid_plural "%d labels belong to a different site and will be skipped."
 msgstr[0] ""
@@ -4274,6 +4442,7 @@ msgstr ""
 #. translators: %1$s is order number, %2$s is tracking number, %3$s is service name
 #: dist/woocommerce-shipping-scanform.js:196
 #: dist/woocommerce-shipping-scanform.js:198
+#, js-format
 msgid "Order #%1$s - %2$s - %3$s"
 msgstr ""
 
@@ -4291,6 +4460,7 @@ msgstr ""
 
 #. translators: %1$s is the scan form type (Domestic/International)
 #: dist/woocommerce-shipping-scanform.js:200
+#, js-format
 msgid "View USPS SCAN Form — %1$s"
 msgstr ""
 
@@ -4328,6 +4498,7 @@ msgstr ""
 
 #. translators: %d is number of labels
 #: dist/woocommerce-shipping-scanform.js:201
+#, js-format
 msgid "SCAN Form created successfully for %d label!"
 msgid_plural "SCAN Form created successfully for %d labels!"
 msgstr[0] ""
@@ -4335,6 +4506,7 @@ msgstr[1] ""
 
 #. translators: %d is number of labels that failed
 #: dist/woocommerce-shipping-scanform.js:202
+#, js-format
 msgid "%d label could not be added to a SCAN Form and will need to be retried."
 msgid_plural "%d labels could not be added to a SCAN Form and will need to be retried."
 msgstr[0] ""
@@ -4362,6 +4534,7 @@ msgstr ""
 
 #. translators: %d is number of labels
 #: dist/woocommerce-shipping-scanform.js:203
+#, js-format
 msgid "%d label has already been included in a SCAN Form or has been shipped."
 msgid_plural "%d labels have already been included in a SCAN Form or have been shipped."
 msgstr[0] ""
@@ -4369,6 +4542,7 @@ msgstr[1] ""
 
 #. translators: %d is number of labels
 #: dist/woocommerce-shipping-scanform.js:204
+#, js-format
 msgid "%d label could not be included in the SCAN Form (it may have been refunded or deleted)."
 msgid_plural "%d labels could not be included in the SCAN Form (they may have been refunded or deleted)."
 msgstr[0] ""
@@ -4376,6 +4550,7 @@ msgstr[1] ""
 
 #. translators: %d is number of valid labels
 #: dist/woocommerce-shipping-scanform.js:205
+#, js-format
 msgid "You still have %d valid label. Would you like to create a SCAN Form with the remaining valid label?"
 msgid_plural "You still have %d valid labels. Would you like to create a SCAN Form with the remaining valid labels?"
 msgstr[0] ""
@@ -4383,6 +4558,7 @@ msgstr[1] ""
 
 #. translators: %d is number of valid labels
 #: dist/woocommerce-shipping-scanform.js:206
+#, js-format
 msgid "Proceed with %d Valid Label"
 msgid_plural "Proceed with %d Valid Labels"
 msgstr[0] ""
@@ -4394,6 +4570,7 @@ msgstr ""
 
 #. translators: %d is number of selected labels
 #: dist/woocommerce-shipping-scanform.js:207
+#, js-format
 msgid "%d label selected"
 msgid_plural "%d labels selected"
 msgstr[0] ""
@@ -4401,6 +4578,7 @@ msgstr[1] ""
 
 #. translators: 1: domestic count, 2: international count
 #: dist/woocommerce-shipping-scanform.js:208
+#, js-format
 msgid "%1$d domestic + %2$d international"
 msgstr ""
 
@@ -4426,6 +4604,7 @@ msgstr ""
 
 #. translators: %s: the status of the refund (e.g. "pending").
 #: dist/woocommerce-shipping-shipment-tracking.js:4
+#, js-format
 msgid "[ Refund - %s ]"
 msgstr ""
 

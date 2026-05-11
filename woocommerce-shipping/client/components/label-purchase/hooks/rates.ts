@@ -349,6 +349,11 @@ export function useRatesState( {
 		[ selectRates, accountSettings ]
 	);
 
+	const resetRates = useCallback( () => {
+		dispatch( labelPurchaseStore ).ratesReset();
+		setErrors( ( prev ) => ( { ...prev, endpoint: null } ) );
+	}, [] );
+
 	const fetchRates = useCallback(
 		async (
 			pkg: ( Package | CustomPackage ) & {
@@ -653,6 +658,7 @@ export function useRatesState( {
 		isFetching,
 		updateRates,
 		fetchRates,
+		resetRates,
 		sortRates,
 		errors,
 		setErrors,
