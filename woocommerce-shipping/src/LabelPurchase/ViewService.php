@@ -343,19 +343,6 @@ class ViewService {
 	}
 
 	/**
-	 * Check whether shipping label feature is enabled from WC Services setting.
-	 */
-	public function is_shipping_label_enabled(): bool {
-		$account_settings = $this->account_settings->get( true );
-
-		if ( isset( $account_settings['purchaseSettings']['enabled'] ) && is_bool( $account_settings['purchaseSettings']['enabled'] ) ) {
-			return $account_settings['purchaseSettings']['enabled'];
-		}
-
-		return true;
-	}
-
-	/**
 	 * Check whether the given order is eligible for shipping label creation - the order has at least one product that is:
 	 * - Shippable.
 	 * - Non-refunded.

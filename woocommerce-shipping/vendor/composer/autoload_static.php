@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInite5a73c3f4943dc34fc499f2e4d5bc2a0
+class ComposerStaticInit5cf50ab6649ec9e5d8aa1976763c0124
 {
     public static $files = array (
         '3773ef3f09c37da5478d578e32b03a4b' => __DIR__ . '/..' . '/automattic/jetpack-assets/actions.php',
@@ -12,7 +12,20 @@ class ComposerStaticInite5a73c3f4943dc34fc499f2e4d5bc2a0
     );
 
     public static $prefixLengthsPsr4 = array (
-        'A' => 
+        'W' =>
+        array (
+            'WooCommerce\\BoxPacker\\' => 22,
+        ),
+        'P' =>
+        array (
+            'Psr\\Log\\' => 8,
+        ),
+        'D' =>
+        array (
+            'DVDoug\\BoxPacker\\Test\\' => 22,
+            'DVDoug\\BoxPacker\\' => 17,
+        ),
+        'A' =>
         array (
             'Automattic\\WCShipping\\' => 22,
             'Automattic\\Jetpack\\Autoloader\\' => 30,
@@ -20,11 +33,27 @@ class ComposerStaticInite5a73c3f4943dc34fc499f2e4d5bc2a0
     );
 
     public static $prefixDirsPsr4 = array (
-        'Automattic\\WCShipping\\' => 
+        'WooCommerce\\BoxPacker\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/woocommerce/box-packer/src',
+        ),
+        'Psr\\Log\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/psr/log/Psr/Log',
+        ),
+        'DVDoug\\BoxPacker\\Test\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/dvdoug/boxpacker/tests/Test',
+        ),
+        'DVDoug\\BoxPacker\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/dvdoug/boxpacker/src',
+        ),
+        'Automattic\\WCShipping\\' =>
         array (
             0 => __DIR__ . '/../..' . '/src',
         ),
-        'Automattic\\Jetpack\\Autoloader\\' => 
+        'Automattic\\Jetpack\\Autoloader\\' =>
         array (
             0 => __DIR__ . '/..' . '/automattic/jetpack-autoloader/src',
         ),
@@ -137,6 +166,7 @@ class ComposerStaticInite5a73c3f4943dc34fc499f2e4d5bc2a0
         'Automattic\\WCShipping\\LabelPurchase\\LabelPurchaseService' => __DIR__ . '/../..' . '/src/LabelPurchase/LabelPurchaseService.php',
         'Automattic\\WCShipping\\LabelPurchase\\LabelRefundRESTController' => __DIR__ . '/../..' . '/src/LabelPurchase/LabelRefundRESTController.php',
         'Automattic\\WCShipping\\LabelPurchase\\LabelStatusController' => __DIR__ . '/../..' . '/src/LabelPurchase/LabelStatusController.php',
+        'Automattic\\WCShipping\\LabelPurchase\\OrdersShippingContextRESTController' => __DIR__ . '/../..' . '/src/LabelPurchase/OrdersShippingContextRESTController.php',
         'Automattic\\WCShipping\\LabelPurchase\\View' => __DIR__ . '/../..' . '/src/LabelPurchase/View.php',
         'Automattic\\WCShipping\\LabelPurchase\\ViewService' => __DIR__ . '/../..' . '/src/LabelPurchase/ViewService.php',
         'Automattic\\WCShipping\\LabelRate\\LabelRateRESTController' => __DIR__ . '/../..' . '/src/LabelRate/LabelRateRESTController.php',
@@ -153,6 +183,8 @@ class ComposerStaticInite5a73c3f4943dc34fc499f2e4d5bc2a0
         'Automattic\\WCShipping\\Migration\\MigrationState' => __DIR__ . '/../..' . '/src/Migration/MigrationState.php',
         'Automattic\\WCShipping\\Onboarding\\SettingsPage' => __DIR__ . '/../..' . '/src/Onboarding/SettingsPage.php',
         'Automattic\\WCShipping\\OriginAddresses\\OriginAddressService' => __DIR__ . '/../..' . '/src/OriginAddresses/OriginAddressService.php',
+        'Automattic\\WCShipping\\PackageAssignment\\PackageAssignmentRESTController' => __DIR__ . '/../..' . '/src/PackageAssignment/PackageAssignmentRESTController.php',
+        'Automattic\\WCShipping\\PackageAssignment\\PackageAssignmentService' => __DIR__ . '/../..' . '/src/PackageAssignment/PackageAssignmentService.php',
         'Automattic\\WCShipping\\Packages\\Package' => __DIR__ . '/../..' . '/src/Packages/Package.php',
         'Automattic\\WCShipping\\Packages\\PackageRepository' => __DIR__ . '/../..' . '/src/Packages/PackageRepository.php',
         'Automattic\\WCShipping\\Packages\\PackageValidationException' => __DIR__ . '/../..' . '/src/Packages/PackageValidationException.php',
@@ -191,6 +223,37 @@ class ComposerStaticInite5a73c3f4943dc34fc499f2e4d5bc2a0
         'Automattic\\WCShipping\\WCShippingRESTController' => __DIR__ . '/../..' . '/src/WCShippingRESTController.php',
         'Automattic\\WCShipping\\WPCOMConnection\\WPCOMConnectionRESTController' => __DIR__ . '/../..' . '/src/WPCOMConnection/WPCOMConnectionRESTController.php',
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
+        'DVDoug\\BoxPacker\\Box' => __DIR__ . '/..' . '/dvdoug/boxpacker/src/Box.php',
+        'DVDoug\\BoxPacker\\BoxList' => __DIR__ . '/..' . '/dvdoug/boxpacker/src/BoxList.php',
+        'DVDoug\\BoxPacker\\ConstrainedItem' => __DIR__ . '/..' . '/dvdoug/boxpacker/src/ConstrainedItem.php',
+        'DVDoug\\BoxPacker\\ConstrainedPlacementItem' => __DIR__ . '/..' . '/dvdoug/boxpacker/src/ConstrainedPlacementItem.php',
+        'DVDoug\\BoxPacker\\InfalliblePacker' => __DIR__ . '/..' . '/dvdoug/boxpacker/src/InfalliblePacker.php',
+        'DVDoug\\BoxPacker\\Item' => __DIR__ . '/..' . '/dvdoug/boxpacker/src/Item.php',
+        'DVDoug\\BoxPacker\\ItemList' => __DIR__ . '/..' . '/dvdoug/boxpacker/src/ItemList.php',
+        'DVDoug\\BoxPacker\\ItemTooLargeException' => __DIR__ . '/..' . '/dvdoug/boxpacker/src/ItemTooLargeException.php',
+        'DVDoug\\BoxPacker\\LayerPacker' => __DIR__ . '/..' . '/dvdoug/boxpacker/src/LayerPacker.php',
+        'DVDoug\\BoxPacker\\LayerStabiliser' => __DIR__ . '/..' . '/dvdoug/boxpacker/src/LayerStabiliser.php',
+        'DVDoug\\BoxPacker\\LimitedSupplyBox' => __DIR__ . '/..' . '/dvdoug/boxpacker/src/LimitedSupplyBox.php',
+        'DVDoug\\BoxPacker\\NoBoxesAvailableException' => __DIR__ . '/..' . '/dvdoug/boxpacker/src/NoBoxesAvailableException.php',
+        'DVDoug\\BoxPacker\\OrientatedItem' => __DIR__ . '/..' . '/dvdoug/boxpacker/src/OrientatedItem.php',
+        'DVDoug\\BoxPacker\\OrientatedItemFactory' => __DIR__ . '/..' . '/dvdoug/boxpacker/src/OrientatedItemFactory.php',
+        'DVDoug\\BoxPacker\\OrientatedItemSorter' => __DIR__ . '/..' . '/dvdoug/boxpacker/src/OrientatedItemSorter.php',
+        'DVDoug\\BoxPacker\\PackedBox' => __DIR__ . '/..' . '/dvdoug/boxpacker/src/PackedBox.php',
+        'DVDoug\\BoxPacker\\PackedBoxList' => __DIR__ . '/..' . '/dvdoug/boxpacker/src/PackedBoxList.php',
+        'DVDoug\\BoxPacker\\PackedItem' => __DIR__ . '/..' . '/dvdoug/boxpacker/src/PackedItem.php',
+        'DVDoug\\BoxPacker\\PackedItemList' => __DIR__ . '/..' . '/dvdoug/boxpacker/src/PackedItemList.php',
+        'DVDoug\\BoxPacker\\PackedLayer' => __DIR__ . '/..' . '/dvdoug/boxpacker/src/PackedLayer.php',
+        'DVDoug\\BoxPacker\\Packer' => __DIR__ . '/..' . '/dvdoug/boxpacker/src/Packer.php',
+        'DVDoug\\BoxPacker\\Test\\ConstrainedPlacementByCountTestItem' => __DIR__ . '/..' . '/dvdoug/boxpacker/tests/Test/ConstrainedPlacementByCountTestItem.php',
+        'DVDoug\\BoxPacker\\Test\\ConstrainedPlacementNoStackingTestItem' => __DIR__ . '/..' . '/dvdoug/boxpacker/tests/Test/ConstrainedPlacementNoStackingTestItem.php',
+        'DVDoug\\BoxPacker\\Test\\ConstrainedTestItem' => __DIR__ . '/..' . '/dvdoug/boxpacker/tests/Test/ConstrainedTestItem.php',
+        'DVDoug\\BoxPacker\\Test\\LimitedSupplyTestBox' => __DIR__ . '/..' . '/dvdoug/boxpacker/tests/Test/LimitedSupplyTestBox.php',
+        'DVDoug\\BoxPacker\\Test\\THPackTestItem' => __DIR__ . '/..' . '/dvdoug/boxpacker/tests/Test/THPackTestItem.php',
+        'DVDoug\\BoxPacker\\Test\\TestBox' => __DIR__ . '/..' . '/dvdoug/boxpacker/tests/Test/TestBox.php',
+        'DVDoug\\BoxPacker\\Test\\TestItem' => __DIR__ . '/..' . '/dvdoug/boxpacker/tests/Test/TestItem.php',
+        'DVDoug\\BoxPacker\\VolumePacker' => __DIR__ . '/..' . '/dvdoug/boxpacker/src/VolumePacker.php',
+        'DVDoug\\BoxPacker\\WeightRedistributor' => __DIR__ . '/..' . '/dvdoug/boxpacker/src/WeightRedistributor.php',
+        'DVDoug\\BoxPacker\\WorkingVolume' => __DIR__ . '/..' . '/dvdoug/boxpacker/src/WorkingVolume.php',
         'Jetpack_IXR_Client' => __DIR__ . '/..' . '/automattic/jetpack-connection/legacy/class-jetpack-ixr-client.php',
         'Jetpack_IXR_ClientMulticall' => __DIR__ . '/..' . '/automattic/jetpack-connection/legacy/class-jetpack-ixr-clientmulticall.php',
         'Jetpack_Options' => __DIR__ . '/..' . '/automattic/jetpack-connection/legacy/class-jetpack-options.php',
@@ -198,14 +261,37 @@ class ComposerStaticInite5a73c3f4943dc34fc499f2e4d5bc2a0
         'Jetpack_Tracks_Client' => __DIR__ . '/..' . '/automattic/jetpack-connection/legacy/class-jetpack-tracks-client.php',
         'Jetpack_Tracks_Event' => __DIR__ . '/..' . '/automattic/jetpack-connection/legacy/class-jetpack-tracks-event.php',
         'Jetpack_XMLRPC_Server' => __DIR__ . '/..' . '/automattic/jetpack-connection/legacy/class-jetpack-xmlrpc-server.php',
+        'Psr\\Log\\AbstractLogger' => __DIR__ . '/..' . '/psr/log/Psr/Log/AbstractLogger.php',
+        'Psr\\Log\\InvalidArgumentException' => __DIR__ . '/..' . '/psr/log/Psr/Log/InvalidArgumentException.php',
+        'Psr\\Log\\LogLevel' => __DIR__ . '/..' . '/psr/log/Psr/Log/LogLevel.php',
+        'Psr\\Log\\LoggerAwareInterface' => __DIR__ . '/..' . '/psr/log/Psr/Log/LoggerAwareInterface.php',
+        'Psr\\Log\\LoggerAwareTrait' => __DIR__ . '/..' . '/psr/log/Psr/Log/LoggerAwareTrait.php',
+        'Psr\\Log\\LoggerInterface' => __DIR__ . '/..' . '/psr/log/Psr/Log/LoggerInterface.php',
+        'Psr\\Log\\LoggerTrait' => __DIR__ . '/..' . '/psr/log/Psr/Log/LoggerTrait.php',
+        'Psr\\Log\\NullLogger' => __DIR__ . '/..' . '/psr/log/Psr/Log/NullLogger.php',
+        'Psr\\Log\\Test\\DummyTest' => __DIR__ . '/..' . '/psr/log/Psr/Log/Test/DummyTest.php',
+        'Psr\\Log\\Test\\LoggerInterfaceTest' => __DIR__ . '/..' . '/psr/log/Psr/Log/Test/LoggerInterfaceTest.php',
+        'Psr\\Log\\Test\\TestLogger' => __DIR__ . '/..' . '/psr/log/Psr/Log/Test/TestLogger.php',
+        'WooCommerce\\BoxPacker\\Abstract_Item' => __DIR__ . '/..' . '/woocommerce/box-packer/src/class-abstract-item.php',
+        'WooCommerce\\BoxPacker\\Abstract_Packer' => __DIR__ . '/..' . '/woocommerce/box-packer/src/class-abstract-packer.php',
+        'WooCommerce\\BoxPacker\\Box' => __DIR__ . '/..' . '/woocommerce/box-packer/src/interface-box.php',
+        'WooCommerce\\BoxPacker\\DVDoug\\Box' => __DIR__ . '/..' . '/woocommerce/box-packer/src/dvdoug/class-box.php',
+        'WooCommerce\\BoxPacker\\DVDoug\\Item' => __DIR__ . '/..' . '/woocommerce/box-packer/src/dvdoug/class-item.php',
+        'WooCommerce\\BoxPacker\\DVDoug\\Packer' => __DIR__ . '/..' . '/woocommerce/box-packer/src/dvdoug/class-packer.php',
+        'WooCommerce\\BoxPacker\\DVDoug\\Util' => __DIR__ . '/..' . '/woocommerce/box-packer/src/dvdoug/trait-util.php',
+        'WooCommerce\\BoxPacker\\Original\\Box' => __DIR__ . '/..' . '/woocommerce/box-packer/src/original/class-box.php',
+        'WooCommerce\\BoxPacker\\Original\\Item' => __DIR__ . '/..' . '/woocommerce/box-packer/src/original/class-item.php',
+        'WooCommerce\\BoxPacker\\Original\\Packer' => __DIR__ . '/..' . '/woocommerce/box-packer/src/original/class-packer.php',
+        'WooCommerce\\BoxPacker\\Package' => __DIR__ . '/..' . '/woocommerce/box-packer/src/class-package.php',
+        'WooCommerce\\BoxPacker\\WC_Boxpack' => __DIR__ . '/..' . '/woocommerce/box-packer/src/class-wc-boxpack.php',
     );
 
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInite5a73c3f4943dc34fc499f2e4d5bc2a0::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInite5a73c3f4943dc34fc499f2e4d5bc2a0::$prefixDirsPsr4;
-            $loader->classMap = ComposerStaticInite5a73c3f4943dc34fc499f2e4d5bc2a0::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInit5cf50ab6649ec9e5d8aa1976763c0124::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInit5cf50ab6649ec9e5d8aa1976763c0124::$prefixDirsPsr4;
+            $loader->classMap = ComposerStaticInit5cf50ab6649ec9e5d8aa1976763c0124::$classMap;
 
         }, null, ClassLoader::class);
     }

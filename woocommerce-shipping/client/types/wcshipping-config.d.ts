@@ -84,6 +84,13 @@ export interface WCShippingConfig {
 	should_use_fulfillment_api: boolean;
 	scanFormEnabled?: boolean;
 	bulk_labels_enabled?: boolean;
+	/**
+	 * Maximum number of orders the bulk-labels modal will accept in a
+	 * single pass. Sourced from
+	 * `OrdersShippingContextRESTController::BATCH_SIZE_CAP` so PHP is
+	 * the single source of truth.
+	 */
+	bulk_labels_max_orders?: number;
 	mode?: 'label-purchase' | 'address-editor';
 	address?: unknown;
 	onAddressComplete?: ( address: unknown ) => void;

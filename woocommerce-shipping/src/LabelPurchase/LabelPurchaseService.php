@@ -528,10 +528,10 @@ class LabelPurchaseService {
 		$origin_for_request = $origin;
 		unset( $origin_for_request['id'], $origin_for_request['is_verified'] );
 
-		$bodies              = array();
-		$context             = array(); // numeric index => { order_id, request_packages, service_names, parent_shipment_id }
-		$shipments_by_index  = array();
-		$fulfillments_by_idx = array(); // numeric index => ShippingFulfillment resolved at preflight time.
+		$shipments_payload  = array();                  // Numerically-indexed payloads sent to the grouped endpoint.
+		$context            = array();                  // "order_<id>" => { order_id, request_packages, service_names, parent_shipment_id }
+		$shipments_by_id    = array();                  // "order_<id>" => original shipment input (kept for persistence-time fields).
+		$fulfillments_by_id = array();                  // "order_<id>" => ShippingFulfillment resolved at preflight time.
 
 		// Pre-dispatch results: shipments rejected before reaching the Connect Server, keyed by
 		// either invalid_order_<index> (bad order_id) or order_<id> (preflight resolved no
@@ -581,102 +581,125 @@ class LabelPurchaseService {
 			$service_names    = array_column( $packages, 'service_name' );
 			$request_packages = $this->prepare_packages_for_purchase( $packages );
 			$shipment_options = isset( $shipment['shipment_options'] ) && is_array( $shipment['shipment_options'] ) ? $shipment['shipment_options'] : array();
-			$label_date       = $shipment_options['label_date'] ?? null;
 			$is_return        = ! empty( $shipment['is_return'] );
 
-			$index = count( $bodies );
-
-			$bodies[ $index ] = array(
-				'async'                        => true,
-				'email_receipt'                => $settings['email_receipts'] ?? false,
+			// Forward the full shipment_options so signature_confirmation, saturday_delivery,
+			// carbon_neutral, etc. survive the wire — the grouped endpoint accepts the same
+			// shape the single-order path does. Dropping options here silently downgrades
+			// merchant-paid services (e.g. signature requirement → theft/loss exposure).
+			$shipments_payload[] = array(
+				'order_id'                     => $order_id,
 				'origin'                       => $origin_for_request,
 				'destination'                  => $shipment['destination'] ?? array(),
-				'payment_method_id'            => $payment_id,
-				'order_id'                     => $order_id,
 				'packages'                     => $request_packages,
 				'features_supported_by_client' => $shipment['features_supported_by_client'] ?? array(),
-				'shipment_options'             => array(
-					'label_date' => $label_date,
-				),
+				'shipment_options'             => $shipment_options,
 				'is_return'                    => $is_return,
 			);
 
-			$context[ $index ] = array(
+			$context[ "order_{$order_id}" ] = array(
 				'order_id'           => $order_id,
 				'request_packages'   => $request_packages,
 				'service_names'      => $service_names,
 				'parent_shipment_id' => $shipment['parent_shipment_id'] ?? null,
 			);
 
-			$shipments_by_index[ $index ]  = $shipment;
-			$fulfillments_by_idx[ $index ] = $fulfillment;
+			$shipments_by_id[ "order_{$order_id}" ]    = $shipment;
+			$fulfillments_by_id[ "order_{$order_id}" ] = $fulfillment;
 		}
 
-		if ( empty( $bodies ) ) {
+		if ( empty( $shipments_payload ) ) {
 			return $pre_dispatch_results;
 		}
 
-		// BatchableApiClient implements parallel dispatch; mocks/E2E clients only have the
-		// single-order send_shipping_label_request(), so fall back to a sequential loop.
-		// Indices stay aligned with $context.
-		if ( method_exists( $this->api_client, 'purchase_labels_batch' ) ) {
-			$responses = $this->api_client->purchase_labels_batch( $bodies );
-		} else {
-			$responses = array();
-			foreach ( $bodies as $index => $body ) {
-				$responses[ $index ] = $this->api_client->send_shipping_label_request( $body );
-			}
-		}
+		$response_map = $this->send_batch_purchase_request(
+			$origin_for_request,
+			$shipments_payload,
+			$payment_id,
+			(bool) ( $settings['email_receipts'] ?? false )
+		);
 
-		// A transport-level top-level WP_Error (today only the in-batch Jetpack guards return
-		// per-index errors, but a future client could surface one) would crash the per-shipment
-		// loop on $responses[ $index ]. Fan it out to per-shipment errors so each order surfaces
-		// the same WP_Error and the loop stays single-shape.
-		if ( is_wp_error( $responses ) ) {
-			$responses = array_fill_keys( array_keys( $bodies ), $responses );
+		// A transport-level WP_Error from the wire (covering, e.g. all shipments at once)
+		// fans out to per-order errors so callers can still walk the result map. Each
+		// fanned entry gets its own WP_Error with the per-order id stamped into error_data
+		// so downstream consumers that walk values (notifications, retry) keep order context.
+		if ( is_wp_error( $response_map ) ) {
+			$fanned = $pre_dispatch_results;
+			foreach ( $context as $result_id => $ctx ) {
+				$per_order        = $this->restore_carrier_tos_error_code( $response_map );
+				$data             = (array) $per_order->get_error_data();
+				$data['order_id'] = $ctx['order_id'];
+				$per_order->add_data( $data );
+				$fanned[ $result_id ] = $per_order;
+				$this->logger->error( $per_order, __CLASS__ );
+			}
+			return $fanned;
 		}
 
 		$results = $pre_dispatch_results;
-		foreach ( $context as $index => $ctx ) {
-			$order_id  = $ctx['order_id'];
-			$result_id = "order_{$order_id}";
+		foreach ( $context as $result_id => $ctx ) {
+			$order_id = $ctx['order_id'];
+			$entry    = $response_map[ $result_id ] ?? null;
 
-			if ( ! array_key_exists( $index, $responses ) ) {
-				// BatchableApiClient should always return one slot per input index, so a missing
-				// slot is an upstream dispatch inconsistency. Synthesize a per-order error and
-				// log it explicitly here rather than fataling on $response->labels below.
-				$results[ $result_id ] = $this->restore_carrier_tos_error_code(
-					new WP_Error(
-						'wcc_server_no_response',
-						__( 'Missing API response for shipment.', 'woocommerce-shipping' ),
-						array(
-							'success'  => false,
-							'order_id' => $order_id,
-						)
+			if ( null === $entry ) {
+				$results[ $result_id ] = new WP_Error(
+					'wcc_server_no_response',
+					sprintf(
+						/* translators: %d: WooCommerce order ID */
+						__( 'The shipping server did not return a result for order #%d. Please retry; if the problem persists, contact support with this order ID.', 'woocommerce-shipping' ),
+						$ctx['order_id']
+					),
+					array(
+						'success'  => false,
+						'order_id' => $ctx['order_id'],
 					)
 				);
-				$this->logger->log( $results[ $result_id ], __CLASS__ );
+				$this->logger->error( $results[ $result_id ], __CLASS__ );
 				continue;
 			}
 
-			$response = $responses[ $index ];
+			// A per-index WP_Error from the fallback dispatch (parallel `purchase_labels_batch`
+			// or sequential `send_shipping_label_request` loop) needs to be surfaced as a
+			// per-order WP_Error. Without this branch the entry would slip past
+			// `is_batch_error_entry()` (which only checks for `->error`), reach the meta
+			// extractor, and silently become an empty-success result.
+			if ( is_wp_error( $entry ) ) {
+				$results[ $result_id ] = $this->restore_carrier_tos_error_code( $entry );
+				$this->logger->error( $results[ $result_id ], __CLASS__ );
+				continue;
+			}
 
-			if ( is_wp_error( $response ) ) {
-				$results[ $result_id ] = $this->restore_carrier_tos_error_code( $response );
-				$this->logger->log( $results[ $result_id ], __CLASS__ );
+			// Per-order errors come back as `{ error: { code, message } }`. Map them
+			// to WP_Error so the controller's serializer hits the same shape it
+			// already returns for parallel-dispatch failures (preserves the mobile
+			// app contract).
+			if ( $this->is_batch_error_entry( $entry ) ) {
+				$resolved_code         = $this->resolve_entry_value( $entry, 'code' );
+				$resolved_message      = $this->resolve_entry_value( $entry, 'message' );
+				$error_code            = '' !== $resolved_code ? $resolved_code : 'wcc_purchase_failed';
+				$error_message         = '' !== $resolved_message ? $resolved_message : __( 'Label purchase failed.', 'woocommerce-shipping' );
+				$results[ $result_id ] = new WP_Error(
+					$error_code,
+					$error_message,
+					array(
+						'success'  => false,
+						'order_id' => $ctx['order_id'],
+					)
+				);
+				$this->logger->error( $results[ $result_id ], __CLASS__ );
 				continue;
 			}
 
 			$labels_meta = $this->get_labels_meta_from_response(
-				$response,
+				$entry,
 				$ctx['request_packages'],
 				$ctx['service_names'],
-				$order_id,
+				$ctx['order_id'],
 				$ctx['parent_shipment_id']
 			);
 
 			if ( is_wp_error( $labels_meta ) ) {
-				$this->logger->log( $labels_meta, __CLASS__ );
+				$this->logger->error( $labels_meta, __CLASS__ );
 				$results[ $result_id ] = $labels_meta;
 				continue;
 			}
@@ -684,7 +707,7 @@ class LabelPurchaseService {
 			// Persist the successful purchase against the order's fulfillment record. The bulk
 			// path is fulfillment-only (WOOSHIP-2166), so there is no add_labels_to_order()
 			// fallback here. Per-order failures above already skipped this block.
-			$shipment_payload    = $shipments_by_index[ $index ] ?? array();
+			$shipment_payload    = $shipments_by_id[ $result_id ] ?? array();
 			$selected_rate_in    = isset( $shipment_payload['selected_rate'] ) && is_array( $shipment_payload['selected_rate'] ) ? $shipment_payload['selected_rate'] : array();
 			$selected_rate_inner = isset( $selected_rate_in['rate'] ) && is_array( $selected_rate_in['rate'] ) ? $selected_rate_in['rate'] : array();
 			$selected_options_in = isset( $shipment_payload['selected_rate_options'] ) && is_array( $shipment_payload['selected_rate_options'] ) ? $shipment_payload['selected_rate_options'] : array();
@@ -696,7 +719,7 @@ class LabelPurchaseService {
 
 			$selected_rate = array(
 				'rate'             => array_merge(
-					(array) ( $response->rates[0] ?? new \stdClass() ),
+					(array) ( $entry->rates[0] ?? new \stdClass() ),
 					array(
 						'type' => $selected_rate_inner['type'] ?? '',
 					)
@@ -740,7 +763,7 @@ class LabelPurchaseService {
 
 			// Fulfillment was resolved at preflight; orders without a usable record never
 			// reached the dispatch loop, so the cached value is always a ShippingFulfillment.
-			$fulfillment = $fulfillments_by_idx[ $index ];
+			$fulfillment = $fulfillments_by_id[ $result_id ];
 
 			$results[ $result_id ] = $this->store_purchased_label_to_fulfillment(
 				$fulfillment,
@@ -755,6 +778,225 @@ class LabelPurchaseService {
 		}
 
 		return $results;
+	}
+
+	/**
+	 * Send the grouped batch label-purchase request to the Connect Server.
+	 *
+	 * Uses the new single-call endpoint (`POST /shipping/labels/batch`) when the
+	 * API client implements `send_grouped_label_batch_request()` — that endpoint
+	 * produces ONE BillingDaddy purchase across all shipments, so the merchant
+	 * sees one Stripe charge with N line items instead of N per-label charges.
+	 * Production wires `BatchableApiClient` (see `Loader.php`), which is the only
+	 * client implementing this method; the fallback below only fires for E2E /
+	 * unit-test mocks.
+	 *
+	 * Falls back to the parallel `purchase_labels_batch` dispatch when the api
+	 * client implements that method, and to a sequential `send_shipping_label_request`
+	 * loop otherwise. Both fallback paths produce N per-order charges and are only
+	 * used when the configured client lacks the grouped method.
+	 *
+	 * @param array      $origin             Shared origin (already stripped for the wire).
+	 * @param array      $shipments_payload  Per-shipment payloads keyed numerically.
+	 * @param int|string $payment_method_id  Saved payment method id (the settings store may
+	 *                                       return either an int or a string id depending on
+	 *                                       the storage backend; we forward as-is).
+	 * @param bool       $email_receipt      Whether the merchant has email receipts on.
+	 *
+	 * @return array<string, object|array|WP_Error|null>|WP_Error Per-order map keyed by `order_<id>`,
+	 *               or a transport-level WP_Error covering the whole batch. Map values may be:
+	 *               - object/array: a successful per-order entry the caller passes to the
+	 *                 labels-meta extractor;
+	 *               - WP_Error: a per-index failure from the parallel-dispatch fallback
+	 *                 (caller surfaces it as a per-order error);
+	 *               - null: a missing slot in the fallback response (caller substitutes
+	 *                 `wcc_server_no_response`).
+	 */
+	private function send_batch_purchase_request( array $origin, array $shipments_payload, $payment_method_id, bool $email_receipt ) {
+		if ( method_exists( $this->api_client, 'send_grouped_label_batch_request' ) ) {
+			$body = array(
+				'async'             => true,
+				'email_receipt'     => $email_receipt,
+				'payment_method_id' => $payment_method_id,
+				'shipments'         => array_map(
+					static function ( array $shipment ) use ( $origin ) {
+						$shipment['origin'] = $origin;
+						return $shipment;
+					},
+					$shipments_payload
+				),
+			);
+
+			$response = $this->api_client->send_grouped_label_batch_request( $body );
+			if ( is_wp_error( $response ) ) {
+				return $response;
+			}
+
+			// Connect Server returns the per-order map directly. Cast top-level stdClass
+			// to assoc array; per-order entries stay as stdClass and are handled by the
+			// caller's walk.
+			$response_array = is_array( $response ) ? $response : (array) $response;
+
+			// Defensive: if the response carries no `order_<id>` keys but does carry a
+			// top-level `code`/`message`/`error`/`success: false` envelope, surface it as
+			// a transport-level WP_Error so the caller's fan-out reaches every shipment
+			// with the actionable server message — instead of silently mapping each entry
+			// to a generic `wcc_server_no_response`.
+			$has_order_key = false;
+			foreach ( $response_array as $key => $unused ) {
+				if ( is_string( $key ) && 0 === strpos( $key, 'order_' ) ) {
+					$has_order_key = true;
+					break;
+				}
+			}
+			if ( ! $has_order_key ) {
+				return $this->wp_error_from_unexpected_batch_response( $response );
+			}
+
+			return $response_array;
+		}
+
+		// Fallback for test/mocked clients that lack the grouped endpoint. This
+		// path issues N parallel single-order purchases (one BD charge each), so
+		// it does NOT achieve "one batch = one charge" — only used when the
+		// configured api client lacks the grouped method.
+		$bodies = array();
+		foreach ( $shipments_payload as $shipment ) {
+			$bodies[] = array(
+				'async'                        => true,
+				'email_receipt'                => $email_receipt,
+				'origin'                       => $origin,
+				'destination'                  => $shipment['destination'] ?? array(),
+				'payment_method_id'            => $payment_method_id,
+				'order_id'                     => $shipment['order_id'],
+				'packages'                     => $shipment['packages'],
+				'features_supported_by_client' => $shipment['features_supported_by_client'] ?? array(),
+				'shipment_options'             => $shipment['shipment_options'] ?? array(),
+				'is_return'                    => ! empty( $shipment['is_return'] ),
+			);
+		}
+
+		if ( method_exists( $this->api_client, 'purchase_labels_batch' ) ) {
+			$parallel = $this->api_client->purchase_labels_batch( $bodies );
+		} else {
+			$parallel = array();
+			foreach ( $bodies as $index => $body ) {
+				$parallel[ $index ] = $this->api_client->send_shipping_label_request( $body );
+			}
+		}
+
+		// Re-key by `order_<id>` so the caller's response-map walk works for both
+		// the new endpoint and the fallback.
+		$by_order = array();
+		foreach ( $shipments_payload as $index => $shipment ) {
+			$key              = 'order_' . $shipment['order_id'];
+			$by_order[ $key ] = $parallel[ $index ] ?? null;
+		}
+		return $by_order;
+	}
+
+	/**
+	 * Convert an unexpected top-level batch response (no `order_<id>` keys) into a
+	 * WP_Error so the caller can fan it out to every shipment uniformly. Tries to
+	 * preserve the server's code/message when present.
+	 *
+	 * @param mixed $response Raw decoded response from the Connect Server.
+	 * @return WP_Error
+	 */
+	private function wp_error_from_unexpected_batch_response( $response ): WP_Error {
+		$code    = '';
+		$message = '';
+		if ( is_object( $response ) ) {
+			if ( property_exists( $response, 'code' ) ) {
+				$code = (string) $response->code;
+			}
+			if ( property_exists( $response, 'message' ) ) {
+				$message = (string) $response->message;
+			} elseif ( property_exists( $response, 'error' ) && is_object( $response->error ) ) {
+				$code    = property_exists( $response->error, 'code' ) ? (string) $response->error->code : $code;
+				$message = property_exists( $response->error, 'message' ) ? (string) $response->error->message : $message;
+			}
+		} elseif ( is_array( $response ) ) {
+			if ( isset( $response['code'] ) ) {
+				$code = (string) $response['code'];
+			}
+			if ( isset( $response['message'] ) ) {
+				$message = (string) $response['message'];
+			} elseif ( isset( $response['error'] ) && is_array( $response['error'] ) ) {
+				$code    = isset( $response['error']['code'] ) ? (string) $response['error']['code'] : $code;
+				$message = isset( $response['error']['message'] ) ? (string) $response['error']['message'] : $message;
+			}
+		}
+
+		if ( '' === $message ) {
+			$message = __( 'Unexpected response shape from the WooCommerce Shipping server (no per-order entries).', 'woocommerce-shipping' );
+		}
+
+		return new WP_Error(
+			'' !== $code ? $code : 'wcc_unexpected_batch_response',
+			$message,
+			array( 'success' => false )
+		);
+	}
+
+	/**
+	 * Detect a per-order error entry in the batch response.
+	 *
+	 * Connect Server returns errors as `{ error: { code, message } }`. The outer
+	 * entry and the inner `error` may each independently arrive as an associative
+	 * array or a stdClass depending on how the caller (or upstream code) decoded
+	 * the JSON, so all four combinations must be handled.
+	 *
+	 * @param mixed $entry Per-order entry from the response map.
+	 * @return bool
+	 */
+	private function is_batch_error_entry( $entry ): bool {
+		$inner = $this->extract_inner_error( $entry );
+		return is_array( $inner ) || is_object( $inner );
+	}
+
+	/**
+	 * Read a field from a per-order error entry's `error` object regardless of
+	 * whether the outer entry or the inner error arrived as array or stdClass.
+	 * Returns empty string when the field is missing — the caller substitutes
+	 * default code/message.
+	 *
+	 * @param mixed  $entry Per-order entry from the response map.
+	 * @param string $field Field name on the inner `error` object.
+	 * @return string Field value, or empty string if missing.
+	 */
+	private function resolve_entry_value( $entry, string $field ): string {
+		$inner = $this->extract_inner_error( $entry );
+		if ( is_array( $inner ) && isset( $inner[ $field ] ) ) {
+			return (string) $inner[ $field ];
+		}
+		if ( is_object( $inner ) && isset( $inner->{$field} ) ) {
+			return (string) $inner->{$field};
+		}
+		return '';
+	}
+
+	/**
+	 * Pull the inner `error` payload out of a per-order entry whose outer shape
+	 * may be either an array or a stdClass. Returns null when the entry is not
+	 * an error envelope. The inner value is returned as-is (array or object) so
+	 * the callers can inspect it without assuming a shape.
+	 *
+	 * Direct array-of-object indexing (`$arr['error']['code']`) is unsafe in
+	 * mixed-shape decodings — accessing array offsets on a stdClass throws a
+	 * PHP fatal — so this helper isolates the type-juggling.
+	 *
+	 * @param mixed $entry Per-order entry from the response map.
+	 * @return array|object|null Inner `error` payload, or null if absent.
+	 */
+	private function extract_inner_error( $entry ) {
+		if ( is_array( $entry ) && array_key_exists( 'error', $entry ) ) {
+			return $entry['error'];
+		}
+		if ( is_object( $entry ) && isset( $entry->error ) ) {
+			return $entry->error;
+		}
+		return null;
 	}
 
 	/**
@@ -798,6 +1040,20 @@ class LabelPurchaseService {
 	 * @return array|WP_Error Meta for purchased labels.
 	 */
 	private function get_labels_meta_from_response( $response, $packages, $service_names, $order_id, $parent_shipment_id = null ) {
+		// Hard-fail on malformed entries instead of warn-and-iterate-zero-times, which
+		// would have produced a "successful empty purchase" — the exact silent failure
+		// the batch path is supposed to prevent.
+		if ( ! is_object( $response ) || ! isset( $response->labels ) || ! is_iterable( $response->labels ) ) {
+			return new WP_Error(
+				'wcc_invalid_batch_entry',
+				__( 'The shipping server returned an invalid response entry (missing labels array).', 'woocommerce-shipping' ),
+				array(
+					'success'  => false,
+					'order_id' => $order_id,
+				)
+			);
+		}
+
 		$label_ids             = array();
 		$purchased_labels_meta = array();
 		$package_lookup        = $this->settings_store->get_package_lookup();
@@ -1237,7 +1493,7 @@ class LabelPurchaseService {
 	 *                            ]
 	 * @return array Response array with success status and stored data.
 	 */
-	private function store_purchased_label_to_fulfillment(
+	protected function store_purchased_label_to_fulfillment(
 		$fulfillment,
 		$purchased_labels_meta,
 		$selected_rate,

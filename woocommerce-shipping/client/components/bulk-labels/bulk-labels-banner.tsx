@@ -8,7 +8,50 @@ import {
 import { __, sprintf, _n } from '@wordpress/i18n';
 import { useState, useEffect, useCallback } from '@wordpress/element';
 import { envelope } from '@wordpress/icons';
+import { getBulkLabelsMaxOrders } from 'data/bulk-labels';
+import type { ReactNode } from 'react';
 import './style.scss';
+
+interface StatusTextArgs {
+	hasSelection: boolean;
+	exceedsBulkCap: boolean;
+	eligible: number;
+	needsAttention: number;
+	summary: string;
+}
+
+const getStatusText = ( {
+	hasSelection,
+	exceedsBulkCap,
+	eligible,
+	needsAttention,
+	summary,
+}: StatusTextArgs ): ReactNode => {
+	if ( ! hasSelection ) {
+		return __(
+			'Select unfulfilled orders to start purchasing shipping labels',
+			'woocommerce-shipping'
+		);
+	}
+
+	if ( exceedsBulkCap ) {
+		return sprintf(
+			/* translators: %d: maximum number of orders that can be processed at once */
+			__(
+				'Up to %d orders can be processed at a time. Deselect some to continue.',
+				'woocommerce-shipping'
+			),
+			getBulkLabelsMaxOrders()
+		);
+	}
+
+	const ready = __( 'Ready to fulfill in bulk', 'woocommerce-shipping' );
+	if ( eligible === 0 && needsAttention === 0 ) {
+		return ready;
+	}
+
+	return `${ ready } — ${ summary }.`;
+};
 
 const ORDER_CHECKBOX_SELECTOR =
 	'#the-list input[type="checkbox"][name="id[]"], #the-list input[type="checkbox"][name="post[]"]';
@@ -78,7 +121,13 @@ const deselectAllOrders = () => {
 		.forEach( uncheck );
 };
 
-export const BulkLabelsBanner = () => {
+interface BulkLabelsBannerProps {
+	onCreateLabels?: ( orderIds: number[] ) => void;
+}
+
+export const BulkLabelsBanner = ( {
+	onCreateLabels,
+}: BulkLabelsBannerProps = {} ) => {
 	const [ selectedIds, setSelectedIds ] = useState< string[] >( [] );
 	const [ orderCount, setOrderCount ] = useState( 0 );
 
@@ -162,6 +211,7 @@ export const BulkLabelsBanner = () => {
 	const hasSelection = selectedIds.length > 0;
 	const hasPartialSelection = hasSelection && selectedIds.length < orderCount;
 	const hasFullSelection = hasSelection && selectedIds.length === orderCount;
+	const exceedsBulkCap = selectedIds.length > getBulkLabelsMaxOrders();
 
 	return (
 		<Notice
@@ -214,47 +264,40 @@ export const BulkLabelsBanner = () => {
 							) : null }
 						</FlexItem>
 						<FlexItem>
-							{ hasSelection ? (
-								<>
-									{ __(
-										'Ready to fulfill in bulk',
-										'woocommerce-shipping'
-									) }
-									{ ( eligible.length > 0 ||
-										needsAttention > 0 ) && (
-										<>
-											{ ' — ' }
-											{ getSummary() }
-											{ '.' }
-										</>
-									) }
-								</>
-							) : (
-								__(
-									'Select unfulfilled orders to start purchasing shipping labels',
-									'woocommerce-shipping'
-								)
-							) }
+							{ getStatusText( {
+								hasSelection,
+								exceedsBulkCap,
+								eligible: eligible.length,
+								needsAttention,
+								summary: getSummary(),
+							} ) }
 						</FlexItem>
 					</Flex>
 				</FlexItem>
 				<FlexItem>
 					<Flex align="center" gap={ 2 }>
 						{ hasSelection && (
-							<>
-								<Button variant="primary" icon={ envelope }>
-									{ sprintf(
-										/* translators: %d: number of shipping labels to create */
-										_n(
-											'Create %d shipping label',
-											'Create %d shipping labels',
-											selectedIds.length,
-											'woocommerce-shipping'
-										),
-										selectedIds.length
-									) }
-								</Button>
-							</>
+							<Button
+								variant="primary"
+								icon={ envelope }
+								disabled={ exceedsBulkCap }
+								onClick={ () =>
+									onCreateLabels?.(
+										selectedIds.map( Number )
+									)
+								}
+							>
+								{ sprintf(
+									/* translators: %d: number of shipping labels to create */
+									_n(
+										'Create %d shipping label',
+										'Create %d shipping labels',
+										selectedIds.length,
+										'woocommerce-shipping'
+									),
+									selectedIds.length
+								) }
+							</Button>
 						) }
 					</Flex>
 				</FlexItem>

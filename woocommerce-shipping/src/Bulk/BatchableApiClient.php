@@ -47,6 +47,11 @@ class BatchableApiClient extends WC_Connect_API_Client_Live {
 	/**
 	 * Purchase labels for many shipments in one parallel dispatch.
 	 *
+	 * Note: each payload becomes its own per-order BillingDaddy purchase, which means the
+	 * merchant sees N Stripe charges. Prefer `send_grouped_label_batch_request()` for the
+	 * "one batch = one charge" flow; this method is retained for the rate-quote sibling
+	 * (`get_label_rates_batch`) and for any future parallel-dispatch label paths.
+	 *
 	 * @param array $payloads Numerically-indexed list of shipping-label purchase payloads, in the
 	 *                        same shape each element passed to send_shipping_label_request() expects.
 	 *
@@ -54,6 +59,40 @@ class BatchableApiClient extends WC_Connect_API_Client_Live {
 	 */
 	public function purchase_labels_batch( array $payloads ) {
 		return $this->dispatch_post_batch( 'shipping/label', $payloads );
+	}
+
+	/**
+	 * Send a single grouped batch label-purchase request to the Connect Server. The
+	 * server flattens packages across all shipments into one BillingDaddy purchase, so
+	 * the merchant sees one Stripe charge with N line items rather than N per-label
+	 * charges. This is the "one batch = one charge" path consumed by the bulk label flow.
+	 *
+	 * Body shape sent on the wire:
+	 *   `{ async, email_receipt, payment_method_id, shipments: [{ order_id, origin,
+	 *      destination, packages, features_supported_by_client, shipment_options,
+	 *      is_return }] }`
+	 * Only one HTTP call is made — no parallel dispatch, no per-order fan-out.
+	 *
+	 * @param array $body Multi-shipment payload. Must contain a non-empty `shipments`
+	 *                    array and a non-empty `payment_method_id`.
+	 *
+	 * @return object|WP_Error Decoded per-order response map or a transport-level error.
+	 */
+	public function send_grouped_label_batch_request( array $body ) {
+		if ( empty( $body['payment_method_id'] ) ) {
+			return new WP_Error(
+				'wcc_missing_payment_method',
+				__( 'A payment method is required to purchase labels. Set one in WooCommerce Shipping settings.', 'woocommerce-shipping' )
+			);
+		}
+		if ( empty( $body['shipments'] ) || ! is_array( $body['shipments'] ) ) {
+			return new WP_Error(
+				'wcc_empty_batch',
+				__( 'Cannot purchase a batch with no shipments.', 'woocommerce-shipping' )
+			);
+		}
+
+		return $this->request( 'POST', '/shipping/labels/batch', $body );
 	}
 
 	/**

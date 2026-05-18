@@ -49,6 +49,7 @@ use Automattic\WCShipping\LabelPurchase\LabelPrintController;
 use Automattic\WCShipping\LabelPurchase\LabelPrintService;
 use Automattic\WCShipping\LabelPurchase\LabelPurchaseRESTController;
 use Automattic\WCShipping\LabelPurchase\LabelPurchaseService;
+use Automattic\WCShipping\LabelPurchase\OrdersShippingContextRESTController;
 use Automattic\WCShipping\LabelPurchase\LabelRefundRESTController;
 use Automattic\WCShipping\LabelPurchase\LabelStatusController;
 use Automattic\WCShipping\LabelPurchase\View;
@@ -88,6 +89,8 @@ use Automattic\WCShipping\Migration\MigrationNotices;
 use Automattic\WCShipping\Migration\MigrationState;
 use Automattic\WCShipping\Onboarding\SettingsPage;
 use Automattic\WCShipping\OriginAddresses\OriginAddressService;
+use Automattic\WCShipping\PackageAssignment\PackageAssignmentRESTController;
+use Automattic\WCShipping\PackageAssignment\PackageAssignmentService;
 use Automattic\WCShipping\Packages\PackagesRESTController;
 use Automattic\WCShipping\Shipments\ShipmentsRESTController;
 use Automattic\WCShipping\ScanForm\ScanFormRESTController;
@@ -1422,6 +1425,7 @@ class Loader {
 		) )->register_routes();
 
 		( new LabelRateRESTController( $this->label_rate_service ) )->register_routes();
+		( new OrdersShippingContextRESTController( $settings_store ) )->register_routes();
 
 		$package_settings = new WC_Connect_Package_Settings(
 			$settings_store,
@@ -1435,6 +1439,7 @@ class Loader {
 		$label_purchase_service       = new LabelPurchaseService( $settings_store, $this->api_client, $this->shipping_label, $logger, $this->promo_service, $fulfillments_service );
 		$this->label_purchase_service = $label_purchase_service;
 		( new LabelPurchaseRESTController( $label_purchase_service ) )->register_routes();
+		( new PackageAssignmentRESTController( new PackageAssignmentService( $settings_store, $this->service_schemas_store, $logger ) ) )->register_routes();
 		( new ShipmentsRESTController( $shipments_service, $this->fulfillments_service ) )->register_routes();
 
 		( new LabelStatusController( $label_purchase_service, $logger, $this->shipping_fulfillments_data_store ) )->register_routes();

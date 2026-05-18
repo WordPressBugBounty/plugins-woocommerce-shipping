@@ -8,6 +8,7 @@
 namespace Automattic\WCShipping\Banners;
 
 use Automattic\WCShipping\Connect\WC_Connect_Functions;
+use Automattic\WCShipping\LabelPurchase\OrdersShippingContextRESTController;
 use Automattic\WCShipping\Utils;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -43,7 +44,16 @@ class BulkLabelsBanner {
 		 *
 		 * @since 2.4.0
 		 */
-		do_action( 'wcshipping_enqueue_script', 'woocommerce-shipping-bulk-labels-banner' );
+		do_action(
+			'wcshipping_enqueue_script',
+			'woocommerce-shipping-bulk-labels-banner',
+			array(
+				// Surface the batch cap so the JS gates can match the
+				// downstream batch endpoints without duplicating the
+				// magic number on the client.
+				'bulk_labels_max_orders' => OrdersShippingContextRESTController::BATCH_SIZE_CAP,
+			)
+		);
 	}
 
 	/**

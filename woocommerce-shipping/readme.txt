@@ -5,9 +5,9 @@ Requires Plugins: woocommerce
 Requires PHP: 7.4
 Requires at least: 6.8
 Tested up to: 6.9
-WC requires at least: 10.5
-WC tested up to: 10.7
-Stable tag: 2.3.2
+WC requires at least: 10.6
+WC tested up to: 10.8
+Stable tag: 2.3.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -127,6 +127,10 @@ Absolutely! You can read our Terms of Service [here](https://wordpress.com/tos).
 6. WooCommerce Shipping address validation at checkout suggestion.
 
 == Changelog ==
+
+= 2.3.3 - 2026-05-18 =
+* Tweak - WooCommerce 10.8 Compatibility.
+* Fix   - Prevent partial account-settings saves from disabling shipping label creation.
 
 = 2.3.2 - 2026-05-11 =
 * Fix   - Clear fetched rates after a failed label purchase and dismiss the top purchase error notice when the merchant requests rates again.

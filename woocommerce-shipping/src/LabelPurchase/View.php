@@ -227,15 +227,6 @@ class View {
 			);
 		}
 
-		// Return an error if shipping labels has been disabled for the account.
-		// This could e.g. be used to differentiate between showing errors or just hiding the box.
-		if ( ! $this->view_service->is_shipping_label_enabled() ) {
-			return new WP_Error(
-				'wcshipping_banner_disabled',
-				__( 'Shipping labels has been disabled for your account.', 'woocommerce-shipping' )
-			);
-		}
-
 		// If the order already has purchased labels, show the meta-box no matter what.
 		if ( $order->get_meta( 'wcshipping_labels', true ) ) {
 			return true;

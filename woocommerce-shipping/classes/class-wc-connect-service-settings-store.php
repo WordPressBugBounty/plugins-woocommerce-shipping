@@ -176,10 +176,14 @@ class WC_Connect_Service_Settings_Store {
 			unset( $settings[ $tax_input_key ] );
 		}
 
-		// Sanitize other fields
+		// Sanitize other fields.
+		//
+		// `enabled` is intentionally NOT in this allowlist (WOOSHIP-1448): WC Shipping is a
+		// shipping-only plugin and the only supported way to turn it off is to deactivate
+		// the plugin. Any incoming `enabled` value is silently stripped here so it cannot
+		// flip the stored flag to false (e.g. from a partial settings save that omits it).
 		$allowable_post = array(
 			'email_receipts',
-			'enabled',
 			'selected_payment_method_id',
 			'use_last_package',
 			'use_last_service',
@@ -199,7 +203,6 @@ class WC_Connect_Service_Settings_Store {
 		}
 		$validated_settings['selected_payment_method_id']       = isset( $validated_settings['selected_payment_method_id'] ) ? intval( $validated_settings['selected_payment_method_id'] ) : 0;
 		$validated_settings['email_receipts']                   = isset( $validated_settings['email_receipts'] ) && $validated_settings['email_receipts'] ? true : false;
-		$validated_settings['enabled']                          = isset( $validated_settings['enabled'] ) && $validated_settings['enabled'] ? true : false;
 		$validated_settings['use_last_package']                 = isset( $validated_settings['use_last_package'] ) && $validated_settings['use_last_package'] ? true : false;
 		$validated_settings['use_last_service']                 = isset( $validated_settings['use_last_service'] ) && $validated_settings['use_last_service'] ? true : false;
 		$validated_settings['checkout_address_validation']      = isset( $validated_settings['checkout_address_validation'] ) && $validated_settings['checkout_address_validation'] ? true : false;
