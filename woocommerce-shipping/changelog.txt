@@ -1,5 +1,9 @@
 *** WooCommerce Shipping Changelog ***
 
+= 2.3.4 - 2026-05-20 =
+* Tweak - WordPress 7.0 Compatibility.
+* Fix   - Show the customs form for US territory shipments (regardless of address normalization) and validate item descriptions against the USPS 30-character limit before label purchase, preventing opaque rejections.
+
 = 2.3.3 - 2026-05-18 =
 * Tweak - WooCommerce 10.8 Compatibility.
 * Fix   - Prevent partial account-settings saves from disabling shipping label creation.

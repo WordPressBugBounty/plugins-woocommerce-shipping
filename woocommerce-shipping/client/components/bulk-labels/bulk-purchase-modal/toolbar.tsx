@@ -1,8 +1,8 @@
-import { Button, Dropdown, MenuGroup, MenuItem } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
-import { useState } from '@wordpress/element';
-import { Icon, chevronDown } from '@wordpress/icons';
-import type { ReactNode } from 'react';
+import { ApplyDropdown, toOptions } from './apply-dropdown';
+import type { ApplyOption } from './apply-dropdown';
+
+export type { ApplyOption } from './apply-dropdown';
 
 export type FilterMode = 'all' | 'ready' | 'needs_fix';
 
@@ -13,67 +13,13 @@ interface ToolbarProps {
 	needsFixCount: number;
 	filter: FilterMode;
 	onFilterChange: ( mode: FilterMode ) => void;
+	packageApplyOptions: ApplyOption[];
+	packageApplyValue: string;
+	onPackageApply: ( value: string ) => void;
+	serviceApplyOptions: ApplyOption[];
+	serviceApplyValue: string;
+	onServiceApply: ( value: string ) => void;
 }
-
-interface ApplyDropdownProps {
-	emoji: string;
-	label: string;
-	defaultValue: string;
-	options: string[];
-}
-
-/**
- * Visual-only apply-to-all dropdown — clicking an option updates the
- * displayed value via local state so the toolbar feels alive in
- * screenshots. The real apply-to-all wiring (broadcasting the choice
- * to every row, persisting it, etc.) lands with WOOSHIP-2133.
- */
-const ApplyDropdown = ( {
-	emoji,
-	label,
-	defaultValue,
-	options,
-}: ApplyDropdownProps ): ReactNode => {
-	const [ value, setValue ] = useState( defaultValue );
-
-	return (
-		<Dropdown
-			renderToggle={ ( { isOpen, onToggle } ) => (
-				<Button
-					className="bulk-purchase-modal__apply-button"
-					onClick={ onToggle }
-					aria-expanded={ isOpen }
-				>
-					<span className="bulk-purchase-modal__apply-emoji">
-						{ emoji }
-					</span>
-					<span className="bulk-purchase-modal__apply-label">
-						{ label }:
-					</span>
-					<span className="bulk-purchase-modal__apply-value">
-						{ value }
-					</span>
-					<Icon icon={ chevronDown } size={ 16 } />
-				</Button>
-			) }
-			renderContent={ ( { onClose } ) => (
-				<MenuGroup>
-					{ options.map( ( option ) => (
-						<MenuItem
-							key={ option }
-							onClick={ () => {
-								setValue( option );
-								onClose();
-							} }
-						>
-							{ option }
-						</MenuItem>
-					) ) }
-				</MenuGroup>
-			) }
-		/>
-	);
-};
 
 export const Toolbar = ( {
 	selectedCount,
@@ -82,6 +28,12 @@ export const Toolbar = ( {
 	needsFixCount,
 	filter,
 	onFilterChange,
+	packageApplyOptions,
+	packageApplyValue,
+	onPackageApply,
+	serviceApplyOptions,
+	serviceApplyValue,
+	onServiceApply,
 }: ToolbarProps ) => {
 	return (
 		<div className="bulk-purchase-modal__toolbar">
@@ -109,38 +61,36 @@ export const Toolbar = ( {
 					<ApplyDropdown
 						emoji="📦"
 						label={ __( 'Package', 'woocommerce-shipping' ) }
-						defaultValue="QWER 8×9×10"
-						options={ [
-							'QWER 8×9×10',
-							'Medium box 12×9×6',
-							'Padded mailer 10×7',
-						] }
+						options={ packageApplyOptions }
+						value={ packageApplyValue }
+						onSelect={ onPackageApply }
 					/>
 					<ApplyDropdown
 						emoji="🚚"
 						label={ __( 'Service', 'woocommerce-shipping' ) }
-						defaultValue="Cheapest available"
-						options={ [
-							'Cheapest available',
-							'USPS Priority Mail',
-							'USPS Ground Advantage',
-						] }
+						options={ serviceApplyOptions }
+						value={ serviceApplyValue }
+						onSelect={ onServiceApply }
 					/>
 					<ApplyDropdown
 						emoji="📅"
 						label={ __( 'Ship date', 'woocommerce-shipping' ) }
 						defaultValue="Today"
-						options={ [ 'Today', 'Tomorrow', 'Pick a date…' ] }
+						options={ toOptions( [
+							'Today',
+							'Tomorrow',
+							'Pick a date…',
+						] ) }
 					/>
 					<ApplyDropdown
 						emoji="✍️"
 						label={ __( 'Signature', 'woocommerce-shipping' ) }
 						defaultValue="Not required"
-						options={ [
+						options={ toOptions( [
 							'Not required',
 							'Signature required',
 							'Adult signature required',
-						] }
+						] ) }
 					/>
 				</div>
 			</div>

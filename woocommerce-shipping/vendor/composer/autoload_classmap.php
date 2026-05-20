@@ -76,6 +76,8 @@ return array(
     'Automattic\\WCShipping\\Banners\\Banners' => $baseDir . '/src/Banners/Banners.php',
     'Automattic\\WCShipping\\Banners\\BulkLabelsBanner' => $baseDir . '/src/Banners/BulkLabelsBanner.php',
     'Automattic\\WCShipping\\Bulk\\BatchableApiClient' => $baseDir . '/src/Bulk/BatchableApiClient.php',
+    'Automattic\\WCShipping\\Bulk\\Models\\PrintQueueItem' => $baseDir . '/src/Bulk/Models/PrintQueueItem.php',
+    'Automattic\\WCShipping\\Bulk\\PrintQueueRepository' => $baseDir . '/src/Bulk/PrintQueueRepository.php',
     'Automattic\\WCShipping\\Carrier\\FedEx\\FedExCarrierStrategyRESTController' => $baseDir . '/src/Carrier/FedEx/FedExCarrierStrategyRESTController.php',
     'Automattic\\WCShipping\\Carrier\\FedEx\\FedExCarrierStrategyService' => $baseDir . '/src/Carrier/FedEx/FedExCarrierStrategyService.php',
     'Automattic\\WCShipping\\Carrier\\FedEx\\FedExTosErrorInterceptor' => $baseDir . '/src/Carrier/FedEx/FedExTosErrorInterceptor.php',

@@ -3,11 +3,11 @@ Contributors: woocommerce, automattic, harriswong, waclawjacek, samnajian, kloon
 Tags: woocommerce, shipping, usps, dhl, labels
 Requires Plugins: woocommerce
 Requires PHP: 7.4
-Requires at least: 6.8
-Tested up to: 6.9
+Requires at least: 6.9
+Tested up to: 7.0
 WC requires at least: 10.6
 WC tested up to: 10.8
-Stable tag: 2.3.3
+Stable tag: 2.3.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -127,6 +127,10 @@ Absolutely! You can read our Terms of Service [here](https://wordpress.com/tos).
 6. WooCommerce Shipping address validation at checkout suggestion.
 
 == Changelog ==
+
+= 2.3.4 - 2026-05-20 =
+* Tweak - WordPress 7.0 Compatibility.
+* Fix   - Show the customs form for US territory shipments (regardless of address normalization) and validate item descriptions against the USPS 30-character limit before label purchase, preventing opaque rejections.
 
 = 2.3.3 - 2026-05-18 =
 * Tweak - WooCommerce 10.8 Compatibility.

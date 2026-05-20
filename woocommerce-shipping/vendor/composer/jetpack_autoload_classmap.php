@@ -302,6 +302,14 @@ return array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/src/Bulk/BatchableApiClient.php'
 	),
+	'Automattic\\WCShipping\\Bulk\\Models\\PrintQueueItem' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/src/Bulk/Models/PrintQueueItem.php'
+	),
+	'Automattic\\WCShipping\\Bulk\\PrintQueueRepository' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/src/Bulk/PrintQueueRepository.php'
+	),
 	'Automattic\\WCShipping\\Carrier\\FedEx\\FedExCarrierStrategyRESTController' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/src/Carrier/FedEx/FedExCarrierStrategyRESTController.php'
@@ -733,6 +741,14 @@ return array(
 	'Automattic\\WCShipping\\Tests\\php\\Bulk\\BatchableApiClientTest' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/tests/php/Bulk/BatchableApiClientTest.php'
+	),
+	'Automattic\\WCShipping\\Tests\\php\\Bulk\\Models\\PrintQueueItemTest' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/tests/php/Bulk/Models/PrintQueueItemTest.php'
+	),
+	'Automattic\\WCShipping\\Tests\\php\\Bulk\\PrintQueueRepositoryTest' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/tests/php/Bulk/PrintQueueRepositoryTest.php'
 	),
 	'Automattic\\WCShipping\\Tests\\php\\Carrier\\UPSDAP\\UPSDAPCarrierStrategyRESTControllerTest' => array(
 		'version' => 'dev-trunk',

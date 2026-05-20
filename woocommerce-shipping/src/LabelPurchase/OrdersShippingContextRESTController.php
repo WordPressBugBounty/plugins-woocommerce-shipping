@@ -41,7 +41,7 @@ class OrdersShippingContextRESTController extends WCShippingRESTController {
 	protected $rest_base = 'orders/shipping-context';
 
 	/**
-	 * Settings store — used to recover legacy malformed JSON in package
+	 * Settings store. Used to recover legacy malformed JSON in package
 	 * meta, the same way the single-order label-purchase view does.
 	 *
 	 * @var WC_Connect_Service_Settings_Store|null

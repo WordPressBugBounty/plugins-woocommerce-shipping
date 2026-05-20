@@ -1,19 +1,58 @@
-import { Button, Flex, Modal, Notice, Spinner } from '@wordpress/components';
+import {
+	Button,
+	Flex,
+	Modal,
+	Notice,
+	ProgressBar,
+} from '@wordpress/components';
 import { __, sprintf, _n } from '@wordpress/i18n';
-import { useMemo, useState } from '@wordpress/element';
+import { useCallback, useMemo, useState } from '@wordpress/element';
 import { DataViews } from '@wordpress/dataviews/wp';
 import type { Field, View } from '@wordpress/dataviews/wp';
 import { Icon, caution, closeSmall } from '@wordpress/icons';
-import { useBulkPurchaseOrders } from 'data/bulk-labels';
-import type {
-	BulkPurchaseOrder,
-	OrderShippingContextRecord,
+import {
+	buildServiceApplyOptions,
+	resolveSelectedRate,
+	SERVICE_CHEAPEST,
+	useAssignablePackages,
+	useBulkPurchaseOrders,
+	useOrderRates,
+	useOriginAddress,
 } from 'data/bulk-labels';
+import type {
+	AssignablePackage,
+	BulkPurchaseOrder,
+	ManualPackageSelections,
+	ManualServiceSelections,
+	OrderShippingContextRecord,
+	RateRequestOrder,
+} from 'data/bulk-labels';
+import { CarrierIcon } from 'components/carrier-icon';
 import { AddressGroupingSuggestion, NeedsFixNotice } from './banners';
-import { Toolbar, type FilterMode } from './toolbar';
+import { Toolbar, type ApplyOption, type FilterMode } from './toolbar';
+import { ApplyDropdown } from './apply-dropdown';
 import { Sidebar } from './sidebar';
 import type { BulkPurchaseModalProps } from './types';
 import './style.scss';
+
+/**
+ * Sentinel values for the "Apply to all" package dropdown. They sit
+ * alongside real package keys, so they use a prefix no package key uses
+ * (`AssignablePackage.key` is `custom:…` / `predef:…`).
+ */
+const AUTO_PACKAGE_VALUE = '__auto__';
+const MANUAL_PACKAGE_VALUE = '__manual__';
+
+/**
+ * wp-admin edit URL for an order. The modal always opens from the orders
+ * list, so the current page tells us whether the store is on HPOS
+ * (`page=wc-orders`) or legacy post-table orders. URLs are relative to
+ * wp-admin (same convention as the analytics order links).
+ */
+const getOrderEditUrl = ( orderId: number ): string =>
+	window.location.href.includes( 'page=wc-orders' )
+		? `admin.php?page=wc-orders&action=edit&id=${ orderId }`
+		: `post.php?post=${ orderId }&action=edit`;
 
 /**
  * "City, ST Postcode" — the compact line under the recipient name.
@@ -32,11 +71,330 @@ const formatLocality = (
 export const BulkPurchaseModal = ( {
 	orderIds,
 	onClose,
+	onCreateLabels,
 }: BulkPurchaseModalProps ) => {
 	const [ filter, setFilter ] = useState< FilterMode >( 'all' );
+	const [ manualSelections, setManualSelections ] =
+		useState< ManualPackageSelections >( {} );
 
-	const { isResolving, error, records, orders, summary, grouping } =
-		useBulkPurchaseOrders( orderIds );
+	const { isResolving, error, records, orders, grouping } =
+		useBulkPurchaseOrders( orderIds, manualSelections );
+
+	const { packages: assignablePackages } = useAssignablePackages(
+		orderIds.length > 0
+	);
+
+	const handleSelectPackage = useCallback(
+		( orderId: number, pkg: AssignablePackage | null ) => {
+			setManualSelections( ( prev ) => {
+				if ( ! pkg ) {
+					if ( ! ( orderId in prev ) ) {
+						return prev;
+					}
+					const next = { ...prev };
+					delete next[ orderId ];
+					return next;
+				}
+				return { ...prev, [ orderId ]: pkg };
+			} );
+		},
+		[]
+	);
+
+	// "Apply to all" package control. Selecting a package broadcasts it to
+	// every order; "Automatic package selection" clears all overrides so
+	// each row falls back to the box-packer suggestion.
+	const handleApplyPackageToAll = useCallback(
+		( value: string ) => {
+			if ( value === MANUAL_PACKAGE_VALUE ) {
+				// Display-only state — there's nothing to apply.
+				return;
+			}
+			if ( value === AUTO_PACKAGE_VALUE ) {
+				setManualSelections( {} );
+				return;
+			}
+			const pkg = assignablePackages.find( ( p ) => p.key === value );
+			if ( ! pkg ) {
+				return;
+			}
+			setManualSelections( () => {
+				const next: ManualPackageSelections = {};
+				orders.forEach( ( order ) => {
+					next[ order.order_id ] = pkg;
+				} );
+				return next;
+			} );
+		},
+		[ assignablePackages, orders ]
+	);
+
+	// Derive the apply-to-all selection + option list from the per-order
+	// state so the toolbar control and the row dropdowns stay in lockstep.
+	const { packageApplyValue, packageApplyOptions } = useMemo( () => {
+		const manualForOrders = orders.filter(
+			( order ) => manualSelections[ order.order_id ]
+		);
+		const hasAnyManual = manualForOrders.length > 0;
+		const allManual =
+			orders.length > 0 && manualForOrders.length === orders.length;
+		const uniqueKeys = new Set(
+			manualForOrders.map(
+				( order ) => manualSelections[ order.order_id ].key
+			)
+		);
+		const uniformKey =
+			allManual && uniqueKeys.size === 1 ? [ ...uniqueKeys ][ 0 ] : null;
+
+		let value: string;
+		if ( ! hasAnyManual ) {
+			value = AUTO_PACKAGE_VALUE;
+		} else if ( uniformKey ) {
+			value = uniformKey;
+		} else {
+			value = MANUAL_PACKAGE_VALUE;
+		}
+
+		const options: ApplyOption[] = [
+			{
+				label: __(
+					'Automatic package selection',
+					'woocommerce-shipping'
+				),
+				value: AUTO_PACKAGE_VALUE,
+			},
+			// Only offer "Customized manually" when that's actually the
+			// current state — it's a status reflection, not a real choice.
+			...( value === MANUAL_PACKAGE_VALUE
+				? [
+						{
+							label: __(
+								'Customized manually',
+								'woocommerce-shipping'
+							),
+							value: MANUAL_PACKAGE_VALUE,
+						},
+				  ]
+				: [] ),
+			...assignablePackages.map( ( pkg ) => ( {
+				label: pkg.dimensions
+					? sprintf(
+							/* translators: 1: package name, 2: package dimensions e.g. 12×9×6 */
+							__( '%1$s (%2$s)', 'woocommerce-shipping' ),
+							pkg.name,
+							pkg.dimensions
+					  )
+					: pkg.name,
+				value: pkg.key,
+			} ) ),
+		];
+
+		return { packageApplyValue: value, packageApplyOptions: options };
+	}, [ orders, manualSelections, assignablePackages ] );
+
+	// --- Per-order rates ---------------------------------------------------
+
+	const [ serviceApplyMode, setServiceApplyMode ] =
+		useState< string >( SERVICE_CHEAPEST );
+	const [ manualServiceSelections, setManualServiceSelections ] =
+		useState< ManualServiceSelections >( {} );
+
+	const { origin, error: originError } = useOriginAddress(
+		orderIds.length > 0
+	);
+
+	// Resolve each order's effective box (manual pick or auto-assigned,
+	// looked up for real numeric dimensions) into the rate request shape.
+	// Weight comes from the order total per the spec, falling back to the
+	// box tare when the order carries no item weight.
+	const rateRequestOrders = useMemo< RateRequestOrder[] >( () => {
+		return orders
+			.map( ( order ): RateRequestOrder | null => {
+				const selectedKey = order.package_display.selected_key;
+				const ap = selectedKey
+					? assignablePackages.find( ( p ) => p.key === selectedKey )
+					: undefined;
+				const meta = order.package;
+
+				const length = ap?.length ?? meta?.length ?? 0;
+				const width = ap?.width ?? meta?.width ?? 0;
+				const height = ap?.height ?? meta?.height ?? 0;
+				if ( length <= 0 || width <= 0 || height <= 0 ) {
+					return null;
+				}
+
+				const totalWeight = order.total_weight ?? 0;
+				const weight =
+					totalWeight > 0
+						? totalWeight
+						: ap?.weight ?? meta?.weight ?? 0;
+
+				// Shipping-context strips the recipient's first/last name
+				// (it lives in `customer_name`), so the rate destination
+				// has no `name` and USPS rejects it ("a name or a company
+				// is required"). Backfill from the order's customer name.
+				const rawDestination = ( order.destination ?? {} ) as Record<
+					string,
+					unknown
+				>;
+				const existingName =
+					typeof rawDestination.name === 'string'
+						? rawDestination.name.trim()
+						: '';
+				const customerName = order.customer_name?.trim() ?? '';
+				const destinationName =
+					existingName.length > 0 ? existingName : customerName;
+
+				return {
+					order_id: order.order_id,
+					destination: {
+						...rawDestination,
+						name: destinationName,
+					},
+					package: {
+						length,
+						width,
+						height,
+						weight,
+						box_id:
+							ap?.package_id ?? meta?.box_id ?? meta?.id ?? '',
+						is_letter: ap?.is_letter ?? false,
+					},
+				};
+			} )
+			.filter( ( o ): o is RateRequestOrder => o !== null );
+	}, [ orders, assignablePackages ] );
+
+	const {
+		resolvingIds,
+		rates,
+		rateErrors,
+		error: rateRequestError,
+	} = useOrderRates( origin, rateRequestOrders );
+
+	// A failed origin lookup or a top-level batch-rate rejection isn't a
+	// "no rates for this order" result — surface it once at the modal
+	// level so rows don't all just read "No rates available".
+	const rateFetchError = originError ?? rateRequestError;
+
+	// O(1) lookup for "is this order's rate request in flight?".
+	const resolvingRateIds = useMemo(
+		() => new Set( resolvingIds ),
+		[ resolvingIds ]
+	);
+
+	// The rate each row defaults to, given the apply-to-all strategy and
+	// any per-row manual override.
+	const selectedRateByOrder = useMemo( () => {
+		const map: Record<
+			number,
+			ReturnType< typeof resolveSelectedRate >
+		> = {};
+		orders.forEach( ( order ) => {
+			map[ order.order_id ] = resolveSelectedRate(
+				rates[ order.order_id ] ?? [],
+				serviceApplyMode,
+				manualServiceSelections[ order.order_id ]
+			);
+		} );
+		return map;
+	}, [ orders, rates, serviceApplyMode, manualServiceSelections ] );
+
+	// Sidebar totals follow the actually-selected rates: subtotal is the
+	// full retail price, the WooCommerce Shipping discount is what the
+	// account rate saves off retail, and the total is what's charged.
+	const rateSummary = useMemo( () => {
+		let subtotal = 0;
+		let total = 0;
+		orders.forEach( ( order ) => {
+			const rate = selectedRateByOrder[ order.order_id ];
+			if ( ! rate ) {
+				return;
+			}
+			subtotal += rate.retailRate;
+			total += rate.rate;
+		} );
+		const round = ( n: number ) => Math.round( n * 100 ) / 100;
+		return {
+			subtotal: round( subtotal ),
+			discount: round( Math.max( subtotal - total, 0 ) ),
+			total: round( total ),
+		};
+	}, [ orders, selectedRateByOrder ] );
+
+	// Readiness must reflect rates too: a row with no selectable rate
+	// (a definitive empty/error result, or a global origin/rate request
+	// failure) is "needs fix", not "ready". Rows still resolving stay as
+	// their package status until the quote settles.
+	const effectiveStatusById = useMemo( () => {
+		const map: Record< number, 'ready' | 'needs_fix' > = {};
+		orders.forEach( ( order ) => {
+			const id = order.order_id;
+			if ( order.status === 'needs_fix' ) {
+				map[ id ] = 'needs_fix';
+				return;
+			}
+			if ( selectedRateByOrder[ id ] ) {
+				map[ id ] = 'ready';
+				return;
+			}
+			const definitiveNoRate =
+				Boolean( rateFetchError ) ||
+				Boolean( rateErrors[ id ] ) ||
+				Array.isArray( rates[ id ] );
+			map[ id ] =
+				definitiveNoRate && ! resolvingRateIds.has( id )
+					? 'needs_fix'
+					: 'ready';
+		} );
+		return map;
+	}, [
+		orders,
+		selectedRateByOrder,
+		rates,
+		rateErrors,
+		rateFetchError,
+		resolvingRateIds,
+	] );
+
+	const readinessCounts = useMemo( () => {
+		let readyCount = 0;
+		let needsFixCount = 0;
+		orders.forEach( ( o ) => {
+			if ( effectiveStatusById[ o.order_id ] === 'needs_fix' ) {
+				needsFixCount += 1;
+			} else {
+				readyCount += 1;
+			}
+		} );
+		return { readyCount, needsFixCount };
+	}, [ orders, effectiveStatusById ] );
+
+	const handleSelectRate = useCallback(
+		( orderId: number, rateId: string ) => {
+			setManualServiceSelections( ( prev ) => {
+				if ( ! rateId ) {
+					if ( ! ( orderId in prev ) ) {
+						return prev;
+					}
+					const next = { ...prev };
+					delete next[ orderId ];
+					return next;
+				}
+				return { ...prev, [ orderId ]: rateId };
+			} );
+		},
+		[]
+	);
+
+	// Changing the service strategy re-applies it to every order, so drop
+	// the per-row overrides.
+	const handleApplyServiceToAll = useCallback( ( value: string ) => {
+		setServiceApplyMode( value );
+		setManualServiceSelections( {} );
+	}, [] );
+
+	const serviceApplyOptions = useMemo( () => buildServiceApplyOptions(), [] );
 
 	const isLoading = isResolving;
 	const hasData = ! isLoading && records.length > 0;
@@ -48,13 +406,17 @@ export const BulkPurchaseModal = ( {
 
 	const filteredOrders = useMemo( () => {
 		if ( filter === 'ready' ) {
-			return orders.filter( ( o ) => o.status === 'ready' );
+			return orders.filter(
+				( o ) => effectiveStatusById[ o.order_id ] === 'ready'
+			);
 		}
 		if ( filter === 'needs_fix' ) {
-			return orders.filter( ( o ) => o.status === 'needs_fix' );
+			return orders.filter(
+				( o ) => effectiveStatusById[ o.order_id ] === 'needs_fix'
+			);
 		}
 		return orders;
-	}, [ orders, filter ] );
+	}, [ orders, filter, effectiveStatusById ] );
 
 	const fields = useMemo< Field< BulkPurchaseOrder >[] >(
 		() => [
@@ -64,13 +426,18 @@ export const BulkPurchaseModal = ( {
 				enableSorting: false,
 				enableHiding: false,
 				render: ( { item }: { item: BulkPurchaseOrder } ) => (
-					<span className="bulk-purchase-modal__order-number">
+					<a
+						className="bulk-purchase-modal__order-number"
+						href={ getOrderEditUrl( item.order_id ) }
+						target="_blank"
+						rel="noreferrer noopener"
+					>
 						{ sprintf(
 							/* translators: %s: order number */
 							__( '#%s', 'woocommerce-shipping' ),
 							item.order_number ?? String( item.order_id )
 						) }
-					</span>
+					</a>
 				),
 			},
 			{
@@ -123,49 +490,202 @@ export const BulkPurchaseModal = ( {
 				},
 			},
 			{
-				id: 'package',
-				label: __( 'Package', 'woocommerce-shipping' ),
+				id: 'weight',
+				label: __( 'Total weight', 'woocommerce-shipping' ),
 				enableSorting: false,
 				enableHiding: false,
-				render: ( { item }: { item: BulkPurchaseOrder } ) => (
-					<div className="bulk-purchase-modal__pill">
-						<div className="bulk-purchase-modal__pill-title">
-							📦 { item.package_display.name }
-						</div>
-						{ item.package_display.dimensions && (
-							<div className="bulk-purchase-modal__pill-meta">
-								{ item.package_display.dimensions }
-							</div>
-						) }
-						<div className="bulk-purchase-modal__pill-meta">
+				render: ( { item }: { item: BulkPurchaseOrder } ) => {
+					const weight = item.total_weight ?? 0;
+					if ( weight <= 0 ) {
+						return (
+							<span className="bulk-purchase-modal__note-empty">
+								—
+							</span>
+						);
+					}
+					return (
+						<span className="bulk-purchase-modal__weight">
 							{ sprintf(
-								/* translators: 1: weight value, 2: weight unit */
+								/* translators: 1: total order weight, 2: weight unit (e.g. kg) */
 								__( '%1$s %2$s', 'woocommerce-shipping' ),
-								String( item.package_display.weight ),
-								item.package_display.weight_unit
+								String( weight ),
+								item.weight_unit ?? 'kg'
 							) }
-						</div>
-					</div>
+						</span>
+					);
+				},
+			},
+			{
+				id: 'package',
+				label: __( 'Package', 'woocommerce-shipping' ),
+				header: (
+					<span className="bulk-purchase-modal__column-header">
+						<span aria-hidden="true">📦</span>
+						{ __( 'Package', 'woocommerce-shipping' ) }
+					</span>
 				),
+				enableSorting: false,
+				enableHiding: false,
+				render: ( { item }: { item: BulkPurchaseOrder } ) => {
+					const selectedKey = item.package_display.selected_key ?? '';
+					const hasSelection = selectedKey !== '';
+
+					// The auto-assigned box (or a not-yet-starred custom
+					// box) might not be in the fetched list; surface it as
+					// its own option so the dropdown can show it selected.
+					const selectedInList = assignablePackages.some(
+						( pkg ) => pkg.key === selectedKey
+					);
+					const syntheticSelected =
+						hasSelection && ! selectedInList
+							? [
+									{
+										label: item.package_display.dimensions
+											? sprintf(
+													/* translators: 1: package name, 2: package dimensions e.g. 12×9×6 */
+													__(
+														'%1$s (%2$s)',
+														'woocommerce-shipping'
+													),
+													item.package_display.name,
+													item.package_display
+														.dimensions
+											  )
+											: item.package_display.name,
+										value: selectedKey,
+									},
+							  ]
+							: [];
+
+					return (
+						<ApplyDropdown
+							ariaLabel={ __(
+								'Package',
+								'woocommerce-shipping'
+							) }
+							value={ selectedKey }
+							placeholder={
+								assignablePackages.length === 0 &&
+								! hasSelection
+									? __(
+											'No packages available',
+											'woocommerce-shipping'
+									  )
+									: __(
+											'Select a package…',
+											'woocommerce-shipping'
+									  )
+							}
+							onSelect={ ( value ) => {
+								const picked =
+									assignablePackages.find(
+										( pkg ) => pkg.key === value
+									) ?? null;
+								handleSelectPackage( item.order_id, picked );
+							} }
+							options={ [
+								...syntheticSelected,
+								...assignablePackages.map( ( pkg ) => ( {
+									label: pkg.dimensions
+										? sprintf(
+												/* translators: 1: package name, 2: package dimensions e.g. 12×9×6 */
+												__(
+													'%1$s (%2$s)',
+													'woocommerce-shipping'
+												),
+												pkg.name,
+												pkg.dimensions
+										  )
+										: pkg.name,
+									value: pkg.key,
+								} ) ),
+							] }
+						/>
+					);
+				},
 			},
 			{
 				id: 'service',
 				label: __( 'Service', 'woocommerce-shipping' ),
+				header: (
+					<span className="bulk-purchase-modal__column-header">
+						<span aria-hidden="true">🚚</span>
+						{ __( 'Service', 'woocommerce-shipping' ) }
+					</span>
+				),
 				enableSorting: false,
 				enableHiding: false,
-				render: ( { item }: { item: BulkPurchaseOrder } ) => (
-					<div className="bulk-purchase-modal__pill">
-						<div className="bulk-purchase-modal__service-badge">
-							{ item.service.carrier }
-						</div>
-						<div className="bulk-purchase-modal__pill-title">
-							{ item.service.carrier } { item.service.name }
-						</div>
-						<div className="bulk-purchase-modal__pill-meta">
-							{ item.service.estimate }
-						</div>
-					</div>
-				),
+				render: ( { item }: { item: BulkPurchaseOrder } ) => {
+					const orderRates = rates[ item.order_id ] ?? [];
+					const selectedRate =
+						selectedRateByOrder[ item.order_id ] ?? null;
+					const rateError = rateErrors[ item.order_id ];
+
+					// In-flight (initial quote or a package change): show a
+					// progress bar, never a stale/previous selected rate.
+					if ( resolvingRateIds.has( item.order_id ) ) {
+						return (
+							<div className="bulk-purchase-modal__rate-loading">
+								<ProgressBar />
+							</div>
+						);
+					}
+
+					if ( orderRates.length === 0 ) {
+						return (
+							<span className="bulk-purchase-modal__note bulk-purchase-modal__note--warning">
+								<Icon icon={ caution } size={ 16 } />
+								{ rateError ||
+									__(
+										'No rates available',
+										'woocommerce-shipping'
+									) }
+							</span>
+						);
+					}
+
+					return (
+						<ApplyDropdown
+							ariaLabel={ __(
+								'Service',
+								'woocommerce-shipping'
+							) }
+							value={ selectedRate?.rateId ?? '' }
+							onSelect={ ( value ) =>
+								handleSelectRate( item.order_id, value )
+							}
+							options={ orderRates.map( ( rate ) => ( {
+								label: rate.deliveryDays
+									? sprintf(
+											/* translators: 1: service title, 2: price, 3: delivery days */
+											__(
+												'%1$s — $%2$s · %3$d days',
+												'woocommerce-shipping'
+											),
+											rate.title,
+											rate.rate.toFixed( 2 ),
+											rate.deliveryDays
+									  )
+									: sprintf(
+											/* translators: 1: service title, 2: price */
+											__(
+												'%1$s — $%2$s',
+												'woocommerce-shipping'
+											),
+											rate.title,
+											rate.rate.toFixed( 2 )
+									  ),
+								value: rate.rateId,
+								icon: (
+									<CarrierIcon
+										carrier={ rate.carrierId }
+										size="small"
+									/>
+								),
+							} ) ) }
+						/>
+					);
+				},
 			},
 			{
 				id: 'note',
@@ -176,7 +696,7 @@ export const BulkPurchaseModal = ( {
 					if ( ! item.note.type ) {
 						return (
 							<span className="bulk-purchase-modal__note-empty">
-								—
+								&mdash;
 							</span>
 						);
 					}
@@ -197,44 +717,56 @@ export const BulkPurchaseModal = ( {
 				label: __( 'Cost', 'woocommerce-shipping' ),
 				enableSorting: false,
 				enableHiding: false,
-				render: ( { item }: { item: BulkPurchaseOrder } ) => (
-					<div className="bulk-purchase-modal__cost">
-						<div className="bulk-purchase-modal__cost-amount">
-							${ item.cost.toFixed( 2 ) }
-						</div>
-						{ item.cost_savings > 0 && (
-							<div className="bulk-purchase-modal__cost-savings">
-								{ sprintf(
-									/* translators: %s: dollar savings */
-									__(
-										'−$%s vs paid',
-										'woocommerce-shipping'
-									),
-									item.cost_savings.toFixed( 2 )
-								) }
+				render: ( { item }: { item: BulkPurchaseOrder } ) => {
+					const selectedRate =
+						selectedRateByOrder[ item.order_id ] ?? null;
+					if ( ! selectedRate ) {
+						return (
+							<span className="bulk-purchase-modal__note-empty">
+								—
+							</span>
+						);
+					}
+					return (
+						<div className="bulk-purchase-modal__cost">
+							<div className="bulk-purchase-modal__cost-amount">
+								${ selectedRate.rate.toFixed( 2 ) }
 							</div>
-						) }
-					</div>
-				),
+						</div>
+					);
+				},
 			},
 			{
 				id: 'status',
 				label: __( 'Status', 'woocommerce-shipping' ),
 				enableSorting: false,
 				enableHiding: false,
-				render: ( { item }: { item: BulkPurchaseOrder } ) => (
-					<span
-						className={ `bulk-purchase-modal__status bulk-purchase-modal__status--${ item.status }` }
-					>
-						<span className="bulk-purchase-modal__status-dot" />
-						{ item.status === 'ready'
-							? __( 'Ready', 'woocommerce-shipping' )
-							: __( 'Needs fix', 'woocommerce-shipping' ) }
-					</span>
-				),
+				render: ( { item }: { item: BulkPurchaseOrder } ) => {
+					const status =
+						effectiveStatusById[ item.order_id ] ?? item.status;
+					return (
+						<span
+							className={ `bulk-purchase-modal__status bulk-purchase-modal__status--${ status }` }
+						>
+							<span className="bulk-purchase-modal__status-dot" />
+							{ status === 'ready'
+								? __( 'Ready', 'woocommerce-shipping' )
+								: __( 'Needs fix', 'woocommerce-shipping' ) }
+						</span>
+					);
+				},
 			},
 		],
-		[]
+		[
+			assignablePackages,
+			handleSelectPackage,
+			rates,
+			rateErrors,
+			resolvingRateIds,
+			selectedRateByOrder,
+			handleSelectRate,
+			effectiveStatusById,
+		]
 	);
 
 	const view: View = {
@@ -242,6 +774,7 @@ export const BulkPurchaseModal = ( {
 		fields: [
 			'order',
 			'ship_to',
+			'weight',
 			'package',
 			'service',
 			'note',
@@ -253,15 +786,22 @@ export const BulkPurchaseModal = ( {
 		},
 	};
 
+	// Count the orders the modal will actually act on, not the raw
+	// selection — orders that errored out of the shipping-context fetch
+	// are dropped and surfaced in the "could not be loaded" notice, so
+	// the title must match the table/tabs (e.g. "All 10"). Fall back to
+	// the selection count while the fetch is still resolving so the
+	// header doesn't flash "Create 0 shipping labels".
+	const labelCount = hasData ? orders.length : orderIds.length;
 	const title = sprintf(
 		/* translators: %d: number of shipping labels to create */
 		_n(
 			'Create %d shipping label',
 			'Create %d shipping labels',
-			orderIds.length,
+			labelCount,
 			'woocommerce-shipping'
 		),
-		orderIds.length
+		labelCount
 	);
 
 	return (
@@ -298,7 +838,9 @@ export const BulkPurchaseModal = ( {
 
 			{ isLoading && (
 				<div className="bulk-purchase-modal__loading">
-					<Spinner />
+					<div className="bulk-purchase-modal__loading-bar">
+						<ProgressBar />
+					</div>
 				</div>
 			) }
 
@@ -324,6 +866,19 @@ export const BulkPurchaseModal = ( {
 			{ hasData && (
 				<div className="bulk-purchase-modal__layout">
 					<div className="bulk-purchase-modal__main">
+						{ rateFetchError && (
+							<Notice status="error" isDismissible={ false }>
+								{ sprintf(
+									/* translators: %s: error message from the rate/origin request */
+									__(
+										'Couldn’t fetch shipping rates: %s. Service and cost are unavailable until this is resolved.',
+										'woocommerce-shipping'
+									),
+									rateFetchError.message
+								) }
+							</Notice>
+						) }
+
 						{ erroredRecordsCount > 0 && (
 							<Notice status="warning" isDismissible={ false }>
 								{ sprintf(
@@ -350,24 +905,30 @@ export const BulkPurchaseModal = ( {
 								customerName={ grouping.customerName }
 								cityState={ grouping.cityState }
 								orderIds={ grouping.orderIds }
-								// Placeholder savings — real grouping discount lands with WOOSHIP-2133.
+								// Placeholder savings. Real grouping discount lands with WOOSHIP-2133.
 								savings={ 8.1 }
 							/>
 						) }
 
 						<NeedsFixNotice
-							needsFixCount={ summary.needsFixCount }
-							readyCount={ summary.readyCount }
+							needsFixCount={ readinessCounts.needsFixCount }
+							readyCount={ readinessCounts.readyCount }
 							onShowOnlyIssues={ () => setFilter( 'needs_fix' ) }
 						/>
 
 						<Toolbar
 							selectedCount={ filteredOrders.length }
 							totalCount={ orders.length }
-							readyCount={ summary.readyCount }
-							needsFixCount={ summary.needsFixCount }
+							readyCount={ readinessCounts.readyCount }
+							needsFixCount={ readinessCounts.needsFixCount }
 							filter={ filter }
 							onFilterChange={ setFilter }
+							packageApplyOptions={ packageApplyOptions }
+							packageApplyValue={ packageApplyValue }
+							onPackageApply={ handleApplyPackageToAll }
+							serviceApplyOptions={ serviceApplyOptions }
+							serviceApplyValue={ serviceApplyMode }
+							onServiceApply={ handleApplyServiceToAll }
 						/>
 
 						<div className="bulk-purchase-modal__orders">
@@ -397,13 +958,19 @@ export const BulkPurchaseModal = ( {
 					</div>
 
 					<Sidebar
-						readyCount={ summary.readyCount }
-						needsFixCount={ summary.needsFixCount }
-						subtotal={ summary.subtotal }
-						discount={ summary.discount }
-						total={ summary.total }
+						readyCount={ readinessCounts.readyCount }
+						needsFixCount={ readinessCounts.needsFixCount }
+						subtotal={ rateSummary.subtotal }
+						discount={ rateSummary.discount }
+						total={ rateSummary.total }
 						onPurchase={ () => {
-							// Placeholder — wired in WOOSHIP-2133.
+							const readyOrders = orders.filter(
+								( o ) => o.status === 'ready'
+							);
+							if ( readyOrders.length === 0 ) {
+								return;
+							}
+							onCreateLabels?.( readyOrders );
 						} }
 					/>
 				</div>

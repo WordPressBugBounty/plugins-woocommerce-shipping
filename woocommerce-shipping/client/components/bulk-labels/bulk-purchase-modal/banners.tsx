@@ -11,7 +11,7 @@ interface AddressGroupingSuggestionProps {
 }
 
 /**
- * "X orders ship to the same address — combine into one package?"
+ * "X orders ship to the same address. Combine into one package?"
  * suggestion. Wired to local state for now: the buttons just dismiss
  * the banner. Real grouping lives downstream.
  */
@@ -49,8 +49,8 @@ export const AddressGroupingSuggestion = ( {
 				{ sprintf(
 					/* translators: %d: number of orders shipping to the same address */
 					_n(
-						'%d order ships to the same address — combine into one package?',
-						'%d orders ship to the same address — combine into one package?',
+						'%d order ships to the same address. Combine into one package?',
+						'%d orders ship to the same address. Combine into one package?',
 						orderIds.length,
 						'woocommerce-shipping'
 					),

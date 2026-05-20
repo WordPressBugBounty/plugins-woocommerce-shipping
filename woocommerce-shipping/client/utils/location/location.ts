@@ -11,6 +11,7 @@ import {
 import {
 	ACCEPTED_USPS_ORIGIN_COUNTRIES,
 	US_MILITARY_STATES,
+	US_TERRITORY_STATES,
 } from './constants';
 import { getConfig } from '../config';
 import { camelCaseKeys } from '../common';
@@ -150,11 +151,35 @@ export const getStoreOrigin = () => {
 	};
 };
 
+/**
+ * US territories can be addressed either as their own country code (after
+ * address normalization) or as country "US" with the territory in the state
+ * field (when the merchant declines normalization). Collapse both encodings to
+ * a single effective country code so customs handling is consistent regardless
+ * of which form the address takes.
+ */
+const getEffectiveCustomsCountry = (
+	address: Pick< LocationResponse, 'country' | 'state' >
+): string | undefined => {
+	if (
+		address?.country === 'US' &&
+		US_TERRITORY_STATES.includes( address?.state )
+	) {
+		return address.state;
+	}
+	return address?.country;
+};
+
 export const isCustomsRequired = (
 	origin: Pick< LocationResponse, 'country' | 'state' >,
 	destination: Pick< LocationResponse, 'country' | 'state' >
 ) => {
-	if ( ! isEqual( origin.country, destination?.country ) ) {
+	if (
+		! isEqual(
+			getEffectiveCustomsCountry( origin ),
+			getEffectiveCustomsCountry( destination )
+		)
+	) {
 		return true;
 	}
 
@@ -173,6 +198,27 @@ export const isCustomsRequired = (
 	}
 
 	return false;
+};
+
+/**
+ * USPS enforces the customs `itemDescription` 30-char limit only on its
+ * domestic-mail label path (US + US territories + military APO/FPO/DPO, which
+ * are country `US`). True international labels go through a different path and
+ * are not subject to it. A shipment uses the domestic-mail path when both
+ * endpoints are USPS domestic-mail territories — mirrors the backend
+ * `USPSTerritories::DOMESTIC_MAIL_TERRITORIES`.
+ */
+export const isUSPSDomesticMailShipment = (
+	originCountry?: string,
+	destinationCountry?: string
+): boolean => {
+	if ( ! originCountry || ! destinationCountry ) {
+		return false;
+	}
+	return (
+		ACCEPTED_USPS_ORIGIN_COUNTRIES.includes( originCountry ) &&
+		ACCEPTED_USPS_ORIGIN_COUNTRIES.includes( destinationCountry )
+	);
 };
 
 export const getOriginAddresses = (

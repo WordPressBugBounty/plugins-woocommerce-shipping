@@ -1,7 +1,7 @@
 /**
  * Helpers that turn raw orders shipping-context records into the
- * display-ready rows the bulk-purchase modal renders. The service /
- * cost / status / note fields are placeholders for now — WOOSHIP-2133
+ * display-ready rows the bulk-purchase modal renders. The service,
+ * cost, status, and note fields are placeholders for now. WOOSHIP-2133
  * fills them in from the rate-quote and eligibility endpoints.
  *
  * Everything is deterministic on order_id so the layout doesn't shift
@@ -11,8 +11,12 @@
 import { __, sprintf } from '@wordpress/i18n';
 import type {
 	AddressGrouping,
+	AssignablePackage,
+	AutoAssignedPackageResult,
+	AutoAssignedPackagesMap,
 	BatchSummary,
 	BulkPurchaseOrder,
+	ManualPackageSelections,
 	OrderShippingContextRecord,
 	PackageDisplay,
 } from './types';
@@ -47,19 +51,70 @@ const placeholderPackageForIndex = ( index: number ) =>
 	PLACEHOLDER_PACKAGES[ index % PLACEHOLDER_PACKAGES.length ];
 
 /**
- * Display-ready package for an order. Uses the real selected package if
- * the order has one; otherwise falls back to a deterministic placeholder
- * so the layout stays stable across renders.
+ * Display-ready package for an order. Prefers the box-packer's auto-assigned
+ * suggestion (when the endpoint returned `fit` for the order), then the
+ * order's pre-selected package meta, and finally a deterministic placeholder
+ * so the row still renders before either source is available.
+ *
+ * The auto-assign response only carries the package id + name, so we keep
+ * the dimensions / weight read from either the order meta (if its box id
+ * matches the suggestion) or the order totals.
  */
 const buildPackageDisplay = (
 	order: OrderShippingContext,
-	index: number
+	index: number,
+	autoAssigned?: AutoAssignedPackageResult
 ): PackageDisplay => {
-	const fallback = placeholderPackageForIndex( index );
 	const real = order.package;
-
 	const totalWeight = order.total_weight ?? 0;
 	const weightUnit = order.weight_unit ?? 'kg';
+
+	if ( autoAssigned?.status === 'fit' && autoAssigned.package_id ) {
+		const suggestionMatchesMeta =
+			real?.box_id?.trim() === autoAssigned.package_id ||
+			real?.id?.trim?.() === autoAssigned.package_id;
+		const dims =
+			suggestionMatchesMeta && real
+				? formatDimensions( real.length, real.width, real.height )
+				: '';
+		const trimmedName = autoAssigned.package_name?.trim();
+		const serviceId = autoAssigned.service_id?.trim();
+		return {
+			name:
+				trimmedName && trimmedName.length > 0
+					? trimmedName
+					: autoAssigned.package_id,
+			dimensions: dims,
+			weight:
+				suggestionMatchesMeta && real && real.weight > 0
+					? real.weight
+					: totalWeight,
+			weight_unit: weightUnit,
+			// Mirror the key scheme useAssignablePackages builds so the
+			// dropdown can pre-select the auto-assigned box.
+			selected_key:
+				serviceId && serviceId.length > 0
+					? `predef:${ serviceId }:${ autoAssigned.package_id }`
+					: `custom:${ autoAssigned.package_id }`,
+		};
+	}
+
+	// The packer gave a definitive answer and it wasn't `fit` — there is
+	// no valid package for this order. Don't paper over it with the order
+	// meta or a placeholder box; surface an explicit "not assigned" cell so
+	// the merchant fixes the underlying issue (the Notes column already
+	// carries the packer's reason).
+	if ( autoAssigned && autoAssigned.status !== 'fit' ) {
+		return {
+			name: __( 'Not assigned', 'woocommerce-shipping' ),
+			dimensions: '',
+			weight: 0,
+			weight_unit: weightUnit,
+			unavailable: true,
+		};
+	}
+
+	const fallback = placeholderPackageForIndex( index );
 
 	if ( real ) {
 		const dims = formatDimensions( real.length, real.width, real.height );
@@ -76,6 +131,35 @@ const buildPackageDisplay = (
 		dimensions: fallback.dimensions,
 		weight: totalWeight,
 		weight_unit: weightUnit,
+	};
+};
+
+/**
+ * Operator-facing note for a non-`fit` auto-assignment status. Returning
+ * `null` means the suggestion succeeded (or there's no entry yet) and the
+ * caller should fall back to its usual note logic (intl, address group).
+ */
+const buildAutoAssignNote = (
+	autoAssigned: AutoAssignedPackageResult | undefined
+): BulkPurchaseOrder[ 'note' ] | null => {
+	if ( ! autoAssigned || autoAssigned.status === 'fit' ) {
+		return null;
+	}
+
+	const reason = autoAssigned.reason?.trim();
+	return {
+		type: 'warning',
+		// The per-status copy is authored once on the PHP side
+		// (PackageAssignmentService) and sent as `reason`; don't mirror
+		// those strings here. The generic fallback only guards a
+		// malformed/blank response.
+		text:
+			reason && reason.length > 0
+				? reason
+				: __(
+						'This order needs a different package.',
+						'woocommerce-shipping'
+				  ),
 	};
 };
 
@@ -116,8 +200,8 @@ const buildAddressGroups = (
 
 		// Only group orders that share a full address. Earlier we joined
 		// the parts and checked for an overall non-empty string, which
-		// matched orders sharing only city + postcode (e.g. "|City|12345")
-		// — that's not "the same address" and would mis-suggest combining
+		// matched orders sharing only city + postcode (e.g. "|City|12345"),
+		// which is not "the same address" and would mis-suggest combining
 		// unrelated orders.
 		if ( parts.some( ( p ) => p === '' ) ) {
 			return;
@@ -145,8 +229,25 @@ const buildAddressGroups = (
 	return result;
 };
 
+/**
+ * Display-ready package built from a merchant-picked manual override.
+ * Falls back to the order's total weight when the box carries no tare.
+ */
+const manualPackageDisplay = (
+	manual: AssignablePackage,
+	order: OrderShippingContext
+): PackageDisplay => ( {
+	name: manual.name,
+	dimensions: manual.dimensions,
+	weight: manual.weight > 0 ? manual.weight : order.total_weight ?? 0,
+	weight_unit: order.weight_unit ?? 'kg',
+	selected_key: manual.key,
+} );
+
 export const buildBulkPurchaseOrders = (
-	orders: OrderShippingContext[]
+	orders: OrderShippingContext[],
+	autoAssignedPackages: AutoAssignedPackagesMap = {},
+	manualSelections: ManualPackageSelections = {}
 ): BulkPurchaseOrder[] => {
 	const addressGroups = buildAddressGroups( orders );
 
@@ -156,12 +257,26 @@ export const buildBulkPurchaseOrders = (
 		const cost = 5.5 + ( ( order.order_id * 1.7 ) % 25 );
 		const savings = 0.5 + ( ( order.order_id * 0.3 ) % 5 );
 
+		// A manual pick wins over whatever the packer said — the merchant
+		// has resolved the row by hand, so it behaves like a clean `fit`.
+		const manual = manualSelections[ order.order_id ];
+		const autoAssigned = manual
+			? undefined
+			: autoAssignedPackages[ order.order_id ];
+		const autoAssignNote = buildAutoAssignNote( autoAssigned );
+		const autoAssignBlocked = autoAssignNote !== null;
+
 		let note: BulkPurchaseOrder[ 'note' ] = { type: null, text: '' };
-		if ( intl ) {
+		// Surface the auto-assign failure first — those rows can't proceed
+		// to purchase regardless of intl/grouping, so the merchant needs to
+		// see the packer's reason before the secondary notes.
+		if ( autoAssignNote ) {
+			note = autoAssignNote;
+		} else if ( intl ) {
 			note = {
 				type: 'warning',
 				text: __(
-					'International — customs form required',
+					'International. Customs form required.',
 					'woocommerce-shipping'
 				),
 			};
@@ -178,19 +293,22 @@ export const buildBulkPurchaseOrders = (
 
 		return {
 			...order,
-			package_display: buildPackageDisplay( order, index ),
+			package_display: manual
+				? manualPackageDisplay( manual, order )
+				: buildPackageDisplay( order, index, autoAssigned ),
 			service: intl ? SERVICES[ 0 ] : SERVICES[ index % SERVICES.length ],
 			cost: Math.round( cost * 100 ) / 100,
 			cost_savings: intl ? 0 : Math.round( savings * 100 ) / 100,
-			status: intl ? 'needs_fix' : 'ready',
+			status: intl || autoAssignBlocked ? 'needs_fix' : 'ready',
 			note,
+			auto_assigned: autoAssigned,
 		};
 	} );
 };
 
 /**
  * Find the largest set of orders shipping to the exact same destination.
- * Powers the "X orders ship to the same address — combine?" suggestion.
+ * Powers the "X orders ship to the same address. Combine?" suggestion.
  */
 export const findLargestAddressGroup = (
 	orders: OrderShippingContext[]

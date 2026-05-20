@@ -3,6 +3,11 @@ import { Carrier, CustomPackageType } from 'types';
 
 export const getRatesPath = () => `${ NAMESPACE }/label/rate`;
 
+export const getBatchRatesPath = () => `${ NAMESPACE }/label/rate/batch`;
+
+export const getAutoAssignPackagesPath = () =>
+	`${ NAMESPACE }/label/auto-assign-packages`;
+
 export const getOriginAddressesPath = () => `${ NAMESPACE }/address/origins`;
 
 /**

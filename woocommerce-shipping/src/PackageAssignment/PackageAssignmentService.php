@@ -290,7 +290,7 @@ class PackageAssignmentService {
 		if ( $count >= 2 ) {
 			return array(
 				'status' => self::STATUS_NEEDS_SPLIT,
-				'reason' => __( 'Items would need more than one package.', 'woocommerce-shipping' ),
+				'reason' => __( "This order's items don't all fit in one package. Pick a larger package, or split the order into multiple shipments.", 'woocommerce-shipping' ),
 			);
 		}
 

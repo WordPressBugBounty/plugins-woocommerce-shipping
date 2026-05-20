@@ -66,7 +66,7 @@ const BatchSummary = ( {
 				</div>
 			</dl>
 			<div className="bulk-purchase-modal__charging">
-				{ /* Placeholder card brand + last-four — replaced with real payment data in WOOSHIP-2133; left untranslated so dummy strings don't enter the translation memory. */ }
+				{ /* Placeholder card brand + last-four. Real payment data lands in WOOSHIP-2133. Left untranslated so dummy strings don't enter the translation memory. */ }
 				💳 Charging Visa ·· 4242
 				<a
 					href="#change-card"
@@ -166,7 +166,7 @@ const ShipFrom = () => (
 			</Button>
 		</div>
 		<div className="bulk-purchase-modal__ship-from-body">
-			{ /* Placeholder ship-from — wired to the real origin address in WOOSHIP-2133; left untranslated so dummy strings don't enter the translation memory. */ }
+			{ /* Placeholder ship-from. Wired to the real origin address in WOOSHIP-2133. Left untranslated so dummy strings don't enter the translation memory. */ }
 			<strong>Escargot HQ</strong>
 			<div>88 29th St PMB 343, San Francisco, CA 94110</div>
 		</div>

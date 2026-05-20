@@ -130,6 +130,8 @@ class ComposerStaticInit5cf50ab6649ec9e5d8aa1976763c0124
         'Automattic\\WCShipping\\Banners\\Banners' => __DIR__ . '/../..' . '/src/Banners/Banners.php',
         'Automattic\\WCShipping\\Banners\\BulkLabelsBanner' => __DIR__ . '/../..' . '/src/Banners/BulkLabelsBanner.php',
         'Automattic\\WCShipping\\Bulk\\BatchableApiClient' => __DIR__ . '/../..' . '/src/Bulk/BatchableApiClient.php',
+        'Automattic\\WCShipping\\Bulk\\Models\\PrintQueueItem' => __DIR__ . '/../..' . '/src/Bulk/Models/PrintQueueItem.php',
+        'Automattic\\WCShipping\\Bulk\\PrintQueueRepository' => __DIR__ . '/../..' . '/src/Bulk/PrintQueueRepository.php',
         'Automattic\\WCShipping\\Carrier\\FedEx\\FedExCarrierStrategyRESTController' => __DIR__ . '/../..' . '/src/Carrier/FedEx/FedExCarrierStrategyRESTController.php',
         'Automattic\\WCShipping\\Carrier\\FedEx\\FedExCarrierStrategyService' => __DIR__ . '/../..' . '/src/Carrier/FedEx/FedExCarrierStrategyService.php',
         'Automattic\\WCShipping\\Carrier\\FedEx\\FedExTosErrorInterceptor' => __DIR__ . '/../..' . '/src/Carrier/FedEx/FedExTosErrorInterceptor.php',
