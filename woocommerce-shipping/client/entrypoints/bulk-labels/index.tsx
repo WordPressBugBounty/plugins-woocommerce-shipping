@@ -5,10 +5,10 @@ import {
 	useState,
 } from '@wordpress/element';
 import { createRoot } from 'react-dom/client';
-import { Notice } from '@wordpress/components';
+import { Modal, Notice } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 import * as Sentry from '@sentry/react';
-import { BulkLabelsBanner } from 'components/bulk-labels';
+import { BulkLabelsBanner, BulkPrintDialog } from 'components/bulk-labels';
 import { BulkPurchaseModal } from 'components/bulk-labels/bulk-purchase-modal';
 import {
 	BatchProgressModal,
@@ -20,6 +20,7 @@ import {
 	registerOrdersShippingContextEntity,
 } from 'data/bulk-labels';
 import type { BulkPurchaseOrder } from 'data/bulk-labels';
+import type { LabelPrintFulfillmentRef } from 'types';
 import { initSentry } from 'utils';
 
 initSentry();
@@ -113,6 +114,16 @@ const getMockOverride = ():
 	return null;
 };
 
+const isTestPrintLabelRef = ( ref: unknown ): ref is LabelPrintFulfillmentRef =>
+	typeof ref === 'object' &&
+	ref !== null &&
+	'label_id' in ref &&
+	'fulfillment_id' in ref &&
+	typeof ref.label_id === 'number' &&
+	typeof ref.fulfillment_id === 'number' &&
+	ref.label_id > 0 &&
+	ref.fulfillment_id > 0;
+
 /**
  * Wrapper component that owns the modal open/close state. Kept inline in
  * the entrypoint so the banner stays presentational and the modal lifecycle
@@ -146,6 +157,9 @@ const BulkLabelsApp = () => {
 		null
 	);
 	const [ capExceeded, setCapExceeded ] = useState( false );
+	const [ testPrintLabelRefs, setTestPrintLabelRefs ] = useState<
+		LabelPrintFulfillmentRef[] | null
+	>( null );
 
 	const forceOutcome = useMemo( () => {
 		const override = getMockOverride();
@@ -153,6 +167,75 @@ const BulkLabelsApp = () => {
 			return undefined;
 		}
 		return () => override;
+	}, [] );
+
+	// Dev-only test entry point so the merged-PDF print dialog can be
+	// exercised directly in the browser without running a full batch. Set
+	// `?wcshipping_test_bulk_print=10:100,11:101` in the URL on the orders
+	// list page, or call `window.__wcshippingBulkPrintTest([{ label_id: 10,
+	// fulfillment_id: 100 }])`
+	// from the console. Both branches are dev-only so production builds
+	// cannot be coaxed into printing arbitrary fulfillment-backed labels via a
+	// crafted URL.
+	useEffect( () => {
+		if ( process.env.NODE_ENV === 'production' ) {
+			return;
+		}
+
+		const fromQuery = new URLSearchParams( window.location.search ).get(
+			'wcshipping_test_bulk_print'
+		);
+		if ( fromQuery ) {
+			const labelRefs = fromQuery
+				.split( ',' )
+				.map( ( pair ) =>
+					pair.split( ':' ).map( ( id ) => Number( id.trim() ) )
+				)
+				.filter(
+					( pair ): pair is [ number, number ] =>
+						pair.length === 2 &&
+						pair.every( ( id ) => Number.isFinite( id ) && id > 0 )
+				)
+				.map( ( [ label_id, fulfillment_id ] ) => ( {
+					label_id,
+					fulfillment_id,
+				} ) );
+			if ( labelRefs.length > 0 ) {
+				setTestPrintLabelRefs( labelRefs );
+			} else {
+				// eslint-disable-next-line no-console
+				console.warn(
+					'[wcshipping] wcshipping_test_bulk_print parsed to empty list (input: "%s")',
+					fromQuery
+				);
+			}
+		}
+
+		(
+			window as unknown as Record< string, unknown >
+		 ).__wcshippingBulkPrintTest = ( refs: unknown ) => {
+			const labelRefs = Array.isArray( refs )
+				? refs.filter( isTestPrintLabelRef )
+				: [];
+
+			if ( labelRefs.length > 0 ) {
+				setTestPrintLabelRefs( labelRefs );
+				return;
+			}
+
+			setTestPrintLabelRefs( null );
+			// eslint-disable-next-line no-console
+			console.warn(
+				'[wcshipping] __wcshippingBulkPrintTest needs at least one fulfillment-backed label ref.'
+			);
+		};
+
+		return () => {
+			// Clean up the dev-only window hook on unmount so React-Refresh
+			// remounts (or test teardown) don't leak the binding.
+			delete ( window as unknown as Record< string, unknown > )
+				.__wcshippingBulkPrintTest;
+		};
 	}, [] );
 
 	useEffect( () => {
@@ -305,6 +388,24 @@ const BulkLabelsApp = () => {
 					forceOutcome={ forceOutcome }
 					onClose={ handleBatchClose }
 				/>
+			) }
+			{ testPrintLabelRefs !== null && testPrintLabelRefs.length > 0 && (
+				// Dev-only modal wrapper for direct bulk-print dialog QA.
+				// The real flow mounts the same print control inside the
+				// batch-results modal; this wrapper gives the standalone
+				// test hook a centered container instead of leaving it in
+				// the bulk-labels banner row.
+				<Modal
+					title={ __( 'Print labels', 'woocommerce-shipping' ) }
+					onRequestClose={ () => setTestPrintLabelRefs( null ) }
+					shouldCloseOnClickOutside={ false }
+					className="bulk-print-dialog-test-modal"
+				>
+					<BulkPrintDialog
+						labelRefs={ testPrintLabelRefs }
+						autoPrint
+					/>
+				</Modal>
 			) }
 		</>
 	);

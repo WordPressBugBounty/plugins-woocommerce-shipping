@@ -5,7 +5,10 @@ use Automattic\WCShipping\Connect\WC_Connect_API_Client;
 use Automattic\WCShipping\Connect\WC_Connect_Logger;
 use Automattic\WCShipping\Connect\WC_Connect_Service_Settings_Store;
 use Automattic\WCShipping\FeatureFlags\FeatureFlags;
+use Automattic\WCShipping\Fulfillments\ShippingFulfillment;
+use Automattic\WCShipping\Fulfillments\ShippingFulfillmentsDataStore;
 use Automattic\WCShipping\LabelPurchase\LabelPrintService;
+use Automattic\WCShipping\Utils;
 use Automattic\WCShipping\WCShippingRESTController;
 use WP_Error;
 use WP_REST_Server;
@@ -33,11 +36,25 @@ class LabelPrintController extends WCShippingRESTController {
 	 */
 	protected $label_print_service;
 
-	public function __construct( WC_Connect_Service_Settings_Store $settings_store, WC_Connect_API_Client $api_client, WC_Connect_Logger $logger, LabelPrintService $label_print_service ) {
-		$this->settings_store      = $settings_store;
-		$this->api_client          = $api_client;
-		$this->logger              = $logger;
-		$this->label_print_service = $label_print_service;
+	/**
+	 * Fulfillment data store used to verify bulk print requests before forwarding label IDs.
+	 *
+	 * @var ShippingFulfillmentsDataStore
+	 */
+	protected $shipping_fulfillments_data_store;
+
+	public function __construct(
+		WC_Connect_Service_Settings_Store $settings_store,
+		WC_Connect_API_Client $api_client,
+		WC_Connect_Logger $logger,
+		LabelPrintService $label_print_service,
+		ShippingFulfillmentsDataStore $shipping_fulfillments_data_store
+	) {
+		$this->settings_store                   = $settings_store;
+		$this->api_client                       = $api_client;
+		$this->logger                           = $logger;
+		$this->label_print_service              = $label_print_service;
+		$this->shipping_fulfillments_data_store = $shipping_fulfillments_data_store;
 	}
 
 	/**
@@ -113,12 +130,29 @@ class LabelPrintController extends WCShippingRESTController {
 
 	public function print_label( $request ) {
 		list( $label_id_csv, $paper_size ) = $this->get_and_check_request_params( $request, array( 'label_id_csv', 'paper_size' ) );
+		$fulfillment_id_csv                = $request->get_param( 'fulfillment_id_csv' );
 
 		if ( ! $label_id_csv ) {
 			return $this->invalid_pdf_request_error();
 		}
 
-		$labels = $this->parse_label_ids( $label_id_csv );
+		if ( null !== $fulfillment_id_csv ) {
+			if (
+				! is_scalar( $fulfillment_id_csv ) ||
+				'' === (string) $fulfillment_id_csv
+			) {
+				return $this->invalid_pdf_request_error();
+			}
+
+			$labels = $this->parse_fulfillment_label_ids( $label_id_csv, $fulfillment_id_csv );
+		} else {
+			$labels = $this->parse_label_ids( $label_id_csv );
+		}
+
+		if ( is_wp_error( $labels ) ) {
+			return $labels;
+		}
+
 		if ( empty( $labels ) ) {
 			return $this->invalid_pdf_request_error();
 		}
@@ -174,6 +208,108 @@ class LabelPrintController extends WCShippingRESTController {
 	}
 
 	/**
+	 * Resolve a bulk print request through the fulfillment entity before forwarding label IDs.
+	 *
+	 * The Connect Server PDF endpoint still accepts label IDs, but bulk purchases are stored on
+	 * fulfillment records. The paired `fulfillment_id_csv` makes the plugin prove every requested
+	 * label belongs to the expected fulfillment entity before the remote print request is made.
+	 *
+	 * @param mixed $label_id_csv       Raw CSV value from the `label_id_csv` query parameter.
+	 * @param mixed $fulfillment_id_csv Raw CSV value from the `fulfillment_id_csv` query parameter.
+	 * @return array[]|WP_Error Array of `['label_id' => int]` entries or an error.
+	 */
+	private function parse_fulfillment_label_ids( $label_id_csv, $fulfillment_id_csv ) {
+		if ( ! FeatureFlags::is_bulk_labels_enabled() ) {
+			return $this->invalid_pdf_request_error();
+		}
+
+		if ( ! Utils::should_use_fulfillment_api() ) {
+			return $this->fulfillment_api_required_error();
+		}
+
+		$label_ids       = $this->parse_positive_int_csv_strict( $label_id_csv );
+		$fulfillment_ids = $this->parse_positive_int_csv_strict( $fulfillment_id_csv );
+
+		if (
+			! is_array( $label_ids ) ||
+			! is_array( $fulfillment_ids ) ||
+			empty( $label_ids ) ||
+			count( $label_ids ) !== count( $fulfillment_ids )
+		) {
+			return $this->invalid_pdf_request_error();
+		}
+
+		$labels = array();
+		foreach ( $label_ids as $index => $label_id ) {
+			$fulfillment = $this->shipping_fulfillments_data_store->get_by_label_id( (string) $label_id );
+			if (
+				! $fulfillment instanceof ShippingFulfillment ||
+				(int) $fulfillment->get_id() !== (int) $fulfillment_ids[ $index ] ||
+				! $this->fulfillment_contains_label( $fulfillment, $label_id )
+			) {
+				return $this->invalid_pdf_request_error();
+			}
+
+			$labels[] = array( 'label_id' => $label_id );
+		}
+
+		return $labels;
+	}
+
+	/**
+	 * Parse a comma-separated list of positive integers.
+	 *
+	 * Unlike `parse_label_ids`, this is strict because label IDs and fulfillment IDs are paired
+	 * positionally. Dropping a bad token could silently pair a label with the wrong fulfillment.
+	 *
+	 * @param mixed $csv Raw CSV parameter.
+	 * @return int[]|null Parsed IDs, or null when the CSV is malformed.
+	 */
+	private function parse_positive_int_csv_strict( $csv ): ?array {
+		if ( ! is_scalar( $csv ) ) {
+			return null;
+		}
+
+		$tokens = array_map( 'trim', explode( ',', (string) $csv ) );
+		if ( empty( $tokens ) ) {
+			return null;
+		}
+
+		$ids = array();
+		foreach ( $tokens as $token ) {
+			if ( '' === $token || ! ctype_digit( $token ) ) {
+				return null;
+			}
+
+			$id = (int) $token;
+			if ( $id <= 0 ) {
+				return null;
+			}
+
+			$ids[] = $id;
+		}
+
+		return $ids;
+	}
+
+	/**
+	 * Check that the resolved fulfillment still contains the requested label.
+	 *
+	 * @param ShippingFulfillment $fulfillment Fulfillment entity resolved by label ID.
+	 * @param int                 $label_id    Requested label ID.
+	 * @return bool True when the label is stored on the fulfillment entity.
+	 */
+	private function fulfillment_contains_label( ShippingFulfillment $fulfillment, int $label_id ): bool {
+		foreach ( $fulfillment->get_labels() as $label ) {
+			if ( isset( $label['label_id'] ) && (int) $label['label_id'] === $label_id ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * Build and log the standard invalid-PDF-request error.
 	 *
 	 * @return WP_Error
@@ -182,6 +318,25 @@ class LabelPrintController extends WCShippingRESTController {
 		$message = __( 'Invalid PDF request.', 'woocommerce-shipping' );
 		$error   = new WP_Error(
 			'invalid_pdf_request',
+			$message,
+			array(
+				'message' => $message,
+				'status'  => 400,
+			)
+		);
+		$this->logger->log( $error, __CLASS__ );
+		return $error;
+	}
+
+	/**
+	 * Build and log the fulfillment-API-required error.
+	 *
+	 * @return WP_Error
+	 */
+	private function fulfillment_api_required_error(): WP_Error {
+		$message = __( 'Bulk label printing requires the fulfillment API.', 'woocommerce-shipping' );
+		$error   = new WP_Error(
+			'fulfillment_api_required',
 			$message,
 			array(
 				'message' => $message,

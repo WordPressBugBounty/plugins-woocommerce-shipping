@@ -2,21 +2,14 @@ import { Button, Notice } from '@wordpress/components';
 import { __, sprintf, _n } from '@wordpress/i18n';
 import { useCallback, useState } from '@wordpress/element';
 import { Icon, check, error as errorIcon, external } from '@wordpress/icons';
-import { addQueryArgs } from '@wordpress/url';
-import apiFetch from '@wordpress/api-fetch';
-import * as Sentry from '@sentry/react';
-import { getLabelsPrintPath } from 'data/routes';
 import {
 	formatCurrency,
 	getCurrencyObject,
 } from 'components/label-purchase/design-next/utils';
-import { getStoreOrigin, printDocument, recordEvent } from 'utils';
-import { getConfig } from 'utils/config';
 import {
-	getPaperSizes,
-	getPaperSizeWithKey,
-} from 'components/label-purchase/label/utils';
-import type { PDFJson } from 'types';
+	BulkPrintDialog,
+	type BulkPrintDialogPrintResult,
+} from '../bulk-print-dialog';
 import type { FailedRow, SettledRow, SucceededRow } from './types';
 import {
 	BATCH_INTERRUPTED_ERROR_CODE,
@@ -43,82 +36,8 @@ const isBatchLevelFailure = ( row: FailedRow ): boolean =>
 interface ResultsViewProps {
 	rows: SettledRow[];
 	onClose: () => void;
+	autoPrintSuccessfulLabels?: boolean;
 }
-
-/**
- * Resolve the paper size key. The bulk-labels banner does NOT enqueue
- * the full WCShipping_Config, so `getPaymentSettings()` cannot be used
- * here without risking a runtime error. Read defensively from the
- * config object and fall back to the first paper size available for
- * the store's origin country. A schema-drift breadcrumb captures the
- * case where `accountSettings` was enqueued but `purchaseSettings`
- * itself is missing. A missing or non-string `paper_size` is treated
- * as "no saved preference" silently because most stores haven't set
- * one yet, so logging that path would just be noise.
- */
-const readSavedPaperSize = (): string | undefined => {
-	const config = getConfig() as unknown as
-		| {
-				accountSettings?: unknown;
-		  }
-		| undefined;
-	const accountSettings = ( config?.accountSettings ?? null ) as {
-		purchaseSettings?: unknown;
-	} | null;
-	if ( accountSettings === null ) {
-		return undefined;
-	}
-	const purchaseSettings = ( accountSettings.purchaseSettings ?? null ) as {
-		paper_size?: unknown;
-	} | null;
-	if ( purchaseSettings === null ) {
-		// `accountSettings` was enqueued but `purchaseSettings` is
-		// missing. Schema drift worth knowing about, but not an error.
-		Sentry.addBreadcrumb( {
-			category: 'batch-progress-modal',
-			level: 'info',
-			message:
-				'Bulk-labels accountSettings has no purchaseSettings; using default paper size.',
-		} );
-		return undefined;
-	}
-	const paperSize = purchaseSettings.paper_size;
-	if ( typeof paperSize !== 'string' || paperSize === '' ) {
-		return undefined;
-	}
-	return paperSize;
-};
-
-const resolvePaperSizeKey = (): string => {
-	const country = getStoreOrigin()?.country ?? 'US';
-	const sizes = getPaperSizes( country );
-	const saved = readSavedPaperSize();
-	const matched = saved ? getPaperSizeWithKey( saved, country ) : undefined;
-	return ( matched ?? sizes[ 0 ] ).key;
-};
-
-/**
- * Build the combined print request URL. Reuses the existing
- * `/wcshipping/v1/label/print` route (`label_id_csv` parameter) so the
- * merchant gets the same merged-PDF behavior as the single-order flow.
- */
-const buildPrintPath = ( labelIds: number[] ): string =>
-	addQueryArgs( getLabelsPrintPath(), {
-		paper_size: resolvePaperSizeKey(),
-		label_id_csv: labelIds.join( ',' ),
-		json: true,
-	} );
-
-const fetchAndPrintLabels = async (
-	labelIds: number[],
-	fileName: string
-): Promise< void > => {
-	const pdfJson = await apiFetch< PDFJson >( {
-		path: buildPrintPath( labelIds ),
-		method: 'GET',
-	} );
-	await printDocument( pdfJson, fileName );
-};
 
 const getResultsTitle = (
 	hasSucceeded: boolean,
@@ -143,12 +62,16 @@ type PrintErrorMap = Record< string, string >;
 
 const PRINT_ALL_KEY = '__all__';
 
-export const ResultsView = ( { rows, onClose }: ResultsViewProps ) => {
+export const ResultsView = ( {
+	rows,
+	onClose,
+	autoPrintSuccessfulLabels = false,
+}: ResultsViewProps ) => {
 	const succeeded = rows.filter(
 		( r ): r is SucceededRow => r.status === 'succeeded'
 	);
 	const failed = failedRows( rows );
-	const allLabelIds = succeeded.flatMap( ( r ) => r.label_ids );
+	const allLabelRefs = succeeded.flatMap( ( r ) => r.label_refs );
 
 	const hasSucceeded = succeeded.length > 0;
 	const hasFailed = failed.length > 0;
@@ -166,44 +89,16 @@ export const ResultsView = ( { rows, onClose }: ResultsViewProps ) => {
 		} );
 	}, [] );
 
-	const handlePrint = useCallback(
-		async (
-			key: string,
-			labelIds: number[],
-			fileName: string,
-			orderId: number | null
-		) => {
-			if ( labelIds.length === 0 ) {
+	const handlePrintResult = useCallback(
+		( key: string, result: BulkPrintDialogPrintResult ) => {
+			if ( result.ok ) {
+				clearPrintError( key );
 				return;
 			}
-			clearPrintError( key );
-			try {
-				await fetchAndPrintLabels( labelIds, fileName );
-			} catch ( err ) {
-				const message =
-					( err as Error )?.message ??
-					__(
-						'Unable to open the print dialog. Disable your browser pop-up blocker and try again.',
-						'woocommerce-shipping'
-					);
-				Sentry.captureException( err, {
-					tags: { component: 'batch-progress-modal' },
-					extra: {
-						label_ids_count: labelIds.length,
-						file_name: fileName,
-						order_id: orderId,
-					},
-				} );
-				recordEvent( 'bulk_label_print_failed', {
-					// `order_id` is `null` for the "Print all labels"
-					// button so the funnel can tell whole-batch
-					// print failures apart from single-order ones.
-					order_id: orderId,
-					label_count: labelIds.length,
-					error_message: message,
-				} );
-				setPrintErrors( ( prev ) => ( { ...prev, [ key ]: message } ) );
-			}
+			setPrintErrors( ( prev ) => ( {
+				...prev,
+				[ key ]: result.messages[ 0 ],
+			} ) );
 		},
 		[ clearPrintError ]
 	);
@@ -240,31 +135,26 @@ export const ResultsView = ( { rows, onClose }: ResultsViewProps ) => {
 								_n(
 									'%d label created',
 									'%d labels created',
-									allLabelIds.length,
+									allLabelRefs.length,
 									'woocommerce-shipping'
 								),
-								allLabelIds.length
+								allLabelRefs.length
 							) }
 						</h3>
-						<Button
-							variant="primary"
-							onClick={ () =>
-								handlePrint(
-									PRINT_ALL_KEY,
-									allLabelIds,
-									'bulk-labels.pdf',
-									null
-								)
-							}
-							className="bulk-batch-progress-modal__print-all"
-						>
-							{ _n(
+						<BulkPrintDialog
+							labelRefs={ allLabelRefs }
+							autoPrint={ autoPrintSuccessfulLabels }
+							buttonLabel={ _n(
 								'Print label',
 								'Print all labels',
-								allLabelIds.length,
+								allLabelRefs.length,
 								'woocommerce-shipping'
 							) }
-						</Button>
+							className="bulk-batch-progress-modal__print-all"
+							onPrintResult={ ( result ) =>
+								handlePrintResult( PRINT_ALL_KEY, result )
+							}
+						/>
 					</header>
 					<ul className="bulk-batch-progress-modal__order-list">
 						{ succeeded.map( ( row ) => {
@@ -293,22 +183,18 @@ export const ResultsView = ( { rows, onClose }: ResultsViewProps ) => {
 									<div className="bulk-batch-progress-modal__order-cost">
 										{ formatCurrency( row.cost, currency ) }
 									</div>
-									<Button
-										variant="link"
-										onClick={ () =>
-											handlePrint(
-												rowKey,
-												row.label_ids,
-												`label-${ row.order_id }.pdf`,
-												row.order_id
-											)
-										}
-									>
-										{ __(
+									<BulkPrintDialog
+										labelRefs={ row.label_refs }
+										buttonLabel={ __(
 											'Print',
 											'woocommerce-shipping'
 										) }
-									</Button>
+										buttonVariant="secondary"
+										className="bulk-batch-progress-modal__print-row"
+										onPrintResult={ ( result ) =>
+											handlePrintResult( rowKey, result )
+										}
+									/>
 								</li>
 							);
 						} ) }

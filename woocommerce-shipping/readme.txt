@@ -7,7 +7,7 @@ Requires at least: 6.9
 Tested up to: 7.0
 WC requires at least: 10.6
 WC tested up to: 10.8
-Stable tag: 2.3.4
+Stable tag: 2.3.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -127,6 +127,10 @@ Absolutely! You can read our Terms of Service [here](https://wordpress.com/tos).
 6. WooCommerce Shipping address validation at checkout suggestion.
 
 == Changelog ==
+
+= 2.3.5 - 2026-05-25 =
+* Add   - Register an initial read-only WordPress ability for WooCommerce Shipping label reports.
+* Fix   - Prevent fatal DivisionByZeroError in MigrationController when no legacy WCS&T labels exist.
 
 = 2.3.4 - 2026-05-20 =
 * Tweak - WordPress 7.0 Compatibility.

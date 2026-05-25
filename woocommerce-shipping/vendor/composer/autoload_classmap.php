@@ -69,6 +69,8 @@ return array(
     'Automattic\\Jetpack\\Status\\Visitor' => $vendorDir . '/automattic/jetpack-status/src/class-visitor.php',
     'Automattic\\Jetpack\\Terms_Of_Service' => $vendorDir . '/automattic/jetpack-connection/src/class-terms-of-service.php',
     'Automattic\\Jetpack\\Tracking' => $vendorDir . '/automattic/jetpack-connection/src/class-tracking.php',
+    'Automattic\\WCShipping\\Abilities\\Abilities' => $baseDir . '/src/Abilities/Abilities.php',
+    'Automattic\\WCShipping\\Abilities\\ShippingLabelsReport' => $baseDir . '/src/Abilities/ShippingLabelsReport.php',
     'Automattic\\WCShipping\\Analytics\\LabelsService' => $baseDir . '/src/Analytics/LabelsService.php',
     'Automattic\\WCShipping\\Analytics\\ShippingLabel' => $baseDir . '/src/Analytics/ShippingLabel.php',
     'Automattic\\WCShipping\\Analytics\\ShippingLabelRESTController' => $baseDir . '/src/Analytics/ShippingLabelRESTController.php',

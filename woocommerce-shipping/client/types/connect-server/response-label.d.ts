@@ -4,6 +4,7 @@ import { Carrier } from '../carrier';
 
 export interface ResponseLabel {
 	label_id: number;
+	fulfillment_id?: number;
 	id: string;
 	tracking: null | string;
 	refundable_amount: number;

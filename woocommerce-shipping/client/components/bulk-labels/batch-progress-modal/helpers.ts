@@ -152,23 +152,38 @@ export const parseEntry = (
 	entry: BatchPurchaseEntry
 ): SucceededRow | FailedRow => {
 	if ( isBatchSuccessEntry( entry ) ) {
-		const labelIds = entry.labels
-			.map( ( l ) => l.label_id )
-			.filter( ( id ): id is number => typeof id === 'number' );
-		// A success entry with fewer label ids than labels means the
-		// server reported success but the wire shape is missing data.
-		// Promote to a failure so the merchant doesn't print fewer
-		// labels than orders and never see why.
-		if ( labelIds.length !== entry.labels.length ) {
+		const labelRefs = entry.labels
+			.map( ( label ) => {
+				if (
+					typeof label.label_id !== 'number' ||
+					typeof label.fulfillment_id !== 'number'
+				) {
+					return null;
+				}
+				return {
+					label_id: label.label_id,
+					fulfillment_id: label.fulfillment_id,
+				};
+			} )
+			.filter(
+				( ref ): ref is { label_id: number; fulfillment_id: number } =>
+					ref !== null
+			);
+		const labelIds = labelRefs.map( ( ref ) => ref.label_id );
+		// A success entry with fewer fulfillment-backed label refs than labels means
+		// the server reported success but the wire shape is missing data needed to
+		// prove each label belongs to a fulfillment entity. Promote to a failure so
+		// the merchant doesn't print labels from an unvalidated legacy-style shape.
+		if ( labelRefs.length !== entry.labels.length ) {
 			Sentry.captureMessage(
-				'Batch purchase success entry missing label_id',
+				'Batch purchase success entry missing fulfillment-backed label ref',
 				{
 					level: 'error',
 					tags: { component: 'batch-progress-modal' },
 					extra: {
 						order_id: order.order_id,
 						expected_count: entry.labels.length,
-						actual_count: labelIds.length,
+						actual_count: labelRefs.length,
 					},
 				}
 			);
@@ -210,6 +225,7 @@ export const parseEntry = (
 			customer_name: order.customer_name,
 			status: 'succeeded',
 			label_ids: labelIds,
+			label_refs: labelRefs,
 			cost: summedRate > 0 ? summedRate : order.cost,
 		};
 	}

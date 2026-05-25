@@ -274,6 +274,14 @@ return array(
 		'version' => '6.2.0.0',
 		'path'    => $vendorDir . '/automattic/jetpack-connection/src/class-tracking.php'
 	),
+	'Automattic\\WCShipping\\Abilities\\Abilities' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/src/Abilities/Abilities.php'
+	),
+	'Automattic\\WCShipping\\Abilities\\ShippingLabelsReport' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/src/Abilities/ShippingLabelsReport.php'
+	),
 	'Automattic\\WCShipping\\Analytics\\LabelsService' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/src/Analytics/LabelsService.php'
@@ -661,6 +669,10 @@ return array(
 	'Automattic\\WCShipping\\Testing\\WCConnectE2EConnectionShim' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/src/Testing/WCConnectE2EConnectionShim.php'
+	),
+	'Automattic\\WCShipping\\Tests\\Abilities\\ShippingLabelsReportTest' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/tests/php/Abilities/ShippingLabelsReportTest.php'
 	),
 	'Automattic\\WCShipping\\Tests\\Analytics\\LabelsServiceTest' => array(
 		'version' => 'dev-trunk',

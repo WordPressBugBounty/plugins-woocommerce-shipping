@@ -8,6 +8,7 @@
 namespace Automattic\WCShipping\Banners;
 
 use Automattic\WCShipping\Connect\WC_Connect_Functions;
+use Automattic\WCShipping\Connect\WC_Connect_Service_Settings_Store;
 use Automattic\WCShipping\LabelPurchase\OrdersShippingContextRESTController;
 use Automattic\WCShipping\Utils;
 
@@ -23,9 +24,19 @@ class BulkLabelsBanner {
 	const BULK_ACTION_CREATE_SHIPPING_LABELS = 'wcshipping_create_shipping_labels';
 
 	/**
-	 * Constructor.
+	 * Service settings store used to read the saved paper-size preference.
+	 *
+	 * @var WC_Connect_Service_Settings_Store
 	 */
-	public function __construct() {
+	private $settings_store;
+
+	/**
+	 * Constructor.
+	 *
+	 * @param WC_Connect_Service_Settings_Store $settings_store Used to read the merchant's saved paper-size preference.
+	 */
+	public function __construct( WC_Connect_Service_Settings_Store $settings_store ) {
+		$this->settings_store = $settings_store;
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 		add_filter( 'bulk_actions-edit-shop_order', array( $this, 'register_bulk_action' ) );
 		add_filter( 'bulk_actions-woocommerce_page_wc-orders', array( $this, 'register_bulk_action' ) );
@@ -49,9 +60,21 @@ class BulkLabelsBanner {
 			'woocommerce-shipping-bulk-labels-banner',
 			array(
 				// Surface the batch cap so the JS gates can match the
-				// downstream batch endpoints without duplicating the
-				// magic number on the client.
+				// downstream batch endpoints without re-declaring
+				// BATCH_SIZE_CAP on the client.
 				'bulk_labels_max_orders' => OrdersShippingContextRESTController::BATCH_SIZE_CAP,
+				// Full purchase settings, hydrated on the orders list page so
+				// consumers of WCShipping_Config can read the saved paper-size
+				// preference without a round-trip, and so any client-side
+				// updater (e.g. `persistPaperSize`) can POST the complete
+				// current row back to the account-settings endpoint. The
+				// endpoint's `update_account_settings()` defaults any missing
+				// boolean to `false`, so a paper-size-only POST would silently
+				// flip `enabled`, `email_receipts`, etc. and disable the
+				// label-purchase metabox account-wide.
+				'accountSettings'        => array(
+					'purchaseSettings' => $this->settings_store->get_account_settings(),
+				),
 			)
 		);
 	}

@@ -1,7 +1,9 @@
+import { PaperSizeKey } from './paper-size';
+
 export interface PurchaseSettings {
 	email_receipts: boolean;
 	enabled: boolean;
-	paper_size: string;
+	paper_size: PaperSizeKey;
 	selected_payment_method_id: number;
 	use_last_package: boolean;
 	use_last_service: boolean;

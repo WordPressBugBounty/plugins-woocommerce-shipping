@@ -21,6 +21,7 @@ import {
 	getPDFFileName,
 	getPrintURL,
 	getPackingSlipPrintURL,
+	getStoreOrigin,
 	printDocument,
 	getLastOrderCompleted,
 	shouldAutomaticallyOpenPrintDialog,
@@ -309,7 +310,11 @@ export function useLabelsState( {
 			if ( size ) {
 				labelSize = size;
 			}
-			const path = getPrintURL( labelSize.key, label.labelId );
+			const path = getPrintURL(
+				labelSize.key,
+				label.labelId,
+				getStoreOrigin().country
+			);
 			try {
 				const pdfJson = await apiFetch< PDFJson >( {
 					path,

@@ -8,6 +8,8 @@
  * `{ error: { code, message } }`.
  */
 
+import type { LabelPrintFulfillmentRef } from 'types';
+
 /**
  * Error code used when the modal is closed before every order in the
  * batch settles. The pending rows are promoted to failures with this
@@ -41,6 +43,7 @@ export interface SucceededOrder {
 	order_number?: string;
 	customer_name?: string;
 	label_ids: number[];
+	label_refs: LabelPrintFulfillmentRef[];
 	cost: number;
 }
 
@@ -81,6 +84,7 @@ export interface PendingRow extends OrderRowIdentity {
 export interface SucceededRow extends OrderRowIdentity {
 	status: 'succeeded';
 	label_ids: number[];
+	label_refs: LabelPrintFulfillmentRef[];
 	cost: number;
 }
 
@@ -145,6 +149,7 @@ export type BatchPurchaseErrorCode =
 export interface BatchPurchaseSuccessEntry {
 	labels: {
 		label_id: number;
+		fulfillment_id?: number;
 		rate?: number;
 		[ key: string ]: unknown;
 	}[];

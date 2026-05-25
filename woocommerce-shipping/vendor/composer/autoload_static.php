@@ -12,20 +12,20 @@ class ComposerStaticInit5cf50ab6649ec9e5d8aa1976763c0124
     );
 
     public static $prefixLengthsPsr4 = array (
-        'W' =>
+        'W' => 
         array (
             'WooCommerce\\BoxPacker\\' => 22,
         ),
-        'P' =>
+        'P' => 
         array (
             'Psr\\Log\\' => 8,
         ),
-        'D' =>
+        'D' => 
         array (
             'DVDoug\\BoxPacker\\Test\\' => 22,
             'DVDoug\\BoxPacker\\' => 17,
         ),
-        'A' =>
+        'A' => 
         array (
             'Automattic\\WCShipping\\' => 22,
             'Automattic\\Jetpack\\Autoloader\\' => 30,
@@ -33,27 +33,27 @@ class ComposerStaticInit5cf50ab6649ec9e5d8aa1976763c0124
     );
 
     public static $prefixDirsPsr4 = array (
-        'WooCommerce\\BoxPacker\\' =>
+        'WooCommerce\\BoxPacker\\' => 
         array (
             0 => __DIR__ . '/..' . '/woocommerce/box-packer/src',
         ),
-        'Psr\\Log\\' =>
+        'Psr\\Log\\' => 
         array (
             0 => __DIR__ . '/..' . '/psr/log/Psr/Log',
         ),
-        'DVDoug\\BoxPacker\\Test\\' =>
+        'DVDoug\\BoxPacker\\Test\\' => 
         array (
             0 => __DIR__ . '/..' . '/dvdoug/boxpacker/tests/Test',
         ),
-        'DVDoug\\BoxPacker\\' =>
+        'DVDoug\\BoxPacker\\' => 
         array (
             0 => __DIR__ . '/..' . '/dvdoug/boxpacker/src',
         ),
-        'Automattic\\WCShipping\\' =>
+        'Automattic\\WCShipping\\' => 
         array (
             0 => __DIR__ . '/../..' . '/src',
         ),
-        'Automattic\\Jetpack\\Autoloader\\' =>
+        'Automattic\\Jetpack\\Autoloader\\' => 
         array (
             0 => __DIR__ . '/..' . '/automattic/jetpack-autoloader/src',
         ),
@@ -123,6 +123,8 @@ class ComposerStaticInit5cf50ab6649ec9e5d8aa1976763c0124
         'Automattic\\Jetpack\\Status\\Visitor' => __DIR__ . '/..' . '/automattic/jetpack-status/src/class-visitor.php',
         'Automattic\\Jetpack\\Terms_Of_Service' => __DIR__ . '/..' . '/automattic/jetpack-connection/src/class-terms-of-service.php',
         'Automattic\\Jetpack\\Tracking' => __DIR__ . '/..' . '/automattic/jetpack-connection/src/class-tracking.php',
+        'Automattic\\WCShipping\\Abilities\\Abilities' => __DIR__ . '/../..' . '/src/Abilities/Abilities.php',
+        'Automattic\\WCShipping\\Abilities\\ShippingLabelsReport' => __DIR__ . '/../..' . '/src/Abilities/ShippingLabelsReport.php',
         'Automattic\\WCShipping\\Analytics\\LabelsService' => __DIR__ . '/../..' . '/src/Analytics/LabelsService.php',
         'Automattic\\WCShipping\\Analytics\\ShippingLabel' => __DIR__ . '/../..' . '/src/Analytics/ShippingLabel.php',
         'Automattic\\WCShipping\\Analytics\\ShippingLabelRESTController' => __DIR__ . '/../..' . '/src/Analytics/ShippingLabelRESTController.php',

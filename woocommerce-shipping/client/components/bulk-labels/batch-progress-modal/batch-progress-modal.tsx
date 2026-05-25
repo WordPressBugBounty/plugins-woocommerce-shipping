@@ -316,6 +316,13 @@ export const BatchProgressModal = ( {
 	}, [ state.phase, orders, forceOutcome ] );
 
 	const isProgress = state.phase === 'progress';
+	// Capture this at mount. `onStateChange` updates the parent's saved
+	// `initialState` prop while the first run is still in progress; if we
+	// recalculate from that prop during the results phase, a fresh purchase
+	// is mistaken for a reopened saved result and auto-print never fires.
+	const shouldAutoPrintSuccessfulLabelsRef = useRef(
+		initialState === null || initialState === undefined
+	);
 
 	// Stable ID for the dialog's permanent label, separate from the
 	// per-phase title. Assistive tech reads this whenever the dialog
@@ -443,7 +450,13 @@ export const BatchProgressModal = ( {
 			{ state.phase === 'progress' ? (
 				<ProgressView rows={ state.rows } />
 			) : (
-				<ResultsView rows={ state.rows } onClose={ handleClose } />
+				<ResultsView
+					rows={ state.rows }
+					onClose={ handleClose }
+					autoPrintSuccessfulLabels={
+						shouldAutoPrintSuccessfulLabelsRef.current
+					}
+				/>
 			) }
 
 			{ /*

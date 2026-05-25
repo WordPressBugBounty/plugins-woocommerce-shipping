@@ -106,6 +106,7 @@ use Automattic\WCShipping\WCShippingRESTController;
 use Automattic\WCShipping\Analytics\ShippingLabel;
 use Automattic\WCShipping\Analytics\ShippingLabelRESTController;
 use Automattic\WCShipping\Analytics\LabelsService;
+use Automattic\WCShipping\Abilities\Abilities;
 use Automattic\WCShipping\Banners\Banners;
 use Automattic\WCShipping\LabelPurchase\EligibilityRESTController;
 use Automattic\WCShipping\Promo\PromoRESTController;
@@ -785,6 +786,8 @@ class Loader {
 			return;
 		}
 
+		Abilities::init();
+
 		add_action( 'woocommerce_blocks_loaded', array( $this, 'register_blocks_integration' ) );
 		add_action( 'after_plugin_row_woocommerce-services/woocommerce-services.php', array( $this, 'add_custom_message_to_wcst_plugin_list_entry' ), 10, 2 );
 		add_action( 'before_woocommerce_init', array( $this, 'pre_wc_init' ) );
@@ -1140,7 +1143,7 @@ class Loader {
 		}
 
 		if ( FeatureFlags::is_bulk_labels_enabled() ) {
-			new BulkLabelsBanner();
+			new BulkLabelsBanner( $this->service_settings_store );
 		}
 
 		require_once WCSHIPPING_PLUGIN_DIR . '/classes/class-wc-connect-settings-pages.php';
@@ -1447,7 +1450,13 @@ class Loader {
 		( new LabelRefundRESTController( $label_purchase_service ) )->register_routes();
 
 		$label_print_service = new LabelPrintService( $this->api_client, $logger, $label_purchase_service );
-		( new LabelPrintController( $settings_store, $this->api_client, $logger, $label_print_service ) )->register_routes();
+		( new LabelPrintController(
+			$settings_store,
+			$this->api_client,
+			$logger,
+			$label_print_service,
+			$this->shipping_fulfillments_data_store
+		) )->register_routes();
 		$rest_label_preview_controller = new LabelPreviewRESTController( $label_print_service, $logger );
 		$rest_label_preview_controller->register_routes();
 

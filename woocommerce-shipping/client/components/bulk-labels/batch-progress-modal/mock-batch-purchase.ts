@@ -121,6 +121,7 @@ const buildEntry = (
 			labels: [
 				{
 					label_id: 1000000 + order.order_id,
+					fulfillment_id: 2000000 + order.order_id,
 					rate: order.cost,
 				},
 			],
