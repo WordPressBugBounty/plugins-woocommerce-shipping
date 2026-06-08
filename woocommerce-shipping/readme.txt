@@ -7,7 +7,7 @@ Requires at least: 6.9
 Tested up to: 7.0
 WC requires at least: 10.6
 WC tested up to: 10.8
-Stable tag: 2.3.5
+Stable tag: 2.3.6
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -128,9 +128,14 @@ Absolutely! You can read our Terms of Service [here](https://wordpress.com/tos).
 
 == Changelog ==
 
+= 2.3.6 - 2026-06-08 =
+* Tweak - Simplify the SCAN Forms history empty-state message.
+
 = 2.3.5 - 2026-05-25 =
 * Add   - Register an initial read-only WordPress ability for WooCommerce Shipping label reports.
 * Fix   - Prevent fatal DivisionByZeroError in MigrationController when no legacy WCS&T labels exist.
+* Fix   - Strip null-valued client fields before address normalization so company-only sender addresses no longer hit `"destination.first_name" is not allowed` 400 from the connect server.
+* Tweak - Forward the address role (origin vs. destination) to the normalization endpoint so origin saves no longer travel the wire labeled as destinations.
 
 = 2.3.4 - 2026-05-20 =
 * Tweak - WordPress 7.0 Compatibility.
