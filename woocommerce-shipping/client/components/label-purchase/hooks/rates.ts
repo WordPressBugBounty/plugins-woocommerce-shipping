@@ -170,6 +170,14 @@ export function useRatesState( {
 	>( allShipmentRates ?? { 0: null } );
 
 	const [ isFetching, setIsFetching ] = useState( false );
+	/**
+	 * Counter that increments only when the merchant explicitly triggers a rate
+	 * fetch (clicking "Get rates" or changing shipment inputs). It deliberately
+	 * does NOT change for system-driven refetches (e.g. the auto-fetch that
+	 * runs after a failed purchase resets rates), so purchase/status error
+	 * notices stay visible until the merchant actually acts on the failure.
+	 */
+	const [ userRateFetchNonce, setUserRateFetchNonce ] = useState( 0 );
 	const [ errors, setErrors ] = useState<
 		Record<
 			string | 'endpoint',
@@ -358,12 +366,21 @@ export function useRatesState( {
 		async (
 			pkg: ( Package | CustomPackage ) & {
 				isLetter?: boolean;
-			}
+			},
+			{ userInitiated = true }: { userInitiated?: boolean } = {}
 		) => {
 			// Early return when all origin addresses are unverified (or none exist).
 			const originAddresses = select( addressStore ).getOriginAddresses();
 			if ( areAllOriginsUnverified( originAddresses ) ) {
 				return;
+			}
+
+			// Mark that the merchant explicitly requested rates so dependent
+			// notices (purchase/status errors) can clear themselves. System
+			// refetches pass `userInitiated: false` and are intentionally
+			// excluded.
+			if ( userInitiated ) {
+				setUserRateFetchNonce( ( nonce ) => nonce + 1 );
 			}
 
 			setIsFetching( true );
@@ -656,6 +673,7 @@ export function useRatesState( {
 		getSelectedRate,
 		removeSelectedRate,
 		isFetching,
+		userRateFetchNonce,
 		updateRates,
 		fetchRates,
 		resetRates,

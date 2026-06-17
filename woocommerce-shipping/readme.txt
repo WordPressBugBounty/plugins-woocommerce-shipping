@@ -7,7 +7,7 @@ Requires at least: 6.9
 Tested up to: 7.0
 WC requires at least: 10.6
 WC tested up to: 10.8
-Stable tag: 2.3.6
+Stable tag: 2.3.8
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -127,6 +127,14 @@ Absolutely! You can read our Terms of Service [here](https://wordpress.com/tos).
 6. WooCommerce Shipping address validation at checkout suggestion.
 
 == Changelog ==
+
+= 2.3.8 - 2026-06-17 =
+* Tweak - Refresh the purchased shipping label panel layout and actions.
+* Fix   - Keep today selectable in the ship date picker across timezones.
+
+= 2.3.7 - 2026-06-09 =
+* Fix   - Keep the label purchase error notice visible after a failed purchase instead of clearing it during the automatic rate refresh.
+* Fix   - Default the ship date to today each time the label purchase flow opens instead of carrying over a remembered date.
 
 = 2.3.6 - 2026-06-08 =
 * Tweak - Simplify the SCAN Forms history empty-state message.

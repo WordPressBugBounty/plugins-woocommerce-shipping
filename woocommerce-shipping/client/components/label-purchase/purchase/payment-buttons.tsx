@@ -85,7 +85,13 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 			hasMissingPurchase,
 		},
 		packages: { getPackageForRequest },
-		rates: { isFetching, getSelectedRate, fetchRates, matchAndSelectRate },
+		rates: {
+			isFetching,
+			userRateFetchNonce,
+			getSelectedRate,
+			fetchRates,
+			matchAndSelectRate,
+		},
 		account: {
 			accountSettings,
 			canPurchase,
@@ -614,12 +620,15 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 	// Reset errors when shipment origin changes
 	useEffect( resetErrors, [ shipmentOrigin ] );
 
-	// Reset purchase errors when a new rate fetch begins (e.g. user clicks "Get Rates")
+	// Reset purchase errors only when the merchant explicitly triggers a rate
+	// fetch (e.g. clicking "Get Rates" or editing shipment inputs). Keying off
+	// `userRateFetchNonce` instead of `isFetching` keeps the error visible
+	// through system-driven refetches (such as the auto-fetch that runs after a
+	// failed purchase resets rates).
 	useEffect( () => {
-		if ( isFetching ) {
-			resetErrors();
-		}
-	}, [ isFetching ] );
+		resetErrors();
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [ userRateFetchNonce ] );
 
 	// Fire the success event only after the full purchase cycle completes,
 	// including any async status polling (PURCHASE_IN_PROGRESS → PURCHASED).
