@@ -1,5 +1,8 @@
 *** WooCommerce Shipping Changelog ***
 
+= 2.3.9 - 2026-06-22 =
+* Tweak - WooCommerce 10.9 Compatibility.
+
 = 2.3.8 - 2026-06-17 =
 * Tweak - Refresh the purchased shipping label panel layout and actions.
 * Fix   - Keep today selectable in the ship date picker across timezones.

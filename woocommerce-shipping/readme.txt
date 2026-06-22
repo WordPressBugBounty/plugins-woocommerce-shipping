@@ -5,9 +5,9 @@ Requires Plugins: woocommerce
 Requires PHP: 7.4
 Requires at least: 6.9
 Tested up to: 7.0
-WC requires at least: 10.6
-WC tested up to: 10.8
-Stable tag: 2.3.8
+WC requires at least: 10.7
+WC tested up to: 10.9
+Stable tag: 2.3.9
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -127,6 +127,9 @@ Absolutely! You can read our Terms of Service [here](https://wordpress.com/tos).
 6. WooCommerce Shipping address validation at checkout suggestion.
 
 == Changelog ==
+
+= 2.3.9 - 2026-06-22 =
+* Tweak - WooCommerce 10.9 Compatibility.
 
 = 2.3.8 - 2026-06-17 =
 * Tweak - Refresh the purchased shipping label panel layout and actions.
