@@ -30,11 +30,12 @@ import {
 	getUPSDAPTosApprovedVersionsFromError,
 	hasPaymentMethod,
 	isFedExTosError,
+	isFedExRate,
 	hasSelectedPaymentMethod,
 	mapAddressForRequest,
 } from 'utils';
 import { CreditCardButton } from './credit-card-button';
-import { settingsPageUrl } from '../constants';
+import { requestDestinationAddressModal, settingsPageUrl } from '../constants';
 import { useLabelPurchaseContext } from 'context/label-purchase';
 import { getShipmentTitle } from '../utils';
 import {
@@ -63,6 +64,16 @@ interface PaymentButtonsProps {
 	order: Order;
 }
 
+const getPackageDimensionForTracks = ( dimension?: string | number | null ) => {
+	if ( dimension === undefined || dimension === null || dimension === '' ) {
+		return undefined;
+	}
+
+	const numericDimension = Number( dimension );
+
+	return Number.isFinite( numericDimension ) ? numericDimension : undefined;
+};
+
 export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 	const {
 		shipment: {
@@ -71,6 +82,7 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 			selections,
 			currentShipmentId,
 			getShipmentOrigin,
+			getShipmentDestination,
 			isExtraLabelPurchaseValid,
 			getShipmentType,
 			getCurrentShipmentIsReturn,
@@ -118,6 +130,42 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 	const shipmentOrigin = getShipmentOrigin();
 
 	const selectedRate = getSelectedRate();
+	const getFedExPhoneError = ( rate: RateWithParent | null | undefined ) => {
+		const destinationPhone = String(
+			getShipmentDestination()?.phone ?? ''
+		).trim();
+
+		if ( isFedExRate( rate ) && ! destinationPhone ) {
+			return sprintf(
+				/* translators: %s is the selected FedEx service name, e.g. FedEx Ground Economy. */
+				__(
+					'%s requires a recipient phone number.',
+					'woocommerce-shipping'
+				),
+				rate?.rate?.title ?? __( 'FedEx', 'woocommerce-shipping' )
+			);
+		}
+
+		return null;
+	};
+	const fedExPhoneErrorMessage = getFedExPhoneError( selectedRate );
+	const fedExPhoneNotice = fedExPhoneErrorMessage ? (
+		<Notice.Root
+			className="purchase-label-fedex-phone-notice"
+			intent="error"
+		>
+			<Notice.Description>
+				<Text>{ fedExPhoneErrorMessage }</Text>
+			</Notice.Description>
+			<Notice.Actions>
+				<Notice.ActionButton
+					onClick={ () => requestDestinationAddressModal() }
+				>
+					{ __( 'Add phone number', 'woocommerce-shipping' ) }
+				</Notice.ActionButton>
+			</Notice.Actions>
+		</Notice.Root>
+	) : null;
 	const [ UPSDAPTosError, setUPSDAPTosError ] =
 		useState< LabelPurchaseError | null >( null );
 	const [ fedExTosError, setFedExTosError ] =
@@ -376,8 +424,18 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 			return;
 		}
 
+		const fedExError = getFedExPhoneError( rate );
+		if ( fedExError ) {
+			setErrors( {
+				cause: 'carrier_error',
+				message: [ fedExError ],
+			} );
+			return;
+		}
+
 		maybeUpdateShipmentsFromSelection();
 
+		const selectedPackageForTracks = getPackageForRequest();
 		const tracksProperties = {
 			order_product_count: order.line_items.length,
 			shipment_product_count: shipments[ currentShipmentId ].length,
@@ -391,6 +449,17 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 			rate: getSelectedRate()?.rate.rate,
 			retail_rate: getSelectedRate()?.rate.retailRate,
 			service_id: getSelectedRate()?.rate.serviceId,
+			package_id: selectedPackageForTracks?.id,
+			is_letter: selectedPackageForTracks?.isLetter,
+			width: getPackageDimensionForTracks(
+				selectedPackageForTracks?.width
+			),
+			height: getPackageDimensionForTracks(
+				selectedPackageForTracks?.height
+			),
+			length: getPackageDimensionForTracks(
+				selectedPackageForTracks?.length
+			),
 		};
 
 		if ( nextDesign ) {
@@ -692,6 +761,7 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 						isUpdatingStatus ||
 						hasPurchasedLabel( false ) ||
 						! shipmentOrigin.isApproved ||
+						!! fedExPhoneErrorMessage ||
 						( isExtraLabelPurchase() &&
 							! isExtraLabelPurchaseValid() )
 					}
@@ -706,8 +776,10 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 						! selectedRate ||
 						isPurchasing ||
 						isFetching ||
+						isUpdatingStatus ||
 						hasPurchasedLabel( false ) ||
 						! shipmentOrigin.isApproved ||
+						!! fedExPhoneErrorMessage ||
 						( isExtraLabelPurchase() &&
 							! isExtraLabelPurchaseValid() )
 					}
@@ -775,6 +847,14 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 					</Flex>,
 					document.getElementById( 'label-purchase-status-notices' )!
 				) }
+			{ fedExPhoneErrorMessage &&
+				document.getElementById( 'label-purchase-status-notices' ) &&
+				createPortal(
+					<Flex className="purchase-label-errors" direction="column">
+						{ fedExPhoneNotice }
+					</Flex>,
+					document.getElementById( 'label-purchase-status-notices' )!
+				) }
 		</>
 	) : (
 		<>
@@ -800,6 +880,7 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 				/>
 			) }
 			<Flex className="purchase-label-buttons" direction="column">
+				{ fedExPhoneNotice }
 				{ canPurchase() && (
 					<>
 						<Flex>
@@ -812,6 +893,7 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 									isUpdatingStatus ||
 									hasPurchasedLabel( false ) ||
 									! shipmentOrigin.isVerified ||
+									!! fedExPhoneErrorMessage ||
 									( isExtraLabelPurchase() &&
 										! isExtraLabelPurchaseValid() )
 								}
@@ -826,8 +908,10 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 									! selectedRate ||
 									isPurchasing ||
 									isFetching ||
+									isUpdatingStatus ||
 									hasPurchasedLabel( false ) ||
 									! shipmentOrigin.isVerified ||
+									!! fedExPhoneErrorMessage ||
 									( isExtraLabelPurchase() &&
 										! isExtraLabelPurchaseValid() )
 								}

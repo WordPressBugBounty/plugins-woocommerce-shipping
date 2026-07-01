@@ -7,7 +7,7 @@ Requires at least: 6.9
 Tested up to: 7.0
 WC requires at least: 10.7
 WC tested up to: 10.9
-Stable tag: 2.3.9
+Stable tag: 2.3.10
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -128,7 +128,12 @@ Absolutely! You can read our Terms of Service [here](https://wordpress.com/tos).
 
 == Changelog ==
 
+= 2.3.10 - 2026-06-30 =
+* Fix   - Improve spacing around the FedEx recipient phone number notice on the label purchase screen.
+* Fix   - Prevent classic checkout address validation warnings from causing repeated update_order_review failure loops, and keep them visible when the billing address is used for shipping.
+
 = 2.3.9 - 2026-06-22 =
+* Fix   - Keep classic checkout address validation notice styling when moving notices near address fields.
 * Tweak - WooCommerce 10.9 Compatibility.
 
 = 2.3.8 - 2026-06-17 =
@@ -138,8 +143,10 @@ Absolutely! You can read our Terms of Service [here](https://wordpress.com/tos).
 = 2.3.7 - 2026-06-09 =
 * Fix   - Keep the label purchase error notice visible after a failed purchase instead of clearing it during the automatic rate refresh.
 * Fix   - Default the ship date to today each time the label purchase flow opens instead of carrying over a remembered date.
+* Tweak - Move checkout address validation notices closer to the shipping address fields.
 
 = 2.3.6 - 2026-06-08 =
+* Fix   - Require recipient phone numbers before purchasing FedEx labels.
 * Tweak - Simplify the SCAN Forms history empty-state message.
 
 = 2.3.5 - 2026-05-25 =
