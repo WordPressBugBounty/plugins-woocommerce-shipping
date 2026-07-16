@@ -7,7 +7,7 @@ Requires at least: 6.9
 Tested up to: 7.0
 WC requires at least: 10.7
 WC tested up to: 10.9
-Stable tag: 2.3.10
+Stable tag: 2.3.11
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -127,6 +127,11 @@ Absolutely! You can read our Terms of Service [here](https://wordpress.com/tos).
 6. WooCommerce Shipping address validation at checkout suggestion.
 
 == Changelog ==
+
+= 2.3.11 - 2026-07-16 =
+* Fix   - Stop prompting to "Connect your store" when the site is already connected to WordPress.com but the WooCommerce Shipping terms have not been accepted yet; show a terms-acceptance screen instead.
+* Tweak - Update the @wordpress/ui package to 0.16.1 to stay compatible with upcoming Gutenberg and WordPress 7.1 changes.
+* Tweak - Hide the customs product details fields and show an explanatory notice when the content type is Documents, since document mailings don't include a customs item declaration.
 
 = 2.3.10 - 2026-06-30 =
 * Fix   - Improve spacing around the FedEx recipient phone number notice on the label purchase screen.
