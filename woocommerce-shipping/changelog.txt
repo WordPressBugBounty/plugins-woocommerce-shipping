@@ -1,5 +1,8 @@
 *** WooCommerce Shipping Changelog ***
 
+= 2.3.12 - 2026-07-27 =
+* Tweak - WooCommerce 11.0 Compatibility.
+
 = 2.3.11 - 2026-07-16 =
 * Fix   - Stop prompting to "Connect your store" when the site is already connected to WordPress.com but the WooCommerce Shipping terms have not been accepted yet; show a terms-acceptance screen instead.
 * Tweak - Update the @wordpress/ui package to 0.16.1 to stay compatible with upcoming Gutenberg and WordPress 7.1 changes.
