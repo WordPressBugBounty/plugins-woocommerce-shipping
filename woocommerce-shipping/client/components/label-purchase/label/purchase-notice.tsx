@@ -1,4 +1,4 @@
-import { useRef, useState } from '@wordpress/element';
+import { useEffect, useMemo, useRef, useState } from '@wordpress/element';
 import { useCopyToClipboard } from '@wordpress/compose';
 import {
 	__experimentalHeading as Heading,
@@ -24,7 +24,7 @@ import {
 	shipping,
 	undo,
 } from '@wordpress/icons';
-import { hasLabelExpired } from 'utils';
+import { hasLabelExpired, recordEvent } from 'utils';
 import { useLabelPurchaseContext } from 'context/label-purchase';
 import { SchedulePickup } from './schedule-pickup';
 import { TrackShipment } from './track-shipment';
@@ -35,6 +35,7 @@ import { LegacyWarning } from './legacy-warning';
 import { PrintPackingSlipButton } from '../print-packing-slip-button';
 import { PrintLabelButton } from './print-label-button';
 import { ReturnLabelButton } from './return-label-button';
+import { getAvailableLabelPanelActions } from './label-panel-actions';
 
 const MORE_ACTIONS_SEEN_STORAGE_KEY_PREFIX =
 	'wcshipping_label_panel_more_actions_seen';
@@ -107,6 +108,84 @@ export const PurchaseNotice = withBoundary( () => {
 		__( 'Shipping label', 'woocommerce-shipping' );
 	const trackingNumber = selectedLabel?.tracking ?? '';
 	const hasCommercialInvoice = Boolean( selectedLabel?.commercialInvoiceUrl );
+	const selectedLabelId = selectedLabel?.labelId;
+	const viewedLabelRef = useRef< {
+		labelId: typeof selectedLabelId;
+	} | null >( null );
+	const isDomesticShipment =
+		hasLabel &&
+		! isReturn &&
+		getShipmentOrigin()?.country === 'US' &&
+		getShipmentDestination()?.country === 'US';
+	const isRefundActionDisabled =
+		isRefunding || isPurchasing || isUpdatingStatus;
+	const isLabelPanelVisible =
+		hasLabel && ! ( nextDesign && isAnyRequestInProgress );
+	const availableActions = getAvailableLabelPanelActions( {
+		label: selectedLabel,
+		selectedRate,
+		isReturn: Boolean( isReturn ),
+		isDomesticShipment,
+		isRefundDisabled: isRefundActionDisabled,
+		shipments,
+		currentShipmentId,
+		returnShipments,
+		selections,
+		getShipmentLabel: getCurrentShipmentLabel,
+	} ).join( ',' );
+	const labelPanelTrackingProps = useMemo(
+		() => ( {
+			carrier_id: selectedLabel?.carrierId ?? '',
+			has_tracking: Boolean( trackingNumber ),
+			has_commercial_invoice: hasCommercialInvoice,
+			is_return_label: Boolean( isReturn ),
+			available_actions: availableActions,
+		} ),
+		[
+			selectedLabel?.carrierId,
+			trackingNumber,
+			hasCommercialInvoice,
+			isReturn,
+			availableActions,
+		]
+	);
+
+	useEffect( () => {
+		if ( ! isLabelPanelVisible ) {
+			viewedLabelRef.current = null;
+			return;
+		}
+
+		if ( viewedLabelRef.current?.labelId === selectedLabelId ) {
+			return;
+		}
+
+		viewedLabelRef.current = { labelId: selectedLabelId };
+
+		recordEvent(
+			'label_purchase_label_panel_viewed',
+			labelPanelTrackingProps
+		);
+	}, [ isLabelPanelVisible, selectedLabelId, labelPanelTrackingProps ] );
+
+	const recordLabelPanelAction = ( action: string ) => {
+		recordEvent( 'label_purchase_label_panel_action_clicked', {
+			...labelPanelTrackingProps,
+			action,
+		} );
+	};
+
+	const handleMoreActionsToggle = () => {
+		setIsMoreActionsOpen( ( isOpen ) => {
+			const isOpenNext = ! isOpen;
+			recordEvent( 'label_purchase_label_panel_more_actions_toggled', {
+				...labelPanelTrackingProps,
+				is_open: isOpenNext,
+			} );
+
+			return isOpenNext;
+		} );
+	};
 
 	const refreshStatus = async () => {
 		if ( ! selectedLabel ) {
@@ -124,12 +203,6 @@ export const PurchaseNotice = withBoundary( () => {
 		isUpdatingStatus ||
 		! hasLabel ||
 		labelStatusUpdateErrors.length > 0;
-
-	const isDomesticShipment = () => {
-		const origin = getShipmentOrigin();
-		const destination = getShipmentDestination();
-		return origin?.country === 'US' && destination?.country === 'US';
-	};
 
 	const [ hasCopiedTracking, setHasCopiedTracking ] = useState( false );
 	const copiedResetTimeout = useRef< ReturnType< typeof setTimeout > >();
@@ -251,6 +324,11 @@ export const PurchaseNotice = withBoundary( () => {
 											<Button
 												ref={ copyTrackingRef }
 												variant="tertiary"
+												onClick={ () =>
+													recordLabelPanelAction(
+														'copy_tracking'
+													)
+												}
 												icon={
 													hasCopiedTracking
 														? check
@@ -299,6 +377,11 @@ export const PurchaseNotice = withBoundary( () => {
 								<TrackShipment
 									label={ selectedLabel }
 									className="purchase-label-panel__action"
+									onClick={ () =>
+										recordLabelPanelAction(
+											'track_shipment'
+										)
+									}
 								>
 									<Icon icon={ shipping } size={ 18 } />
 									<span>
@@ -312,6 +395,11 @@ export const PurchaseNotice = withBoundary( () => {
 									<SchedulePickup
 										selectedLabel={ selectedLabel }
 										className="purchase-label-panel__action"
+										onClick={ () =>
+											recordLabelPanelAction(
+												'schedule_pickup'
+											)
+										}
 									>
 										<Icon icon={ calendar } size={ 18 } />
 										<span>
@@ -326,11 +414,7 @@ export const PurchaseNotice = withBoundary( () => {
 							<Button
 								variant="tertiary"
 								className="purchase-label-panel__more-toggle"
-								onClick={ () =>
-									setIsMoreActionsOpen(
-										( isOpen ) => ! isOpen
-									)
-								}
+								onClick={ handleMoreActionsToggle }
 								aria-expanded={ isMoreActionsOpen }
 							>
 								<span>
@@ -354,12 +438,13 @@ export const PurchaseNotice = withBoundary( () => {
 										label={ selectedLabel }
 										selectedRate={ selectedRate }
 										isBusy={ isRefunding }
-										isDisabled={
-											isRefunding ||
-											isPurchasing ||
-											isUpdatingStatus
-										}
+										isDisabled={ isRefundActionDisabled }
 										className="purchase-label-panel__action"
+										onClick={ () =>
+											recordLabelPanelAction(
+												'request_refund'
+											)
+										}
 									>
 										<Icon icon={ undo } size={ 18 } />
 										<span>
@@ -371,7 +456,9 @@ export const PurchaseNotice = withBoundary( () => {
 									</RefundShipment>
 									{ ! isReturn && (
 										<ReturnLabelButton
-											isDomesticShipment={ isDomesticShipment() }
+											isDomesticShipment={
+												isDomesticShipment
+											}
 											shipments={ shipments }
 											currentShipmentId={
 												currentShipmentId
@@ -388,6 +475,11 @@ export const PurchaseNotice = withBoundary( () => {
 											selections={ selections }
 											setSelection={ setSelection }
 											className="purchase-label-panel__action"
+											onClick={ () =>
+												recordLabelPanelAction(
+													'return_label'
+												)
+											}
 										>
 											<Icon
 												icon={ rotateLeft }
@@ -405,6 +497,11 @@ export const PurchaseNotice = withBoundary( () => {
 										<CommercialInvoice
 											label={ selectedLabel }
 											className="purchase-label-panel__action"
+											onClick={ () =>
+												recordLabelPanelAction(
+													'print_customs_form'
+												)
+											}
 										>
 											<Icon icon={ pages } size={ 18 } />
 											<span>

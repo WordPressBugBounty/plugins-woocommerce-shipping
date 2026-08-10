@@ -3,8 +3,8 @@ import { __ } from '@wordpress/i18n';
 import { useCallback, useState } from '@wordpress/element';
 import type { ReactNode } from 'react';
 import { Label, Rate } from 'types';
-import { canRefundLabel } from 'utils';
 import { RefundConfirmation } from './refund-confirmation';
+import { canRequestLabelRefund } from './label-panel-actions';
 
 interface RefundShipmentProps {
 	label?: Label;
@@ -12,6 +12,7 @@ interface RefundShipmentProps {
 	isBusy: boolean;
 	isDisabled: boolean;
 	className?: string;
+	onClick?: () => void;
 	children?: ReactNode;
 }
 
@@ -21,6 +22,7 @@ export const RefundShipment = ( {
 	isBusy,
 	isDisabled,
 	className,
+	onClick,
 	children,
 }: RefundShipmentProps ) => {
 	const [ isRefunding, setIsRefunding ] = useState( false );
@@ -30,6 +32,10 @@ export const RefundShipment = ( {
 		},
 		[ setIsRefunding ]
 	);
+	const openRefund = useCallback( () => {
+		onClick?.();
+		setIsRefunding( true );
+	}, [ onClick, setIsRefunding ] );
 
 	// All hooks and computations called first, then conditional logic
 	const caveats = selectedRate?.rate.caveats ?? [];
@@ -43,8 +49,7 @@ export const RefundShipment = ( {
 		);
 	}
 
-	const canRefund = canRefundLabel( label ); // eslint-disable-line
-	if ( ! canRefund ) {
+	if ( ! canRequestLabelRefund( label, selectedRate ) ) {
 		return null;
 	}
 
@@ -55,7 +60,7 @@ export const RefundShipment = ( {
 			) }
 			<Button
 				variant="tertiary"
-				onClick={ toggleRefund( true ) }
+				onClick={ openRefund }
 				isBusy={ isBusy }
 				aria-busy={ isBusy }
 				disabled={ isDisabled }

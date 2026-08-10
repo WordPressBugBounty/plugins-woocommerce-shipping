@@ -82,7 +82,8 @@ export function usePackageState(
 	shipments: Record< string, ShipmentItem[] >,
 	totalWeight: number,
 	returnShipments?: Record< string, ReturnShipmentInfo >,
-	setShipmentTotalWeight?: ( weight: number ) => void
+	setShipmentTotalWeight?: ( weight: number ) => void,
+	getShipmentWeight?: () => number
 ) {
 	const savedPackages = useSelect(
 		( select ) => select( labelPurchaseStore ).getSavedPackages(),
@@ -135,6 +136,19 @@ export function usePackageState(
 		useState< Record< string, Package | CustomPackage | null > >(
 			initialPackages
 		);
+
+	const selectedBoxWeight = Number(
+		( selectedPackage[ currentShipmentId ] ?? initialPackage )?.boxWeight ??
+			0
+	);
+	const [ appliedBoxWeight, setAppliedBoxWeight ] = useState( 0 );
+
+	if ( selectedBoxWeight !== appliedBoxWeight ) {
+		setAppliedBoxWeight( selectedBoxWeight );
+		setShipmentTotalWeight?.(
+			( getShipmentWeight?.() ?? 0 ) + selectedBoxWeight
+		);
+	}
 
 	const setCustomPackage = useCallback(
 		( data: CustomPackage ) => {

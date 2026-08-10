@@ -7,7 +7,7 @@ Requires at least: 6.9
 Tested up to: 7.0
 WC requires at least: 10.8
 WC tested up to: 11.0
-Stable tag: 2.3.12
+Stable tag: 2.3.13
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -127,6 +127,10 @@ Absolutely! You can read our Terms of Service [here](https://wordpress.com/tos).
 6. WooCommerce Shipping address validation at checkout suggestion.
 
 == Changelog ==
+
+= 2.3.13 - 2026-08-10 =
+* Fix   - Include the selected package's weight in the first shipping rate request, so quoted rates no longer increase after editing customs or getting rates again.
+* Tweak - Upgrade WooCommerce Components and Data packages to remove the vulnerable DOMPurify 2.5.8 dependency.
 
 = 2.3.12 - 2026-07-27 =
 * Tweak - WooCommerce 11.0 Compatibility.

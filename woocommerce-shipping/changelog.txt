@@ -1,5 +1,9 @@
 *** WooCommerce Shipping Changelog ***
 
+= 2.3.13 - 2026-08-10 =
+* Fix   - Include the selected package's weight in the first shipping rate request, so quoted rates no longer increase after editing customs or getting rates again.
+* Tweak - Upgrade WooCommerce Components and Data packages to remove the vulnerable DOMPurify 2.5.8 dependency.
+
 = 2.3.12 - 2026-07-27 =
 * Tweak - WooCommerce 11.0 Compatibility.
 

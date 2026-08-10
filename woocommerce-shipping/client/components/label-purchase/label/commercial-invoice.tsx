@@ -6,18 +6,24 @@ import { Label } from 'types';
 interface CommercialInvoiceProps {
 	label?: Label;
 	className?: string;
+	onClick?: () => void;
 	children?: ReactNode;
 }
 
 export const CommercialInvoice = ( {
 	label,
 	className,
+	onClick,
 	children,
 }: CommercialInvoiceProps ) => {
 	const commercialInvoiceUrl = label?.commercialInvoiceUrl;
 	return (
 		commercialInvoiceUrl && (
-			<ExternalLink href={ commercialInvoiceUrl } className={ className }>
+			<ExternalLink
+				href={ commercialInvoiceUrl }
+				className={ className }
+				onClick={ onClick }
+			>
 				{ children ??
 					__( 'Print customs form', 'woocommerce-shipping' ) }
 			</ExternalLink>

@@ -118,7 +118,10 @@ export const CustomsForm = (): JSX.Element => {
 			};
 		}
 
-		const props = getInputProps< T >( key );
+		const props = getInputProps( key as keyof CustomsState ) as InputProps<
+			CustomsState,
+			T
+		>;
 
 		return errors[ key as keyof CustomsState ]
 			? {
@@ -243,9 +246,7 @@ export const CustomsForm = (): JSX.Element => {
 						'Return package to sender if undeliverable',
 						'woocommerce-shipping'
 					) }
-					{ ...getCheckboxControlProps< boolean >(
-						'isReturnToSender'
-					) }
+					{ ...getCheckboxControlProps( 'isReturnToSender' ) }
 					help={ __(
 						'Sender will be charged all return shipping costs and any applicable customs duties, taxes, or fees.',
 						'woocommerce-shipping'

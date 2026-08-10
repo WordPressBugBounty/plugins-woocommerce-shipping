@@ -1,43 +1,33 @@
 import { ExternalLink } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
-import { useCallback } from '@wordpress/element';
 import type { ReactNode } from 'react';
 import { Label } from 'types';
-import { pickupUrls } from './constants';
+import { getLabelPickupUrl } from './label-panel-actions';
 
 interface SchedulePickupProps {
 	selectedLabel?: Label;
 	className?: string;
+	onClick?: () => void;
 	children?: ReactNode;
 }
 
 export const SchedulePickup = ( {
 	selectedLabel,
 	className,
+	onClick,
 	children,
 }: SchedulePickupProps ) => {
-	const canScheduleRefund = useCallback(
-		( label: Label | undefined ): label is Label =>
-			Boolean( label?.carrierId && pickupUrls[ label?.carrierId ] ),
-		[]
-	);
+	const pickupUrl = getLabelPickupUrl( selectedLabel );
 
-	// All hooks called first, then conditional logic
-	const shouldShowPickup = Boolean(
-		selectedLabel &&
-			canScheduleRefund( selectedLabel ) &&
-			selectedLabel.carrierId &&
-			pickupUrls[ selectedLabel.carrierId ]
-	);
-
-	if ( ! shouldShowPickup || ! selectedLabel ) {
+	if ( ! pickupUrl ) {
 		return null;
 	}
 
 	return (
 		<ExternalLink
-			href={ pickupUrls[ selectedLabel.carrierId! ] }
+			href={ pickupUrl }
 			className={ className }
+			onClick={ onClick }
 		>
 			{ children ?? __( 'Schedule pickup', 'woocommerce-shipping' ) }
 		</ExternalLink>

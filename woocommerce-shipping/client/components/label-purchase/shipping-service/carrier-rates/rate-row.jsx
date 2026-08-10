@@ -12,7 +12,7 @@ import { __, _n, sprintf } from '@wordpress/i18n';
 import { withBoundary } from 'components/HOC';
 import { CarrierIcon } from 'components/carrier-icon';
 import { Badge } from 'components/wp';
-import { PromoTooltip } from 'components/label-purchase/promo';
+import { PromoTooltip } from 'components/label-purchase/promo/promo-tooltip';
 import { createInterpolateElement } from '@wordpress/element';
 import { useLabelPurchaseContext } from 'context/label-purchase';
 import { RowExtras } from './row-extras';

@@ -19,6 +19,7 @@ import {
 	WeightUnit,
 } from 'types';
 import { useLabelPurchaseContext } from 'context/label-purchase';
+import { getReturnableShipmentItems } from './label-panel-actions';
 
 interface LabelWithPackageData extends Label {
 	packageWeight?: number;
@@ -50,6 +51,7 @@ interface ReturnLabelButtonProps {
 	selections: Record< string, ShipmentItem[] >;
 	setSelection: ( selections: Record< string, ShipmentItem[] > ) => void;
 	className?: string;
+	onClick?: () => void;
 	children?: ReactNode;
 }
 
@@ -65,6 +67,7 @@ export const ReturnLabelButton = ( {
 	selections,
 	setSelection,
 	className,
+	onClick,
 	children,
 }: ReturnLabelButtonProps ) => {
 	const { labels } = useLabelPurchaseContext();
@@ -73,64 +76,13 @@ export const ReturnLabelButton = ( {
 	const { availableItems, allItemsReturned, currentShipmentItems } =
 		useMemo( () => {
 			const shipmentItems = shipments[ currentShipmentId ] || [];
-			const returnedItemIds = new Set< number | string >();
-
-			// Check in-session return shipments (from returnShipments state)
-			Object.entries( returnShipments ?? {} ).forEach(
-				( [ shipmentId, returnInfo ] ) => {
-					if (
-						returnInfo.parentShipmentId === currentShipmentId &&
-						returnInfo.isReturn
-					) {
-						// Use selections to get the actual items in this return shipment
-						const returnShipmentItems =
-							selections[ shipmentId ] || [];
-						returnShipmentItems.forEach( ( item ) => {
-							if ( item?.id ) {
-								returnedItemIds.add( item.id );
-							}
-						} );
-					}
-				}
-			);
-
-			// Also check ALL purchased labels to handle page reloads
-			// Look for return labels that have parent_shipment_id matching current shipment
-			Object.keys( shipments ).forEach( ( shipmentId ) => {
-				// Skip the current shipment itself
-				if ( shipmentId === currentShipmentId ) {
-					return;
-				}
-
-				const shipmentLabel =
-					labels.getCurrentShipmentLabel( shipmentId );
-
-				// Check if this is a return label for the current shipment
-				if (
-					shipmentLabel &&
-					shipmentLabel.isReturn &&
-					shipmentLabel.parentShipmentId === currentShipmentId
-				) {
-					// This is a return label for the current shipment
-					// Mark all items from this shipment as returned
-					const returnShipmentItems = shipments[ shipmentId ] || [];
-					returnShipmentItems.forEach( ( item ) => {
-						if ( item?.id ) {
-							returnedItemIds.add( item.id );
-						}
-					} );
-				}
+			const itemsAvailableForReturn = getReturnableShipmentItems( {
+				shipments,
+				currentShipmentId,
+				returnShipments,
+				selections,
+				getShipmentLabel: labels.getCurrentShipmentLabel,
 			} );
-
-			const itemsAvailableForReturn = shipmentItems.filter(
-				( orderItem ) => {
-					if ( orderItem === null ) {
-						return false;
-					}
-					// Check if this specific order item has already been returned
-					return ! returnedItemIds.has( orderItem.id );
-				}
-			);
 
 			return {
 				availableItems: itemsAvailableForReturn,
@@ -154,6 +106,8 @@ export const ReturnLabelButton = ( {
 			if ( allItemsReturned ) {
 				return;
 			}
+
+			onClick?.();
 
 			// Capture parent shipment ID BEFORE changing currentShipmentId
 			// If current shipment is already a return, use its parent; otherwise use current

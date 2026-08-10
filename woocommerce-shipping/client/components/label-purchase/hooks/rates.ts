@@ -25,7 +25,10 @@ import {
 } from 'utils';
 import { addressStore } from 'data/address';
 import { labelPurchaseStore } from 'data/label-purchase';
-import { CUSTOM_BOX_ID_PREFIX, CUSTOM_PACKAGE_TYPES } from '../packages';
+import {
+	CUSTOM_BOX_ID_PREFIX,
+	CUSTOM_PACKAGE_TYPES,
+} from '../packages/constants';
 import type { usePackageState } from './packages';
 import { useHazmatState } from './hazmat';
 import { useCustomsState } from './customs';
@@ -43,6 +46,8 @@ import { DELIVERY_PROPERTIES, SORT_BY } from '../shipping-service/constants';
  * to protect merchants from unexpected significant price increases.
  */
 const RATE_MATCH_PRICE_THRESHOLD = 1.0;
+
+type RatesByCarrier = Record< Carrier, Rate[] >;
 
 interface UseRatesStateProps {
 	currentShipmentId: string;
@@ -320,7 +325,7 @@ export function useRatesState( {
 
 			const { last_carrier_id, last_service_id } =
 				accountSettings.userMeta;
-			const rates =
+			const rates: RatesByCarrier | undefined =
 				select( labelPurchaseStore ).getRatesForShipment( shipmentId );
 
 			if ( rates?.[ last_carrier_id ] ) {
@@ -555,7 +560,7 @@ export function useRatesState( {
 	 */
 	const matchAndSelectRate = useCallback(
 		( selectedRate: RateWithParent ): RateWithParent | false => {
-			const allRatesForType = select(
+			const allRatesForType: RatesByCarrier | undefined = select(
 				labelPurchaseStore
 			).getRatesForShipment(
 				currentShipmentId,
@@ -593,7 +598,7 @@ export function useRatesState( {
 				selectedRate.parent &&
 				snakeCase( selectedRate.rate.type ) !== LABEL_RATE_TYPE.DEFAULT
 			) {
-				const allDefaultRates = select(
+				const allDefaultRates: RatesByCarrier | undefined = select(
 					labelPurchaseStore
 				).getRatesForShipment(
 					currentShipmentId,

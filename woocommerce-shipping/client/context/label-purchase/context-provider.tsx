@@ -77,7 +77,8 @@ export const LabelPurchaseContextProvider = ( {
 		shipments,
 		totalWeight,
 		returnShipments,
-		setShipmentTotalWeight
+		setShipmentTotalWeight,
+		getShipmentWeight
 	);
 
 	const customs = useCustomsState(

@@ -16,8 +16,10 @@ import {
 } from 'utils';
 import {
 	LabelShipmentIdMap,
+	Label,
 	OriginAddress,
 	ReturnShipmentInfo,
+	SelectedRates,
 	ShipmentItem,
 	ShipmentDate,
 	ShipmentType,
@@ -60,7 +62,7 @@ export function useShipmentState() {
 		try {
 			const store = selectData( addressStore );
 			if ( store && typeof store.getOriginAddresses === 'function' ) {
-				const origins = store.getOriginAddresses();
+				const origins: OriginAddress[] = store.getOriginAddresses();
 				return origins?.find( ( a ) => a.id === originId );
 			}
 		} catch {
@@ -366,7 +368,8 @@ export function useShipmentState() {
 		try {
 			const store = selectData( labelPurchaseStore );
 			if ( store && typeof store.getPurchasedLabels === 'function' ) {
-				const purchasedLabels = store.getPurchasedLabels();
+				const purchasedLabels: Record< string, Label | undefined > =
+					store.getPurchasedLabels();
 				const returnShipmentsFromLabels: Record<
 					string,
 					ReturnShipmentInfo
@@ -386,7 +389,8 @@ export function useShipmentState() {
 
 				// Also check selected rates for any in-progress return shipments
 				if ( typeof store.getSelectedRates === 'function' ) {
-					const selectedRates = store.getSelectedRates();
+					const selectedRates: SelectedRates | undefined =
+						store.getSelectedRates();
 					if ( selectedRates ) {
 						Object.entries( selectedRates ).forEach(
 							( [ shipmentKey, rateData ] ) => {

@@ -7,7 +7,7 @@ import { OrderItem, ShipmentItem } from 'types';
 import { formatCurrency, getCurrencyObject } from '../utils';
 import { getCurrentOrder, getWeightUnit } from 'utils';
 /* eslint-disable-next-line import/named */
-import { OrderShippingLine } from '@woocommerce/data';
+import type { OrderShippingLine } from '@woocommerce/data';
 
 type OrderItemType = OrderItem | ShipmentItem;
 
