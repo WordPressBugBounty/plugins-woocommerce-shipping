@@ -2,14 +2,14 @@
 # This file is distributed under the GPL v2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: WooCommerce Shipping 2.3.11\n"
+"Project-Id-Version: WooCommerce Shipping 2.3.14\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/woocommerce-shipping\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-07-16T13:48:19+00:00\n"
+"POT-Creation-Date: 2026-08-17T10:44:21+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: woocommerce-shipping\n"
@@ -2252,7 +2252,7 @@ msgstr ""
 #: dist/woocommerce-shipping-admin-status.js:8
 #: dist/woocommerce-shipping-bulk-labels-banner.js:1
 #: dist/woocommerce-shipping-create-shipping-label.js:338
-#: dist/woocommerce-shipping-plugin.js:7
+#: dist/woocommerce-shipping-plugin.js:321
 msgid "Selected paper size is no longer available. Please pick another."
 msgstr ""
 
@@ -4869,27 +4869,27 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: dist/woocommerce-shipping-create-shipping-label.js:338
-#: dist/woocommerce-shipping-plugin.js:7
+#: dist/woocommerce-shipping-plugin.js:321
 msgid "Signature Required"
 msgstr ""
 
 #: dist/woocommerce-shipping-create-shipping-label.js:338
-#: dist/woocommerce-shipping-plugin.js:7
+#: dist/woocommerce-shipping-plugin.js:321
 msgid "Adult Signature Required"
 msgstr ""
 
 #: dist/woocommerce-shipping-create-shipping-label.js:338
-#: dist/woocommerce-shipping-plugin.js:7
+#: dist/woocommerce-shipping-plugin.js:321
 msgid "Carbon Neutral"
 msgstr ""
 
 #: dist/woocommerce-shipping-create-shipping-label.js:338
-#: dist/woocommerce-shipping-plugin.js:7
+#: dist/woocommerce-shipping-plugin.js:321
 msgid "Additional Handling"
 msgstr ""
 
 #: dist/woocommerce-shipping-create-shipping-label.js:338
-#: dist/woocommerce-shipping-plugin.js:7
+#: dist/woocommerce-shipping-plugin.js:321
 msgid "Saturday Delivery"
 msgstr ""
 
