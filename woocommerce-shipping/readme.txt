@@ -3,11 +3,11 @@ Contributors: woocommerce, automattic, harriswong, waclawjacek, samnajian, kloon
 Tags: woocommerce, shipping, usps, dhl, labels
 Requires Plugins: woocommerce
 Requires PHP: 7.4
-Requires at least: 6.9
-Tested up to: 7.0
+Requires at least: 7.0
+Tested up to: 7.1
 WC requires at least: 10.8
 WC tested up to: 11.0
-Stable tag: 2.3.14
+Stable tag: 2.3.15
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -127,6 +127,9 @@ Absolutely! You can read our Terms of Service [here](https://wordpress.com/tos).
 6. WooCommerce Shipping address validation at checkout suggestion.
 
 == Changelog ==
+
+= 2.3.15 - 2026-08-24 =
+* Tweak - WordPress 7.1 Compatibility.
 
 = 2.3.14 - 2026-08-17 =
 * Tweak - Force-bundle the @wordpress/ui package in webpack so the build stays correct even if the package stops opting out of script externalization.
