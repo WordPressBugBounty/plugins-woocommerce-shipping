@@ -1,5 +1,11 @@
 *** WooCommerce Shipping Changelog ***
 
+= 2.3.16 - 2026-09-03 =
+* Fix   - Restore the "Apply suggested address" button on the block checkout for WooCommerce 11.0.1 and newer.
+* Fix   - Prevent a fatal error caused by loading the wrong internal file on some servers.
+* Tweak - Check the status of an in-progress label purchase every 3 seconds instead of every 10, so the purchase resolves and the print options appear sooner.
+* Tweak - Limit the "Connect your store" WooCommerce Shipping banner to WooCommerce > Settings > Shipping, the order detail page and the Plugins page, so it no longer appears on unrelated screens.
+
 = 2.3.15 - 2026-08-24 =
 * Tweak - WordPress 7.1 Compatibility.
 

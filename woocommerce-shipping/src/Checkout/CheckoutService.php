@@ -34,6 +34,16 @@ class CheckoutService {
 	const IS_DESTINATION_NORMALIZED_VAR = 'wcshipping_is_destination_normalized';
 
 	/**
+	 * Key prefix for the cached address validation response.
+	 *
+	 * The cache holds rendered notice markup for 24 hours, so it can outlive an update and replay the
+	 * previous release's markup. Bump the suffix whenever that markup changes; old entries expire.
+	 *
+	 * @var string
+	 */
+	private const ADDRESS_VALIDATION_CACHE_PREFIX = 'wcshipping_av_v2_';
+
+	/**
 	 * The address normalization service.
 	 *
 	 * @var AddressNormalizationService
@@ -157,7 +167,7 @@ class CheckoutService {
 
 		// Check if we have a cached response.
 		$shipping_address_hash = md5( wp_json_encode( $shipping_address ) );
-		$cached_response       = get_transient( 'wcshipping_av_' . $shipping_address_hash );
+		$cached_response       = get_transient( self::ADDRESS_VALIDATION_CACHE_PREFIX . $shipping_address_hash );
 		if ( $cached_response ) {
 			Logger::debug( $debug_prefix . 'Using cached response', $cached_response );
 
@@ -263,7 +273,7 @@ class CheckoutService {
 	 * @param array  $response The response to cache.
 	 */
 	private function cache_address_validation_response( string $hash, array $response ) {
-		set_transient( 'wcshipping_av_' . $hash, $response, 24 * HOUR_IN_SECONDS );
+		set_transient( self::ADDRESS_VALIDATION_CACHE_PREFIX . $hash, $response, 24 * HOUR_IN_SECONDS );
 	}
 
 	/**
@@ -399,15 +409,19 @@ class CheckoutService {
 		// Sort the address fields.
 		$address = AddressUtils::get_standardized_address( $address );
 
-		// Save full address to JSON string for use in the apply suggested address button.
-		$address_json = wp_json_encode( $address );
+		// Base64 so the payload survives the checkout block's entity decoding, which would turn the
+		// &quot; from esc_attr() back into a quote and end the attribute early. The JS decodes it.
+		$address_payload = base64_encode( wp_json_encode( $address ) ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode -- Transport encoding for an attribute value, not obfuscation.
 
 		// Remove empty values.
 		$filtered_suggested_address = array_filter( $address );
 
 		$address_markup = '<strong>' . esc_html( implode( ', ', $filtered_suggested_address ) ) . '</strong>';
 
-		$button_markup = '<button class="button wp-element-button wcshipping_apply_suggested_address" data-suggested_address="' . esc_attr( $address_json ) . '">' . esc_html__( 'Apply suggested address', 'woocommerce-shipping' ) . '</button>';
+		// An anchor, not a button: the sanitizer drops <button> entirely. It also strips class and
+		// role from this markup on the block checkout, where checkout.js restores them at runtime;
+		// they are kept here for the classic checkout, which does not sanitize them away.
+		$button_markup = '<a href="#" role="button" class="button wp-element-button wcshipping_apply_suggested_address" data-suggested_address="' . esc_attr( $address_payload ) . '">' . esc_html__( 'Apply suggested address', 'woocommerce-shipping' ) . '</a>';
 
 		$notice_message = sprintf(
 		/* translators: 1: address, 2: button */

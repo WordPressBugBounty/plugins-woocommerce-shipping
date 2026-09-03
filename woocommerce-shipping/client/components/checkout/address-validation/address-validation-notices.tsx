@@ -110,6 +110,14 @@ export const AddressValidationNotices = ( {
 					removeNotices( existingNoticeIds, noticesContext );
 				} )
 				.catch( () => {
+					// Let the control restore its label so the shopper can retry.
+					wcCheckoutScope.dispatchEvent(
+						new CustomEvent(
+							'wcShippingApplySuggestedAddressFailed'
+						)
+					);
+
+					// A distinct id, so the suggestion notice with the control stays.
 					createNotice(
 						'warning',
 						__(
@@ -117,7 +125,7 @@ export const AddressValidationNotices = ( {
 							'woocommerce-shipping'
 						),
 						{
-							id: noticeIdPrefix + '0',
+							id: noticeIdPrefix + 'error',
 							context: noticesContext,
 						}
 					);

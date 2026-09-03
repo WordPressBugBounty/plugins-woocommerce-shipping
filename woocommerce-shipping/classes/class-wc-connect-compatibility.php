@@ -49,11 +49,11 @@ abstract class WC_Connect_Compatibility {
 	 */
 	private static function select_compatibility() {
 		if ( version_compare( self::$version, '6.9.0', '<' ) ) {
-			require_once 'class-wc-connect-compatibility-wc30.php';
+			require_once __DIR__ . '/class-wc-connect-compatibility-wc30.php';
 
 			return new WC_Connect_Compatibility_WC30();
 		} else {
-			require_once 'class-wc-connect-compatibility-wc69.php';
+			require_once __DIR__ . '/class-wc-connect-compatibility-wc69.php';
 
 			return new WC_Connect_Compatibility_WC69();
 		}

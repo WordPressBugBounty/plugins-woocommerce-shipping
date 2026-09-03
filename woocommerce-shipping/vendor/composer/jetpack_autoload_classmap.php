@@ -698,6 +698,10 @@ return array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/tests/php/Integrations/ConfigRESTControllerTest.php'
 	),
+	'Automattic\\WCShipping\\Tests\\Connect\\WCConnectNuxTest' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/tests/php/Connect/WCConnectNuxTest.php'
+	),
 	'Automattic\\WCShipping\\Tests\\Emails\\WC_Admin_Return_Label_Email_Test' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/tests/php/Emails/WC_Admin_Return_Label_Email_Test.php'
@@ -1225,6 +1229,10 @@ return array(
 	'StoreNoticeTest' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/tests/php/Checkout/StoreNoticeTest.php'
+	),
+	'SuggestedAddressNoticeSanitizationTest' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/tests/php/Checkout/SuggestedAddressNoticeSanitizationTest.php'
 	),
 	'TestLabelPreviewRESTController' => array(
 		'version' => 'dev-trunk',

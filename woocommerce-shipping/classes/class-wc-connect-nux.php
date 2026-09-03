@@ -196,35 +196,37 @@ class WC_Connect_Nux {
 		return $filtered_status;
 	}
 
+	/**
+	 * Whether the WooCommerce Shipping connection banner should render on the given screen.
+	 *
+	 * The banner is confined to the surfaces where WooCommerce Shipping can actually be used or
+	 * activated: WooCommerce > Settings > Shipping, the order detail page (classic posts and
+	 * HPOS), and the Plugins page. Anywhere else - including the other WooCommerce settings
+	 * tabs, such as Payments and its onboarding flow - it is unrelated noise.
+	 *
+	 * @param WP_Screen $screen The screen to check.
+	 * @return bool
+	 */
 	public function should_display_nux_notice_on_screen( $screen ) {
-		if ( // Display if on any of these admin pages.
-			( // Products list.
-				'product' === $screen->post_type
-				&& 'edit' === $screen->base
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended --- Reading the current screen's query args, no DB operation.
+		$tab    = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : '';
+		$action = isset( $_GET['action'] ) ? sanitize_text_field( wp_unslash( $_GET['action'] ) ) : '';
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+
+		if (
+			( // WooCommerce > Settings > Shipping.
+				'woocommerce_page_wc-settings' === $screen->base
+				&& 'shipping' === $tab
 			)
-			|| ( // Orders list.
-				'shop_order' === $screen->post_type
-				&& 'edit' === $screen->base
-			)
-			|| ( // Edit order page.
+			|| ( // Order detail page ( classic posts storage ). Covers both post.php and post-new.php.
 				'shop_order' === $screen->post_type
 				&& 'post' === $screen->base
 			)
-			|| ( // Orders list && Edit order page ( HPOS ).
+			|| ( // Order detail page ( HPOS ). The orders list uses the same base with no action.
 				'woocommerce_page_wc-orders' === $screen->base
+				&& in_array( $action, array( 'edit', 'new' ), true )
 			)
-			|| ( // WooCommerce settings.
-				'woocommerce_page_wc-settings' === $screen->base
-			)
-			|| ( // WooCommerce featured extension page.
-				'woocommerce_page_wc-addons' === $screen->base
-				&& isset( $_GET['section'] ) && 'featured' === sanitize_text_field( wp_unslash( $_GET['section'] ) ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended --- Ignoring this as no DB operation
-			)
-			|| ( // WooCommerce shipping extension page.
-				'woocommerce_page_wc-addons' === $screen->base
-				&& isset( $_GET['section'] ) && 'shipping_methods' === sanitize_text_field( wp_unslash( $_GET['section'] ) ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended --- Ignoring this as no DB operation
-			)
-			|| 'plugins' === $screen->base
+			|| 'plugins' === $screen->base // Plugins page, where the plugin is activated.
 		) {
 			return true;
 		}
