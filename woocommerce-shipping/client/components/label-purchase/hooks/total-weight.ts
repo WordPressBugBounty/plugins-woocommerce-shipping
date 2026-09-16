@@ -1,4 +1,4 @@
-import { useCallback } from '@wordpress/element';
+import { useCallback, useRef } from '@wordpress/element';
 import { useState } from 'react';
 
 interface UseTotalWeightProps {
@@ -31,8 +31,25 @@ export const useTotalWeight = ( {
 		[ currentShipmentId, totalWeight ]
 	);
 
+	// Last computed (items + package) weight applied per shipment, so a remount does not override a manual entry.
+	const appliedComputedWeight = useRef< Record< string, number > >( {} );
+
+	const applyComputedTotalWeight = useCallback(
+		( weight: number ) => {
+			if (
+				appliedComputedWeight.current[ currentShipmentId ] === weight
+			) {
+				return;
+			}
+			appliedComputedWeight.current[ currentShipmentId ] = weight;
+			setShipmentTotalWeight( weight );
+		},
+		[ currentShipmentId, setShipmentTotalWeight ]
+	);
+
 	return {
 		getShipmentTotalWeight,
 		setShipmentTotalWeight,
+		applyComputedTotalWeight,
 	};
 };

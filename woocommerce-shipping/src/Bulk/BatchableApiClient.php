@@ -7,6 +7,7 @@
 
 namespace Automattic\WCShipping\Bulk;
 
+use Automattic\WCShipping\Connect\ConnectServerErrorCodes;
 use Automattic\WCShipping\Connect\WC_Connect_API_Client_Live;
 use WP_Error;
 
@@ -277,7 +278,9 @@ class BatchableApiClient extends WC_Connect_API_Client_Live {
 
 			$data['response_status_code'] = $response_code;
 
-			if ( 'missing_upsdap_terms_of_service_acceptance' === $code ) {
+			// Prevent formatting of codes the client needs to react to, so the
+			// code, message and upstream status survive the trip to React.
+			if ( ConnectServerErrorCodes::should_pass_through( $code ) ) {
 				$data['status'] = $response_code;
 				return new WP_Error( $code, $message, $data );
 			}

@@ -25,6 +25,7 @@ export const TotalWeight = ( { packageWeight = 0 } ) => {
 			getShipmentWeight,
 			getShipmentTotalWeight,
 			setShipmentTotalWeight,
+			applyComputedTotalWeight,
 		},
 		rates: { isFetching, errors, setErrors },
 		nextDesign,
@@ -80,7 +81,7 @@ export const TotalWeight = ( { packageWeight = 0 } ) => {
 		// For nextDesign, always update to reflect actual items regardless of minValue as we have LB and OZ inputs.
 		// For legacy design, respect minValue check
 		if ( nextDesign || totalWeightInDisplayUnit >= minValue ) {
-			setShipmentTotalWeight( totalWeight );
+			applyComputedTotalWeight( totalWeight );
 		}
 		// reset errors on initial render to avoid false positives on context switch
 		if ( errors.totalWeight !== false ) {
@@ -96,7 +97,7 @@ export const TotalWeight = ( { packageWeight = 0 } ) => {
 	}, [
 		packageWeight,
 		shipmentWeight,
-		setShipmentTotalWeight,
+		applyComputedTotalWeight,
 		setErrors,
 		nextDesign,
 	] );

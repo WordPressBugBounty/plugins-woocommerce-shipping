@@ -365,7 +365,7 @@ class LabelRateRESTController extends WCShippingRESTController {
 			return $validation_result;
 		}
 
-		if ( ! WC_Validation::is_phone( $param['phone'] ) ) {
+		if ( ! WC_Validation::is_phone( $param['phone'] ?? '' ) ) {
 			return new WP_Error(
 				'invalid_address',
 				__( 'The provided phone number is not valid', 'woocommerce-shipping' )
@@ -382,9 +382,9 @@ class LabelRateRESTController extends WCShippingRESTController {
 	 */
 	public function sanitize_address( $param ) {
 		$original_param = array(
-			'company' => sanitize_text_field( $param['company'] ),
-			'name'    => sanitize_text_field( $param['name'] ),
-			'phone'   => sanitize_text_field( $param['phone'] ),
+			'company' => sanitize_text_field( $param['company'] ?? '' ),
+			'name'    => sanitize_text_field( $param['name'] ?? '' ),
+			'phone'   => sanitize_text_field( $param['phone'] ?? '' ),
 		);
 
 		if ( isset( $param['residential'] ) ) {

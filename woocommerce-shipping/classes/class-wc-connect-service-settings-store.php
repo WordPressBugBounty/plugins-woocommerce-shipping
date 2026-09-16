@@ -437,6 +437,10 @@ class WC_Connect_Service_Settings_Store {
 			$label_as_array       = (array) $new_label_data;
 			$shipping_fulfillment = $this->shipping_fulfillments_data_store->get_by_label_id( $label_as_array['label_id'] );
 			if ( $shipping_fulfillment ) {
+				// Read the transition before update_label() overwrites the stored row, so a repeated read of a label
+				// that already failed does not count as a new failure.
+				$purchase_failed = $shipping_fulfillment->will_status_change( $label_as_array['label_id'], $label_as_array, 'PURCHASE_ERROR' );
+
 				// Check if this is a refund operation
 				if ( ! empty( $label_as_array['refund'] ) ) {
 					// Set the fulfillment back to unfulfilled status after refund
@@ -449,6 +453,12 @@ class WC_Connect_Service_Settings_Store {
 				}
 
 				$shipping_fulfillment->update_label( $label_as_array['label_id'], $label_as_array );
+				// A purchase that fails after being accepted must not leave the fulfillment marked as fulfilled.
+				// This runs after update_label() on purpose: get_unrefunded_purchased_label() reads the stored rows,
+				// so the failed label has to be written first or it would still count as purchased.
+				if ( $purchase_failed && null === $shipping_fulfillment->get_unrefunded_purchased_label() ) {
+					$shipping_fulfillment->set_status( 'unfulfilled' );
+				}
 				$shipping_fulfillment->save();
 				return $shipping_fulfillment->get_label_by_id( $label_as_array['label_id'] ) ?? $label_as_array;
 			}

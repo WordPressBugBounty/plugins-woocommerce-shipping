@@ -80,7 +80,7 @@ class Jetpack_Tracks_Client {
 			return $event;
 		}
 
-		$pixel = $event->build_pixel_url( $event );
+		$pixel = $event->build_pixel_url();
 
 		if ( ! $pixel ) {
 			return new WP_Error( 'invalid_pixel', 'cannot generate tracks pixel for given input', 400 );
@@ -114,7 +114,7 @@ class Jetpack_Tracks_Client {
 			return $response;
 		}
 
-		$code = isset( $response['response']['code'] ) ? $response['response']['code'] : 0;
+		$code = $response['response']['code'] ?? 0;
 
 		if ( 200 !== $code ) {
 			return new WP_Error( 'request_failed', 'Tracks pixel request failed', $code );

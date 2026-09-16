@@ -35,6 +35,7 @@ import { PurchaseErrorNotice } from './purchase/purchase-error-notice';
 import { ShipmentItem, ShipmentSubItem } from 'types';
 import { ITEMS_SECTION } from './essential-details/constants';
 import { mainModalContentSelector } from './constants';
+import { STATUS_NOTICES_CONTAINER_ID } from './purchase/error-placement';
 import { SelectableItems } from './split-shipment/selectable-items';
 import { StaticHeader } from './split-shipment/header/static-header';
 import { ServiceStatusNotices } from 'components/service-status';
@@ -177,6 +178,15 @@ export const ShipmentContent = ( {
 							<Spacer marginBottom="12" />
 						</>
 					) }
+
+				{ /*
+				 * Flow-level notices portal in here, above the items rather
+				 * than below the purchase button. See `isFlowLevelError`.
+				 */ }
+				<div
+					id={ STATUS_NOTICES_CONTAINER_ID }
+					className="label-purchase-modal__status-notices"
+				/>
 
 				<Flex className="items-header" ref={ itemsRef }>
 					<Heading level={ 3 }>

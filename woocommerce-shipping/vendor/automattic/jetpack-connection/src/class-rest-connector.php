@@ -19,6 +19,8 @@ use WP_REST_Server;
 
 /**
  * Registers the REST routes for Connections.
+ *
+ * @phan-constructor-used-for-side-effects
  */
 class REST_Connector {
 	/**
@@ -128,6 +130,43 @@ class REST_Connector {
 			)
 		);
 
+		// Get the site's own record from WordPress.com.
+		register_rest_route(
+			'jetpack/v4',
+			'/site',
+			array(
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'get_site_data' ),
+				'permission_callback' => __CLASS__ . '::site_data_permission_check',
+			),
+			true // override other implementations.
+		);
+
+		// Run all connection health tests.
+		register_rest_route(
+			'jetpack/v4',
+			'/connection/test',
+			array(
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'connection_test' ),
+				'permission_callback' => __CLASS__ . '::connection_test_permission_check',
+			),
+			true // override other implementations.
+		);
+
+		// Connection health tests for privileged external callers (WP.com debugger).
+		// Trailing slash matches the old Jetpack plugin registration so the override takes effect.
+		register_rest_route(
+			'jetpack/v4',
+			'/connection/test-wpcom/',
+			array(
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'connection_test_for_external' ),
+				'permission_callback' => __CLASS__ . '::is_request_signed_by_jetpack_debugger',
+			),
+			true // override other implementations.
+		);
+
 		// Get current connection status of Jetpack.
 		register_rest_route(
 			'jetpack/v4',
@@ -165,6 +204,20 @@ class REST_Connector {
 					),
 				),
 			)
+		);
+
+		// Disconnect/unlink user from WordPress.com servers.
+		// this endpoint is set to override the older endpoint that was previously in the Jetpack plugin
+		// Override is here in case an older version of the Jetpack plugin is installed alongside an updated standalone.
+		register_rest_route(
+			'jetpack/v4',
+			'/connection/user',
+			array(
+				'methods'             => WP_REST_Server::EDITABLE,
+				'callback'            => __CLASS__ . '::unlink_user',
+				'permission_callback' => __CLASS__ . '::unlink_user_permission_callback',
+			),
+			true // override other implementations.
 		);
 
 		// We are only registering this route if Jetpack-the-plugin is not active or it's version is ge 10.0-alpha.
@@ -214,19 +267,15 @@ class REST_Connector {
 				'callback'            => array( $this, 'connection_register' ),
 				'permission_callback' => __CLASS__ . '::jetpack_register_permission_check',
 				'args'                => array(
-					'from'               => array(
+					'from'         => array(
 						'description' => __( 'Indicates where the registration action was triggered for tracking/segmentation purposes', 'jetpack-connection' ),
 						'type'        => 'string',
 					),
-					'registration_nonce' => array(
-						'description' => __( 'The registration nonce', 'jetpack-connection' ),
-						'type'        => 'string',
-					),
-					'redirect_uri'       => array(
+					'redirect_uri' => array(
 						'description' => __( 'URI of the admin page where the user should be redirected after connection flow', 'jetpack-connection' ),
 						'type'        => 'string',
 					),
-					'plugin_slug'        => array(
+					'plugin_slug'  => array(
 						'description' => __( 'Indicates from what plugin the request is coming from', 'jetpack-connection' ),
 						'type'        => 'string',
 					),
@@ -245,6 +294,10 @@ class REST_Connector {
 				'args'                => array(
 					'redirect_uri' => array(
 						'description' => __( 'URI of the admin page where the user should be redirected after connection flow', 'jetpack-connection' ),
+						'type'        => 'string',
+					),
+					'from'         => array(
+						'description' => __( 'Tracking/segmentation identifier for this authorize URL request', 'jetpack-connection' ),
 						'type'        => 'string',
 					),
 				),
@@ -342,7 +395,7 @@ class REST_Connector {
 	public function remote_provision( WP_REST_Request $request ) {
 		$request_data = $request->get_params();
 
-		if ( did_action( 'application_password_did_authenticate' ) && current_user_can( 'jetpack_connect_user' ) ) {
+		if ( current_user_can( 'jetpack_connect_user' ) ) {
 			$request_data['local_user'] = get_current_user_id();
 		}
 
@@ -404,13 +457,8 @@ class REST_Connector {
 	 * @return true|WP_Error
 	 */
 	public function remote_provision_permission_check( WP_REST_Request $request ) {
-		// We allow the app password authentication only if 'local_user' is empty for security reasons.
-		if ( empty( $request['local_user'] ) && did_action( 'application_password_did_authenticate' ) ) {
-			if ( current_user_can( 'jetpack_connect_user' ) ) {
-				return true;
-			}
-
-			return new WP_Error( 'invalid_user_permission_remote_provision', self::get_user_permissions_error_msg(), array( 'status' => rest_authorization_required_code() ) );
+		if ( empty( $request['local_user'] ) && current_user_can( 'jetpack_connect_user' ) ) {
+			return true;
 		}
 
 		return Rest_Authentication::is_signed_with_blog_token()
@@ -469,8 +517,9 @@ class REST_Connector {
 				'constant'        => defined( 'JETPACK_DEV_DEBUG' ) && JETPACK_DEV_DEBUG,
 				'url'             => $status->is_local_site(),
 				/** This filter is documented in packages/status/src/class-status.php */
-				'filter'          => ( apply_filters( 'jetpack_development_mode', false ) || apply_filters( 'jetpack_offline_mode', false ) ), // jetpack_development_mode is deprecated.
+				'filter'          => apply_filters( 'jetpack_offline_mode', false ),
 				'wpLocalConstant' => defined( 'WP_LOCAL_DEV' ) && WP_LOCAL_DEV,
+				'option'          => (bool) get_option( 'jetpack_offline_mode' ),
 			),
 			'isPublic'          => '1' == get_option( 'blog_public' ), // phpcs:ignore Universal.Operators.StrictComparisons.LooseEqual
 		);
@@ -576,6 +625,27 @@ class REST_Connector {
 	}
 
 	/**
+	 * Verify that a user can use the /connection/user endpoint. Has to be a registered user and be currently linked.
+	 *
+	 * @since 6.3.3
+	 *
+	 * @return bool|WP_Error True if user is able to unlink.
+	 */
+	public static function unlink_user_permission_callback() {
+		// This is a mapped capability
+		// phpcs:ignore WordPress.WP.Capabilities.Unknown
+		if ( current_user_can( 'jetpack_unlink_user' ) && ( new Manager() )->is_user_connected( get_current_user_id() ) ) {
+			return true;
+		}
+
+		return new WP_Error(
+			'invalid_user_permission_unlink_user',
+			self::get_user_permissions_error_msg(),
+			array( 'status' => rest_authorization_required_code() )
+		);
+	}
+
+	/**
 	 * Get miscellaneous user data related to the connection. Similar data available in old "My Jetpack".
 	 * Information about the master/primary user.
 	 * Information about the current user.
@@ -591,7 +661,15 @@ class REST_Connector {
 
 		$connection = new Manager();
 
-		$current_user     = wp_get_current_user();
+		$current_user = wp_get_current_user();
+
+		// Token-dependent on purpose: connectionOwner and isMaster describe the
+		// *connected* owner and go null/false when the owner's token is broken. Status
+		// UIs (e.g. My Jetpack's connection card) rely on that meaning. Record-based
+		// ownership identity (who holds the connection per the master_user option,
+		// token or not) is exposed separately via Initial_State's connectionOwner, and
+		// owner token health via connectionStatus.hasConnectedOwner. Do not consolidate
+		// the two derivations: they answer different questions.
 		$connection_owner = $connection->get_connection_owner();
 
 		$owner_display_name = false === $connection_owner ? null : $connection_owner->display_name;
@@ -616,19 +694,31 @@ class REST_Connector {
 		)
 		: false );
 
+		// Check for possible account errors between the local user and WPCOM account.
+		$possible_errors = array();
+		if ( $is_user_connected && ! empty( $wpcom_user_data['email'] ) ) {
+			$user_account_status = new \Automattic\Jetpack\Connection\User_Account_Status();
+			$possible_errors     = $user_account_status->check_account_errors( $current_user->user_email, $wpcom_user_data['email'] );
+		}
+
 		$current_user_connection_data = array(
-			'isConnected' => $is_user_connected,
-			'isMaster'    => $is_master_user,
-			'username'    => $current_user->user_login,
-			'id'          => $current_user->ID,
-			'blogId'      => $blog_id,
-			'wpcomUser'   => $wpcom_user_data,
-			'gravatar'    => get_avatar_url( $current_user->ID, 64, 'mm', '', array( 'force_display' => true ) ),
-			'permissions' => array(
-				'connect'      => current_user_can( 'jetpack_connect' ),
-				'connect_user' => current_user_can( 'jetpack_connect_user' ),
-				'disconnect'   => current_user_can( 'jetpack_disconnect' ),
+			'isConnected'           => $is_user_connected,
+			'isMaster'              => $is_master_user,
+			'username'              => $current_user->user_login,
+			'id'                    => $current_user->ID,
+			'blogId'                => $blog_id,
+			'wpcomUser'             => $wpcom_user_data,
+			'gravatar'              => get_avatar_url( $current_user->ID ),
+			'permissions'           => array(
+				'connect'        => current_user_can( 'jetpack_connect' ),
+				'connect_user'   => current_user_can( 'jetpack_connect_user' ),
+				// This is a mapped capability
+				// phpcs:ignore WordPress.WP.Capabilities.Unknown
+				'unlink_user'    => current_user_can( 'jetpack_unlink_user' ),
+				'disconnect'     => current_user_can( 'jetpack_disconnect' ),
+				'manage_options' => current_user_can( 'manage_options' ),
 			),
+			'possibleAccountErrors' => $possible_errors,
 		);
 
 		/**
@@ -643,6 +733,7 @@ class REST_Connector {
 		$response = array(
 			'currentUser'     => $current_user_connection_data,
 			'connectionOwner' => $owner_display_name,
+			'isRegistered'    => $connection->is_connected(),
 		);
 
 		if ( $rest_response ) {
@@ -650,67 +741,6 @@ class REST_Connector {
 		}
 
 		return $response;
-	}
-
-	/**
-	 * Permission check for the connection/data endpoint
-	 *
-	 * @return bool|WP_Error
-	 */
-	public static function user_connection_data_permission_check() {
-		if ( current_user_can( 'jetpack_connect_user' ) ) {
-			return true;
-		}
-
-		return new WP_Error(
-			'invalid_user_permission_user_connection_data',
-			self::get_user_permissions_error_msg(),
-			array( 'status' => rest_authorization_required_code() )
-		);
-	}
-
-	/**
-	 * Verifies if the request was signed with the Jetpack Debugger key
-	 *
-	 * @param string|null $pub_key The public key used to verify the signature. Default is the Jetpack Debugger key. This is used for testing purposes.
-	 *
-	 * @return bool
-	 */
-	public static function is_request_signed_by_jetpack_debugger( $pub_key = null ) {
-		 // phpcs:disable WordPress.Security.NonceVerification.Recommended
-		if ( ! isset( $_GET['signature'] ) || ! isset( $_GET['timestamp'] ) || ! isset( $_GET['url'] ) || ! isset( $_GET['rest_route'] ) ) {
-			return false;
-		}
-
-		// signature timestamp must be within 5min of current time.
-		if ( abs( time() - (int) $_GET['timestamp'] ) > 300 ) {
-			return false;
-		}
-
-		$signature = base64_decode( filter_var( wp_unslash( $_GET['signature'] ) ) ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode
-
-		$signature_data = wp_json_encode(
-			array(
-				'rest_route' => filter_var( wp_unslash( $_GET['rest_route'] ) ),
-				'timestamp'  => (int) $_GET['timestamp'],
-				'url'        => filter_var( wp_unslash( $_GET['url'] ) ),
-			)
-		);
-
-		if (
-			! function_exists( 'openssl_verify' )
-			|| 1 !== openssl_verify(
-				$signature_data,
-				$signature,
-				$pub_key ? $pub_key : static::JETPACK__DEBUGGER_PUBLIC_KEY
-			)
-		) {
-			return false;
-		}
-
-		// phpcs:enable WordPress.Security.NonceVerification.Recommended
-
-		return true;
 	}
 
 	/**
@@ -797,9 +827,10 @@ class REST_Connector {
 	}
 
 	/**
-	 * The endpoint tried to partially or fully reconnect the website to WP.com.
+	 * The endpoint tried to connect Jetpack site to WPCOM.
 	 *
 	 * @since 1.7.0
+	 * @since 6.7.0 No longer needs `registration_nonce`.
 	 * @since-jetpack 7.7.0
 	 *
 	 * @param \WP_REST_Request $request The request sent to the WP REST API.
@@ -807,13 +838,9 @@ class REST_Connector {
 	 * @return \WP_REST_Response|WP_Error
 	 */
 	public function connection_register( $request ) {
-		// Only require nonce if cookie authentication is used.
-		if ( did_action( 'auth_cookie_valid' ) && ! wp_verify_nonce( $request->get_param( 'registration_nonce' ), 'jetpack-registration-nonce' ) ) {
-			return new WP_Error( 'invalid_nonce', __( 'Unable to verify your request.', 'jetpack-connection' ), array( 'status' => 403 ) );
-		}
-
-		if ( isset( $request['from'] ) ) {
-			$this->connection->add_register_request_param( 'from', (string) $request['from'] );
+		$from = isset( $request['from'] ) ? (string) $request['from'] : '';
+		if ( '' !== $from ) {
+			$this->connection->add_register_request_param( 'from', $from );
 		}
 
 		if ( ! empty( $request['plugin_slug'] ) ) {
@@ -832,7 +859,7 @@ class REST_Connector {
 
 		$redirect_uri = $request->get_param( 'redirect_uri' ) ? admin_url( $request->get_param( 'redirect_uri' ) ) : null;
 
-		$authorize_url = ( new Authorize_Redirect( $this->connection ) )->build_authorize_url( $redirect_uri );
+		$authorize_url = ( new Authorize_Redirect( $this->connection ) )->build_authorize_url( $redirect_uri, '' !== $from ? $from : false );
 
 		/**
 		 * Filters the response of jetpack/v4/connection/register endpoint
@@ -845,7 +872,7 @@ class REST_Connector {
 			array()
 		);
 
-		// We manipulate the alternate URLs after the filter is applied, so they can not be overwritten.
+		// We manipulate the alternate URLs after the filter is applied, so they cannot be overwritten.
 		$response_body['authorizeUrl'] = $authorize_url;
 		if ( ! empty( $response_body['alternateAuthorizeUrl'] ) ) {
 			$response_body['alternateAuthorizeUrl'] = Redirect::get_url( $response_body['alternateAuthorizeUrl'] );
@@ -865,7 +892,8 @@ class REST_Connector {
 	 */
 	public function connection_authorize_url( $request ) {
 		$redirect_uri  = $request->get_param( 'redirect_uri' ) ? admin_url( $request->get_param( 'redirect_uri' ) ) : null;
-		$authorize_url = $this->connection->get_authorization_url( null, $redirect_uri );
+		$from          = $request->get_param( 'from' );
+		$authorize_url = $this->connection->get_authorization_url( null, $redirect_uri, ! empty( $from ) ? (string) $from : false );
 
 		return rest_ensure_response(
 			array(
@@ -945,6 +973,51 @@ class REST_Connector {
 			esc_html__( 'Failed to disconnect the site as it appears already disconnected.', 'jetpack-connection' ),
 			array( 'status' => 400 )
 		);
+	}
+
+	/**
+	 * Unlinks current user from the WordPress.com Servers.
+	 *
+	 * @since 6.3.3
+	 *
+	 * @param WP_REST_Request $request The request sent to the WP REST API.
+	 *
+	 * @return bool|WP_Error True if user successfully unlinked.
+	 */
+	public static function unlink_user( $request ) {
+
+		if ( ! isset( $request['linked'] ) || false !== $request['linked'] ) {
+			return new WP_Error( 'invalid_param', esc_html__( 'Invalid Parameter', 'jetpack-connection' ), array( 'status' => 404 ) );
+		}
+
+		// If the user is also connection owner, we need to disconnect all users. Since disconnecting all users is a destructive action, we need to pass a parameter to confirm the action.
+		$disconnect_all_users = false;
+
+		if ( ( new Manager() )->get_connection_owner_id() === get_current_user_id() ) {
+			if ( isset( $request['disconnect-all-users'] ) && false !== $request['disconnect-all-users'] ) {
+				$disconnect_all_users = true;
+			} else {
+				return new WP_Error( 'unlink_user_failed', esc_html__( 'Unable to unlink the connection owner.', 'jetpack-connection' ), array( 'status' => 400 ) );
+			}
+		}
+
+		// Allow admins to force a disconnect by passing the "force" parameter
+		// This allows an admin to disconnect themselves
+		if ( isset( $request['force'] ) && false !== $request['force'] && current_user_can( 'manage_options' ) && ( new Manager( 'jetpack' ) )->disconnect_user_force( get_current_user_id(), $disconnect_all_users ) ) {
+			return rest_ensure_response(
+				array(
+					'code' => 'success',
+				)
+			);
+		} elseif ( ( new Manager( 'jetpack' ) )->disconnect_user() ) {
+			return rest_ensure_response(
+				array(
+					'code' => 'success',
+				)
+			);
+		}
+
+		return new WP_Error( 'unlink_user_failed', esc_html__( 'Was not able to unlink the user. Please try again.', 'jetpack-connection' ), array( 'status' => 400 ) );
 	}
 
 	/**
@@ -1037,5 +1110,268 @@ class REST_Connector {
 		return Rest_Authentication::is_signed_with_blog_token()
 			? true
 			: new WP_Error( 'invalid_permission_connection_check', self::get_user_permissions_error_msg(), array( 'status' => rest_authorization_required_code() ) );
+	}
+
+	/**
+	 * Permission check for the connection/test endpoint.
+	 *
+	 * @since 8.5.0
+	 *
+	 * @return true|WP_Error
+	 */
+	public static function connection_test_permission_check() {
+		if ( current_user_can( 'manage_options' ) ) {
+			return true;
+		}
+
+		return new WP_Error(
+			'invalid_user_permission_manage_options',
+			self::get_user_permissions_error_msg(),
+			array( 'status' => rest_authorization_required_code() )
+		);
+	}
+
+	/**
+	 * Whether the current user may read the site record.
+	 *
+	 * The floor is `edit_posts` because the Jetpack dashboard requests this route on mount and
+	 * is reachable by contributors, matching how My Jetpack and admin-ui gate their pages.
+	 *
+	 * An offline site keeps its blog ID and blog token, so the fetch stays signed and reaches
+	 * WordPress.com. The floor there is `manage_options`, matching the capability the route
+	 * carried before it moved into this package.
+	 *
+	 * @since 8.10.0
+	 *
+	 * @return true|WP_Error
+	 */
+	public static function site_data_permission_check() {
+		if ( ( new Status() )->is_offline_mode() ) {
+			if ( current_user_can( 'manage_options' ) ) {
+				return true;
+			}
+		} elseif ( current_user_can( 'edit_posts' ) ) {
+			return true;
+		}
+
+		return new WP_Error(
+			'invalid_user_permission_view_admin',
+			self::get_user_permissions_error_msg(),
+			array( 'status' => rest_authorization_required_code() )
+		);
+	}
+
+	/**
+	 * Return the site's WordPress.com record, or an error envelope describing the failure.
+	 *
+	 * @since 8.10.0
+	 *
+	 * @return WP_Error|\WP_HTTP_Response|WP_REST_Response
+	 */
+	public function get_site_data() {
+		return self::site_data_response( $this->connection );
+	}
+
+	/**
+	 * Build the site data response.
+	 *
+	 * Separate from the route callback so callers that only want the response, such as the
+	 * Jetpack plugin's deprecated wrapper, do not have to construct a `REST_Connector` and
+	 * re-register the routes.
+	 *
+	 * @since 8.10.0
+	 *
+	 * @param Manager|null $connection The connection manager to fetch with. Defaults to a new one.
+	 * @return WP_Error|\WP_HTTP_Response|WP_REST_Response
+	 */
+	public static function site_data_response( ?Manager $connection = null ) {
+		$site_data = ( $connection ?? new Manager() )->get_connected_site_data();
+
+		if ( ! is_wp_error( $site_data ) ) {
+			/**
+			 * Fires when the site data was successfully returned from the /sites/%d wpcom endpoint.
+			 *
+			 * @since 8.10.0
+			 * @since-jetpack 8.7.0
+			 */
+			do_action( 'jetpack_get_site_data_success' );
+
+			return rest_ensure_response(
+				array(
+					'code'    => 'success',
+					'message' => esc_html__( 'Site data correctly received.', 'jetpack-connection' ),
+					'data'    => wp_json_encode( $site_data, JSON_UNESCAPED_SLASHES ),
+				)
+			);
+		}
+
+		$error_data = $site_data->get_error_data();
+
+		if ( empty( $error_data['api_error_code'] ) ) {
+			$error_message = esc_html__( 'Failed fetching site data from WordPress.com. If the problem persists, try reconnecting Jetpack.', 'jetpack-connection' );
+		} else {
+			/* translators: %s is an error code (e.g. `token_mismatch`) */
+			$error_message = sprintf( esc_html__( 'Failed fetching site data from WordPress.com (%s). If the problem persists, try reconnecting Jetpack.', 'jetpack-connection' ), $error_data['api_error_code'] );
+		}
+
+		return new WP_Error(
+			$site_data->get_error_code(),
+			$error_message,
+			array(
+				'status'         => 400,
+				'api_error_code' => empty( $error_data['api_error_code'] ) ? null : $error_data['api_error_code'],
+				'api_http_code'  => empty( $error_data['api_http_code'] ) ? null : $error_data['api_http_code'],
+			)
+		);
+	}
+
+	/**
+	 * Run all connection health tests and return the result.
+	 *
+	 * @since 8.5.0
+	 *
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function connection_test() {
+		$cxntests  = new Connection_Health_Tests();
+		$tests_run = array_keys( $cxntests->list_tests() );
+
+		if ( $cxntests->pass() ) {
+			return rest_ensure_response(
+				array(
+					'code'      => 'success',
+					'message'   => __( 'All connection tests passed.', 'jetpack-connection' ),
+					'tests_run' => $tests_run,
+				)
+			);
+		}
+
+		return $cxntests->output_fails_as_wp_error();
+	}
+
+	/**
+	 * Run connection health tests for a privileged external caller (WP.com debugger).
+	 *
+	 * Results are encrypted so only WP.com can read them.
+	 *
+	 * @since 8.5.0
+	 *
+	 * @return WP_REST_Response
+	 */
+	public function connection_test_for_external() {
+		// Since we are running this test for inclusion in the WP.com testing suite,
+		// let's not try to run them as part of these results.
+		add_filter( 'jetpack_debugger_run_self_test', '__return_false' );
+		$cxntests = new Connection_Health_Tests();
+
+		if ( $cxntests->pass() ) {
+			$result = array(
+				'code'    => 'success',
+				'message' => __( 'All connection tests passed.', 'jetpack-connection' ),
+			);
+		} else {
+			$error  = $cxntests->output_fails_as_wp_error();
+			$errors = array();
+
+			// Borrowed from WP_REST_Server::error_to_response().
+			foreach ( (array) $error->errors as $code => $messages ) {
+				foreach ( (array) $messages as $message ) {
+					$errors[] = array(
+						'code'    => $code,
+						'message' => $message,
+						'data'    => $error->get_error_data( $code ),
+					);
+				}
+			}
+
+			$result = ( ! empty( $errors ) ) ? $errors[0] : null;
+			if ( count( $errors ) > 1 ) {
+				// Remove the primary error.
+				array_shift( $errors );
+				$result['additional_errors'] = $errors;
+			}
+		}
+
+		$result = wp_json_encode( $result, JSON_UNESCAPED_SLASHES );
+
+		$encrypted = $cxntests->encrypt_string_for_wpcom( $result );
+
+		if ( ! $encrypted || ! is_array( $encrypted ) ) {
+			return rest_ensure_response(
+				array(
+					'code'    => 'action_required',
+					'message' => 'Please request results from the in-plugin debugger',
+				)
+			);
+		}
+
+		return rest_ensure_response(
+			array(
+				'code'  => 'response',
+				'debug' => $encrypted,
+			)
+		);
+	}
+
+	/**
+	 * Permission check for the connection/data endpoint
+	 *
+	 * @return bool|WP_Error
+	 */
+	public static function user_connection_data_permission_check() {
+		if ( current_user_can( 'jetpack_connect_user' ) ) {
+			return true;
+		}
+
+		return new WP_Error(
+			'invalid_user_permission_user_connection_data',
+			self::get_user_permissions_error_msg(),
+			array( 'status' => rest_authorization_required_code() )
+		);
+	}
+
+	/**
+	 * Verifies if the request was signed with the Jetpack Debugger key
+	 *
+	 * @param string|null $pub_key The public key used to verify the signature. Default is the Jetpack Debugger key. This is used for testing purposes.
+	 *
+	 * @return bool
+	 */
+	public static function is_request_signed_by_jetpack_debugger( $pub_key = null ) {
+		 // phpcs:disable WordPress.Security.NonceVerification.Recommended
+		if ( ! isset( $_GET['signature'] ) || ! isset( $_GET['timestamp'] ) || ! isset( $_GET['url'] ) || ! isset( $_GET['rest_route'] ) ) {
+			return false;
+		}
+
+		// signature timestamp must be within 5min of current time.
+		if ( abs( time() - (int) $_GET['timestamp'] ) > 300 ) {
+			return false;
+		}
+
+		$signature = base64_decode( filter_var( wp_unslash( $_GET['signature'] ) ) ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode
+
+		$signature_data = wp_json_encode(
+			array(
+				'rest_route' => filter_var( wp_unslash( $_GET['rest_route'] ) ),
+				'timestamp'  => (int) $_GET['timestamp'],
+				'url'        => filter_var( wp_unslash( $_GET['url'] ) ),
+			),
+			0 // phpcs:ignore Jetpack.Functions.JsonEncodeFlags.ZeroFound -- No `json_encode()` flags because this needs to match whatever is calculating the hash on the other end.
+		);
+
+		if (
+			! function_exists( 'openssl_verify' )
+			|| 1 !== openssl_verify(
+				$signature_data,
+				$signature,
+				is_string( $pub_key ) ? $pub_key : static::JETPACK__DEBUGGER_PUBLIC_KEY
+			)
+		) {
+			return false;
+		}
+
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+
+		return true;
 	}
 }

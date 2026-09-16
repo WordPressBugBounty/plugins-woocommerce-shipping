@@ -119,6 +119,9 @@ class Rest_Authentication {
 				return null;
 			}
 
+			// These `rest_invalid_request` errors occur before `verify_xml_rpc_signature()`,
+			// so the request has not been authenticated as WP.com. Do not report them to
+			// Error_Handler: they are malformed unauthenticated requests, not connection errors.
 			if ( ! isset( $_SERVER['REQUEST_METHOD'] ) ) {
 				$this->rest_authentication_status = new WP_Error(
 					'rest_invalid_request',
@@ -218,5 +221,18 @@ class Rest_Authentication {
 		$instance = self::init();
 
 		return true === $instance->rest_authentication_status && 'blog' === $instance->rest_authentication_type;
+	}
+
+	/**
+	 * Whether the request was signed with a user token.
+	 *
+	 * @since 6.7.0
+	 *
+	 * @return bool True if the request was signed with a valid user token, false otherwise.
+	 */
+	public static function is_signed_with_user_token() {
+		$instance = self::init();
+
+		return true === $instance->rest_authentication_status && 'user' === $instance->rest_authentication_type;
 	}
 }

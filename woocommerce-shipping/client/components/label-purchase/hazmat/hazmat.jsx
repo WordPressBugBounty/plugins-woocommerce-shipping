@@ -16,7 +16,11 @@ import {
 import { SelectControl } from 'components/design-system/select-control';
 import { chevronDown } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
-import { createInterpolateElement, useEffect } from '@wordpress/element';
+import {
+	createInterpolateElement,
+	useEffect,
+	useRef,
+} from '@wordpress/element';
 import clsx from 'clsx';
 
 /**
@@ -81,6 +85,11 @@ export const Hazmat = () => {
 		resetFocusArea();
 	};
 
+	const lastRatedHazmat = useRef( {
+		isHazmat: hazmatState?.isHazmat,
+		category: hazmatState?.category,
+	} );
+
 	/*
 	 * The effect ensures that rates are updated when hazmat state changes.
 	 *
@@ -94,6 +103,18 @@ export const Hazmat = () => {
 			// Don't update rates if "is HAZMAT" was specified but not the category.
 			return;
 		}
+
+		// Skip the mount run; switching shipment tabs remounts this component and would drop the selected rate.
+		if (
+			lastRatedHazmat.current.isHazmat === hazmatState?.isHazmat &&
+			lastRatedHazmat.current.category === hazmatState?.category
+		) {
+			return;
+		}
+		lastRatedHazmat.current = {
+			isHazmat: hazmatState?.isHazmat,
+			category: hazmatState?.category,
+		};
 
 		updateRates();
 	}, [ hazmatState?.isHazmat, hazmatState?.category ] ); // eslint-disable-line react-hooks/exhaustive-deps

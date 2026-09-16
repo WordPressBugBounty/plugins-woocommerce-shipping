@@ -125,8 +125,9 @@ class WC_Connect_API_Client_Live extends WC_Connect_API_Client {
 
 			$data['response_status_code'] = $response_code;
 
-			// Prevent formatting of the ToS error so we can react to it in React.
-			if ( 'missing_upsdap_terms_of_service_acceptance' === $code ) {
+			// Prevent formatting of codes the client needs to react to, so the
+			// code, message and upstream status survive the trip to React.
+			if ( ConnectServerErrorCodes::should_pass_through( $code ) ) {
 				$data['status'] = $response_code;
 
 				return new WP_Error(

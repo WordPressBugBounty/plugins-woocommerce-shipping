@@ -25,6 +25,14 @@ class Package {
 	 */
 	public static function from_array( array $data ): Package {
 		$data = self::map_wcst_keys_to_wcshipping_keys( $data );
+
+		// PHP < 8.0 does not treat numeric strings with trailing whitespace as numeric.
+		foreach ( array( 'boxWeight', 'maxWeight' ) as $numeric_key ) {
+			if ( isset( $data[ $numeric_key ] ) && is_string( $data[ $numeric_key ] ) ) {
+				$data[ $numeric_key ] = trim( $data[ $numeric_key ] );
+			}
+		}
+
 		self::validate_from_array_input( $data );
 
 		return new Package(

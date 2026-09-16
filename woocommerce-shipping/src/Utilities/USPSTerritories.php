@@ -36,6 +36,7 @@ class USPSTerritories {
 		'UM', // United States Minor Outlying Islands.
 		'FM', // Micronesia.
 		'MH', // Marshall Islands.
+		'PW', // Palau.
 	);
 
 	/**

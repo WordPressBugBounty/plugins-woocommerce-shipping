@@ -13,8 +13,8 @@ class WC_REST_Connect_Address_Normalization_Controller extends WC_REST_Connect_B
 
 	public function post( $request ) {
 		$data    = $request->get_json_params();
-		$address = $data['address'];
-		$phone   = $address['phone'];
+		$address = $data['address'] ?? array();
+		$phone   = $address['phone'] ?? null;
 
 		unset( $address['phone'] );
 
@@ -57,7 +57,7 @@ class WC_REST_Connect_Address_Normalization_Controller extends WC_REST_Connect_B
 	public function check_permission( $request ) {
 		$data = $request->get_json_params();
 
-		if ( 'origin' === $data['type'] ) {
+		if ( 'origin' === ( $data['type'] ?? '' ) ) {
 			return WC_Connect_Functions::user_can_manage_labels(); // Only an admin can normalize the origin address
 		}
 

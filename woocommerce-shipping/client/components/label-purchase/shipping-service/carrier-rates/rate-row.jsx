@@ -16,7 +16,7 @@ import { PromoTooltip } from 'components/label-purchase/promo/promo-tooltip';
 import { createInterpolateElement } from '@wordpress/element';
 import { useLabelPurchaseContext } from 'context/label-purchase';
 import { RowExtras } from './row-extras';
-import { applyPromo, isDeliveryDateValid } from 'utils';
+import { applyPromo, isDeliveryDateValid, isUPSGroundSaverRate } from 'utils';
 import clsx from 'clsx';
 
 export const RateRow = withBoundary(
@@ -139,6 +139,21 @@ export const RateRow = withBoundary(
 			);
 		}
 
+		/**
+		 * Ground Saver labels carry both a UPS and a USPS barcode, which leads
+		 * merchants to drop the parcel off at USPS. Doing so leaves the postage
+		 * unpaid and the shipment untracked, so spell out where it has to go.
+		 */
+		const dropOffNote = isUPSGroundSaverRate( rate )
+			? createInterpolateElement(
+					__(
+						'Give this package to <strong>UPS only, not USPS.</strong>',
+						'woocommerce-shipping'
+					),
+					{ strong: <strong /> }
+			  )
+			: null;
+
 		const rateCaveatText =
 			rateCaveat.length > 0
 				? createInterpolateElement( rateCaveat.join( ', ' ), {
@@ -248,6 +263,17 @@ export const RateRow = withBoundary(
 									</Text>
 								) }
 
+								{ dropOffNote && (
+									<Text
+										size={ 13 }
+										weight={ 400 }
+										variant="muted"
+										className="rate-dropoff-note"
+									>
+										{ dropOffNote }
+									</Text>
+								) }
+
 								{ isSelected && (
 									<RowExtras { ...extrasProps } />
 								) }
@@ -323,7 +349,8 @@ export const RateRow = withBoundary(
 					htmlFor={ rateId }
 					className={ clsx(
 						[ isSelected && 'selected' ],
-						[ rateCaveatText && 'has-rate-caveat' ]
+						[ rateCaveatText && 'has-rate-caveat' ],
+						[ dropOffNote && 'has-dropoff-note' ]
 					) }
 				>
 					<CarrierIcon carrier={ carrierId } size="xLarge" />
@@ -348,6 +375,12 @@ export const RateRow = withBoundary(
 										),
 										extrasText.join( ', ' )
 									) }
+								</Text>
+							) }
+
+							{ dropOffNote && (
+								<Text className="rate-dropoff-note">
+									{ dropOffNote }
 								</Text>
 							) }
 

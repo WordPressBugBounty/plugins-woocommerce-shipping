@@ -12,6 +12,11 @@ interface ThrottledStateChangeOptions< T > extends DebounceSettings {
 	 * If returning true, the callback will be executed
 	 */
 	hasChanged?: ( prev: T, current: T ) => boolean;
+	/**
+	 * Run a pending callback on unmount instead of dropping it.
+	 * Use when the owner remounts on purpose and the last change must still be applied.
+	 */
+	flushOnUnmount?: boolean;
 }
 
 /**
@@ -32,8 +37,13 @@ export const useThrottledStateChange = < T >(
 		trailing = true,
 		leading = false,
 		hasChanged = ( prev: T, current: T ) => ! isEqual( prev, current ),
+		flushOnUnmount = false,
 		...optionsRest
 	} = options;
+
+	// Read at unmount time so the cleanup effect below stays registered once.
+	const flushOnUnmountRef = useRef( flushOnUnmount );
+	flushOnUnmountRef.current = flushOnUnmount;
 
 	// Create a ref to store the throttled callback
 	const throttledCallbackRef = useRef<
@@ -66,6 +76,10 @@ export const useThrottledStateChange = < T >(
 	// Cleanup the throttled callback on unmount, should only be registered once
 	useEffect( () => {
 		return () => {
+			if ( flushOnUnmountRef.current ) {
+				throttledCallbackRef.current?.flush();
+				return;
+			}
 			throttledCallbackRef.current?.cancel();
 		};
 	}, [] );

@@ -13,6 +13,7 @@ import {
 	useRef,
 	useState,
 } from '@wordpress/element';
+import { STATUS_NOTICES_CONTAINER_ID } from './error-placement';
 
 interface CreditCardButtonProps {
 	url: string;
@@ -58,7 +59,7 @@ export const CreditCardButton = ( {
 		creditCardWindow.current = window.open( url );
 		document.addEventListener( 'visibilitychange', onVisibilityChange );
 	}, [ url, onVisibilityChange ] );
-	const portal = document.getElementById( 'label-purchase-status-notices' );
+	const portal = document.getElementById( STATUS_NOTICES_CONTAINER_ID );
 	return nextDesign && portal ? (
 		createPortal(
 			<Spacer>

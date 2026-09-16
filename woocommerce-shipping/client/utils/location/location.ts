@@ -170,6 +170,33 @@ const getEffectiveCustomsCountry = (
 	return address?.country;
 };
 
+/**
+ * Whether the customs form is for a route covered by USPS territory or
+ * military-mail rules. The exact USPS requirement is direction-, content-,
+ * weight-, and service-dependent and is enforced by Connect Server.
+ */
+export const isUspsCustomsPolicyRoute = (
+	origin?: Pick< LocationResponse, 'country' | 'state' >,
+	destination?: Pick< LocationResponse, 'country' | 'state' >
+): boolean => {
+	const addresses = [ origin, destination ];
+	const effectiveCountries = addresses.map( ( address ) =>
+		address ? getEffectiveCustomsCountry( address ) : undefined
+	);
+
+	return (
+		effectiveCountries.every( ( country ) =>
+			ACCEPTED_USPS_ORIGIN_COUNTRIES.includes( country ?? '' )
+		) &&
+		( effectiveCountries.some( ( country ) => country !== 'US' ) ||
+			addresses.some(
+				( address ) =>
+					address?.country === 'US' &&
+					US_MILITARY_STATES.includes( address.state )
+			) )
+	);
+};
+
 export const isCustomsRequired = (
 	origin: Pick< LocationResponse, 'country' | 'state' >,
 	destination: Pick< LocationResponse, 'country' | 'state' >

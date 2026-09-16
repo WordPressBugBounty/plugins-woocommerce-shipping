@@ -11,6 +11,7 @@ use Automattic\WCShipping\Connect\WC_Connect_Service_Settings_Store;
 use Automattic\WCShipping\Connect\WC_Connect_API_Client;
 use Automattic\WCShipping\Connect\WC_Connect_Logger;
 use Automattic\WCShipping\OriginAddresses\OriginAddressService;
+use WC_Order;
 use WP_Error;
 
 /**
@@ -104,9 +105,13 @@ class AddressNormalizationService {
 	 * @param array      $address     Destination shipping address.
 	 * @param bool       $is_verified Is destination address normalized/verified.
 	 *
-	 * @return array REST response body.
+	 * @return array|WP_Error REST response body.
 	 */
 	public function update_destination_address( $order_id, $address, $is_verified ) {
+		if ( ! wc_get_order( $order_id ) instanceof WC_Order ) {
+			return $this->get_order_not_found_error();
+		}
+
 		$formatted_address = $this->format_address_for_client( $address );
 		$result            = $this->settings_store->update_destination_address( $order_id, $formatted_address );
 		if ( $result ) {
@@ -121,6 +126,27 @@ class AddressNormalizationService {
 	}
 
 	/**
+	 * Builds the error returned when an order ID doesn't resolve to an order.
+	 *
+	 * The `status` key is what `rest_convert_error_to_response()` reads to set
+	 * the HTTP status, so this surfaces as a 404 rather than the default 500.
+	 *
+	 * @return WP_Error
+	 */
+	private function get_order_not_found_error(): WP_Error {
+		$message = __( 'Order not found.', 'woocommerce-shipping' );
+
+		return new WP_Error(
+			'order_not_found',
+			$message,
+			array(
+				'message' => $message,
+				'status'  => 404,
+			)
+		);
+	}
+
+	/**
 	 * Checks whether destination address has already been verified/normalized.
 	 *
 	 * @param int|string $order_id WC order ID.
@@ -128,7 +154,11 @@ class AddressNormalizationService {
 	 * @return array|WP_Error REST response body.
 	 */
 	public function is_destination_address_verified( $order_id ) {
-		$order       = wc_get_order( $order_id );
+		$order = wc_get_order( $order_id );
+		if ( ! $order instanceof WC_Order ) {
+			return $this->get_order_not_found_error();
+		}
+
 		$address     = $order->get_address( 'shipping' );
 		$is_verified = $this->is_destination_address_normalized( $order_id );
 		if ( true === $is_verified ) {
@@ -242,7 +272,7 @@ class AddressNormalizationService {
 	 */
 	public function is_destination_address_normalized( int $order_id ): bool {
 		$order = wc_get_order( $order_id );
-		if ( ! $order ) {
+		if ( ! $order instanceof WC_Order ) {
 			return false;
 		}
 
@@ -262,7 +292,7 @@ class AddressNormalizationService {
 	 */
 	public function set_is_destination_address_normalized( int $order_id, bool $is_verified ): void {
 		$order = wc_get_order( $order_id );
-		if ( ! $order ) {
+		if ( ! $order instanceof WC_Order ) {
 			return;
 		}
 
@@ -285,7 +315,7 @@ class AddressNormalizationService {
 	 */
 	private function get_destination_address_hash( int $order_id ): ?string {
 		$order = wc_get_order( $order_id );
-		if ( ! $order ) {
+		if ( ! $order instanceof WC_Order ) {
 			return null;
 		}
 

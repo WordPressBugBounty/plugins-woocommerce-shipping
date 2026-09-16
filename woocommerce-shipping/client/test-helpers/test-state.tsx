@@ -126,6 +126,7 @@ export const ProvideTestState = ( {
 				totalWeight,
 				getShipmentTotalWeight,
 				setShipmentTotalWeight,
+				applyComputedTotalWeight: setShipmentTotalWeight,
 			},
 			customs: {
 				hasErrors: () => false,

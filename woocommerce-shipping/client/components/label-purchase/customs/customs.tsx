@@ -1,5 +1,9 @@
 import React, { JSX } from 'react';
-import { __experimentalHeading as Heading, Flex } from '@wordpress/components';
+import {
+	__experimentalHeading as Heading,
+	Flex,
+	Notice,
+} from '@wordpress/components';
 import { isEmpty, map } from 'lodash';
 import { __ } from '@wordpress/i18n';
 import { Form } from '@woocommerce/components';
@@ -15,7 +19,7 @@ import {
 	validateRestrictionType,
 } from './validators';
 import { addressStore } from 'data/address';
-import { getCountryName } from 'utils';
+import { getCountryName, isUspsCustomsPolicyRoute } from 'utils';
 
 export const Customs = (): JSX.Element => {
 	const {
@@ -24,15 +28,17 @@ export const Customs = (): JSX.Element => {
 		shipment: { getShipmentOrigin },
 	} = useLabelPurchaseContext();
 
-	const { country } = useSelect(
+	const destination = useSelect(
 		( select ) => select( addressStore ).getOrderDestination(),
 		[]
 	);
+	const origin = getShipmentOrigin();
+	const { country } = destination;
 
 	const destinationContext = {
 		country,
 		countryName: getCountryName()( country ),
-		originCountry: getShipmentOrigin()?.country,
+		originCountry: origin?.country,
 	};
 
 	const initialValues = getCustomsState();
@@ -42,6 +48,14 @@ export const Customs = (): JSX.Element => {
 			<Heading level={ 3 }>
 				{ __( 'Customs', 'woocommerce-shipping' ) }
 			</Heading>
+			{ isUspsCustomsPolicyRoute( origin, destination ) && (
+				<Notice status="info" isDismissible={ false }>
+					{ __(
+						'USPS customs requirements for U.S. territories, Freely Associated States, and military addresses vary by shipment direction, contents, weight, and service. If you select USPS, customs information will be ignored only when USPS does not require it.',
+						'woocommerce-shipping'
+					) }
+				</Notice>
+			) }
 			{ initialValues && (
 				<Form< CustomsState >
 					// Update the form if length of items changes as a result of shipment split

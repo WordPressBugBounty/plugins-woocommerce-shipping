@@ -89,7 +89,7 @@ class UI {
 	 * @return string
 	 */
 	private static function get_initial_state() {
-		return 'var JP_IDENTITY_CRISIS__INITIAL_STATE=JSON.parse(decodeURIComponent("' . rawurlencode( wp_json_encode( static::get_initial_state_data() ) ) . '"));';
+		return 'var JP_IDENTITY_CRISIS__INITIAL_STATE=' . wp_json_encode( static::get_initial_state_data(), JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP ) . ';';
 	}
 
 	/**
@@ -162,8 +162,7 @@ class UI {
 
 		$consumer_chosen     = null;
 		$consumer_url_length = 0;
-
-		foreach ( $consumers as $consumer ) {
+		foreach ( $consumers as &$consumer ) {
 			if ( empty( $consumer['admin_page'] ) || ! is_string( $consumer['admin_page'] ) ) {
 				continue;
 			}
@@ -177,6 +176,7 @@ class UI {
 				$consumer_url_length = strlen( $consumer['admin_page'] );
 			}
 		}
+		unset( $consumer );
 
 		static::$consumers = $consumer_chosen ? $consumer_chosen : array_shift( $consumers );
 

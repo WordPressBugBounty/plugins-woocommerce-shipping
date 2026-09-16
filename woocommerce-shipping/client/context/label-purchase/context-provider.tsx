@@ -58,7 +58,11 @@ export const LabelPurchaseContextProvider = ( {
 		getShipmentType,
 	} = useShipmentState();
 
-	const { getShipmentTotalWeight, setShipmentTotalWeight } = useTotalWeight( {
+	const {
+		getShipmentTotalWeight,
+		setShipmentTotalWeight,
+		applyComputedTotalWeight,
+	} = useTotalWeight( {
 		shipmentWeight: getShipmentWeight(),
 		currentShipmentId,
 	} );
@@ -212,6 +216,7 @@ export const LabelPurchaseContextProvider = ( {
 			getShipmentWeight,
 			getShipmentTotalWeight,
 			setShipmentTotalWeight,
+			applyComputedTotalWeight,
 		},
 		customs,
 		labels,

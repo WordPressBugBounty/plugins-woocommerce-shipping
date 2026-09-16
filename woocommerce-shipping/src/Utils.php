@@ -9,6 +9,7 @@
 
 namespace Automattic\WCShipping;
 
+use Automattic\WCShipping\Connect\ConnectServerErrorCodes;
 use Automattic\WCShipping\Connect\WC_Connect_Jetpack;
 use Automattic\WooCommerce\Utilities\FeaturesUtil;
 use Automattic\WCShipping\Connect\WC_Connect_Options;
@@ -165,6 +166,7 @@ class Utils {
 			'WCSHIPPING_PLUGIN_DIR'          => self::get_plugin_path(),
 			'WCSHIPPING_RELATIVE_PLUGIN_DIR' => self::get_relative_plugin_path(),
 			'WC_PLUGIN_RELATIVE_DIR'         => self::get_relative_plugin_path( true ),
+			'CONNECT_SERVER_ERROR_CODES'     => ConnectServerErrorCodes::get_codes_for_js(),
 		);
 	}
 

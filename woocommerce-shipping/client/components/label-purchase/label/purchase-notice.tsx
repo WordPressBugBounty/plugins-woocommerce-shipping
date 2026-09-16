@@ -1,4 +1,10 @@
-import { useEffect, useMemo, useRef, useState } from '@wordpress/element';
+import {
+	createInterpolateElement,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from '@wordpress/element';
 import { useCopyToClipboard } from '@wordpress/compose';
 import {
 	__experimentalHeading as Heading,
@@ -24,7 +30,7 @@ import {
 	shipping,
 	undo,
 } from '@wordpress/icons';
-import { hasLabelExpired, recordEvent } from 'utils';
+import { hasLabelExpired, isUPSGroundSaverRate, recordEvent } from 'utils';
 import { useLabelPurchaseContext } from 'context/label-purchase';
 import { SchedulePickup } from './schedule-pickup';
 import { TrackShipment } from './track-shipment';
@@ -119,6 +125,12 @@ export const PurchaseNotice = withBoundary( () => {
 		getShipmentDestination()?.country === 'US';
 	const isRefundActionDisabled =
 		isRefunding || isPurchasing || isUpdatingStatus;
+	/**
+	 * Ground Saver labels carry both a UPS and a USPS barcode, which leads
+	 * merchants to drop the parcel off at USPS. Doing so leaves the postage
+	 * unpaid and the shipment untracked, so spell out where it has to go.
+	 */
+	const isGroundSaverLabel = isUPSGroundSaverRate( selectedRate?.rate );
 	const isLabelPanelVisible =
 		hasLabel && ! ( nextDesign && isAnyRequestInProgress );
 	const availableActions = getAvailableLabelPanelActions( {
@@ -348,6 +360,17 @@ export const PurchaseNotice = withBoundary( () => {
 												className="purchase-label-panel__copy-tracking"
 											/>
 										</div>
+									) }
+									{ isGroundSaverLabel && (
+										<p className="purchase-label-panel__dropoff-note">
+											{ createInterpolateElement(
+												__(
+													'<strong>Give this package to UPS only.</strong> USPS may complete the final delivery.',
+													'woocommerce-shipping'
+												),
+												{ strong: <strong /> }
+											) }
+										</p>
 									) }
 								</div>
 								<span className="purchase-label-panel__status">

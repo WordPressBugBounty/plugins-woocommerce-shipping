@@ -35,7 +35,11 @@ import {
 	mapAddressForRequest,
 } from 'utils';
 import { CreditCardButton } from './credit-card-button';
-import { requestDestinationAddressModal, settingsPageUrl } from '../constants';
+import {
+	mainModalContentSelector,
+	requestDestinationAddressModal,
+	settingsPageUrl,
+} from '../constants';
 import { useLabelPurchaseContext } from 'context/label-purchase';
 import { getShipmentTitle } from '../utils';
 import {
@@ -51,6 +55,7 @@ import { store as coreStore } from '@wordpress/core-data';
 import { labelPurchaseStore } from 'data/label-purchase';
 import { EssentialDetails } from '../essential-details';
 import { recordEvent } from 'utils/tracks';
+import { getConnectServerErrorCodes } from 'utils/config';
 import { LABEL_PURCHASE_STATUS } from 'data/constants';
 import { UPSDAPTos } from 'components/carrier/upsdap/upsdap-tos';
 import { FedExTos } from 'components/carrier/fedex/fedex-tos';
@@ -58,6 +63,11 @@ import apiFetch from '@wordpress/api-fetch';
 import { getCarrierStrategyPath } from 'data/routes';
 import { getChangePaymentMethodUrl } from 'components/shipping-settings/constants';
 import { usePaymentMethodPolling } from './use-payment-method-polling';
+import { getUPSDAPTosFailure } from './upsdap-tos-failure';
+import {
+	isFlowLevelError,
+	STATUS_NOTICES_CONTAINER_ID,
+} from './error-placement';
 import { Notice } from '@wordpress/ui';
 
 interface PaymentButtonsProps {
@@ -229,6 +239,25 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 				} );
 		}
 	}, [ isPurchasing ] );
+
+	/**
+	 * A flow-level notice renders at the top of the flow, which is off screen
+	 * for a merchant who is scrolled down at the purchase button - the very
+	 * place they are when one of these fires. Bring it into view so moving the
+	 * notice up does not hide it.
+	 */
+	const hasFlowLevelError = isFlowLevelError( errors );
+	useEffect( () => {
+		if ( ! hasFlowLevelError ) {
+			return;
+		}
+
+		document.querySelector( mainModalContentSelector )?.scrollTo( {
+			left: 0,
+			top: 0,
+			behavior: 'smooth',
+		} );
+	}, [ hasFlowLevelError ] );
 
 	const shipmentsCount = Object.keys( shipments ).length;
 	const purchaseButtonLabelDefault =
@@ -489,7 +518,13 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 			const error = e as unknown as WPErrorRESTResponse &
 				LabelPurchaseError;
 
-			if ( error.code === 'missing_upsdap_terms_of_service_acceptance' ) {
+			const { MISSING_UPSDAP_TOS_ACCEPTANCE } =
+				getConnectServerErrorCodes();
+
+			if (
+				MISSING_UPSDAP_TOS_ACCEPTANCE &&
+				error.code === MISSING_UPSDAP_TOS_ACCEPTANCE
+			) {
 				setPurchaseStartTime( null );
 				setUPSDAPTosError( error );
 				return;
@@ -586,16 +621,16 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 						} );
 					}
 				}
-			} catch {
-				setErrors( {
-					cause: 'carrier_error',
-					message: [
-						__(
-							'We were unable to update your acceptance of the UPS® Terms and Conditions. Please try again later or contact WooCommerce support if the issue persists.',
-							'woocommerce-shipping'
-						),
-					],
-				} );
+			} catch ( e ) {
+				const { closeModal, error } = getUPSDAPTosFailure(
+					e as { code?: string; message?: string }
+				);
+
+				if ( closeModal ) {
+					setUPSDAPTosError( null );
+				}
+
+				setErrors( error );
 			} finally {
 				setIsTOSConfirming( false );
 			}
@@ -789,7 +824,7 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 				</Button>
 			) }
 			{ ! nextPaymentMethod &&
-				document.getElementById( 'label-purchase-status-notices' ) &&
+				document.getElementById( STATUS_NOTICES_CONTAINER_ID ) &&
 				createPortal(
 					<Animate
 						type={ isPaymentMethodPolling ? 'loading' : undefined }
@@ -827,7 +862,7 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 							</div>
 						) }
 					</Animate>,
-					document.getElementById( 'label-purchase-status-notices' )!
+					document.getElementById( STATUS_NOTICES_CONTAINER_ID )!
 				) }
 			{ errors &&
 				Object.keys( errors ).length > 0 &&
@@ -845,15 +880,15 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 							</Notice.Root>
 						) }
 					</Flex>,
-					document.getElementById( 'label-purchase-status-notices' )!
+					document.getElementById( STATUS_NOTICES_CONTAINER_ID )!
 				) }
 			{ fedExPhoneErrorMessage &&
-				document.getElementById( 'label-purchase-status-notices' ) &&
+				document.getElementById( STATUS_NOTICES_CONTAINER_ID ) &&
 				createPortal(
 					<Flex className="purchase-label-errors" direction="column">
 						{ fedExPhoneNotice }
 					</Flex>,
-					document.getElementById( 'label-purchase-status-notices' )!
+					document.getElementById( STATUS_NOTICES_CONTAINER_ID )!
 				) }
 		</>
 	) : (
@@ -999,17 +1034,35 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 			</Flex>
 
 			<Spacer />
-			{ errors && Object.keys( errors ).length > 0 && (
-				<LegacyNotice
-					status="error"
-					actions={ uniq( errors.actions ) }
-					onDismiss={ resetErrors }
-				>
-					{ uniq( errors.message ).map( ( m, index ) => (
-						<p key={ index }>{ m }</p>
-					) ) }
-				</LegacyNotice>
-			) }
+			{ errors &&
+				Object.keys( errors ).length > 0 &&
+				( () => {
+					const notice = (
+						<LegacyNotice
+							status="error"
+							actions={ uniq( errors.actions ) }
+							onDismiss={ resetErrors }
+						>
+							{ uniq( errors.message ).map( ( m, index ) => (
+								<p key={ index }>{ m }</p>
+							) ) }
+						</LegacyNotice>
+					);
+
+					/**
+					 * A store-level problem is not answered by the controls
+					 * next to this notice, so lift it to the top of the flow.
+					 * Falls back to rendering in place if the container is not
+					 * mounted, so no error is ever dropped.
+					 */
+					const container = isFlowLevelError( errors )
+						? document.getElementById( STATUS_NOTICES_CONTAINER_ID )
+						: null;
+
+					return container
+						? createPortal( notice, container )
+						: notice;
+				} )() }
 		</>
 	);
 };

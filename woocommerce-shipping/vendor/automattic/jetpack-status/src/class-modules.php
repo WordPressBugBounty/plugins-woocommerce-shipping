@@ -75,8 +75,8 @@ class Modules {
 			$mod['recommendation_order']     = empty( $mod['recommendation_order'] ) ? 20 : (int) $mod['recommendation_order'];
 			$mod['deactivate']               = empty( $mod['deactivate'] );
 			$mod['free']                     = empty( $mod['free'] );
-			$mod['requires_connection']      = ( ! empty( $mod['requires_connection'] ) && 'No' === $mod['requires_connection'] ) ? false : true;
-			$mod['requires_user_connection'] = ( empty( $mod['requires_user_connection'] ) || 'No' === $mod['requires_user_connection'] ) ? false : true;
+			$mod['requires_connection']      = empty( $mod['requires_connection'] ) || 'No' !== $mod['requires_connection'];
+			$mod['requires_user_connection'] = ! ( empty( $mod['requires_user_connection'] ) || 'No' === $mod['requires_user_connection'] );
 
 			if ( empty( $mod['auto_activate'] ) || ! in_array( strtolower( $mod['auto_activate'] ), array( 'yes', 'no', 'public' ), true ) ) {
 				$mod['auto_activate'] = 'No';
@@ -444,7 +444,7 @@ class Modules {
 					if ( $deactivated ) {
 						$state->state( 'deactivated_plugins', implode( ',', $deactivated ) );
 						wp_safe_redirect( add_query_arg( 'jetpack_restate', 1 ) );
-						exit;
+						exit( 0 );
 					}
 				}
 			}
@@ -468,7 +468,7 @@ class Modules {
 			ob_start();
 			$module_path = $this->get_path( $module );
 			if ( file_exists( $module_path ) ) {
-				require $this->get_path( $module ); // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.NotAbsolutePath
+				require_once $this->get_path( $module );
 			}
 
 			$active[] = $module;
@@ -485,7 +485,7 @@ class Modules {
 			wp_safe_redirect( ( new Paths() )->admin_url( 'page=jetpack' ) );
 		}
 		if ( $exit ) {
-			exit;
+			exit( 0 );
 		}
 		return true;
 	}

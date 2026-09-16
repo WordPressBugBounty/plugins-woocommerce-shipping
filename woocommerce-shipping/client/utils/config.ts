@@ -1,5 +1,6 @@
 import { isObject, mapValues } from 'lodash';
 import {
+	ConnectServerErrorCodes,
 	LocationResponse,
 	OriginAddress,
 	RateExtraOptions,
@@ -55,6 +56,20 @@ export const getPluginRelativeDirectory = ( forWooCommerce = false ) =>
 	forWooCommerce
 		? getConfig().constants.WC_PLUGIN_RELATIVE_DIR
 		: getConfig().constants.WCSHIPPING_RELATIVE_PLUGIN_DIR;
+
+/**
+ * Connect Server error codes the API clients surface verbatim, as declared by
+ * `Automattic\WCShipping\Connect\ConnectServerErrorCodes` and handed over in
+ * `WCShipping_Config`.
+ *
+ * Read at call time rather than module load, since the config is assigned by an
+ * inline script and a module could be imported before it lands. Returns an empty
+ * object when the config is missing, so callers must treat an absent code as
+ * "no match" rather than comparing against `undefined`.
+ */
+export const getConnectServerErrorCodes =
+	(): Partial< ConnectServerErrorCodes > =>
+		getConfig()?.constants?.CONNECT_SERVER_ERROR_CODES ?? {};
 
 export const shouldAutomaticallyOpenPrintDialog = ( config = getConfig() ) =>
 	getAccountSettings( config ).purchaseSettings

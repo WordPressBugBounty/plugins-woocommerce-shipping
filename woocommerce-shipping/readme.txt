@@ -5,9 +5,9 @@ Requires Plugins: woocommerce
 Requires PHP: 7.4
 Requires at least: 7.0
 Tested up to: 7.1
-WC requires at least: 10.8
-WC tested up to: 11.0
-Stable tag: 2.3.16
+WC requires at least: 10.9
+WC tested up to: 11.1
+Stable tag: 2.4.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -127,6 +127,19 @@ Absolutely! You can read our Terms of Service [here](https://wordpress.com/tos).
 6. WooCommerce Shipping address validation at checkout suggestion.
 
 == Changelog ==
+
+= 2.4.0 - 2026-09-16 =
+* Add   - Tell merchants to hand UPS Ground Saver packages to UPS and not USPS, on the rate card and after the label is purchased.
+* Fix   - Show the real reason when UPS Terms and Conditions acceptance fails because the site reached its origin address limit.
+* Fix   - Stop logging PHP warnings when a rate request or the legacy address normalization request has no phone, name, company or type.
+* Fix   - Mark the order fulfillment as unfulfilled again when a label purchase fails after it was accepted.
+* Fix   - Accept carrier-normalized USPS territory addresses without a state and support Palau consistently.
+* Fix   - Keep the selected rate and the entered total weight when switching between shipment tabs.
+* Fix   - Return a "not found" error instead of a fatal error when verifying or saving the address of an order that does not exist.
+* Tweak - Clarify that USPS territory, Freely Associated State, and military customs requirements vary by route, contents, weight, and service.
+* Tweak - WooCommerce 11.1 Compatibility.
+* Tweak - Update the Jetpack Connection package to 9.1.2.
+* Tweak - Update the shell-quote package to 1.10.0.
 
 = 2.3.16 - 2026-09-03 =
 * Fix   - Restore the "Apply suggested address" button on the block checkout for WooCommerce 11.0.1 and newer.

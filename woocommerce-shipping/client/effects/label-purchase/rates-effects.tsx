@@ -11,14 +11,22 @@ export const useRatesEffects = ( {
 	weight: { getShipmentTotalWeight },
 	packages: { getCustomPackage, getSelectedPackage, currentPackageTab },
 }: LabelPurchaseContextType ) => {
+	// This hook remounts per shipment (see index.tsx). A change made right before
+	// a tab switch must still refresh that shipment's rates, so flush instead of cancel.
+	const throttleOptions = { flushOnUnmount: true };
+
 	// Update rates when isCustomsNeeded changes
-	useThrottledStateChange( isCustomsNeeded(), updateRates );
+	useThrottledStateChange( isCustomsNeeded(), updateRates, throttleOptions );
 
 	// Update rates when customs item values change (price, weight, quantity, etc.)
-	useThrottledStateChange( customsFingerprint, updateRates );
+	useThrottledStateChange( customsFingerprint, updateRates, throttleOptions );
 
 	// Update rates when the shipment dates changes
-	useThrottledStateChange( getCurrentShipmentDate(), updateRates );
+	useThrottledStateChange(
+		getCurrentShipmentDate(),
+		updateRates,
+		throttleOptions
+	);
 
 	// Update rates when the custom package dimensions change
 	const hasValidDimensions = ( pkg: CustomPackage ) => {
@@ -58,8 +66,10 @@ export const useRatesEffects = ( {
 	] );
 
 	// Update rates when the custom package dimensions change
-	useThrottledStateChange( customPackageState(), () =>
-		fetchRates( customPackage )
+	useThrottledStateChange(
+		customPackageState(),
+		() => fetchRates( customPackage ),
+		throttleOptions
 	);
 
 	// Memoize the selected package state to avoid unnecessary re-renders
@@ -76,5 +86,9 @@ export const useRatesEffects = ( {
 	}, [ selectedPackage?.id, totalWeight, currentPackageTab ] ); // eslint-disable-line react-hooks/exhaustive-deps
 
 	// Update rates when the selected package or weight changes
-	useThrottledStateChange( selectedPackageState(), updateRates );
+	useThrottledStateChange(
+		selectedPackageState(),
+		updateRates,
+		throttleOptions
+	);
 };

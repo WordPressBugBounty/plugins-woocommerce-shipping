@@ -17,6 +17,7 @@ import { PaymentButtons } from '../purchase';
 import { AddressesCard } from './cards/addresses-card';
 import { ErrorBoundaryNext } from 'components/HOC/error-boundary/error-boundary-next';
 import { ServiceStatusNotices } from 'components/service-status';
+import { STATUS_NOTICES_CONTAINER_ID } from '../purchase/error-placement';
 import { withBoundaryNext } from 'components/HOC';
 import { PaymentMethodSummary } from './internal/payment-method-summary';
 
@@ -43,7 +44,7 @@ const LabelPurchaseStatusNotices = () => {
 	return (
 		<ErrorBoundaryNext>
 			<div
-				id="label-purchase-status-notices"
+				id={ STATUS_NOTICES_CONTAINER_ID }
 				style={ { display: 'contents' } }
 			>
 				{ /* Render PurchaseNotice when we have a successful label OR when a request is in progress (retry scenario) */ }

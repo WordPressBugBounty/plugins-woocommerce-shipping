@@ -140,6 +140,14 @@ export const mockUtils = ( overrides?: object ) => {
 		getCurrencySymbol: () => '$',
 		getCustomPackages: () => packagesSettings.packages.custom,
 		getConfig: () => ( {
+			constants: {
+				CONNECT_SERVER_ERROR_CODES: {
+					MISSING_UPSDAP_TOS_ACCEPTANCE:
+						'missing_upsdap_terms_of_service_acceptance',
+					ORIGIN_ADDRESS_LIMIT_REACHED:
+						'origin_address_limit_reached',
+				},
+			},
 			order: orderTestData,
 			is_origin_verified: false,
 			is_destination_verified: true,

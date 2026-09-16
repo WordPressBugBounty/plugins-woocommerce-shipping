@@ -244,6 +244,26 @@ if ( class_exists( Base\Fulfillment::class ) ) {
 		}
 
 		/**
+		 * Get the purchased label that has not been refunded.
+		 *
+		 * A refunded label keeps its 'PURCHASED' status, so callers that need to know whether the
+		 * fulfillment still holds a label it can ship with have to ignore the refunded ones.
+		 *
+		 * @return array|null The purchased label data, or null if there is none left.
+		 */
+		public function get_unrefunded_purchased_label(): ?array {
+			$labels = $this->get_labels();
+
+			foreach ( $labels as $label ) {
+				if ( isset( $label['status'] ) && 'PURCHASED' === $label['status'] && empty( $label['refund'] ) ) {
+					return $label;
+				}
+			}
+
+			return null;
+		}
+
+		/**
 		 * Check if this fulfillment has shipping labels.
 		 *
 		 * @return bool True if labels exist, false otherwise.

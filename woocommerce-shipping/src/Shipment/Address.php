@@ -7,6 +7,7 @@
 
 namespace Automattic\WCShipping\Shipment;
 
+use Automattic\WCShipping\Utilities\USPSTerritories;
 use WC_Validation;
 use WP_Error;
 
@@ -275,6 +276,13 @@ class Address {
 	 * @return boolean true if state is required.
 	 */
 	public function is_state_required_for_country_code() {
+		// Normalized USPS territory and Freely Associated State addresses use the
+		// territory as the country code and commonly omit a state. Connect Server
+		// accepts that carrier-normalized representation.
+		if ( 'US' !== $this->country_code && USPSTerritories::is_domestic_mail_territory( $this->country_code ) ) {
+			return false;
+		}
+
 		$locale = $this->country_code ? wc()->countries->get_country_locale() : array();
 
 		/**
