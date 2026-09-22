@@ -21,9 +21,12 @@ class Package {
 	/**
 	 * Creates an instance of the class from package data provided as an array.
 	 *
+	 * @param array $data   Package data.
+	 * @param bool  $strict Whether dimensions must be exactly three plain numbers. Use it for new input.
+	 *
 	 * @throws PackageValidationException
 	 */
-	public static function from_array( array $data ): Package {
+	public static function from_array( array $data, bool $strict = false ): Package {
 		$data = self::map_wcst_keys_to_wcshipping_keys( $data );
 
 		// PHP < 8.0 does not treat numeric strings with trailing whitespace as numeric.
@@ -35,7 +38,7 @@ class Package {
 
 		self::validate_from_array_input( $data );
 
-		return new Package(
+		$package = new Package(
 			$data['id'] ?? null,
 			$data['name'],
 			$data['type'] ?? self::TYPE_BOX,
@@ -43,6 +46,12 @@ class Package {
 			$data['boxWeight'],
 			$data['maxWeight'] ?? 0.0
 		);
+
+		if ( $strict && null === self::normalize_dimensions( (string) $data['dimensions'], true ) ) {
+			throw new PackageValidationException( 'Invalid package dimensions' );
+		}
+
+		return $package;
 	}
 
 	/**
@@ -56,7 +65,8 @@ class Package {
 		$this->max_weight = $max_weight;
 		$this->set_or_generate_id( $id );
 		$this->validate();
-		$this->set_length_width_height_from_dimensions( $dimensions );
+		$this->dimensions = (string) self::normalize_dimensions( $dimensions );
+		$this->set_length_width_height_from_dimensions( $this->dimensions );
 	}
 
 	/**
@@ -164,7 +174,7 @@ class Package {
 			throw new PackageValidationException( 'Invalid package type' );
 		}
 
-		if ( 1 !== preg_match( '/^(.+) x (.+) x (.+)$/', $this->dimensions ) ) {
+		if ( null === self::normalize_dimensions( $this->dimensions ) ) {
 			throw new PackageValidationException( 'Invalid package dimensions' );
 		}
 
@@ -234,6 +244,66 @@ class Package {
 				throw new PackageValidationException( sprintf( 'Key %s must be a number', esc_html( $numeric_key ) ) );
 			}
 		}
+	}
+
+	/**
+	 * Read a dimensions string as three finite non-negative numbers and return it as "L x W x H".
+	 *
+	 * Stored packages can hold legacy values such as `10cm x 5cm x 3cm` or `1,000 x 5 x 3`, so by
+	 * default each part keeps the leading number the float cast always used, and extra parts are
+	 * ignored. Strict mode, for new input, accepts exactly three plain numbers.
+	 *
+	 * Negative values are invalid in both modes: the settings page saves the full list back, so a
+	 * readable negative package would make every save fail strict validation.
+	 *
+	 * @param string $dimensions Raw dimensions string.
+	 * @param bool   $strict     Whether the value must be exactly three plain numbers.
+	 * @return string|null Canonical "L x W x H" string, or null when it cannot be read.
+	 */
+	private static function normalize_dimensions( string $dimensions, bool $strict = false ): ?string {
+		$parts = preg_split( '/\s*x\s*/', trim( $dimensions ) );
+
+		if ( count( $parts ) < 3 || ( $strict && count( $parts ) > 3 ) ) {
+			return null;
+		}
+
+		$numbers = array();
+		foreach ( array_slice( $parts, 0, 3 ) as $part ) {
+			$number = self::read_dimension( $part, $strict );
+			if ( null === $number ) {
+				return null;
+			}
+			$numbers[] = $number;
+		}
+
+		return implode( ' x ', $numbers );
+	}
+
+	/**
+	 * Read one dimension the way the float cast in `set_length_width_height_from_dimensions()` does.
+	 *
+	 * @param string $part   One part of a dimensions string.
+	 * @param bool   $strict Whether the part must be a plain numeric string.
+	 * @return string|null The number as a string, or null when the part holds no finite non-negative number.
+	 */
+	private static function read_dimension( string $part, bool $strict ): ?string {
+		$part = trim( $part );
+
+		if ( is_numeric( $part ) ) {
+			$number = (float) $part;
+			return ( $number < 0 || ! is_finite( $number ) ) ? null : $part;
+		}
+
+		if ( $strict ) {
+			return null;
+		}
+
+		// Legacy values such as `10cm`, `+5cm`, `1e3cm` or `1,000`: keep the leading number, sign and exponent included, as the float cast did.
+		if ( 1 === preg_match( '/^\+?(?:[0-9]+\.?[0-9]*|\.[0-9]+)(?:[eE][+-]?[0-9]+)?/', $part, $matches ) ) {
+			return is_finite( (float) $matches[0] ) ? $matches[0] : null;
+		}
+
+		return null;
 	}
 
 	/**

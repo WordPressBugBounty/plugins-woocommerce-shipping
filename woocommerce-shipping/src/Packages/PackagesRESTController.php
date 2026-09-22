@@ -130,6 +130,10 @@ class PackagesRESTController extends WCShippingRESTController {
 	public function put( $request ) {
 		$packages = $request->get_json_params();
 
+		if ( isset( $packages['custom'] ) && ! is_array( $packages['custom'] ) ) {
+			return ( new PackageValidationException( 'Invalid package' ) )->get_error_response();
+		}
+
 		if ( isset( $packages['custom'] ) ) {
 			try {
 				$this->settings_store->update_packages( $packages['custom'] );
@@ -164,11 +168,17 @@ class PackagesRESTController extends WCShippingRESTController {
 
 		// Handle new custom packages. The custom packages are structured as an array of packages as dictionaries.
 		if ( ! empty( $custom_packages ) ) {
-			// Validate that the new custom packages have unique names.
+			// The name checks below read each entry as an array.
+			if ( ! is_array( $custom_packages ) || count( array_filter( $custom_packages, 'is_array' ) ) !== count( $custom_packages ) ) {
+				return ( new PackageValidationException( 'Invalid package' ) )->get_error_response();
+			}
+
+			// Validate that the new custom packages have unique names. An entry without a name is left to package
+			// validation, which reports the missing key.
 			$map_package_name            = function ( $package ) {
-				return $package['name'];
+				return $package['name'] ?? null;
 			};
-			$custom_package_names        = array_map( $map_package_name, $custom_packages );
+			$custom_package_names        = array_filter( array_map( $map_package_name, $custom_packages ), 'is_scalar' );
 			$unique_custom_package_names = array_unique( $custom_package_names );
 
 			if ( count( $unique_custom_package_names ) < count( $custom_package_names ) ) {

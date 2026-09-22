@@ -2,14 +2,14 @@
 # This file is distributed under the GPL v2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: WooCommerce Shipping 2.4.0\n"
+"Project-Id-Version: WooCommerce Shipping 2.4.1\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/woocommerce-shipping\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-09-16T13:47:50+00:00\n"
+"POT-Creation-Date: 2026-09-22T17:33:39+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: woocommerce-shipping\n"
@@ -370,21 +370,21 @@ msgstr ""
 msgid "Unable to update settings. %s"
 msgstr ""
 
-#: classes/legacy-api-controllers/class-wc-rest-connect-packages-controller.php:99
-#: src/Packages/PackagesRESTController.php:178
+#: classes/legacy-api-controllers/class-wc-rest-connect-packages-controller.php:109
+#: src/Packages/PackagesRESTController.php:188
 msgid "The new custom package names are not unique."
 msgstr ""
 
-#: classes/legacy-api-controllers/class-wc-rest-connect-packages-controller.php:113
-#: src/Packages/PackagesRESTController.php:192
+#: classes/legacy-api-controllers/class-wc-rest-connect-packages-controller.php:123
+#: src/Packages/PackagesRESTController.php:202
 msgid "At least one of the new custom packages has the same name as existing packages."
 msgstr ""
 
-#: classes/legacy-api-controllers/class-wc-rest-connect-packages-controller.php:144
+#: classes/legacy-api-controllers/class-wc-rest-connect-packages-controller.php:154
 msgid "The new predefined package names are not unique."
 msgstr ""
 
-#: classes/legacy-api-controllers/class-wc-rest-connect-packages-controller.php:165
+#: classes/legacy-api-controllers/class-wc-rest-connect-packages-controller.php:175
 msgid "At least one of the new predefined packages has the same name as existing packages."
 msgstr ""
 
@@ -430,7 +430,7 @@ msgid "Unknown package"
 msgstr ""
 
 #: classes/legacy-api-controllers/class-wc-rest-connect-shipping-label-print-controller.php:24
-#: src/LabelPurchase/LabelPrintController.php:331
+#: src/LabelPurchase/LabelPrintController.php:332
 msgid "Invalid PDF request."
 msgstr ""
 
@@ -787,7 +787,7 @@ msgstr ""
 msgid "Whether the client can create a payment method."
 msgstr ""
 
-#: src/LabelPurchase/LabelPrintController.php:350
+#: src/LabelPurchase/LabelPrintController.php:351
 msgid "Bulk label printing requires the fulfillment API."
 msgstr ""
 
@@ -1412,19 +1412,19 @@ msgstr ""
 msgid "This order's items don't all fit in one package. Pick a larger package, or split the order into multiple shipments."
 msgstr ""
 
-#: src/Packages/PackagesRESTController.php:223
+#: src/Packages/PackagesRESTController.php:233
 msgid "At least one of the new carrier package names is not unique."
 msgstr ""
 
-#: src/Packages/PackagesRESTController.php:244
+#: src/Packages/PackagesRESTController.php:254
 msgid "At least one of the new predefined packages has the same name as an existing package."
 msgstr ""
 
-#: src/Packages/PackagesRESTController.php:292
+#: src/Packages/PackagesRESTController.php:302
 msgid "Custom package not found."
 msgstr ""
 
-#: src/Packages/PackagesRESTController.php:329
+#: src/Packages/PackagesRESTController.php:339
 msgid "Predefined package not found."
 msgstr ""
 

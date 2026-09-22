@@ -4,6 +4,7 @@ namespace Automattic\WCShipping\LabelPurchase;
 use Automattic\WCShipping\Connect\WC_Connect_API_Client;
 use Automattic\WCShipping\Connect\WC_Connect_Logger;
 use Automattic\WCShipping\Connect\WC_Connect_Service_Settings_Store;
+use Automattic\WCShipping\Exceptions\RESTRequestException;
 use Automattic\WCShipping\FeatureFlags\FeatureFlags;
 use Automattic\WCShipping\Fulfillments\FulfillmentsService;
 use Automattic\WCShipping\Fulfillments\ShippingFulfillment;
@@ -369,7 +370,7 @@ class LabelPrintController extends WCShippingRESTController {
 	public function get_packing_list( \WP_REST_Request $request ) {
 		try {
 			list( $order_id, $label_id ) = $this->get_and_check_request_params( $request, array( 'order_id', 'label_id' ) );
-		} catch ( \RESTRequestException $error ) {
+		} catch ( RESTRequestException $error ) {
 			return rest_ensure_response( $error->get_error_response() );
 		}
 
@@ -385,7 +386,7 @@ class LabelPrintController extends WCShippingRESTController {
 	public function get_packing_list_without_label( \WP_REST_Request $request ) {
 		try {
 			list( $order_id ) = $this->get_and_check_request_params( $request, array( 'order_id' ) );
-		} catch ( \RESTRequestException $error ) {
+		} catch ( RESTRequestException $error ) {
 			return rest_ensure_response( $error->get_error_response() );
 		}
 

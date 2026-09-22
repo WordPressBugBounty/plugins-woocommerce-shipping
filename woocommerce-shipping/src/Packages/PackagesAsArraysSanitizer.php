@@ -23,17 +23,20 @@ class PackagesAsArraysSanitizer {
 	 * in an unexpected way.
 	 *
 	 * @param array $packages_as_arrays Array of packages to map to Package instances.
-	 * @param bool  $throw_on_failure Whether to throw an exception if mapping to a Package failed.
+	 * @param bool  $throw_on_failure Whether to throw an exception if mapping to a Package failed. Pass `true` only
+	 *                                for new input: it also validates dimensions strictly.
 	 *
 	 * @throws PackageValidationException Rethrows `Package` validation if `throw_on_failure === true`.
 	 */
 	public function __construct( array $packages_as_arrays, bool $throw_on_failure = true ) {
+		// Stored entries are not always arrays: skip them on read, reject them on write.
 		$packages = array_map(
-			fn( array $package_as_array ) => $this->map_to_package( $package_as_array, $throw_on_failure ),
+			fn( $package_as_array ) => $this->map_entry_to_package( $package_as_array, $throw_on_failure ),
 			$packages_as_arrays
 		);
 
-		$this->packages = array_filter( $packages );
+		// Reindex so a skipped entry does not turn the JSON list into an object.
+		$this->packages = array_values( array_filter( $packages ) );
 	}
 
 	/**
@@ -99,9 +102,29 @@ class PackagesAsArraysSanitizer {
 		);
 	}
 
+	/**
+	 * Map one entry of the collection to a Package, rejecting or skipping an entry that is not an array.
+	 *
+	 * @param mixed $entry            One entry of the packages collection.
+	 * @param bool  $throw_on_failure Whether to throw instead of skipping an invalid entry.
+	 *
+	 * @throws PackageValidationException If the entry is invalid and `throw_on_failure === true`.
+	 */
+	private function map_entry_to_package( $entry, bool $throw_on_failure ): ?Package {
+		if ( is_array( $entry ) ) {
+			return $this->map_to_package( $entry, $throw_on_failure );
+		}
+
+		if ( $throw_on_failure ) {
+			throw new PackageValidationException( 'Invalid package' );
+		}
+
+		return null;
+	}
+
 	private function map_to_package( array $package_as_array, bool $throw_on_failure ): ?Package {
 		try {
-			return Package::from_array( $package_as_array );
+			return Package::from_array( $package_as_array, $throw_on_failure );
 		} catch ( PackageValidationException $e ) {
 			if ( $throw_on_failure ) {
 				throw $e;

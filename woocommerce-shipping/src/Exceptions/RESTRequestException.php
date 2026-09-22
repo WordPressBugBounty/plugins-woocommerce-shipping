@@ -18,7 +18,10 @@ class RESTRequestException extends Exception {
 		$error = new WP_Error(
 			400,
 			$this->getMessage(),
-			array( 'message' => $this->getMessage() )
+			array(
+				'message' => $this->getMessage(),
+				'status'  => 400,
+			)
 		);
 		return $error;
 	}

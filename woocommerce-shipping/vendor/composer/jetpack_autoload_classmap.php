@@ -842,6 +842,10 @@ return array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/tests/php/LoaderTest.php'
 	),
+	'Automattic\\WCShipping\\Tests\\php\\Exceptions\\RESTRequestExceptionTest' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/tests/php/Exceptions/RESTRequestExceptionTest.php'
+	),
 	'Automattic\\WCShipping\\Tests\\php\\FeatureFlags\\FeatureFlagsTest' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/tests/php/FeatureFlags/FeatureFlagsTest.php'

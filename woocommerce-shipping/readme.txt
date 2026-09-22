@@ -7,7 +7,7 @@ Requires at least: 7.0
 Tested up to: 7.1
 WC requires at least: 10.9
 WC tested up to: 11.1
-Stable tag: 2.4.0
+Stable tag: 2.4.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -127,6 +127,9 @@ Absolutely! You can read our Terms of Service [here](https://wordpress.com/tos).
 6. WooCommerce Shipping address validation at checkout suggestion.
 
 == Changelog ==
+
+= 2.4.1 - 2026-09-22 =
+* Fix   - Return HTTP 400 instead of 500 for REST validation errors and reject non-numeric custom package dimensions.
 
 = 2.4.0 - 2026-09-16 =
 * Add   - Tell merchants to hand UPS Ground Saver packages to UPS and not USPS, on the rate card and after the label is purchased.

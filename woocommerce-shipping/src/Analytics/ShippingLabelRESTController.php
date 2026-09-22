@@ -7,6 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use Automattic\WCShipping\WCShippingRESTController;
 use Automattic\WCShipping\Analytics\LabelsService;
+use Automattic\WCShipping\Exceptions\RESTRequestException;
 
 use WP_REST_Server;
 use WP_REST_Request;
