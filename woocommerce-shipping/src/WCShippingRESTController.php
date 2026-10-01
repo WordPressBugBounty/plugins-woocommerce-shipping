@@ -36,8 +36,8 @@ abstract class WCShippingRESTController extends WC_REST_Controller {
 		$data        = $request->get_json_params();
 		$params_list = array();
 		foreach ( $param_keys as $param_key ) {
-			$key         = str_replace( '?', '', $param_key );
 			$is_optional = strpos( $param_key, '?' ) === 0;
+			$key         = $is_optional ? substr( $param_key, 1 ) : $param_key;
 			if ( ! isset( $data[ $key ] ) && ! $is_optional ) {
 				$message = sprintf(
 					// translators: %s: The missing query parameter.
@@ -67,16 +67,18 @@ abstract class WCShippingRESTController extends WC_REST_Controller {
 	 * returns array of request parameters.
 	 *
 	 * @param WP_REST_Request $request    Incoming WP REST request.
-	 * @param array           $param_keys Array of required request parameters.
+	 * @param array           $param_keys Array of required request parameters. Optional parameters are marked with prefix '?'.
 	 *
 	 * @throws RESTRequestException If parameter is missing.
 	 * @return array Array of parsed request parameters.
 	 */
 	protected function get_and_check_request_params( $request, $param_keys ) {
 		$params_list = array();
-		foreach ( $param_keys as $key ) {
-			$param = $request->get_param( $key );
-			if ( is_null( $param ) ) {
+		foreach ( $param_keys as $param_key ) {
+			$is_optional = strpos( $param_key, '?' ) === 0;
+			$key         = $is_optional ? substr( $param_key, 1 ) : $param_key;
+			$param       = $request->get_param( $key );
+			if ( is_null( $param ) && ! $is_optional ) {
 				$message = sprintf(
 					// translators: %s: The missing query parameter.
 					__( 'Required parameter is missing: %s', 'woocommerce-shipping' ),

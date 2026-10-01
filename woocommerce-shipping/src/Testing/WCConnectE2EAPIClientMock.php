@@ -105,9 +105,8 @@ class WCConnectE2EAPIClientMock extends WC_Connect_API_Client {
 			);
 		}
 
-		$scenario = isset( $_POST['scenario'] )
-			? sanitize_text_field( wp_unslash( (string) $_POST['scenario'] ) )
-			: '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- The wp_ajax_wcshipping_e2e_set_connect_server_scenario action this runs on is registered only from WCConnectE2EConnectionShim::init(), which woocommerce-shipping.php calls only when WCSHIPPING_E2E_MOCK_CONNECT=1, WCSHIPPING_WPCOM_TEST_MODE=1 or the WOOCOMMERCE_SERVICES_LOCAL_TEST_MODE constant is set, so the endpoint does not exist on a normal install. The guards above additionally require manage_options. No nonce is sent because the e2e fixture (tests/e2e/fixtures/label-purchase-fixtures.ts) posts to this action directly; the only thing it can change is which canned Connect Server response the mock returns.
+		$scenario = isset( $_POST['scenario'] ) ? sanitize_text_field( wp_unslash( (string) $_POST['scenario'] ) ) : '';
 
 		if ( '' === $scenario ) {
 			delete_option( self::CONNECT_SERVER_SCENARIO_OPTION );

@@ -15,6 +15,22 @@ class LabelsService {
 	const LABELS_TRANSIENT_EXPIRATION_IN_SECONDS = MINUTE_IN_SECONDS * 30;
 
 	/**
+	 * Page size used when a report caller does not supply one.
+	 */
+	const DEFAULT_PER_PAGE = 20;
+
+	/**
+	 * Fields returned for each label when a report caller does not supply a list.
+	 */
+	const DEFAULT_FIELDS = array(
+		'created_date',
+		'order_id',
+		'rate',
+		'service_name',
+		'refund',
+	);
+
+	/**
 	 * Fetch labels from the database
 	 *
 	 * @return array
@@ -23,7 +39,8 @@ class LabelsService {
 		global $wpdb;
 		$table_name  = OrderUtil::get_table_for_order_meta();
 		$column_name = OrderUtil::custom_orders_table_usage_is_enabled() ? 'order_id' : 'post_id';
-		$db_results  = $wpdb->get_results(
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- The labels analytics report needs every wcshipping_labels meta row in the store; core offers no API for reading one meta key across all orders, and wc_get_orders() would hydrate every order object to do it. Caching is handled one level up: get_all_labels() is the only caller and stores this result in the LABELS_TRANSIENT_KEY transient for 30 minutes.
+		$db_results = $wpdb->get_results(
 			$wpdb->prepare(
 				'SELECT %i, meta_value FROM %i WHERE meta_key = %s',
 				$column_name,

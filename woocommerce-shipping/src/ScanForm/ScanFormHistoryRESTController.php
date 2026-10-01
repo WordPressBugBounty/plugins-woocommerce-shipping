@@ -158,6 +158,7 @@ class ScanFormHistoryRESTController extends WCShippingRESTController {
 		$meta_join_column = OrderUtil::custom_orders_table_usage_is_enabled() ? 'order_id' : 'post_id';
 
 		// Query all orders that have this scan_form_id in their _wcshipping_scan_forms meta.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- There is no core API for "every order carrying this meta key", and the SCAN Form ID lives inside a serialized value so it cannot be matched with a meta_query either. This runs once per explicit request for one SCAN Form's labels from the admin history screen, not on page load, and the underlying meta changes whenever a label is purchased or voided, so a cache would mostly serve stale rows.
 		$results = $wpdb->get_results(
 			$wpdb->prepare(
 				'SELECT %i as order_id, meta_value

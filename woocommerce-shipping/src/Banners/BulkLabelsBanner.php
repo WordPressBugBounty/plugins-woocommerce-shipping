@@ -112,7 +112,7 @@ class BulkLabelsBanner {
 		}
 
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only check of a GET param.
-		$action = isset( $_GET['action'] ) ? wc_clean( wp_unslash( $_GET['action'] ) ) : '';
+		$action = isset( $_GET['action'] ) ? sanitize_text_field( wp_unslash( $_GET['action'] ) ) : '';
 
 		if ( 'edit' === $action ) {
 			return false;

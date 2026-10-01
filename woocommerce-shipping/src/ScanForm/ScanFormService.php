@@ -97,6 +97,7 @@ class ScanFormService {
 		$meta_table       = OrderUtil::get_table_for_order_meta();
 		$meta_join_column = OrderUtil::custom_orders_table_usage_is_enabled() ? 'order_id' : 'post_id';
 
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- There is no core API for "every order carrying this meta key", and doing it through wc_get_orders() would load every order object. The result of this call is cached by the only caller chain (get_all_scan_forms() stores it in the SCANFORM_HISTORY_TRANSIENT_KEY transient for a week and clear_history_cache() invalidates it when a SCAN Form is saved).
 		$results = $wpdb->get_results(
 			$wpdb->prepare(
 				'SELECT %i as order_id, meta_value
@@ -411,8 +412,9 @@ class ScanFormService {
 		$placeholders = implode( ',', array_fill( 0, count( $order_ids ), '%d' ) );
 
 		// Query to fetch meta data for all order IDs at once.
+		// phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- False positive. PHPCS counts only the four literal placeholders (%i, %i, %s, %i) because it cannot evaluate $placeholders, which adds one %d per order ID. At runtime the counts match: 4 + count( $order_ids ) placeholders against 4 + count( $order_ids ) arguments, and the early return above guarantees $order_ids is never empty, so the IN list is never "IN ()".
 		$query = $wpdb->prepare(
-			'SELECT %i as order_id, meta_value FROM %i WHERE meta_key = %s AND %i IN (' . $placeholders . ')', // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+			'SELECT %i as order_id, meta_value FROM %i WHERE meta_key = %s AND %i IN (' . $placeholders . ')', // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- $placeholders is a generated list of %d placeholders, not interpolated data.
 			$meta_join_column,
 			$meta_table,
 			$meta_key,
@@ -420,7 +422,8 @@ class ScanFormService {
 			...array_values( $order_ids )
 		);
 
-		$results = $wpdb->get_results( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared -- $query is already built with $wpdb->prepare() above. Reading one meta key for an explicit list of order IDs in a single statement replaces N get_post_meta()/order-object loads; label and SCAN Form meta changes on every purchase, void and refund, so a cache here would be stale more often than warm. The history path that fans out the widest already caches its aggregated result in a transient.
+		$results = $wpdb->get_results( $query );
 
 		// Build associative array with order_id as key.
 		$meta_data = array();
@@ -478,7 +481,8 @@ class ScanFormService {
 			$meta_join_column
 		);
 
-		$results = $wpdb->get_results( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared -- $query is already built with $wpdb->prepare() above. The join across the order-meta and orders tables has no core equivalent: wc_get_orders() cannot filter on two meta keys and skip trashed orders in one pass without loading every order. Not cached because eligibility turns on today's date and on label state that changes with every purchase, void and refund, and because the wcshipping_usps_scanform_min_shipment_date_timestamp filter can move the cutoff per request.
+		$results = $wpdb->get_results( $query );
 
 		if ( empty( $results ) ) {
 			return array();

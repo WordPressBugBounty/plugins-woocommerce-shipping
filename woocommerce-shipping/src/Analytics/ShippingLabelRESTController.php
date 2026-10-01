@@ -36,6 +36,7 @@ class ShippingLabelRESTController extends WCShippingRESTController {
 					'permission_callback' => array( $this, 'ensure_rest_permission' ),
 					'args'                => array(
 						'before'   => array(
+							'required'          => true,
 							// Validate that the date is a valid ISO date string
 							'validate_callback' => function ( $param, $request, $key ) {
 								return strtotime( urldecode( $param ) ) !== false;
@@ -43,6 +44,7 @@ class ShippingLabelRESTController extends WCShippingRESTController {
 							'sanitize_callback' => 'sanitize_text_field',
 						),
 						'after'    => array(
+							'required'          => true,
 							// Validate that the date is a valid ISO date string
 							'validate_callback' => function ( $param, $request, $key ) {
 								return strtotime( urldecode( $param ) ) !== false;
@@ -50,12 +52,14 @@ class ShippingLabelRESTController extends WCShippingRESTController {
 							'sanitize_callback' => 'sanitize_text_field',
 						),
 						'offset'   => array(
+							'default'           => 0,
 							'validate_callback' => function ( $param ) {
 								return is_numeric( $param );
 							},
 							'sanitize_callback' => 'absint',
 						),
 						'per_page' => array(
+							'default'           => LabelsService::DEFAULT_PER_PAGE,
 							'validate_callback' => function ( $param, $request, $key ) {
 								return is_numeric( $param );
 							},
@@ -67,6 +71,7 @@ class ShippingLabelRESTController extends WCShippingRESTController {
 							},
 						),
 						'fields'   => array(
+							'default'           => LabelsService::DEFAULT_FIELDS,
 							// Validate that the fields array contains only strings
 							'validate_callback' => function ( $param ) {
 								return is_array( $param ) && array_reduce(
@@ -92,32 +97,28 @@ class ShippingLabelRESTController extends WCShippingRESTController {
 				array(
 					'before',
 					'after',
-					'offset',
-					'per_page',
-					'fields',
+					'?offset',
+					'?per_page',
+					'?fields',
 				)
 			);
 		} catch ( RESTRequestException $error ) {
 			return rest_ensure_response( $error->get_error_response() );
 		}
 
-		$fields_to_return = ! is_array( $fields )
-			? array(
-				'created_date',
-				'order_id',
-				'rate',
-				'service_name',
-				'refund',
-			)
-			: $fields;
+		/*
+		 * The route schema supplies these defaults on a dispatched request. The fallbacks only
+		 * apply when get() is called directly with a request that skipped REST dispatch.
+		 */
+		$fields_to_return = is_array( $fields ) ? $fields : LabelsService::DEFAULT_FIELDS;
 
 		return rest_ensure_response(
 			$this->labels_service->get_labels_for_period(
 				array(
 					'before'   => $before,
 					'after'    => $after,
-					'offset'   => $offset,
-					'per_page' => $per_page,
+					'offset'   => $offset ?? 0,
+					'per_page' => $per_page ?? LabelsService::DEFAULT_PER_PAGE,
 				),
 				$fields_to_return
 			)

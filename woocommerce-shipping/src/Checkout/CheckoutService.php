@@ -130,7 +130,7 @@ class CheckoutService {
 		}
 
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only request context check.
-		return 'update_order_review' === wc_clean( wp_unslash( $_REQUEST['wc-ajax'] ) );
+		return 'update_order_review' === sanitize_text_field( wp_unslash( $_REQUEST['wc-ajax'] ) );
 	}
 
 	/**

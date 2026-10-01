@@ -71,7 +71,7 @@ class ShippingLabelsReport implements AbilityDefinition {
 		}
 
 		$page     = isset( $input['page'] ) ? absint( $input['page'] ) : 1;
-		$per_page = isset( $input['per_page'] ) ? absint( $input['per_page'] ) : 20;
+		$per_page = isset( $input['per_page'] ) ? absint( $input['per_page'] ) : LabelsService::DEFAULT_PER_PAGE;
 		$offset   = ( $page - 1 ) * $per_page;
 
 		$report = ( new LabelsService() )->get_labels_for_period(
@@ -82,13 +82,7 @@ class ShippingLabelsReport implements AbilityDefinition {
 				'offset'   => $offset,
 				'per_page' => $per_page,
 			),
-			array(
-				'created_date',
-				'order_id',
-				'rate',
-				'service_name',
-				'refund',
-			)
+			LabelsService::DEFAULT_FIELDS
 		);
 
 		return array(
@@ -141,7 +135,7 @@ class ShippingLabelsReport implements AbilityDefinition {
 				),
 				'per_page' => array(
 					'type'    => 'integer',
-					'default' => 20,
+					'default' => LabelsService::DEFAULT_PER_PAGE,
 					'minimum' => 1,
 					'maximum' => 100,
 				),

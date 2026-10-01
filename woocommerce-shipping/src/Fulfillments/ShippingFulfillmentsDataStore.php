@@ -47,6 +47,7 @@ if ( class_exists( Base\FulfillmentsDataStore::class ) ) {
 			global $wpdb;
 
 			if ( ! $with_deleted ) {
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- wc_order_fulfillments is a WooCommerce custom table with no read API other than the core data store this class overrides, which queries it the same way. Fulfillment rows change on every label purchase, void and refund and are read back immediately afterwards, and core provides no cache group to invalidate, so caching here would hand callers stale shipment state.
 				$fulfillment_data = $wpdb->get_results(
 					$wpdb->prepare(
 						"SELECT * FROM {$wpdb->prefix}wc_order_fulfillments WHERE entity_type = %s AND entity_id = %s AND date_deleted IS NULL",
@@ -56,6 +57,7 @@ if ( class_exists( Base\FulfillmentsDataStore::class ) ) {
 					ARRAY_A
 				);
 			} else {
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Same custom table and same reasoning as the branch above; this variant additionally returns soft-deleted rows.
 				$fulfillment_data = $wpdb->get_results(
 					$wpdb->prepare(
 						"SELECT * FROM {$wpdb->prefix}wc_order_fulfillments WHERE entity_type = %s AND entity_id = %s",
@@ -106,6 +108,7 @@ if ( class_exists( Base\FulfillmentsDataStore::class ) ) {
 			global $wpdb;
 
 			// First try the fast lookup using individual label_id meta entries
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Looks a fulfillment up by its _shipping_label_id meta on the wc_order_fulfillment_meta custom table; core exposes no meta-based lookup for fulfillments, so the alternative is reading every fulfillment row and filtering in PHP. Not cached for the same reason as read_fulfillments(): the rows are rewritten by label purchase, void and refund and there is no core cache group to invalidate.
 			$fulfillment_data = $wpdb->get_results(
 				$wpdb->prepare(
 					"SELECT f.* FROM {$wpdb->prefix}wc_order_fulfillments f

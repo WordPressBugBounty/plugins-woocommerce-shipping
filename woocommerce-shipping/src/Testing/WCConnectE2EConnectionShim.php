@@ -30,30 +30,15 @@ class WCConnectE2EConnectionShim {
 		return is_string( $cookie ) && '' !== $cookie;
 	}
 
-	private static function get_query_flag_value() {
-		if ( ! isset( $_GET['wcshipping_e2e_mock_connect'] ) ) {
-			return null;
-		}
-
-		return sanitize_text_field( wp_unslash( (string) $_GET['wcshipping_e2e_mock_connect'] ) );
-	}
-
-	private static function get_cookie_flag_value() {
-		if ( ! isset( $_COOKIE['wcshipping_e2e_mock_connect'] ) ) {
-			return null;
-		}
-
-		return sanitize_text_field( wp_unslash( (string) $_COOKIE['wcshipping_e2e_mock_connect'] ) );
-	}
-
-	private static function is_truthy_flag( $value ) {
-		return ! in_array(
-			strtolower( trim( (string) $value ) ),
-			array( '0', 'false', 'no', 'off' ),
-			true
-		);
-	}
-
+	/**
+	 * Whether the mock connection is switched on for this request.
+	 *
+	 * Only server configuration counts: the two environment variables and the
+	 * WOOCOMMERCE_SERVICES_LOCAL_TEST_MODE constant. Nothing a request carries
+	 * can turn this on.
+	 *
+	 * @return bool
+	 */
 	public static function is_enabled() {
 		if ( ! self::is_logged_in_request() ) {
 			return false;
@@ -67,22 +52,10 @@ class WCConnectE2EConnectionShim {
 			return true;
 		}
 
-		if ( defined( 'WOOCOMMERCE_SERVICES_LOCAL_TEST_MODE' ) && WOOCOMMERCE_SERVICES_LOCAL_TEST_MODE ) {
-			return true;
-		}
-
-		$query_flag = self::get_query_flag_value();
-		if ( null !== $query_flag && self::is_truthy_flag( $query_flag ) ) {
-			return true;
-		}
-
-		$cookie_flag = self::get_cookie_flag_value();
-
-		return null !== $cookie_flag && self::is_truthy_flag( $cookie_flag );
+		return defined( 'WOOCOMMERCE_SERVICES_LOCAL_TEST_MODE' ) && WOOCOMMERCE_SERVICES_LOCAL_TEST_MODE;
 	}
 
 	public static function init() {
-		self::persist_test_cookie();
 		add_filter( 'wcshipping_jetpack_access_token', array( __CLASS__, 'provide_mock_access_token' ) );
 		add_filter( 'wcshipping_jetpack_install_status', array( __CLASS__, 'force_connected_jetpack_status' ) );
 		add_filter( 'wcshipping_connection_owner_wpcom_data', array( __CLASS__, 'provide_mock_connection_owner_data' ) );
@@ -145,25 +118,6 @@ class WCConnectE2EConnectionShim {
 			'card_digits'       => '4242',
 			'expiry'            => '12/99',
 		);
-	}
-
-	private static function persist_test_cookie() {
-		$query_flag = self::get_query_flag_value();
-		if ( null === $query_flag || ! self::is_truthy_flag( $query_flag ) ) {
-			return;
-		}
-
-		$current_cookie = self::get_cookie_flag_value();
-		if ( null !== $current_cookie && self::is_truthy_flag( $current_cookie ) ) {
-			return;
-		}
-
-		if ( headers_sent() ) {
-			return;
-		}
-
-		setcookie( 'wcshipping_e2e_mock_connect', '1', time() + DAY_IN_SECONDS, '/' );
-		$_COOKIE['wcshipping_e2e_mock_connect'] = '1';
 	}
 
 	public static function force_connected_jetpack_status( $status ) {

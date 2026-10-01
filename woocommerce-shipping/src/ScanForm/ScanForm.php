@@ -88,7 +88,8 @@ class ScanForm {
 			return;
 		}
 
-		$action = isset( $_GET['action'] ) ? wc_clean( wp_unslash( $_GET['action'] ) ) : '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only check of the ?action= parameter WordPress already used to route this admin screen, so the SCAN Form script is not enqueued on the single-order edit view. Nothing is submitted or persisted here.
+		$action = isset( $_GET['action'] ) ? sanitize_text_field( wp_unslash( $_GET['action'] ) ) : '';
 
 		if ( 'edit' === $action ) {
 			return;

@@ -7,13 +7,13 @@
  * Author URI: https://woocommerce.com/
  * Text Domain: woocommerce-shipping
  * Domain Path: /languages/
- * Version: 2.4.1
+ * Version: 2.4.2
  * Requires Plugins: woocommerce
  * Requires PHP: 7.4
  * Requires at least: 7.0
  * Tested up to: 7.1
  * WC requires at least: 10.9
- * WC tested up to: 11.1
+ * WC tested up to: 11.2
  * License: GPL v2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  *
@@ -39,7 +39,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'WCSHIPPING_VERSION', '2.4.1' ); // WRCS: DEFINED_VERSION.
+define( 'WCSHIPPING_VERSION', '2.4.2' ); // WRCS: DEFINED_VERSION.
 define( 'WCSHIPPING_PLUGIN_FILE', __FILE__ );
 define( 'WCSHIPPING_PLUGIN_DIR', __DIR__ );
 define( 'WCSHIPPING_PLUGIN_DIST_DIR', WCSHIPPING_PLUGIN_DIR . '/dist/' );
@@ -69,7 +69,11 @@ if ( $wcshipping_bootstrap_e2e_mock_enabled ) {
 	require_once __DIR__ . '/src/Testing/WCConnectE2EConnectionShim.php';
 }
 
+// The shim lives under src/, which is PSR-4 autoloaded, so class_exists() would
+// load it whatever the gate above decided. Check the gate first so the
+// require_once is what actually decides whether the shim is consulted at all.
 $wcshipping_e2e_mock_enabled =
+	$wcshipping_bootstrap_e2e_mock_enabled &&
 	class_exists( '\Automattic\WCShipping\Testing\WCConnectE2EConnectionShim' ) &&
 	\Automattic\WCShipping\Testing\WCConnectE2EConnectionShim::is_enabled();
 

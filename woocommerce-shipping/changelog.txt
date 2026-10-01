@@ -1,7 +1,14 @@
 *** WooCommerce Shipping Changelog ***
 
+= 2.4.2 - 2026-10-01 =
+* Fix   - Stop a request parameter or cookie from putting the plugin into end-to-end test mode.
+* Fix   - Include the translation template and composer.json in the plugin package.
+* Tweak - Sanitize request values with sanitize_text_field() in the bulk labels banner, SCAN form and checkout checks.
+* Tweak - WooCommerce 11.2 Compatibility.
+
 = 2.4.1 - 2026-09-22 =
 * Fix   - Return HTTP 400 instead of 500 for REST validation errors and reject non-numeric custom package dimensions.
+* Fix   - Return shipping label analytics results when the report request omits the optional offset, per_page, or fields parameters. An omitted per_page returns the first 20 labels.
 
 = 2.4.0 - 2026-09-16 =
 * Add   - Tell merchants to hand UPS Ground Saver packages to UPS and not USPS, on the rate card and after the label is purchased.

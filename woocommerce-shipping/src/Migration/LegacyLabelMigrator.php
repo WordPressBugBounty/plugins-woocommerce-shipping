@@ -75,6 +75,7 @@ class LegacyLabelMigrator implements BatchProcessorInterface {
 		global $wpdb;
 		$table_name = OrderUtil::get_table_for_order_meta();
 
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Counts order-meta rows carrying the legacy label key; core has no API for counting orders by meta key without loading them. This is the BatchProcessorInterface progress total for a one-shot migration, so a cached count would report stale progress as batches run; the value is memoised in $this->total_count for the life of the request.
 		$this->total_count = $wpdb->get_var(
 			$wpdb->prepare(
 				'SELECT COUNT(*) FROM %i WHERE meta_key=%s',
@@ -110,6 +111,7 @@ class LegacyLabelMigrator implements BatchProcessorInterface {
 
 		// Prepare SQL for orders without new labels
 		// Get count of orders with only legacy labels
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Counts orders that still carry a legacy label key and no WC Shipping key, via a NOT IN subquery on the order-meta table that has no core equivalent. Uncached on purpose: every processed batch changes this number, so the migration must re-read it.
 		$orders_without_new_labels = $this->total_pending_count = $wpdb->get_var(
 			$wpdb->prepare(
 				'SELECT COUNT(*) FROM %i WHERE meta_key=%s AND %i NOT IN ( SELECT %i FROM %i WHERE meta_key=%s )',
@@ -123,6 +125,7 @@ class LegacyLabelMigrator implements BatchProcessorInterface {
 		);
 
 		// Get orders that have both legacy and WC Shipping labels
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Selects the legacy label payload for orders that hold both meta keys, so the migrator can compare label IDs. Core cannot express "meta key A where meta key B also exists" without loading every order object. Uncached because each processed batch rewrites these rows.
 		$orders_with_both_meta = $wpdb->get_results(
 			$wpdb->prepare(
 				'SELECT %i, meta_value as legacy_value
@@ -158,10 +161,11 @@ class LegacyLabelMigrator implements BatchProcessorInterface {
 
 		$placeholders = implode( ',', array_fill( 0, count( $order_ids ), '%d' ) );
 
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Reads the WC Shipping label meta for an explicit list of order IDs in one statement instead of one get_post_meta() per order. Uncached because the migrator rewrites exactly this meta key as it processes each batch.
 		$wc_labels_by_order = $wpdb->get_results(
-			// phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber, there is spread operator
+			// phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- False positive. PHPCS counts only the four literal placeholders because it cannot evaluate $placeholders, which adds one %d per order ID; at runtime the placeholder and argument counts match, and the empty( $order_ids ) guard above means the IN list is never empty.
 			$wpdb->prepare(
-				// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, as $placeholders is a placeholder
+				// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- $placeholders is a generated list of %d placeholders, not interpolated data.
 				'SELECT %i, meta_value FROM %i WHERE meta_key = %s AND %i IN (' . $placeholders . ')',
 				$column_name,
 				$table_name,
@@ -235,6 +239,7 @@ class LegacyLabelMigrator implements BatchProcessorInterface {
 		$column_name = OrderUtil::custom_orders_table_usage_is_enabled() ? 'order_id' : 'post_id';
 
 		// Get orders with only legacy labels
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Self-LEFT JOIN on the order-meta table to pull the next batch of orders that have legacy labels and no WC Shipping labels; there is no core query for a meta-key anti-join. Caching would defeat the batch processor, which depends on each call returning rows the previous batch has not already migrated.
 		$orders_with_legacy_only = $wpdb->get_col(
 			$wpdb->prepare(
 				'SELECT DISTINCT l.`' . esc_sql( $column_name ) . '`
@@ -253,7 +258,9 @@ class LegacyLabelMigrator implements BatchProcessorInterface {
 		}
 
 		// If we need more orders, get orders with both types of labels that need migration
-		$remaining_size   = $size - count( $orders_with_legacy_only );
+		$remaining_size = $size - count( $orders_with_legacy_only );
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Self-INNER JOIN on the order-meta table to top up the batch with orders holding both label keys, returning both payloads so the caller can diff label IDs without loading order objects. Uncached for the same reason as the query above: the batch processor needs rows that reflect what it has already migrated.
 		$orders_with_both = $wpdb->get_results(
 			$wpdb->prepare(
 				'SELECT l.`' . esc_sql( $column_name ) . '`, l.meta_value as legacy_value, w.meta_value as wc_value

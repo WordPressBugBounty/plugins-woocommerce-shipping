@@ -802,6 +802,10 @@ return array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/tests/php/Shipments/Models/ShipmentItemTest.php'
 	),
+	'Automattic\\WCShipping\\Tests\\Testing\\WCConnectE2EConnectionShimTest' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/tests/php/Testing/WCConnectE2EConnectionShimTest.php'
+	),
 	'Automattic\\WCShipping\\Tests\\TosRESTControllerTest' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/tests/php/Integrations/TosRESTControllerTest.php'
@@ -809,6 +813,10 @@ return array(
 	'Automattic\\WCShipping\\Tests\\TracksTest' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/tests/php/TracksTest.php'
+	),
+	'Automattic\\WCShipping\\Tests\\WCShippingRESTControllerTest' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/tests/php/WCShippingRESTControllerTest.php'
 	),
 	'Automattic\\WCShipping\\Tests\\WooCommerceShipmentTrackingTest' => array(
 		'version' => 'dev-trunk',

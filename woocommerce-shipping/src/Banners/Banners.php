@@ -148,6 +148,7 @@ class Banners {
 
 		// Check section parameter
 		if ( isset( $target['section'] ) ) {
+			// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only match of the ?section= tab already rendered by wc-addons, used only to decide whether to print an admin notice. No form is submitted and nothing is persisted on this path.
 			$section = isset( $_GET['section'] ) ? sanitize_text_field( wp_unslash( $_GET['section'] ) ) : '';
 			if ( $section !== $target['section'] ) {
 				return false;
@@ -258,6 +259,7 @@ class Banners {
 			return; // Ensure we exit after sending error
 		}
 
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- The wcshipping_dismiss_feature_banner nonce is verified by verify_dismiss_nonce() at the top of this method, which returns before this line when verification fails. PHPCS cannot follow the wp_verify_nonce() call through that helper.
 		$banner_id = sanitize_text_field( wp_unslash( $_POST['banner_id'] ?? '' ) );
 
 		if ( empty( $banner_id ) ) {
