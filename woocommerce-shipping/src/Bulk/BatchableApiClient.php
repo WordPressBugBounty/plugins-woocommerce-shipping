@@ -34,6 +34,16 @@ class BatchableApiClient extends WC_Connect_API_Client_Live {
 	private const REQUEST_TIMEOUT = 60;
 
 	/**
+	 * Customs data a shipment route requires, as decided by Connect Server.
+	 *
+	 * @param array $body `origin`, `destination` and `is_return`.
+	 * @return object|WP_Error
+	 */
+	public function get_customs_requirements( array $body ) {
+		return $this->request( 'POST', '/shipping/customs-requirements', $body );
+	}
+
+	/**
 	 * Get label rates for many orders in one parallel dispatch.
 	 *
 	 * @param array $payloads Numerically-indexed list of rate-quote payloads, in the same shape

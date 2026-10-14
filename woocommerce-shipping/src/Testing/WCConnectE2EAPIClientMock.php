@@ -405,6 +405,16 @@ class WCConnectE2EAPIClientMock extends WC_Connect_API_Client {
 	}
 
 	/**
+	 * E2E runs have no Connect Server; never require EU product identifiers.
+	 *
+	 * @param array $body Ignored.
+	 * @return object
+	 */
+	public function get_customs_requirements( array $body ) {
+		return (object) array( 'eu_product_ids_required' => false );
+	}
+
+	/**
 	 * Return a trivial address-normalization response.
 	 *
 	 * @param array $body Request payload.

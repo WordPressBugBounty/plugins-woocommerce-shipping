@@ -5,9 +5,9 @@ Requires Plugins: woocommerce
 Requires PHP: 7.4
 Requires at least: 7.0
 Tested up to: 7.1
-WC requires at least: 10.9
+WC requires at least: 11.0
 WC tested up to: 11.2
-Stable tag: 2.4.2
+Stable tag: 2.4.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -127,6 +127,11 @@ Absolutely! You can read our Terms of Service [here](https://wordpress.com/tos).
 6. WooCommerce Shipping address validation at checkout suggestion.
 
 == Changelog ==
+
+= 2.4.3 - 2026-10-14 =
+* Fix   - Register the terms acceptance API after WooCommerce Shipping is activated from the WooCommerce shipping label banner.
+* Fix   - Prevent an intermittent fatal error during plugin load when the WooCommerce fulfillment classes are resolved before WooCommerce's WC_Data class is available.
+* Fix   - Prevent a fatal error when another plugin reads all shipment tracking entries of an order that has a shipping label.
 
 = 2.4.2 - 2026-10-01 =
 * Fix   - Stop a request parameter or cookie from putting the plugin into end-to-end test mode.

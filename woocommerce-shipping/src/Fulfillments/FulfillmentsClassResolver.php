@@ -25,6 +25,11 @@ defined( 'ABSPATH' ) || exit;
  * - Automattic\WCShipping\Fulfillments\Base\FulfillmentsController → FulfillmentsController
  */
 function wcshipping_resolve_fulfillment_classes(): void {
+	// Idempotent: the aliases only need creating once, so a second call is a no-op.
+	if ( class_exists( 'Automattic\WCShipping\Fulfillments\Base\Fulfillment', false ) ) {
+		return;
+	}
+
 	// New namespace (after WOOPLUG-6249).
 	if ( class_exists( 'Automattic\WooCommerce\Admin\Features\Fulfillments\Fulfillment' ) ) {
 		class_alias( 'Automattic\WooCommerce\Admin\Features\Fulfillments\Fulfillment', 'Automattic\WCShipping\Fulfillments\Base\Fulfillment' );
@@ -42,4 +47,8 @@ function wcshipping_resolve_fulfillment_classes(): void {
 	}
 }
 
-add_action( 'plugins_loaded', 'wcshipping_resolve_fulfillment_classes', 0 );
+// Resolve on before_woocommerce_init, not plugins_loaded: the aliased core classes extend
+// WC_Data / WC_Data_Store_WP, so autoloading them before WooCommerce is fully loaded can fatal on
+// the missing parent (WOOSHIP-2410). This still runs before our own consumers, which load on
+// before_woocommerce_init at the default priority.
+add_action( 'before_woocommerce_init', 'wcshipping_resolve_fulfillment_classes', 5 );

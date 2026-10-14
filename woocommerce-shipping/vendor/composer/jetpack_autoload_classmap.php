@@ -418,6 +418,10 @@ return array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/src/Connect/ConnectServerErrorCodes.php'
 	),
+	'Automattic\\WCShipping\\Customs\\CustomsRequirementsRESTController' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/src/Customs/CustomsRequirementsRESTController.php'
+	),
 	'Automattic\\WCShipping\\DOM\\Manipulation' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/src/DOM/Manipulation.php'
@@ -846,6 +850,10 @@ return array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/tests/php/Connect/WCConnectAPIClientLiveErrorParsingTest.php'
 	),
+	'Automattic\\WCShipping\\Tests\\php\\Customs\\CustomsRequirementsRESTControllerTest' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/tests/php/Customs/CustomsRequirementsRESTControllerTest.php'
+	),
 	'Automattic\\WCShipping\\Tests\\php\\DummyServiceSchemasStore' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/tests/php/LoaderTest.php'
@@ -857,6 +865,10 @@ return array(
 	'Automattic\\WCShipping\\Tests\\php\\FeatureFlags\\FeatureFlagsTest' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/tests/php/FeatureFlags/FeatureFlagsTest.php'
+	),
+	'Automattic\\WCShipping\\Tests\\php\\Fulfillments\\FulfillmentsClassResolverTest' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/tests/php/Fulfillments/FulfillmentsClassResolverTest.php'
 	),
 	'Automattic\\WCShipping\\Tests\\php\\Fulfillments\\FulfillmentsServiceTest' => array(
 		'version' => 'dev-trunk',
@@ -922,6 +934,10 @@ return array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/tests/php/LabelSettings/AccountSettingsRestControllerTest.php'
 	),
+	'Automattic\\WCShipping\\Tests\\php\\LoaderTosRouteTest' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/tests/php/LoaderTosRouteTest.php'
+	),
 	'Automattic\\WCShipping\\Tests\\php\\Loader_Test' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/tests/php/LoaderTest.php'
@@ -981,6 +997,10 @@ return array(
 	'Automattic\\WCShipping\\Tests\\php\\TestLoader' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/tests/php/LoaderTest.php'
+	),
+	'Automattic\\WCShipping\\Tests\\php\\TosRouteTestLoader' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/tests/php/LoaderTosRouteTest.php'
 	),
 	'Automattic\\WCShipping\\Tests\\php\\Utilities\\BaseModelTest' => array(
 		'version' => 'dev-trunk',

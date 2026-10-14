@@ -159,6 +159,7 @@ class ComposerStaticInitc5c1592f05d15f7d2f84d15b22266c78
         'Automattic\\WCShipping\\Checkout\\StoreNotice' => __DIR__ . '/../..' . '/src/Checkout/StoreNotice.php',
         'Automattic\\WCShipping\\Checkout\\StoreNoticeTypes' => __DIR__ . '/../..' . '/src/Checkout/StoreNoticeTypes.php',
         'Automattic\\WCShipping\\Connect\\ConnectServerErrorCodes' => __DIR__ . '/../..' . '/src/Connect/ConnectServerErrorCodes.php',
+        'Automattic\\WCShipping\\Customs\\CustomsRequirementsRESTController' => __DIR__ . '/../..' . '/src/Customs/CustomsRequirementsRESTController.php',
         'Automattic\\WCShipping\\DOM\\Manipulation' => __DIR__ . '/../..' . '/src/DOM/Manipulation.php',
         'Automattic\\WCShipping\\Emails\\WC_Admin_Return_Label_Email' => __DIR__ . '/../..' . '/src/Emails/WC_Admin_Return_Label_Email.php',
         'Automattic\\WCShipping\\Emails\\WC_Return_Label_Email' => __DIR__ . '/../..' . '/src/Emails/WC_Return_Label_Email.php',

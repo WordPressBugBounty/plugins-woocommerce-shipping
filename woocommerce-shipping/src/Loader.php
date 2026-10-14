@@ -55,6 +55,7 @@ use Automattic\WCShipping\LabelPurchase\LabelStatusController;
 use Automattic\WCShipping\LabelPurchase\View;
 use Automattic\WCShipping\LabelPurchase\ViewService;
 use Automattic\WCShipping\LabelRate\LabelRateRESTController;
+use Automattic\WCShipping\Customs\CustomsRequirementsRESTController;
 use Automattic\WCShipping\LabelRate\LabelRateService;
 use Automattic\WCShipping\LabelSettings\AccountSettingsRestController;
 use Automattic\WCShipping\LabelSettings\SelfHelpRestController;
@@ -878,13 +879,20 @@ class Loader {
 
 		add_action( 'wcshipping_enqueue_script', array( $this, 'wcshipping_enqueue_script' ), 10, 2 );
 
-		if ( ( ! $is_jetpack_connected || ! $tos_accepted ) && ! $is_jetpack_dev_mode ) {
+		if ( ! $is_jetpack_connected && ! $is_jetpack_dev_mode ) {
 			$this->init_onboarding_dependencies();
 
 			return;
 		}
 
 		add_action( 'rest_api_init', array( $this, 'tos_rest_init' ) );
+
+		if ( ! $tos_accepted && ! $is_jetpack_dev_mode ) {
+			$this->init_onboarding_dependencies();
+
+			return;
+		}
+
 		add_action( 'rest_api_init', array( $this, 'rest_api_init' ) );
 
 		if ( ! $tos_accepted ) {
@@ -1428,6 +1436,7 @@ class Loader {
 		) )->register_routes();
 
 		( new LabelRateRESTController( $this->label_rate_service ) )->register_routes();
+		( new CustomsRequirementsRESTController( $this->api_client, $this->origin_address_service, $logger ) )->register_routes();
 		( new OrdersShippingContextRESTController( $settings_store ) )->register_routes();
 
 		$package_settings = new WC_Connect_Package_Settings(

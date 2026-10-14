@@ -105,6 +105,7 @@ return array(
     'Automattic\\WCShipping\\Checkout\\StoreNotice' => $baseDir . '/src/Checkout/StoreNotice.php',
     'Automattic\\WCShipping\\Checkout\\StoreNoticeTypes' => $baseDir . '/src/Checkout/StoreNoticeTypes.php',
     'Automattic\\WCShipping\\Connect\\ConnectServerErrorCodes' => $baseDir . '/src/Connect/ConnectServerErrorCodes.php',
+    'Automattic\\WCShipping\\Customs\\CustomsRequirementsRESTController' => $baseDir . '/src/Customs/CustomsRequirementsRESTController.php',
     'Automattic\\WCShipping\\DOM\\Manipulation' => $baseDir . '/src/DOM/Manipulation.php',
     'Automattic\\WCShipping\\Emails\\WC_Admin_Return_Label_Email' => $baseDir . '/src/Emails/WC_Admin_Return_Label_Email.php',
     'Automattic\\WCShipping\\Emails\\WC_Return_Label_Email' => $baseDir . '/src/Emails/WC_Return_Label_Email.php',

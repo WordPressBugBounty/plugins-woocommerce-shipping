@@ -181,8 +181,20 @@ class WooCommerceShipmentTracking {
 
 		// Check if the value is missing the custom tracking link and add it.
 		foreach ( $value as $index => &$tracking_item ) {
+			// get_meta( $key, false ) passes the order's WC_Meta_Data objects; repair a copy so the fix is never saved.
+			if ( $tracking_item instanceof \WC_Meta_Data ) {
+				$tracking_item        = clone $tracking_item;
+				$tracking_item->value = self::modify_tracking_data_stored_erenously( $tracking_item->value, $order );
+				$tracking_item->apply_changes();
+				continue;
+			}
+
 			// Only items with the same custom tracking link and tracking number will be updated.
-			if ( $tracking_item['custom_tracking_link'] !== $tracking_item['tracking_number'] ) {
+			if (
+				! is_array( $tracking_item )
+				|| ! isset( $tracking_item['custom_tracking_link'], $tracking_item['tracking_number'] )
+				|| $tracking_item['custom_tracking_link'] !== $tracking_item['tracking_number']
+			) {
 				continue;
 			}
 
@@ -194,7 +206,7 @@ class WooCommerceShipmentTracking {
 						return $label['tracking'] === $tracking_item['tracking_number'];
 					}
 				)
-			)[0];
+			)[0] ?? null;
 
 			if ( ! $label ) {
 				continue;
