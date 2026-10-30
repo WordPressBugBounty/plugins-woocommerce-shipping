@@ -109,6 +109,7 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 		packages: { getPackageForRequest },
 		rates: {
 			isFetching,
+			isCustomsQuoteStale,
 			userRateFetchNonce,
 			getSelectedRate,
 			fetchRates,
@@ -793,6 +794,7 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 						! selectedRate ||
 						isPurchasing ||
 						isFetching ||
+						isCustomsQuoteStale ||
 						isUpdatingStatus ||
 						hasPurchasedLabel( false ) ||
 						! shipmentOrigin.isApproved ||
@@ -811,6 +813,7 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 						! selectedRate ||
 						isPurchasing ||
 						isFetching ||
+						isCustomsQuoteStale ||
 						isUpdatingStatus ||
 						hasPurchasedLabel( false ) ||
 						! shipmentOrigin.isApproved ||
@@ -925,6 +928,7 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 									! selectedRate ||
 									isPurchasing ||
 									isFetching ||
+									isCustomsQuoteStale ||
 									isUpdatingStatus ||
 									hasPurchasedLabel( false ) ||
 									! shipmentOrigin.isVerified ||
@@ -943,6 +947,7 @@ export const PaymentButtons = ( { order }: PaymentButtonsProps ) => {
 									! selectedRate ||
 									isPurchasing ||
 									isFetching ||
+									isCustomsQuoteStale ||
 									isUpdatingStatus ||
 									hasPurchasedLabel( false ) ||
 									! shipmentOrigin.isVerified ||

@@ -80,11 +80,25 @@ class Utils {
 			$data = $product->get_meta( 'wc_connect_customs_info' );
 		}
 
-		return ! empty( $data ) ? $data : array(
-			'description'      => $product->get_name(),
-			'hs_tariff_number' => '',
-			'origin_country'   => WC()->countries->get_base_country(),
-		);
+		if ( empty( $data ) ) {
+			$data = array(
+				'description'      => $product->get_name(),
+				'hs_tariff_number' => '',
+				'origin_country'   => WC()->countries->get_base_country(),
+			);
+		}
+
+		if ( ! is_array( $data ) ) {
+			return $data;
+		}
+
+		// Meta saved before the EU product identifiers were introduced lacks the part number.
+		$data['manufacturer_product_id'] = isset( $data['manufacturer_product_id'] ) ? (string) $data['manufacturer_product_id'] : '';
+
+		// Variations use their own GTIN only, never the parent's.
+		$data['standardized_product_id'] = (string) $product->get_global_unique_id();
+
+		return $data;
 	}
 
 	/**

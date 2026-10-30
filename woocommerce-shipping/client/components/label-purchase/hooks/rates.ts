@@ -1,5 +1,11 @@
 import { mapValues, sortBy, snakeCase, omit } from 'lodash';
-import { useCallback, useState, useMemo } from '@wordpress/element';
+import {
+	useCallback,
+	useEffect,
+	useState,
+	useMemo,
+	useRef,
+} from '@wordpress/element';
 import { dispatch, select, useSelect } from '@wordpress/data';
 import { __, sprintf } from '@wordpress/i18n';
 import {
@@ -37,7 +43,7 @@ import {
 	RATES_FETCH_ABORTED,
 	RATES_FETCH_FAILED,
 } from 'data/label-purchase/action-types';
-import { LABEL_RATE_TYPE } from 'data/constants';
+import { LABEL_PURCHASE_STATUS, LABEL_RATE_TYPE } from 'data/constants';
 import { DELIVERY_PROPERTIES, SORT_BY } from '../shipping-service/constants';
 
 /**
@@ -163,7 +169,13 @@ export function useRatesState( {
 	getPackageForRequest,
 	applyHazmatToPackage,
 	totalWeight,
-	customs: { maybeApplyCustomsToPackage },
+	customs: {
+		maybeApplyCustomsToPackage,
+		isCustomsNeeded,
+		isCustomsRequirementsLoading,
+		hasEUProductIdErrors,
+		customsFingerprint,
+	},
 	getShipmentOrigin,
 	getCurrentShipmentIsReturn,
 	getCurrentShipmentDate,
@@ -175,6 +187,31 @@ export function useRatesState( {
 	>( allShipmentRates ?? { 0: null } );
 
 	const [ isFetching, setIsFetching ] = useState( false );
+	// The customs data each shipment's rates were quoted on, and last requested with.
+	const [ quotedCustomsFingerprints, setQuotedCustomsFingerprints ] =
+		useState< Record< string, string | null > >( {} );
+	const attemptedCustomsFingerprints = useRef<
+		Record< string, string | null >
+	>( {} );
+	// USPS and UPS DAP buy the shipment created at rate time, so a quote on older customs data can't be bought.
+	const isCustomsQuoteStale = Boolean(
+		isCustomsNeeded() &&
+			currentShipmentId in quotedCustomsFingerprints &&
+			quotedCustomsFingerprints[ currentShipmentId ] !==
+				customsFingerprint
+	);
+	// The rates on screen were quoted for the previous route until the new route's requirement arrives.
+	const isAwaitingCustomsRequirement = Boolean(
+		isCustomsNeeded() && isCustomsRequirementsLoading()
+	);
+	/**
+	 * The server accepts customs items without EU product identifiers, so an EU quote waits
+	 * for the requirement and for valid identifiers.
+	 */
+	const isQuoteHeld = useCallback(
+		() => isAwaitingCustomsRequirement || hasEUProductIdErrors(),
+		[ isAwaitingCustomsRequirement, hasEUProductIdErrors ]
+	);
 	/**
 	 * Counter that increments only when the merchant explicitly triggers a rate
 	 * fetch (clicking "Get rates" or changing shipment inputs). It deliberately
@@ -374,6 +411,12 @@ export function useRatesState( {
 			},
 			{ userInitiated = true }: { userInitiated?: boolean } = {}
 		) => {
+			// Clearing the selection leaves nothing to buy, as a failed refresh does for other invalid customs fields.
+			if ( isQuoteHeld() ) {
+				removeSelectedRate();
+				return;
+			}
+
 			// Early return when all origin addresses are unverified (or none exist).
 			const originAddresses = select( addressStore ).getOriginAddresses();
 			if ( areAllOriginsUnverified( originAddresses ) ) {
@@ -416,6 +459,8 @@ export function useRatesState( {
 			};
 
 			const currentShipmentDate = getCurrentShipmentDate()?.shippingDate;
+			const requestedShipmentId = currentShipmentId;
+			const requestedCustomsFingerprint = customsFingerprint;
 
 			// @ts-ignore TODO: Convert getRates to TypeScript
 			const { payload, type: responseType } = await dispatch(
@@ -440,6 +485,15 @@ export function useRatesState( {
 				// Aborted, do nothing, the previous request was aborted, so we don't need to set any errors.
 				// no need to setIsFetching( false ) because the request was aborted because of a new request.
 				return;
+			}
+
+			attemptedCustomsFingerprints.current[ requestedShipmentId ] =
+				requestedCustomsFingerprint;
+			if ( responseType !== RATES_FETCH_FAILED ) {
+				setQuotedCustomsFingerprints( ( prev ) => ( {
+					...prev,
+					[ requestedShipmentId ]: requestedCustomsFingerprint,
+				} ) );
 			}
 
 			if ( responseType === RATES_FETCH_FAILED ) {
@@ -485,6 +539,8 @@ export function useRatesState( {
 			currentShipmentId,
 			totalWeight,
 			maybeApplyCustomsToPackage,
+			isQuoteHeld,
+			customsFingerprint,
 			applyHazmatToPackage,
 			getShipmentOrigin,
 			getCurrentShipmentIsReturn,
@@ -671,7 +727,8 @@ export function useRatesState( {
 
 				await fetchRates( pkg );
 
-				if ( selectedRateBeforeRefresh ) {
+				// A held quote was not refreshed, so re-selecting would bring the old rate back.
+				if ( selectedRateBeforeRefresh && ! isQuoteHeld() ) {
 					matchAndSelectRate( selectedRateBeforeRefresh );
 				}
 			}
@@ -685,10 +742,42 @@ export function useRatesState( {
 			getPackageForRequest,
 			getSelectedRate,
 			isFetching,
+			isQuoteHeld,
 			matchAndSelectRate,
 			totalWeight,
 		]
 	);
+
+	/**
+	 * updateRates drops a refresh asked for mid-request, and a request for another shipment
+	 * can abort this one's, so re-quote customs data that was never requested. Returning to a
+	 * shipment retries a failed re-quote once: another shipment's fetch clears the shared error.
+	 */
+	const requotedShipmentId = useRef( currentShipmentId );
+	useEffect( () => {
+		if ( isFetching ) {
+			return;
+		}
+		const isReturningToShipment =
+			requotedShipmentId.current !== currentShipmentId;
+		requotedShipmentId.current = currentShipmentId;
+		if (
+			! isCustomsQuoteStale ||
+			( ! isReturningToShipment &&
+				attemptedCustomsFingerprints.current[ currentShipmentId ] ===
+					customsFingerprint )
+		) {
+			return;
+		}
+		const label =
+			select( labelPurchaseStore ).getPurchasedLabel( currentShipmentId );
+		if ( label && label.status !== LABEL_PURCHASE_STATUS.PURCHASE_ERROR ) {
+			return;
+		}
+		void updateRates();
+		// Edits are re-quoted by the debounced customs refresh; re-running on them would skip the debounce.
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [ isFetching, currentShipmentId ] );
 
 	return {
 		selectedRates,
@@ -696,7 +785,9 @@ export function useRatesState( {
 		selectRate,
 		getSelectedRate,
 		removeSelectedRate,
-		isFetching,
+		// Shown as fetching so the old route's rates can't be selected or bought.
+		isFetching: isFetching || isAwaitingCustomsRequirement,
+		isCustomsQuoteStale,
 		userRateFetchNonce,
 		updateRates,
 		fetchRates,

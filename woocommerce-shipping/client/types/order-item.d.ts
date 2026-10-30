@@ -10,6 +10,8 @@ export interface OrderItem {
 			description: string;
 			hs_tariff_number: string;
 			origin_country: string;
+			manufacturer_product_id?: string;
+			standardized_product_id?: string;
 		};
 	};
 	tax_class: string;

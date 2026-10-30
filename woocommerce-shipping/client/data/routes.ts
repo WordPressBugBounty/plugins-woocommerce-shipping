@@ -5,6 +5,9 @@ export const getRatesPath = () => `${ NAMESPACE }/label/rate`;
 
 export const getBatchRatesPath = () => `${ NAMESPACE }/label/rate/batch`;
 
+export const getCustomsRequirementsPath = () =>
+	`${ NAMESPACE }/label/customs-requirements`;
+
 export const getAutoAssignPackagesPath = () =>
 	`${ NAMESPACE }/label/auto-assign-packages`;
 

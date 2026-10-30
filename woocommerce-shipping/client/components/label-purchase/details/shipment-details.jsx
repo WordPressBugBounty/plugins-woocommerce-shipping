@@ -208,7 +208,9 @@ export const ShipmentDetails = withBoundary(
 			}
 		}
 
-		const ShipFromControl = ( { label } ) => (
+		// Called, not rendered as a component: a component defined here would remount
+		// ShipFromSelect on every render and reset its origin-change tracking.
+		const renderShipFromControl = ( label ) => (
 			<BaseControl
 				id="ship-from"
 				label={ label }
@@ -342,15 +344,15 @@ export const ShipmentDetails = withBoundary(
 						<ShipToControl
 							label={ __( 'Ship from', 'woocommerce-shipping' ) }
 						/>
-						<ShipFromControl
-							label={ __( 'Return to', 'woocommerce-shipping' ) }
-						/>
+						{ renderShipFromControl(
+							__( 'Return to', 'woocommerce-shipping' )
+						) }
 					</>
 				) : (
 					<>
-						<ShipFromControl
-							label={ __( 'Ship from', 'woocommerce-shipping' ) }
-						/>
+						{ renderShipFromControl(
+							__( 'Ship from', 'woocommerce-shipping' )
+						) }
 						<ShipToControl
 							label={ __( 'Ship to', 'woocommerce-shipping' ) }
 						/>

@@ -7,7 +7,7 @@ Requires at least: 7.0
 Tested up to: 7.1
 WC requires at least: 11.0
 WC tested up to: 11.2
-Stable tag: 2.4.3
+Stable tag: 2.5.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -127,6 +127,12 @@ Absolutely! You can read our Terms of Service [here](https://wordpress.com/tos).
 6. WooCommerce Shipping address validation at checkout suggestion.
 
 == Changelog ==
+
+= 2.5.0 - 2026-10-30 =
+* Add   - Ask for the SKU, manufacturer part number and GTIN/EAN of each customs item on shipments into the EU, prefilled from the product.
+
+= 2.4.4 - 2026-10-26 =
+* Fix   - Keep each shipment's customs form separate on orders with several shipments.
 
 = 2.4.3 - 2026-10-14 =
 * Fix   - Register the terms acceptance API after WooCommerce Shipping is activated from the WooCommerce shipping label banner.

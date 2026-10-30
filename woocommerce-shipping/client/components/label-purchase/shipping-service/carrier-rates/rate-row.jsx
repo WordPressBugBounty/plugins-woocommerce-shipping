@@ -339,6 +339,8 @@ export const RateRow = withBoundary(
 					type="radio"
 					name="shipping-rate"
 					id={ rateId }
+					// Controlled, so a cleared selection can be picked again.
+					checked={ isSelected }
 					onChange={ setSelected( rate ) }
 				/>
 				<Flex

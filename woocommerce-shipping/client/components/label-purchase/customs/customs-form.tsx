@@ -23,6 +23,7 @@ import { getCountryNames, getWeightUnit } from '../../../utils';
 import { useLabelPurchaseContext } from 'context/label-purchase';
 import { CustomsItem, CustomsState } from 'types';
 import { CUSTOMS_SECTION } from '../essential-details/constants';
+import { EUProductIdentifiers } from './eu-product-identifiers';
 
 export const CustomsForm = (): JSX.Element => {
 	const weightUnit = getWeightUnit();
@@ -428,6 +429,10 @@ export const CustomsForm = (): JSX.Element => {
 							</Flex>
 						) ) }
 					</Flex>
+					<EUProductIdentifiers
+						getProps={ getProps }
+						disabled={ disable }
+					/>
 				</>
 			) }
 		</>

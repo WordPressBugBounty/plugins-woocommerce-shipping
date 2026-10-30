@@ -92,7 +92,8 @@ export const LabelPurchaseContextProvider = ( {
 		getShipmentItems,
 		getSelectionItems,
 		getShipmentOrigin,
-		getShipmentDestination
+		getShipmentDestination,
+		getCurrentShipmentIsReturn
 	);
 
 	const {
@@ -102,6 +103,7 @@ export const LabelPurchaseContextProvider = ( {
 		getSelectedRate,
 		removeSelectedRate,
 		isFetching,
+		isCustomsQuoteStale,
 		userRateFetchNonce,
 		updateRates,
 		fetchRates,
@@ -198,6 +200,7 @@ export const LabelPurchaseContextProvider = ( {
 			getSelectedRate,
 			removeSelectedRate,
 			isFetching,
+			isCustomsQuoteStale,
 			userRateFetchNonce,
 			fetchRates,
 			resetRates,

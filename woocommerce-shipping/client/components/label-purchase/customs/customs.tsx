@@ -23,7 +23,12 @@ import { getCountryName, isUspsCustomsPolicyRoute } from 'utils';
 
 export const Customs = (): JSX.Element => {
 	const {
-		customs: { getCustomsState, setCustomsState, setErrors },
+		customs: {
+			getCustomsState,
+			setCustomsState,
+			setErrors,
+			isEUProductIdRequired,
+		},
 		essentialDetails: { setCustomsCompleted },
 		shipment: { getShipmentOrigin },
 	} = useLabelPurchaseContext();
@@ -39,6 +44,7 @@ export const Customs = (): JSX.Element => {
 		country,
 		countryName: getCountryName()( country ),
 		originCountry: origin?.country,
+		requiresEUProductIds: isEUProductIdRequired(),
 	};
 
 	const initialValues = getCustomsState();

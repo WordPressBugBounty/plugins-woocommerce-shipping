@@ -310,41 +310,59 @@ class LabelRateRESTController extends WCShippingRESTController {
 	 */
 	private function get_product_properties() {
 		return array(
-			'description'      => array(
+			'description'             => array(
 				'description' => __( 'Description of this item', 'woocommerce-shipping' ),
 				'type'        => 'string',
 				'context'     => array( 'view', 'edit' ),
 				'required'    => true,
 			),
-			'quantity'         => array(
+			'quantity'                => array(
 				'description' => __( 'Quanity of this item in the shipment', 'woocommerce-shipping' ),
 				'type'        => 'integer',
 				'context'     => array( 'view', 'edit' ),
 				'required'    => true,
 			),
-			'value'            => array(
+			'value'                   => array(
 				'description' => __( 'The total value of this item', 'woocommerce-shipping' ),
 				'type'        => 'number',
 				'context'     => array( 'view', 'edit' ),
 			),
-			'weight'           => array(
+			'weight'                  => array(
 				'description' => __( 'The total weight of this item', 'woocommerce-shipping' ),
 				'type'        => 'number',
 				'context'     => array( 'view', 'edit' ),
 			),
-			'hs_tariff_number' => array(
+			'hs_tariff_number'        => array(
 				'description' => __( 'HS Tariff number for this item', 'woocommerce-shipping' ),
 				'type'        => 'string',
 				'context'     => array( 'view', 'edit' ),
 			),
-			'origin_country'   => array(
+			'origin_country'          => array(
 				'description' => __( 'The origin country of this item', 'woocommerce-shipping' ),
 				'type'        => 'string',
 				'context'     => array( 'view', 'edit' ),
 			),
-			'product_id'       => array(
+			'product_id'              => array(
 				'description' => __( 'The product ID of this item', 'woocommerce-shipping' ),
 				'type'        => 'number',
+				'context'     => array( 'view', 'edit' ),
+			),
+			'code'                    => array(
+				'description' => __( 'Merchant SKU of this item (EU M-PID). Optional.', 'woocommerce-shipping' ),
+				'type'        => 'string',
+				'maxLength'   => LabelRateService::PRODUCT_IDENTIFIER_MAX_LENGTH,
+				'context'     => array( 'view', 'edit' ),
+			),
+			'manufacturer_product_id' => array(
+				'description' => __( 'Manufacturer part number of this item (EU NS-PID). Optional.', 'woocommerce-shipping' ),
+				'type'        => 'string',
+				'maxLength'   => LabelRateService::PRODUCT_IDENTIFIER_MAX_LENGTH,
+				'context'     => array( 'view', 'edit' ),
+			),
+			'standardized_product_id' => array(
+				'description' => __( 'GTIN/EAN of this item, or Y081 when it has no barcode (EU S-PID). Optional.', 'woocommerce-shipping' ),
+				'type'        => 'string',
+				'maxLength'   => LabelRateService::PRODUCT_IDENTIFIER_MAX_LENGTH,
 				'context'     => array( 'view', 'edit' ),
 			),
 		);
@@ -597,9 +615,46 @@ class LabelRateRESTController extends WCShippingRESTController {
 				continue;
 			}
 
+			if ( $this->has_invalid_product_identifier( $order['packages'] ) ) {
+				$shape_errors[ $key ] = new WP_Error(
+					'invalid_order_shape',
+					sprintf(
+						/* translators: %d: maximum number of characters */
+						__( 'EU product identifiers must be strings of %d characters or fewer.', 'woocommerce-shipping' ),
+						LabelRateService::PRODUCT_IDENTIFIER_MAX_LENGTH
+					)
+				);
+				continue;
+			}
+
 			$valid[] = $order;
 		}
 
 		return array( $valid, $shape_errors );
+	}
+
+	/**
+	 * Whether any customs item carries an EU product identifier that is not a string or is over the length limit.
+	 * The single-rate route enforces this through its schema; the batch route has none.
+	 *
+	 * @param array $packages Order packages.
+	 * @return bool
+	 */
+	private function has_invalid_product_identifier( array $packages ): bool {
+		foreach ( $packages as $package ) {
+			$items = is_array( $package ) && isset( $package['items'] ) && is_array( $package['items'] ) ? $package['items'] : array();
+			foreach ( $items as $item ) {
+				if ( ! is_array( $item ) ) {
+					continue;
+				}
+				foreach ( LabelRateService::PRODUCT_IDENTIFIER_KEYS as $key ) {
+					if ( array_key_exists( $key, $item )
+						&& ( ! is_string( $item[ $key ] ) || mb_strlen( $item[ $key ] ) > LabelRateService::PRODUCT_IDENTIFIER_MAX_LENGTH ) ) {
+						return true;
+					}
+				}
+			}
+		}
+		return false;
 	}
 }

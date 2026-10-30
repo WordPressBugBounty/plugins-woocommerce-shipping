@@ -1,5 +1,11 @@
 *** WooCommerce Shipping Changelog ***
 
+= 2.5.0 - 2026-10-30 =
+* Add   - Ask for the SKU, manufacturer part number and GTIN/EAN of each customs item on shipments into the EU, prefilled from the product.
+
+= 2.4.4 - 2026-10-26 =
+* Fix   - Keep each shipment's customs form separate on orders with several shipments.
+
 = 2.4.3 - 2026-10-14 =
 * Fix   - Register the terms acceptance API after WooCommerce Shipping is activated from the WooCommerce shipping label banner.
 * Fix   - Prevent an intermittent fatal error during plugin load when the WooCommerce fulfillment classes are resolved before WooCommerce's WC_Data class is available.

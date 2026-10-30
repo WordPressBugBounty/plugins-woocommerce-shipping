@@ -65,6 +65,17 @@ class LabelRateService {
 	);
 
 	/**
+	 * EU product identifier keys on a customs item. Only `manufacturer_product_id` is remembered per
+	 * product; the SKU (`code`) and GTIN (`standardized_product_id`) are read from the product itself.
+	 */
+	public const PRODUCT_IDENTIFIER_KEYS = array( 'code', 'manufacturer_product_id', 'standardized_product_id' );
+
+	/**
+	 * Maximum length of an EU product identifier on a customs item (EasyPost limit).
+	 */
+	public const PRODUCT_IDENTIFIER_MAX_LENGTH = 64;
+
+	/**
 	 * Class constructor.
 	 *
 	 * @param WC_Connect_API_Client             $api_client API client.
@@ -368,19 +379,30 @@ class LabelRateService {
 				break;
 			}
 			foreach ( $package['items'] as &$item ) {
+				$sent_identifier_keys = $this->normalize_product_identifiers( $item );
+
 				if ( ! in_array( $item['product_id'], $updated_product_ids, true ) ) {
 					$product = wc_get_product( $item['product_id'] );
 					if ( ! $product ) {
 						continue;
 					}
-					$product->update_meta_data(
-						'wcshipping_customs_info',
-						array(
-							'description'      => $item['description'],
-							'hs_tariff_number' => $item['hs_tariff_number'],
-							'origin_country'   => $item['origin_country'],
-						)
+					$customs_info = array(
+						'description'      => $item['description'],
+						'hs_tariff_number' => $item['hs_tariff_number'],
+						'origin_country'   => $item['origin_country'],
 					);
+
+					// Clients that don't send the part number (e.g. older mobile apps) keep the stored one.
+					// A sent empty value clears it.
+					$stored_customs_info = $product->get_meta( 'wcshipping_customs_info' );
+					if ( isset( $item['manufacturer_product_id'] ) ) {
+						$customs_info['manufacturer_product_id'] = $item['manufacturer_product_id'];
+					} elseif ( ! in_array( 'manufacturer_product_id', $sent_identifier_keys, true )
+						&& is_array( $stored_customs_info ) && isset( $stored_customs_info['manufacturer_product_id'] ) ) {
+						$customs_info['manufacturer_product_id'] = $stored_customs_info['manufacturer_product_id'];
+					}
+
+					$product->update_meta_data( 'wcshipping_customs_info', $customs_info );
 					$updated_product_ids[] = $item['product_id'];
 					$product->save();
 				}
@@ -396,6 +418,43 @@ class LabelRateService {
 				$item['weight'] = $item['weight'] * $item['quantity'];
 			}
 		}
+	}
+
+	/**
+	 * Sanitize the EU product identifiers on a customs item. Empty values are dropped from the item,
+	 * since EU validation rejects them. Over-long values are truncated for callers that bypass the
+	 * REST routes, which reject them.
+	 *
+	 * @param array $item Customs item. Modified in place.
+	 * @return string[] Identifier keys the item sent as strings, including empty ones.
+	 */
+	private function normalize_product_identifiers( array &$item ): array {
+		$sent_keys = array();
+		foreach ( self::PRODUCT_IDENTIFIER_KEYS as $key ) {
+			if ( ! array_key_exists( $key, $item ) ) {
+				continue;
+			}
+
+			// The REST routes reject non-strings; anything else reaching here is treated as not sent.
+			if ( ! is_string( $item[ $key ] ) ) {
+				unset( $item[ $key ] );
+				continue;
+			}
+
+			$sent_keys[] = $key;
+			// Not sanitize_text_field(): it rewrites valid identifiers such as "AB<12" or "AB%2FCD". The value is
+			// only stored as meta and sent to the Connect Server; the label purchase UI renders it escaped.
+			$value = (string) preg_replace( '/\p{Cc}/u', '', wp_check_invalid_utf8( $item[ $key ] ) );
+			$value = mb_substr( trim( $value ), 0, self::PRODUCT_IDENTIFIER_MAX_LENGTH );
+
+			if ( '' === $value ) {
+				unset( $item[ $key ] );
+			} else {
+				$item[ $key ] = $value;
+			}
+		}
+
+		return $sent_keys;
 	}
 
 	/**

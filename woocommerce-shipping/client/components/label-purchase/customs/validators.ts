@@ -1,6 +1,6 @@
 import { __, sprintf } from '@wordpress/i18n';
 import type { FormErrors } from '@woocommerce/components';
-import { isEmpty, isNil } from 'lodash';
+import { isEmpty, isNil, pickBy } from 'lodash';
 import { CustomsItem, CustomsValidationInput, Destination } from 'types';
 import {
 	isCountryInEU,
@@ -10,7 +10,64 @@ import {
 	USPS_ITN_REQUIRED_DESTINATIONS,
 } from 'utils';
 import { getCurrentOrderItems } from 'utils/order';
-import { itnMatchingRegex, MAX_ITEM_DESCRIPTION_LENGTH } from './constants';
+import {
+	itnMatchingRegex,
+	MAX_ITEM_DESCRIPTION_LENGTH,
+	MAX_PRODUCT_ID_LENGTH,
+} from './constants';
+import {
+	EUProductIdFields,
+	getEUProductIdPayload,
+} from './eu-product-id-payload';
+
+/**
+ * Validate the EU product identifiers (M-PID, NS-PID, S-PID) of a customs item.
+ * Only call this for shipments where `isEUProductIdRequired()` is true.
+ *
+ * @return Error messages keyed by the customs item field; empty when the item is valid.
+ */
+export const getEUProductIdErrors = (
+	item: EUProductIdFields
+): Partial<
+	Record< keyof Omit< EUProductIdFields, 'noStandardizedId' >, string >
+> => {
+	const payload = getEUProductIdPayload( item );
+	const check = ( value: string | undefined, missingMessage: string ) => {
+		if ( ! value ) {
+			return missingMessage;
+		}
+		if ( value.length > MAX_PRODUCT_ID_LENGTH ) {
+			return sprintf(
+				// translators: %d is the maximum number of characters allowed.
+				__( 'Must be %d characters or fewer.', 'woocommerce-shipping' ),
+				MAX_PRODUCT_ID_LENGTH
+			);
+		}
+		return undefined;
+	};
+	const requiredMessage = __(
+		'Required for shipments to the EU',
+		'woocommerce-shipping'
+	);
+
+	return pickBy(
+		{
+			code: check( payload.code, requiredMessage ),
+			manufacturerProductId: check(
+				payload.manufacturer_product_id,
+				requiredMessage
+			),
+			standardizedProductId: check(
+				payload.standardized_product_id,
+				__(
+					'Enter the GTIN/EAN, or select "No barcode"',
+					'woocommerce-shipping'
+				)
+			),
+		},
+		Boolean
+	);
+};
 
 export const createLocalErrors = (
 	items: CustomsItem[]
@@ -245,7 +302,12 @@ export const validateItems =
 	( {
 		country,
 		originCountry,
-	}: Pick< Destination, 'country' > & { originCountry?: string } ) =>
+		requiresEUProductIds,
+	}: Pick< Destination, 'country' > & {
+		originCountry?: string;
+		// From the server via `isEUProductIdRequired()`; false when omitted.
+		requiresEUProductIds?: boolean;
+	} ) =>
 	( {
 		values: { items, contentsType, ...rest },
 		errors,
@@ -266,7 +328,10 @@ export const validateItems =
 		}
 
 		items.forEach(
-			( { description, weight, hsTariffNumber, price }, index ) => {
+			(
+				{ description, weight, hsTariffNumber, price, ...item },
+				index
+			) => {
 				if ( ! description ) {
 					localErrors.items[ index ].description = __(
 						'This field is required',
@@ -325,6 +390,13 @@ export const validateItems =
 					localErrors.items[ index ].hsTariffNumber = __(
 						'The tariff number must be between 6 and 12 digits long',
 						'woocommerce-shipping'
+					);
+				}
+
+				if ( requiresEUProductIds ) {
+					Object.assign(
+						localErrors.items[ index ],
+						getEUProductIdErrors( item )
 					);
 				}
 				return errors;

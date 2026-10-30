@@ -5,7 +5,7 @@ import {
 	useRef,
 	useState,
 } from '@wordpress/element';
-import { isEmpty, isEqual } from 'lodash';
+import { isEmpty, isEqual, pick } from 'lodash';
 import {
 	CustomsItem,
 	CustomsState,
@@ -16,15 +16,18 @@ import {
 import { select, useSelect } from '@wordpress/data';
 import type { FormErrors } from '@woocommerce/components';
 import { contentTypes } from '../customs/constants';
-import { normalizeITN } from '../customs/validators';
+import { getEUProductIdErrors, normalizeITN } from '../customs/validators';
+import { getEUProductIdPayload } from '../customs/eu-product-id-payload';
 import {
 	isCountryInEU,
 	isCustomsRequired,
 	isHSTariffNumberValid,
 	sanitizeHSTariffNumber,
 	getAccountSettings,
+	getCurrentOrder,
 } from 'utils';
 import { useShipmentState } from './shipment';
+import { useCustomsRequirements } from './customs-requirements';
 import { labelPurchaseStore } from 'data/label-purchase';
 
 const getInitialShipmentCustomsState = < T >(
@@ -53,10 +56,12 @@ export function useCustomsState(
 	>[ 'getShipmentOrigin' ],
 	getShipmentDestination: ReturnType<
 		typeof useShipmentState
-	>[ 'getShipmentDestination' ]
+	>[ 'getShipmentDestination' ],
+	getCurrentShipmentIsReturn: () => boolean = () => false
 ) {
 	const origin = getShipmentOrigin();
 	const destination = getShipmentDestination();
+	const isReturn = getCurrentShipmentIsReturn();
 
 	const storedCustomsInformationForShipment = useSelect(
 		( s ) =>
@@ -67,6 +72,29 @@ export function useCustomsState(
 	const isCustomsNeeded = useCallback(
 		() => isCustomsRequired( origin, destination ),
 		[ origin, destination ]
+	);
+
+	// The server applies the return-label direction.
+	const customsRequirements = useCustomsRequirements(
+		getCurrentOrder()?.id,
+		origin,
+		destination,
+		isReturn
+	);
+	const isEUProductIdRequired = useCallback(
+		() => customsRequirements.isEUProductIdRequired,
+		[ customsRequirements.isEUProductIdRequired ]
+	);
+	const isCustomsRequirementsLoading = useCallback(
+		() => customsRequirements.isLoading,
+		[ customsRequirements.isLoading ]
+	);
+	// Document mailings carry no item declaration, so they have no identifiers to collect or send.
+	const shouldCollectEUProductIds = useCallback(
+		( contentsType: string | undefined ) =>
+			customsRequirements.isEUProductIdRequired &&
+			contentsType !== 'documents',
+		[ customsRequirements.isEUProductIdRequired ]
 	);
 
 	const [ errors, setErrors ] = useState<
@@ -92,6 +120,13 @@ export function useCustomsState(
 					props.meta?.customs_info?.hs_tariff_number ?? '',
 				originCountry:
 					props.meta?.customs_info?.origin_country ?? origin.country,
+				code: props.sku ?? '',
+				manufacturerProductId:
+					props.meta?.customs_info?.manufacturer_product_id ?? '',
+				standardizedProductId:
+					props.meta?.customs_info?.standardized_product_id ?? '',
+				// Per label: the choice is never stored on the product.
+				noStandardizedId: false,
 			} ) );
 		},
 		[
@@ -106,30 +141,30 @@ export function useCustomsState(
 		getAccountSettings()?.purchaseSettings?.return_to_sender_default ??
 		false;
 
-	const initialCustomsInfo: CustomsState =
-		storedCustomsInformationForShipment ??
-		getInitialShipmentCustomsState(
-			getCustomsItems(),
-			returnToSenderDefault
-		);
-
-	const initialCustomsState: Record<
-		typeof currentShipmentId,
-		CustomsState
-	> = Object.keys( shipments ).reduce(
-		(
-			customs: Record< typeof currentShipmentId, CustomsState >,
-			id: string
-		) => {
-			customs[ id ] = initialCustomsInfo;
-			return customs;
-		},
-		{}
+	// Each shipment starts from its own snapshot, so a purchased label's form isn't copied to the others.
+	const [ state, setState ] = useState<
+		Record< typeof currentShipmentId, CustomsState >
+	>( () =>
+		Object.keys( shipments ).reduce(
+			(
+				customs: Record< typeof currentShipmentId, CustomsState >,
+				id: string
+			) => {
+				customs[ id ] =
+					( id === currentShipmentId
+						? storedCustomsInformationForShipment
+						: select( labelPurchaseStore ).getCustomsInformation(
+								id
+						  ) ) ??
+					getInitialShipmentCustomsState(
+						getCustomsItems( id ),
+						returnToSenderDefault
+					);
+				return customs;
+			},
+			{}
+		)
 	);
-	const [ state, setState ] =
-		useState< Record< typeof currentShipmentId, CustomsState > >(
-			initialCustomsState
-		);
 
 	const previousStateRef = useRef( state );
 	/**
@@ -186,22 +221,19 @@ export function useCustomsState(
 			return null;
 		}
 		return JSON.stringify( {
-			items: customs.items.map(
-				( {
-					price,
-					weight,
-					quantity,
-					description,
-					hsTariffNumber,
-					originCountry,
-				} ) => ( {
-					price,
-					weight,
-					quantity,
-					description,
-					hsTariffNumber,
-					originCountry,
-				} )
+			items: customs.items.map( ( item ) =>
+				pick( item, [
+					'price',
+					'weight',
+					'quantity',
+					'description',
+					'hsTariffNumber',
+					'originCountry',
+					'code',
+					'manufacturerProductId',
+					'standardizedProductId',
+					'noStandardizedId',
+				] )
 			),
 			contentsType: customs.contentsType,
 			contentsExplanation: customs.contentsExplanation,
@@ -209,8 +241,18 @@ export function useCustomsState(
 			restrictionComments: customs.restrictionComments,
 			itn: customs.itn,
 			isReturnToSender: customs.isReturnToSender,
+			// Part of the quote, so the requirement's arrival refreshes the rates.
+			euProductIdsRequired: customsRequirements.isLoading
+				? null
+				: customsRequirements.isEUProductIdRequired,
 		} );
-	}, [ isCustomsNeeded, state, currentShipmentId ] );
+	}, [
+		isCustomsNeeded,
+		state,
+		currentShipmentId,
+		customsRequirements.isLoading,
+		customsRequirements.isEUProductIdRequired,
+	] );
 
 	const setCustomsState = useCallback(
 		( newState: CustomsState ) => {
@@ -261,6 +303,8 @@ export function useCustomsState(
 				itn,
 				items,
 			} = getCustomsState();
+			const includeEUProductIds =
+				shouldCollectEUProductIds( contents_type );
 
 			return {
 				...pkg,
@@ -283,6 +327,7 @@ export function useCustomsState(
 						originCountry: origin_country,
 						product_id,
 						price,
+						...identifiers
 					} ) => ( {
 						description,
 						quantity,
@@ -293,11 +338,14 @@ export function useCustomsState(
 						origin_country,
 						product_id,
 						value: parseFloat( price ),
+						...( includeEUProductIds
+							? getEUProductIdPayload( identifiers )
+							: {} ),
 					} )
 				),
 			};
 		},
-		[ getCustomsState, isCustomsNeeded ]
+		[ getCustomsState, isCustomsNeeded, shouldCollectEUProductIds ]
 	);
 
 	const isHSTariffNumberRequired = useCallback( () => {
@@ -307,7 +355,24 @@ export function useCustomsState(
 			: false;
 	}, [ destination ] );
 
+	const hasEUProductIdErrors = useCallback( () => {
+		const customsState = getCustomsState();
+		return Boolean(
+			isCustomsNeeded() &&
+				customsState &&
+				shouldCollectEUProductIds( customsState.contentsType ) &&
+				customsState.items.some(
+					( item ) => ! isEmpty( getEUProductIdErrors( item ) )
+				)
+		);
+	}, [ getCustomsState, isCustomsNeeded, shouldCollectEUProductIds ] );
+
 	const hasErrors = useCallback( () => {
+		// Rates must wait for the requirement; domestic shipments have no customs step to wait on.
+		if ( isCustomsRequirementsLoading() && isCustomsNeeded() ) {
+			return true;
+		}
+
 		const { items, ...rest } = errors;
 
 		if ( isHSTariffNumberRequired() ) {
@@ -321,11 +386,22 @@ export function useCustomsState(
 				return true;
 			}
 		}
+
+		if ( hasEUProductIdErrors() ) {
+			return true;
+		}
 		return (
 			Object.values( rest ).length ||
 			items.some( ( i ) => Object.values( i ).length )
 		);
-	}, [ errors, getCustomsState, isHSTariffNumberRequired ] );
+	}, [
+		errors,
+		getCustomsState,
+		isHSTariffNumberRequired,
+		hasEUProductIdErrors,
+		isCustomsRequirementsLoading,
+		isCustomsNeeded,
+	] );
 
 	/**
 	 * Update the customs state based on the shipment items.
@@ -469,9 +545,12 @@ export function useCustomsState(
 		setCustomsState,
 		maybeApplyCustomsToPackage,
 		hasErrors,
+		hasEUProductIdErrors,
 		setErrors,
 		isCustomsNeeded,
 		isHSTariffNumberRequired,
+		isEUProductIdRequired,
+		isCustomsRequirementsLoading,
 		updateCustomsItems,
 	};
 }

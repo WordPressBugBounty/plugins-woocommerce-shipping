@@ -60,3 +60,9 @@ export const restrictionTypes = [
 // NOEEI exemption codes in the format "NOEEI 30.XX" with optional subsection letters and numbers
 export const itnMatchingRegex =
 	/^(?:(?:AES\s*ITN:?\s*)?(?:AES\s*)?X?\d{14}|(?:NOEEI\s+30\.\d{1,2}(?:\([a-z]\)(?:\(\d\))?)?))$/i;
+
+// TARIC exemption code sent as the EU S-PID when an item has no GTIN/EAN barcode.
+export const NO_STANDARDIZED_PRODUCT_ID = 'Y081';
+
+// EasyPost limit for the customs item `code`, `manufacturer_product_id` and `standardized_product_id`.
+export const MAX_PRODUCT_ID_LENGTH = 64;

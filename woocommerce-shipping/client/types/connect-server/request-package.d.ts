@@ -48,5 +48,8 @@ export type RequestPackageWithCustoms<
 		origin_country: string;
 		product_id: number;
 		value: number;
+		code?: string;
+		manufacturer_product_id?: string;
+		standardized_product_id?: string;
 	}[];
 };
