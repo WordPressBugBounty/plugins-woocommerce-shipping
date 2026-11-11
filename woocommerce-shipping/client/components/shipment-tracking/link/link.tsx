@@ -37,7 +37,7 @@ export const ShipmentTrackingLink = ( {
 					) }
 				</small>
 			) }
-			<a href={ trackingUrl } target="__blank" rel="noopener noreferrer">
+			<a href={ trackingUrl } target="_blank" rel="noopener noreferrer">
 				{ label.tracking }
 			</a>
 			<Icon icon={ external } size={ 15 } />

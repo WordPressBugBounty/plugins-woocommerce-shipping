@@ -9,6 +9,7 @@ namespace Automattic\WCShipping\Bulk;
 
 use Automattic\WCShipping\Connect\ConnectServerErrorCodes;
 use Automattic\WCShipping\Connect\WC_Connect_API_Client_Live;
+use Automattic\WCShipping\Connect\WC_Connect_Functions;
 use WP_Error;
 
 /**
@@ -79,7 +80,7 @@ class BatchableApiClient extends WC_Connect_API_Client_Live {
 	 * charges. This is the "one batch = one charge" path consumed by the bulk label flow.
 	 *
 	 * Body shape sent on the wire:
-	 *   `{ async, email_receipt, payment_method_id, shipments: [{ order_id, origin,
+	 *   `{ async, email_receipt, payment_method_id, store_state, shipments: [{ order_id, origin,
 	 *      destination, packages, shipment_options, is_return }] }`
 	 * Only one HTTP call is made — no parallel dispatch, no per-order fan-out.
 	 *
@@ -102,7 +103,73 @@ class BatchableApiClient extends WC_Connect_API_Client_Live {
 			);
 		}
 
+		$body['store_state'] = $this->store_state();
+
 		return $this->request( 'POST', '/shipping/labels/batch', $body );
+	}
+
+	/**
+	 * Add the merchant IP headers to the parent headers.
+	 *
+	 * @return array|WP_Error Headers, or the parent error.
+	 */
+	protected function request_headers() {
+		$headers = parent::request_headers();
+		if ( is_wp_error( $headers ) ) {
+			return $headers;
+		}
+
+		// Background runs have no merchant, and REMOTE_ADDR there is the server itself.
+		// Both Action Scheduler queue runners fire action_scheduler_run_queue.
+		if ( wp_doing_cron() || ( defined( 'WP_CLI' ) && WP_CLI ) || doing_action( 'action_scheduler_run_queue' ) ) {
+			return $headers;
+		}
+
+		// A shopper at checkout cannot manage labels, so only merchant requests carry the IP.
+		if ( ! WC_Connect_Functions::user_can_manage_labels() ) {
+			return $headers;
+		}
+
+		$client_ip = \WC_Geolocation::get_ip_address();
+		if ( '' !== $client_ip ) {
+			$headers['X-WCShip-Client-IP'] = $client_ip;
+		}
+
+		$remote_addr = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '';
+		if ( '' !== $remote_addr ) {
+			$headers['X-WCShip-Client-Remote-Addr'] = $remote_addr;
+		}
+
+		return $headers;
+	}
+
+	/**
+	 * Purchase one label, with the store state in the body.
+	 *
+	 * @param array $body Request body.
+	 * @return mixed|WP_Error Decoded response, or an error.
+	 */
+	public function send_shipping_label_request( $body ) {
+		if ( is_array( $body ) ) {
+			$body['store_state'] = $this->store_state();
+		}
+
+		return parent::send_shipping_label_request( $body );
+	}
+
+	/**
+	 * Build the store state that a label purchase sends.
+	 *
+	 * Same option logic as WooCommerce ComingSoonHelper.
+	 *
+	 * @return array{coming_soon: bool, store_pages_only: bool, environment: string}
+	 */
+	private function store_state(): array {
+		return array(
+			'coming_soon'      => 'yes' === get_option( 'woocommerce_coming_soon' ),
+			'store_pages_only' => 'yes' === get_option( 'woocommerce_store_pages_only' ),
+			'environment'      => wp_get_environment_type(),
+		);
 	}
 
 	/**

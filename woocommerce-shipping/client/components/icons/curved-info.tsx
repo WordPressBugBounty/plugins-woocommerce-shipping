@@ -1,6 +1,8 @@
 // Definging as a simple svg will allow Icon component to be able to control the size
 export const curvedInfo = (
 	<svg
+		aria-hidden="true"
+		focusable="false"
 		width="40"
 		height="40"
 		viewBox="0 0 40 40"

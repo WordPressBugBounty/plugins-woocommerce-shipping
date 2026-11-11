@@ -1,6 +1,6 @@
 import { LocationResponse, OriginAddress, RequestAddress } from 'types';
 import { snakeCaseKeys } from '../common';
-import { composeAddress, composeName } from '../order';
+import { composeName, composeStreetForRequest } from '../order';
 
 export const mapAddressForRequest = (
 	originAddress: OriginAddress
@@ -28,12 +28,11 @@ export const mapAddressForRequest = (
 		email,
 		country,
 		state,
-		address: composeAddress( {
+		...composeStreetForRequest( {
 			address_1: originAddress.address1,
-			address_2: originAddress.address2,
+			address_2,
 			address: originAddress.address,
 		} ),
-		address_2,
 		city,
 		postcode,
 		id,

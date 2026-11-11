@@ -5,7 +5,7 @@ import {
 } from '@wordpress/components';
 import { chevronDown, chevronRight } from '@wordpress/icons';
 import { useState } from '@wordpress/element';
-import { sprintf } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import clsx from 'clsx';
 import { getCurrencySymbol, getDimensionsUnit, getWeightUnit } from 'utils';
 import { withBoundary } from 'components/HOC';
@@ -37,10 +37,17 @@ const Item = withBoundary(
 								'is-visible': item.quantity > 1,
 								'has-expanded': isExpanded,
 							} ) }
+							// One name; aria-expanded carries the state.
+							label={ __(
+								'Item details',
+								'woocommerce-shipping'
+							) }
+							aria-expanded={ isExpanded }
 							onClick={ () => expand( ! isExpanded ) }
 						/>
 					) }
-					<img src={ item.image } alt={ item.name } width="32" />
+					{ /* Decorative: the product name is shown right next to it. */ }
+					<img src={ item.image } alt="" width="32" />
 
 					<dl>
 						<dt className="item-name">

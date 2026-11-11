@@ -1,5 +1,10 @@
 import { AddressTypes, Destination } from 'types';
-import { camelCaseKeys, composeAddress, composeName, getConfig } from 'utils';
+import {
+	camelCaseKeys,
+	composeName,
+	composeStreetForRequest,
+	getConfig,
+} from 'utils';
 import { AddressState } from '../types';
 
 export const getOrderDestination = ( state: AddressState ): Destination =>
@@ -68,7 +73,9 @@ export const getPreparedDestination = ( state: AddressState ) => {
 			last_name: lastName,
 			name: rawDestination.name,
 		} ),
-		address: composeAddress( {
+		// Line 1 in `address` and the unit in `address_2`, so the carrier
+		// gets the unit in street2 instead of folded into street1.
+		...composeStreetForRequest( {
 			address_1: address1,
 			address_2: address2,
 			address: rawDestination.address,

@@ -7,13 +7,12 @@
  * Author URI: https://woocommerce.com/
  * Text Domain: woocommerce-shipping
  * Domain Path: /languages/
- * Version: 2.5.0
+ * Version: 2.5.1
  * Requires Plugins: woocommerce
  * Requires PHP: 7.4
  * Requires at least: 7.0
- * Tested up to: 7.1
- * WC requires at least: 11.0
- * WC tested up to: 11.2
+ * WC requires at least: 11.1
+ * WC tested up to: 11.3
  * License: GPL v2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  *
@@ -39,7 +38,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'WCSHIPPING_VERSION', '2.5.0' ); // WRCS: DEFINED_VERSION.
+define( 'WCSHIPPING_VERSION', '2.5.1' ); // WRCS: DEFINED_VERSION.
 define( 'WCSHIPPING_PLUGIN_FILE', __FILE__ );
 define( 'WCSHIPPING_PLUGIN_DIR', __DIR__ );
 define( 'WCSHIPPING_PLUGIN_DIST_DIR', WCSHIPPING_PLUGIN_DIR . '/dist/' );

@@ -130,6 +130,7 @@ export const TotalWeight = ( { packageWeight = 0 } ) => {
 		className: errors[ fieldName ]
 			? 'package-total-weight has-error'
 			: 'package-total-weight',
+		'aria-invalid': errors[ fieldName ] ? true : undefined,
 		onValidate: ( value: string ) => {
 			const float = parseFloat( value );
 			const threshold = minWeightThresholds[ weightUnit ];

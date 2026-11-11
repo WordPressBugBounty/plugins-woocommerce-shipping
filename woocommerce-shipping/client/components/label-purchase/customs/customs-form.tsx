@@ -75,7 +75,9 @@ export const CustomsForm = (): JSX.Element => {
 		productId?: number,
 		defaultValue: T = '' as T,
 		options?: { help: string }
-	): Omit< InputProps< CustomsState, T >, 'onBlur' > => {
+	): Omit< InputProps< CustomsState, T >, 'onBlur' > & {
+		'aria-invalid'?: boolean;
+	} => {
 		if ( productId ) {
 			const existingOrderItem =
 				items.find( ( { id } ) => id === productId ) ??
@@ -116,6 +118,7 @@ export const CustomsForm = (): JSX.Element => {
 				// Refrain from showing errors on disabled form fields
 				help: disable || help,
 				className: help && ! disable ? 'has-error' : '',
+				'aria-invalid': help && ! disable ? true : undefined,
 			};
 		}
 
@@ -131,6 +134,7 @@ export const CustomsForm = (): JSX.Element => {
 						( errors[ key as keyof CustomsState ] as string ) ??
 						undefined,
 					className: 'has-error',
+					'aria-invalid': true,
 					onChange: ( value ) => {
 						props.onChange( value );
 					},

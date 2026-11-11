@@ -11,6 +11,7 @@ use Automattic\WCShipping\Connect\WC_Connect_Service_Settings_Store;
 use Automattic\WCShipping\Connect\WC_Connect_API_Client;
 use Automattic\WCShipping\Connect\WC_Connect_Logger;
 use Automattic\WCShipping\OriginAddresses\OriginAddressService;
+use Automattic\WCShipping\Utilities\AddressUtils;
 use WC_Order;
 use WP_Error;
 
@@ -25,6 +26,39 @@ class AddressNormalizationService {
 	 * @var string
 	 */
 	const DESTINATION_NORMALIZED_HASH_KEY = '_wcshipping_destination_normalized_hash';
+
+	/**
+	 * USPS secondary unit designators that take a number (Publication 28,
+	 * Appendix C2), spelled out and abbreviated.
+	 *
+	 * @var string[]
+	 */
+	private const SECONDARY_UNIT_DESIGNATORS = array(
+		'APARTMENT',
+		'APT',
+		'BUILDING',
+		'BLDG',
+		'DEPARTMENT',
+		'DEPT',
+		'FLOOR',
+		'FL',
+		'HANGAR',
+		'HNGR',
+		'KEY',
+		'LOT',
+		'PIER',
+		'ROOM',
+		'RM',
+		'SLIP',
+		'SPACE',
+		'SPC',
+		'STOP',
+		'SUITE',
+		'STE',
+		'TRAILER',
+		'TRLR',
+		'UNIT',
+	);
 
 	/**
 	 * Connect Server settings store.
@@ -417,6 +451,15 @@ class AddressNormalizationService {
 			$request_body['address_2'] = '';
 		}
 
+		// The client sends the joined street line in `address` and the unit
+		// again in `address_2`; send the unit once so the carrier sees it once.
+		if ( isset( $request_body['address'] ) ) {
+			list( $request_body['address'], $request_body['address_2'] ) = AddressUtils::separate_address_lines(
+				(string) $request_body['address'],
+				(string) $request_body['address_2']
+			);
+		}
+
 		// Synthesize `name` from `first_name` + `last_name` when neither is
 		// null/empty (combining null produces a leading or trailing space).
 		if (
@@ -504,6 +547,42 @@ class AddressNormalizationService {
 			unset( $response_body['address'] );
 		}
 
+		// A normalization provider may return line 2 empty, either because it
+		// moved the unit into line 1 (USPS standardization, often re-spelled:
+		// "Suite 3000" -> "STE 3000") or because it dropped it.
+		if (
+			isset( $original_address['address_2'] ) &&
+			'' !== trim( (string) $original_address['address_2'] ) &&
+			( ! isset( $response_body['address_2'] ) || '' === trim( (string) $response_body['address_2'] ) )
+		) {
+			$folded = $this->split_folded_unit(
+				(string) ( $response_body['address_1'] ?? '' ),
+				$this->get_submitted_street_line( $original_address ),
+				(string) $original_address['address_2']
+			);
+
+			if ( null === $folded ) {
+				// Dropped: keep the merchant's unit instead of silently losing it.
+				$response_body['address_2'] = wc_clean( $original_address['address_2'] );
+			} else {
+				// Folded: carry the unit once, in line 2 when it can be split off.
+				$response_body['address_1'] = wc_clean( $folded[0] );
+				$response_body['address_2'] = wc_clean( $folded[1] );
+			}
+		}
+
+		// Keep the unit out of `address_1` when `address_2` carries it, so the
+		// saved order never holds it twice. This also repairs orders that were
+		// already saved as `"…, D 4102"` / `"D 4102"`.
+		if ( isset( $response_body['address_1'] ) && ! empty( $response_body['address_2'] ) ) {
+			list( $line_1, $line_2 )    = AddressUtils::separate_address_lines(
+				(string) $response_body['address_1'],
+				(string) $response_body['address_2']
+			);
+			$response_body['address_1'] = wc_clean( $line_1 );
+			$response_body['address_2'] = wc_clean( $line_2 );
+		}
+
 		if ( isset( $response_body['name'] ) ) {
 			list( $first_name, $last_name ) = explode( ' ', $response_body['name'], 2 );
 			$response_body['first_name']    = wc_clean( $first_name );
@@ -528,5 +607,73 @@ class AddressNormalizationService {
 		}
 
 		return $response_body;
+	}
+
+	/**
+	 * Returns the street line 1 that was sent to Connect Server for normalization.
+	 *
+	 * @param array $original_address Address passed to `normalize_address()`.
+	 *
+	 * @return string Street line 1, without copies of `address_2`.
+	 */
+	private function get_submitted_street_line( array $original_address ): string {
+		$line_1 = '';
+		if ( ! empty( $original_address['address'] ) ) {
+			$line_1 = (string) $original_address['address'];
+		} elseif ( ! empty( $original_address['address_1'] ) ) {
+			$line_1 = (string) $original_address['address_1'];
+		}
+
+		list( $line_1 ) = AddressUtils::separate_address_lines( $line_1, (string) ( $original_address['address_2'] ?? '' ) );
+
+		return $line_1;
+	}
+
+	/**
+	 * Detects a unit that the normalization provider moved into street line 1.
+	 *
+	 * USPS standardization puts the secondary unit on the delivery line and
+	 * often re-spells it ("Suite 3000" -> "STE 3000", "#4102" -> "# 4102"), so
+	 * the merchant's `address_2` can't be matched literally. The unit's last
+	 * word (its number, usually) is what survives.
+	 *
+	 * @param string $normalized_line_1 Street line 1 returned by the provider.
+	 * @param string $submitted_line_1  Street line 1 that was sent.
+	 * @param string $unit              The merchant's `address_2`.
+	 *
+	 * @return string[]|null `null` when the provider did not fold the unit into
+	 *                       line 1. Otherwise line 1 and line 2: the provider's
+	 *                       unit split off into line 2, or line 1 as returned and
+	 *                       an empty line 2 when it can't be split off safely.
+	 */
+	private function split_folded_unit( string $normalized_line_1, string $submitted_line_1, string $unit ): ?array {
+		$normalized_line_1 = trim( $normalized_line_1 );
+		if ( '' === $normalized_line_1 || ! preg_match( '/([\p{L}\p{N}]+)[^\p{L}\p{N}]*$/u', $unit, $unit_matches ) ) {
+			return null;
+		}
+
+		// "350 5TH AVE D 4102": the unit kept its spelling.
+		list( $line_1, $line_2 ) = AddressUtils::separate_address_lines( $normalized_line_1, $unit );
+		if ( $line_1 !== $normalized_line_1 ) {
+			return array( $line_1, $line_2 );
+		}
+
+		$unit_token = preg_quote( $unit_matches[1], '/' );
+
+		// "350 5TH AVE STE 3000", "350 5TH AVE # 4102": a designator (or "#")
+		// followed by the unit's last word ends the line.
+		$folded_pattern = '/^(.*\S)\s+((?:(?:' . implode( '|', self::SECONDARY_UNIT_DESIGNATORS ) . ')\.?\s*#?|#)\s*' . $unit_token . ')$/iu';
+		if ( preg_match( $folded_pattern, $normalized_line_1, $matches ) ) {
+			return array( trim( $matches[1] ), trim( $matches[2] ) );
+		}
+
+		// "350 5TH AVE 4102": the line now ends with the unit's last word and
+		// the sent line did not. Keep it in line 1 so it is carried once.
+		$ends_with_unit = '/(?:^|[^\p{L}\p{N}])' . $unit_token . '[^\p{L}\p{N}]*$/iu';
+		if ( preg_match( $ends_with_unit, $normalized_line_1 ) && ! preg_match( $ends_with_unit, $submitted_line_1 ) ) {
+			return array( $normalized_line_1, '' );
+		}
+
+		return null;
 	}
 }

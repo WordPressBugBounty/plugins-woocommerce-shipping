@@ -19,6 +19,7 @@ export * from './sentry';
 export * from './error-boundary';
 export * from './tracks';
 export * from './address';
+export * from './address-lines';
 export * from './deferred';
 export * from './weight';
 export * from './dimensions';

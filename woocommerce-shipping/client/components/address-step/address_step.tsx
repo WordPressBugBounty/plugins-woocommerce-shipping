@@ -2,7 +2,7 @@ import React from 'react';
 import { isEmpty } from 'lodash';
 
 import { Button, Flex, FlexItem, Modal } from '@wordpress/components';
-import { useEffect, useState } from '@wordpress/element';
+import { useEffect, useMemo, useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { dispatch, useSelect } from '@wordpress/data';
 import { Form } from '@woocommerce/components';
@@ -20,6 +20,7 @@ import {
 	validatePostalCode,
 	validateRequiredFields,
 	validateEmojiString,
+	separateAddressLines,
 } from 'utils';
 import { hasOnlyCheckboxChanges } from 'utils/address';
 import { AddressContextProvider } from './context';
@@ -147,26 +148,40 @@ export const AddressStep = withBoundary(
 			[]
 		);
 
+		// Only the destination form has a unit field. The origin form keeps
+		// editing the joined street line in `address`, so the unit stays visible.
+		const hasAddress2Field = type === ADDRESS_TYPES.DESTINATION;
+
+		// The destination form edits line 1 in `address` and the unit in
+		// `address2`. The address passed in may hold the joined line, so split
+		// it for the form.
+		const formInitialValues = useMemo( () => {
+			if ( ! hasAddress2Field ) {
+				return address;
+			}
+			const [ line1, line2 ] = separateAddressLines(
+				address.address ?? '',
+				address.address2 ?? ''
+			);
+			return { ...address, address: line1, address2: line2 } as T;
+		}, [ address, hasAddress2Field ] );
+
+		const toAddressShape = ( vals: T ) => ( {
+			...vals,
+			address1: vals.address ?? '',
+			address2: hasAddress2Field ? vals.address2 ?? '' : '',
+		} );
+
 		const normalizeAddress = async ( values: T ) => {
 			setIsUpdating( true );
 			await dispatch( addressStore ).normalizeAddress(
 				{
-					address: {
-						...values,
-						address1: values.address ?? '',
-						address2: '',
-					},
+					address: toAddressShape( values ),
 				},
 				type
 			);
 			setIsUpdating( false );
 		};
-
-		const toAddressShape = ( vals: T ) => ( {
-			...vals,
-			address1: vals.address ?? '',
-			address2: '',
-		} );
 
 		const persistAddress = async ( vals: T, verified: boolean ) => {
 			setIsUpdating( true );
@@ -197,7 +212,10 @@ export const AddressStep = withBoundary(
 		const handleFormSubmit = async ( values: T ) => {
 			// If only checkbox fields changed and address is already verified,
 			// skip normalization and directly update the address.
-			if ( hasOnlyCheckboxChanges( address, values ) && isVerified ) {
+			if (
+				hasOnlyCheckboxChanges( formInitialValues, values ) &&
+				isVerified
+			) {
 				await persistAddress( values, true );
 				return;
 			}
@@ -352,7 +370,7 @@ export const AddressStep = withBoundary(
 						{ ! isSuggestionModalOpen && (
 							<AddressDataForm
 								type={ type }
-								initialValue={ { ...address } }
+								initialValue={ { ...formInitialValues } }
 								onSubmit={ normalizeAddress }
 								onCancel={ onCancelCallback }
 								isUpdating={ isUpdating }
@@ -369,7 +387,7 @@ export const AddressStep = withBoundary(
 				) : (
 					<Form< T >
 						validate={ validateAddressSection }
-						initialValues={ address }
+						initialValues={ formInitialValues }
 						onSubmit={ handleFormSubmit }
 					>
 						{
@@ -410,7 +428,7 @@ export const AddressStep = withBoundary(
 											isFormChanged={
 												isDirty &&
 												! hasOnlyCheckboxChanges(
-													address,
+													formInitialValues,
 													values
 												)
 											}

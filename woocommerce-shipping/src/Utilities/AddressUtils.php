@@ -17,6 +17,23 @@ use Automattic\WooCommerce\StoreApi\Utilities\ValidationUtils;
 class AddressUtils {
 
 	/**
+	 * Longest secondary line `separate_address_lines()` still splits, in bytes.
+	 *
+	 * Checkout and the Store API do not cap `address_2`, and the split builds
+	 * a regular expression from it. The client mirrors this bound.
+	 *
+	 * @var int
+	 */
+	public const ADDRESS_2_SPLIT_MAX_LENGTH = 200;
+
+	/**
+	 * Most words a secondary line may have for `separate_address_lines()` to split it.
+	 *
+	 * @var int
+	 */
+	public const ADDRESS_2_SPLIT_MAX_WORDS = 50;
+
+	/**
 	 * Standard address fields.
 	 *
 	 * @var array
@@ -82,12 +99,12 @@ class AddressUtils {
 		$address1 = self::get_standardized_address( $address1 );
 		$address2 = self::get_standardized_address( $address2 );
 
-		// Set thresholds (adjust as necessary)
-		$STREET_THRESHOLD = 5;
+		// Set thresholds (adjust as necessary).
+		$street_threshold = 5;
 
 		foreach ( self::$standard_address_fields as $field ) {
 			if ( in_array( $field, array( 'address_1', 'address_2' ), true ) ) {
-				if ( levenshtein( $address1[ $field ], $address2[ $field ] ) > $STREET_THRESHOLD ) {
+				if ( levenshtein( $address1[ $field ], $address2[ $field ] ) > $street_threshold ) {
 					return false;
 				}
 			} elseif ( $address1[ $field ] !== $address2[ $field ] ) {
@@ -302,6 +319,67 @@ class AddressUtils {
 		$fields_for_country = WC()->countries->get_address_fields( $country, $type );
 
 		return $fields_for_country;
+	}
+
+	/**
+	 * Splits a street line that may also carry the secondary line back into two lines.
+	 *
+	 * The label UI joins `address_1` and `address_2` into one street line
+	 * (`"350 5th Ave, D 4102"`) and has also sent `address_2` beside it.
+	 * Saving that pair as-is put the unit in both fields, and every later join
+	 * added it again (`"…, D 4102, D 4102"`). This removes those copies so the
+	 * unit is carried once.
+	 *
+	 * Rules, when `$line_2` is not empty (case and spacing are ignored):
+	 * - `$line_1` ends with one or more `", <line_2>"` copies: they are removed
+	 *   and `$line_2` is kept.
+	 * - `$line_1` already ends with `" <line_2>"` and `$line_2` has two or more
+	 *   words (for example a verified `"350 5TH AVE STE 3000"` with
+	 *   `"Ste 3000"`): the suffix is removed from `$line_1` and `$line_2` is
+	 *   kept.
+	 *   One-word units are left alone, because `"County Road 12"` with unit
+	 *   `"12"` is a real address.
+	 * - Otherwise both lines are returned unchanged.
+	 *
+	 * @param string $line_1 Street line, possibly joined with the secondary line.
+	 * @param string $line_2 Secondary line (apartment, suite, unit).
+	 *
+	 * @return string[] Two items: the street line and the secondary line.
+	 */
+	public static function separate_address_lines( string $line_1, string $line_2 ): array {
+		$line_1 = trim( $line_1 );
+		$line_2 = trim( $line_2 );
+
+		if ( '' === $line_2 || '' === $line_1 ) {
+			return array( $line_1, $line_2 );
+		}
+
+		// `preg_split()` returns false on malformed UTF-8. A huge value is no
+		// unit, and the pattern built from it can exceed the regex engine's
+		// limits (the client mirrors these bounds), so leave both lines alone.
+		$words = strlen( $line_2 ) > self::ADDRESS_2_SPLIT_MAX_LENGTH ? false : preg_split( '/\s+/u', $line_2 );
+		if ( ! is_array( $words ) || count( $words ) > self::ADDRESS_2_SPLIT_MAX_WORDS ) {
+			return array( $line_1, $line_2 );
+		}
+
+		$pattern = implode( '\s+', array_map( fn( $word ) => preg_quote( $word, '/' ), $words ) );
+
+		$stripped = preg_replace( '/(?:\s*,\s*' . $pattern . ')+\s*,?\s*$/iu', '', $line_1 );
+		if ( is_string( $stripped ) && $stripped !== $line_1 ) {
+			$stripped = rtrim( $stripped, " \t\n\r\0\x0B," );
+			if ( '' !== $stripped ) {
+				return array( $stripped, $line_2 );
+			}
+		}
+
+		if ( count( $words ) > 1 ) {
+			$without_suffix = preg_replace( '/\s+' . $pattern . '\s*$/iu', '', $line_1 );
+			if ( is_string( $without_suffix ) && $without_suffix !== $line_1 && '' !== trim( $without_suffix ) ) {
+				return array( trim( $without_suffix ), $line_2 );
+			}
+		}
+
+		return array( $line_1, $line_2 );
 	}
 
 	/**

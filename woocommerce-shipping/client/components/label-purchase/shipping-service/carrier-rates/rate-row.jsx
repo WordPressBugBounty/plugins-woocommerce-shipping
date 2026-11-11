@@ -160,7 +160,8 @@ export const RateRow = withBoundary(
 						auspsmedia: (
 							// eslint-disable-next-line jsx-a11y/anchor-has-content
 							<a
-								target="__blank"
+								target="_blank"
+								rel="noopener noreferrer"
 								href="https://pe.usps.com/text/DMM300/273.htm#a_3_0"
 							/>
 						),
@@ -290,7 +291,7 @@ export const RateRow = withBoundary(
 									<>
 										<data
 											value={ promoRate }
-											aria-label="rate-price"
+											data-testid="rate-price"
 										>
 											<s>{ formatAmount( rate.rate ) }</s>{ ' ' }
 											{ formatAmount( promoRate ) }
@@ -313,7 +314,7 @@ export const RateRow = withBoundary(
 									>
 										<data
 											value={ rate.rate }
-											aria-label="rate-price"
+											data-testid="rate-price"
 										>
 											{ formatAmount( rate.rate ) }
 										</data>
@@ -335,14 +336,6 @@ export const RateRow = withBoundary(
 			</Card>
 		) : (
 			<>
-				<input
-					type="radio"
-					name="shipping-rate"
-					id={ rateId }
-					// Controlled, so a cleared selection can be picked again.
-					checked={ isSelected }
-					onChange={ setSelected( rate ) }
-				/>
 				<Flex
 					direction="row"
 					align="flex-start"
@@ -355,6 +348,16 @@ export const RateRow = withBoundary(
 						[ dropOffNote && 'has-dropoff-note' ]
 					) }
 				>
+					{ /* Inside the label so the visually hidden radio sits in its own row, not at the top of the list, when it takes focus. */ }
+					<input
+						type="radio"
+						name="shipping-rate"
+						id={ rateId }
+						className="screen-reader-text"
+						// Controlled, so a cleared selection can be picked again.
+						checked={ isSelected }
+						onChange={ setSelected( rate ) }
+					/>
 					<CarrierIcon carrier={ carrierId } size="xLarge" />
 
 					<FlexBlock>
@@ -400,7 +403,7 @@ export const RateRow = withBoundary(
 								<>
 									<data
 										value={ promoRate }
-										aria-label="rate-price"
+										data-testid="rate-price"
 									>
 										<s>{ formatAmount( rate.rate ) }</s>{ ' ' }
 										{ formatAmount( promoRate ) }
@@ -418,7 +421,7 @@ export const RateRow = withBoundary(
 							) : (
 								<data
 									value={ rate.rate }
-									aria-label="rate-price"
+									data-testid="rate-price"
 								>
 									{ formatAmount( rate.rate ) }
 								</data>

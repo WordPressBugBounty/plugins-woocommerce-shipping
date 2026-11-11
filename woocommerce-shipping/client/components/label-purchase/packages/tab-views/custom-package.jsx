@@ -258,6 +258,7 @@ export const CustomPackage = withBoundary(
 				className: clsx( className, {
 					'has-error': errors[ fieldName ],
 				} ),
+				'aria-invalid': errors[ fieldName ] ? true : undefined,
 				onValidate: ( value ) => {
 					setErrorForInvalidDimension( value, fieldName );
 				},

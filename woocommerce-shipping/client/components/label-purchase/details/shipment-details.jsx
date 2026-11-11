@@ -495,9 +495,10 @@ export const ShipmentDetails = withBoundary(
 					>
 						<AddressStep
 							type={ ADDRESS_TYPES.DESTINATION }
-							address={ formatAddressFields(
-								destinationAddress
-							) }
+							address={ {
+								...formatAddressFields( destinationAddress ),
+								address2: destinationAddress.address2 ?? '',
+							} }
 							onCompleteCallback={ onCompleteCallback }
 							onCancelCallback={ () =>
 								setIsAddressModalOpen( false )

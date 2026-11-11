@@ -50,6 +50,14 @@ final class ConnectServerErrorCodes {
 	public const ORIGIN_ADDRESS_LIMIT_REACHED = 'origin_address_limit_reached';
 
 	/**
+	 * A customs item on an EU import is missing its NS-PID or S-PID. Returned
+	 * as a 403 by `POST /shipping/label` and `POST /shipping/labels/batch` only,
+	 * so it surfaces through the label purchase routes. The merchant fixes it
+	 * by filling in the identifiers on the customs form.
+	 */
+	public const MISSING_EU_PRODUCT_IDS = 'missing_eu_product_ids';
+
+	/**
 	 * Error codes that must reach the client with their code, message and
 	 * status intact instead of being collapsed into a generic server error.
 	 *
@@ -63,6 +71,7 @@ final class ConnectServerErrorCodes {
 	public const PASSTHROUGH = array(
 		self::MISSING_UPSDAP_TOS_ACCEPTANCE,
 		self::ORIGIN_ADDRESS_LIMIT_REACHED,
+		self::MISSING_EU_PRODUCT_IDS,
 	);
 
 	/**
@@ -91,6 +100,7 @@ final class ConnectServerErrorCodes {
 		return array(
 			'MISSING_UPSDAP_TOS_ACCEPTANCE' => self::MISSING_UPSDAP_TOS_ACCEPTANCE,
 			'ORIGIN_ADDRESS_LIMIT_REACHED'  => self::ORIGIN_ADDRESS_LIMIT_REACHED,
+			'MISSING_EU_PRODUCT_IDS'        => self::MISSING_EU_PRODUCT_IDS,
 		);
 	}
 }

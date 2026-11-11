@@ -1,5 +1,6 @@
-import { useEffect } from '@wordpress/element';
+import { useEffect, useRef, useState } from '@wordpress/element';
 import {
+	Button,
 	CheckboxControl,
 	Flex,
 	FlexBlock,
@@ -10,7 +11,12 @@ import {
 } from '@wordpress/components';
 import { useFormContext } from '@woocommerce/components';
 import { __ } from '@wordpress/i18n';
-import { getCountryNames, getStateNames, isMailAndPhoneRequired } from 'utils';
+import {
+	ADDRESS_2_MAX_LENGTH,
+	getCountryNames,
+	getStateNames,
+	isMailAndPhoneRequired,
+} from 'utils';
 import { useAddressContext } from './context';
 import { withBoundary } from 'components/HOC';
 import { ADDRESS_TYPES } from 'data/constants';
@@ -54,6 +60,31 @@ export const AddressFields = withBoundary(
 				errorCallback( validationErrors.general );
 			}
 		}, [ errorCallback, validationErrors ] );
+
+		// Like the WooCommerce checkout, the unit line stays behind a link
+		// until the merchant asks for it or the address already has one.
+		const hasAddress2Field = group === ADDRESS_TYPES.DESTINATION;
+		// Starts open when the address has a unit, and stays open while the
+		// merchant edits it, even if they clear the field.
+		const [ isAddress2Requested, setIsAddress2Requested ] = useState( () =>
+			Boolean( values.address2 )
+		);
+		const isAddress2Open =
+			isAddress2Requested || Boolean( values.address2 );
+		const address2Ref = useRef( null );
+		const shouldFocusAddress2 = useRef( false );
+
+		useEffect( () => {
+			if ( isAddress2Open && shouldFocusAddress2.current ) {
+				shouldFocusAddress2.current = false;
+				address2Ref.current?.focus();
+			}
+		}, [ isAddress2Open ] );
+
+		const openAddress2 = () => {
+			shouldFocusAddress2.current = true;
+			setIsAddress2Requested( true );
+		};
 
 		const isPhoneAndEmailRequired = isMailAndPhoneRequired( {
 			type: group,
@@ -164,6 +195,40 @@ export const AddressFields = withBoundary(
 						// Opting into the new styles for height
 						__next40pxDefaultSize={ true }
 					/>
+					{ hasAddress2Field && isAddress2Open && (
+						<>
+							<Spacer marginTop={ 0 } marginBottom={ 1 } />
+							<TextControl
+								ref={ address2Ref }
+								label={ __(
+									'Apartment, suite, etc. (optional)',
+									'woocommerce-shipping'
+								) }
+								{ ...getProps( 'address2' ) }
+								maxLength={ ADDRESS_2_MAX_LENGTH }
+								disabled={ isUpdating }
+								// Opting into the new styles for margin bottom
+								__nextHasNoMarginBottom={ true }
+								// Opting into the new styles for height
+								__next40pxDefaultSize={ true }
+							/>
+						</>
+					) }
+					{ hasAddress2Field && ! isAddress2Open && (
+						<FlexItem>
+							<Button
+								variant="link"
+								className="wcshipping-address-step__add-address-2"
+								onClick={ openAddress2 }
+								disabled={ isUpdating }
+							>
+								{ __(
+									'+ Add apartment, suite, etc.',
+									'woocommerce-shipping'
+								) }
+							</Button>
+						</FlexItem>
+					) }
 					<Spacer marginTop={ 0 } marginBottom={ 1 } />
 					<TextControl
 						label={ __( 'City', 'woocommerce-shipping' ) }

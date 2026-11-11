@@ -163,9 +163,14 @@ export const areAddressesClose = (
 	const isStreetSimilar =
 		levenshteinDistance( normStreet1Address1, normStreet1Address2 ) <=
 		STREET_THRESHOLD;
+	// Never auto-accept adding or removing a unit. Short values such as "Apt 4"
+	// otherwise fit within the edit-distance threshold and can be silently lost.
 	const isStreet2Similar =
-		levenshteinDistance( normStreet2Address1, normStreet2Address2 ) <=
-		STREET_THRESHOLD;
+		( ! normStreet2Address1 && ! normStreet2Address2 ) ||
+		( Boolean( normStreet2Address1 ) &&
+			Boolean( normStreet2Address2 ) &&
+			levenshteinDistance( normStreet2Address1, normStreet2Address2 ) <=
+				STREET_THRESHOLD );
 	const isCitySimilar = normCityAddress1 === normCityAddress2;
 	const isStateSimilar = normStateAddress1 === normStateAddress2;
 	const isPostalCodeSimilar =
@@ -199,6 +204,8 @@ export const hasOnlyCheckboxChanges = < T extends Record< string, unknown > >(
 		'name',
 		'company',
 		'address',
+		// The destination form edits the unit on its own line.
+		'address2',
 		'city',
 		'state',
 		'postcode',

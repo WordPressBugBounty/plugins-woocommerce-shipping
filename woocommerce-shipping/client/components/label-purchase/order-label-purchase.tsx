@@ -2,7 +2,7 @@ import React from 'react';
 import { useEffect, useRef, useState } from '@wordpress/element';
 import { Flex, Modal } from '@wordpress/components';
 import { deleteUrlParam, urlParamHasValue } from 'utils';
-import { ModalHeader } from './order-label-purchase-modal';
+import { MODAL_TITLE_ID, ModalHeader } from './order-label-purchase-modal';
 import { LabelPurchaseContextProvider } from 'context/label-purchase';
 import { SplitShipmentModal } from './split-shipment';
 import { LabelPurchaseTabs } from './label-purchase-tabs';
@@ -55,6 +55,7 @@ export const OrderLabelPurchase = ( {
 						shouldCloseOnClickOutside={ false }
 						shouldCloseOnEsc={ false }
 						__experimentalHideHeader={ true }
+						aria={ { labelledby: MODAL_TITLE_ID } }
 						isDismissible={ false }
 					>
 						<PromoBanner />

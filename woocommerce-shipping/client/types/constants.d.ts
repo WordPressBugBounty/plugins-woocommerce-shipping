@@ -1,6 +1,7 @@
 export interface ConnectServerErrorCodes {
 	MISSING_UPSDAP_TOS_ACCEPTANCE: string;
 	ORIGIN_ADDRESS_LIMIT_REACHED: string;
+	MISSING_EU_PRODUCT_IDS: string;
 }
 
 export interface Constants {

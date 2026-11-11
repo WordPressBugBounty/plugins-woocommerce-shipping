@@ -30,6 +30,7 @@ import {
 	camelCaseKeys,
 	composeAddress,
 	composeName,
+	composeStreetForRequest,
 	normalizeStoreAddressDraft,
 	snakeCaseKeys,
 } from 'utils';
@@ -220,10 +221,17 @@ export function* updateShipmentAddress(
 			Destination | OriginAddress,
 			LocationResponse
 		>( address );
+		const streetFields =
+			type === ADDRESS_TYPES.DESTINATION
+				? composeStreetForRequest( snakeCaseAddress )
+				: { address: composeAddress( snakeCaseAddress ) };
 		const requestData = {
 			address: {
 				...snakeCaseAddress,
-				address: composeAddress( snakeCaseAddress ),
+				...streetFields,
+				...( type === ADDRESS_TYPES.DESTINATION
+					? { address_1: streetFields.address }
+					: {} ),
 				name: composeName( snakeCaseAddress ),
 			},
 			isVerified,

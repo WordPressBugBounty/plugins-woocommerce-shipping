@@ -115,6 +115,9 @@ export const CarrierRates = withBoundary( ( { rates } ) => {
 			justify="space-between"
 			gap={ 4 }
 			direction="column"
+			// A group, not a radiogroup: the selected row also holds checkboxes and links.
+			role="group"
+			aria-label={ __( 'Shipping service', 'woocommerce-shipping' ) }
 		>
 			{ rates.map( ( rate, index ) => {
 				if (

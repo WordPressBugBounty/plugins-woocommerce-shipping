@@ -826,6 +826,10 @@ return array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/tests/php/Integrations/WooCommerceShipmentTrackingTest.php'
 	),
+	'Automattic\\WCShipping\\Tests\\php\\Bulk\\BatchableApiClientFraudSignalsTest' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/tests/php/Bulk/BatchableApiClientFraudSignalsTest.php'
+	),
 	'Automattic\\WCShipping\\Tests\\php\\Bulk\\BatchableApiClientTest' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/tests/php/Bulk/BatchableApiClientTest.php'
