@@ -822,6 +822,10 @@ return array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/tests/php/WCShippingRESTControllerTest.php'
 	),
+	'Automattic\\WCShipping\\Tests\\WPCOMConnection\\WPCOMConnectionRESTControllerTest' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/tests/php/WPCOMConnection/WPCOMConnectionRESTControllerTest.php'
+	),
 	'Automattic\\WCShipping\\Tests\\WooCommerceShipmentTrackingTest' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/tests/php/Integrations/WooCommerceShipmentTrackingTest.php'
@@ -1058,6 +1062,10 @@ return array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/src/WCShippingRESTController.php'
 	),
+	'Automattic\\WCShipping\\WPCOMConnection\\ConnectionPermissions' => array(
+		'version' => 'dev-trunk',
+		'path'    => $baseDir . '/src/WPCOMConnection/ConnectionPermissions.php'
+	),
 	'Automattic\\WCShipping\\WPCOMConnection\\WPCOMConnectionRESTController' => array(
 		'version' => 'dev-trunk',
 		'path'    => $baseDir . '/src/WPCOMConnection/WPCOMConnectionRESTController.php'
@@ -1073,130 +1081,6 @@ return array(
 	'Container' => array(
 		'version' => '6.0.0',
 		'path'    => $vendorDir . '/automattic/jetpack-autoloader/src/class-container.php'
-	),
-	'DVDoug\\BoxPacker\\Box' => array(
-		'version' => '3.9.3.0',
-		'path'    => $vendorDir . '/dvdoug/boxpacker/src/Box.php'
-	),
-	'DVDoug\\BoxPacker\\BoxList' => array(
-		'version' => '3.9.3.0',
-		'path'    => $vendorDir . '/dvdoug/boxpacker/src/BoxList.php'
-	),
-	'DVDoug\\BoxPacker\\ConstrainedItem' => array(
-		'version' => '3.9.3.0',
-		'path'    => $vendorDir . '/dvdoug/boxpacker/src/ConstrainedItem.php'
-	),
-	'DVDoug\\BoxPacker\\ConstrainedPlacementItem' => array(
-		'version' => '3.9.3.0',
-		'path'    => $vendorDir . '/dvdoug/boxpacker/src/ConstrainedPlacementItem.php'
-	),
-	'DVDoug\\BoxPacker\\InfalliblePacker' => array(
-		'version' => '3.9.3.0',
-		'path'    => $vendorDir . '/dvdoug/boxpacker/src/InfalliblePacker.php'
-	),
-	'DVDoug\\BoxPacker\\Item' => array(
-		'version' => '3.9.3.0',
-		'path'    => $vendorDir . '/dvdoug/boxpacker/src/Item.php'
-	),
-	'DVDoug\\BoxPacker\\ItemList' => array(
-		'version' => '3.9.3.0',
-		'path'    => $vendorDir . '/dvdoug/boxpacker/src/ItemList.php'
-	),
-	'DVDoug\\BoxPacker\\ItemTooLargeException' => array(
-		'version' => '3.9.3.0',
-		'path'    => $vendorDir . '/dvdoug/boxpacker/src/ItemTooLargeException.php'
-	),
-	'DVDoug\\BoxPacker\\LayerPacker' => array(
-		'version' => '3.9.3.0',
-		'path'    => $vendorDir . '/dvdoug/boxpacker/src/LayerPacker.php'
-	),
-	'DVDoug\\BoxPacker\\LayerStabiliser' => array(
-		'version' => '3.9.3.0',
-		'path'    => $vendorDir . '/dvdoug/boxpacker/src/LayerStabiliser.php'
-	),
-	'DVDoug\\BoxPacker\\LimitedSupplyBox' => array(
-		'version' => '3.9.3.0',
-		'path'    => $vendorDir . '/dvdoug/boxpacker/src/LimitedSupplyBox.php'
-	),
-	'DVDoug\\BoxPacker\\NoBoxesAvailableException' => array(
-		'version' => '3.9.3.0',
-		'path'    => $vendorDir . '/dvdoug/boxpacker/src/NoBoxesAvailableException.php'
-	),
-	'DVDoug\\BoxPacker\\OrientatedItem' => array(
-		'version' => '3.9.3.0',
-		'path'    => $vendorDir . '/dvdoug/boxpacker/src/OrientatedItem.php'
-	),
-	'DVDoug\\BoxPacker\\OrientatedItemFactory' => array(
-		'version' => '3.9.3.0',
-		'path'    => $vendorDir . '/dvdoug/boxpacker/src/OrientatedItemFactory.php'
-	),
-	'DVDoug\\BoxPacker\\OrientatedItemSorter' => array(
-		'version' => '3.9.3.0',
-		'path'    => $vendorDir . '/dvdoug/boxpacker/src/OrientatedItemSorter.php'
-	),
-	'DVDoug\\BoxPacker\\PackedBox' => array(
-		'version' => '3.9.3.0',
-		'path'    => $vendorDir . '/dvdoug/boxpacker/src/PackedBox.php'
-	),
-	'DVDoug\\BoxPacker\\PackedBoxList' => array(
-		'version' => '3.9.3.0',
-		'path'    => $vendorDir . '/dvdoug/boxpacker/src/PackedBoxList.php'
-	),
-	'DVDoug\\BoxPacker\\PackedItem' => array(
-		'version' => '3.9.3.0',
-		'path'    => $vendorDir . '/dvdoug/boxpacker/src/PackedItem.php'
-	),
-	'DVDoug\\BoxPacker\\PackedItemList' => array(
-		'version' => '3.9.3.0',
-		'path'    => $vendorDir . '/dvdoug/boxpacker/src/PackedItemList.php'
-	),
-	'DVDoug\\BoxPacker\\PackedLayer' => array(
-		'version' => '3.9.3.0',
-		'path'    => $vendorDir . '/dvdoug/boxpacker/src/PackedLayer.php'
-	),
-	'DVDoug\\BoxPacker\\Packer' => array(
-		'version' => '3.9.3.0',
-		'path'    => $vendorDir . '/dvdoug/boxpacker/src/Packer.php'
-	),
-	'DVDoug\\BoxPacker\\Test\\ConstrainedPlacementByCountTestItem' => array(
-		'version' => '3.9.3.0',
-		'path'    => $vendorDir . '/dvdoug/boxpacker/tests/Test/ConstrainedPlacementByCountTestItem.php'
-	),
-	'DVDoug\\BoxPacker\\Test\\ConstrainedPlacementNoStackingTestItem' => array(
-		'version' => '3.9.3.0',
-		'path'    => $vendorDir . '/dvdoug/boxpacker/tests/Test/ConstrainedPlacementNoStackingTestItem.php'
-	),
-	'DVDoug\\BoxPacker\\Test\\ConstrainedTestItem' => array(
-		'version' => '3.9.3.0',
-		'path'    => $vendorDir . '/dvdoug/boxpacker/tests/Test/ConstrainedTestItem.php'
-	),
-	'DVDoug\\BoxPacker\\Test\\LimitedSupplyTestBox' => array(
-		'version' => '3.9.3.0',
-		'path'    => $vendorDir . '/dvdoug/boxpacker/tests/Test/LimitedSupplyTestBox.php'
-	),
-	'DVDoug\\BoxPacker\\Test\\THPackTestItem' => array(
-		'version' => '3.9.3.0',
-		'path'    => $vendorDir . '/dvdoug/boxpacker/tests/Test/THPackTestItem.php'
-	),
-	'DVDoug\\BoxPacker\\Test\\TestBox' => array(
-		'version' => '3.9.3.0',
-		'path'    => $vendorDir . '/dvdoug/boxpacker/tests/Test/TestBox.php'
-	),
-	'DVDoug\\BoxPacker\\Test\\TestItem' => array(
-		'version' => '3.9.3.0',
-		'path'    => $vendorDir . '/dvdoug/boxpacker/tests/Test/TestItem.php'
-	),
-	'DVDoug\\BoxPacker\\VolumePacker' => array(
-		'version' => '3.9.3.0',
-		'path'    => $vendorDir . '/dvdoug/boxpacker/src/VolumePacker.php'
-	),
-	'DVDoug\\BoxPacker\\WeightRedistributor' => array(
-		'version' => '3.9.3.0',
-		'path'    => $vendorDir . '/dvdoug/boxpacker/src/WeightRedistributor.php'
-	),
-	'DVDoug\\BoxPacker\\WorkingVolume' => array(
-		'version' => '3.9.3.0',
-		'path'    => $vendorDir . '/dvdoug/boxpacker/src/WorkingVolume.php'
 	),
 	'DummyOrderItem' => array(
 		'version' => 'dev-trunk',
@@ -1269,50 +1153,6 @@ return array(
 	'Plugins_Handler' => array(
 		'version' => '6.0.0',
 		'path'    => $vendorDir . '/automattic/jetpack-autoloader/src/class-plugins-handler.php'
-	),
-	'Psr\\Log\\AbstractLogger' => array(
-		'version' => '1.1.4.0',
-		'path'    => $vendorDir . '/psr/log/Psr/Log/AbstractLogger.php'
-	),
-	'Psr\\Log\\InvalidArgumentException' => array(
-		'version' => '1.1.4.0',
-		'path'    => $vendorDir . '/psr/log/Psr/Log/InvalidArgumentException.php'
-	),
-	'Psr\\Log\\LogLevel' => array(
-		'version' => '1.1.4.0',
-		'path'    => $vendorDir . '/psr/log/Psr/Log/LogLevel.php'
-	),
-	'Psr\\Log\\LoggerAwareInterface' => array(
-		'version' => '1.1.4.0',
-		'path'    => $vendorDir . '/psr/log/Psr/Log/LoggerAwareInterface.php'
-	),
-	'Psr\\Log\\LoggerAwareTrait' => array(
-		'version' => '1.1.4.0',
-		'path'    => $vendorDir . '/psr/log/Psr/Log/LoggerAwareTrait.php'
-	),
-	'Psr\\Log\\LoggerInterface' => array(
-		'version' => '1.1.4.0',
-		'path'    => $vendorDir . '/psr/log/Psr/Log/LoggerInterface.php'
-	),
-	'Psr\\Log\\LoggerTrait' => array(
-		'version' => '1.1.4.0',
-		'path'    => $vendorDir . '/psr/log/Psr/Log/LoggerTrait.php'
-	),
-	'Psr\\Log\\NullLogger' => array(
-		'version' => '1.1.4.0',
-		'path'    => $vendorDir . '/psr/log/Psr/Log/NullLogger.php'
-	),
-	'Psr\\Log\\Test\\DummyTest' => array(
-		'version' => '1.1.4.0',
-		'path'    => $vendorDir . '/psr/log/Psr/Log/Test/DummyTest.php'
-	),
-	'Psr\\Log\\Test\\LoggerInterfaceTest' => array(
-		'version' => '1.1.4.0',
-		'path'    => $vendorDir . '/psr/log/Psr/Log/Test/LoggerInterfaceTest.php'
-	),
-	'Psr\\Log\\Test\\TestLogger' => array(
-		'version' => '1.1.4.0',
-		'path'    => $vendorDir . '/psr/log/Psr/Log/Test/TestLogger.php'
 	),
 	'ShipmentFromLabelGeneratorTest' => array(
 		'version' => 'dev-trunk',
@@ -1422,6 +1262,10 @@ return array(
 		'version' => 'dev-trunk',
 		'path'    => $vendorDir . '/woocommerce/box-packer/src/dvdoug/class-packer.php'
 	),
+	'WooCommerce\\BoxPacker\\DVDoug\\Probe_Packer' => array(
+		'version' => 'dev-trunk',
+		'path'    => $vendorDir . '/woocommerce/box-packer/src/dvdoug/class-probe-packer.php'
+	),
 	'WooCommerce\\BoxPacker\\DVDoug\\Util' => array(
 		'version' => 'dev-trunk',
 		'path'    => $vendorDir . '/woocommerce/box-packer/src/dvdoug/trait-util.php'
@@ -1441,6 +1285,134 @@ return array(
 	'WooCommerce\\BoxPacker\\Package' => array(
 		'version' => 'dev-trunk',
 		'path'    => $vendorDir . '/woocommerce/box-packer/src/class-package.php'
+	),
+	'WooCommerce\\BoxPacker\\Vendor\\DVDoug\\BoxPacker\\Box' => array(
+		'version' => '1.4.1.0',
+		'path'    => $vendorDir . '/woocommerce/box-packer/lib/boxpacker/Box.php'
+	),
+	'WooCommerce\\BoxPacker\\Vendor\\DVDoug\\BoxPacker\\BoxList' => array(
+		'version' => '1.4.1.0',
+		'path'    => $vendorDir . '/woocommerce/box-packer/lib/boxpacker/BoxList.php'
+	),
+	'WooCommerce\\BoxPacker\\Vendor\\DVDoug\\BoxPacker\\ConstrainedItem' => array(
+		'version' => '1.4.1.0',
+		'path'    => $vendorDir . '/woocommerce/box-packer/lib/boxpacker/ConstrainedItem.php'
+	),
+	'WooCommerce\\BoxPacker\\Vendor\\DVDoug\\BoxPacker\\ConstrainedPlacementItem' => array(
+		'version' => '1.4.1.0',
+		'path'    => $vendorDir . '/woocommerce/box-packer/lib/boxpacker/ConstrainedPlacementItem.php'
+	),
+	'WooCommerce\\BoxPacker\\Vendor\\DVDoug\\BoxPacker\\InfalliblePacker' => array(
+		'version' => '1.4.1.0',
+		'path'    => $vendorDir . '/woocommerce/box-packer/lib/boxpacker/InfalliblePacker.php'
+	),
+	'WooCommerce\\BoxPacker\\Vendor\\DVDoug\\BoxPacker\\Item' => array(
+		'version' => '1.4.1.0',
+		'path'    => $vendorDir . '/woocommerce/box-packer/lib/boxpacker/Item.php'
+	),
+	'WooCommerce\\BoxPacker\\Vendor\\DVDoug\\BoxPacker\\ItemList' => array(
+		'version' => '1.4.1.0',
+		'path'    => $vendorDir . '/woocommerce/box-packer/lib/boxpacker/ItemList.php'
+	),
+	'WooCommerce\\BoxPacker\\Vendor\\DVDoug\\BoxPacker\\ItemTooLargeException' => array(
+		'version' => '1.4.1.0',
+		'path'    => $vendorDir . '/woocommerce/box-packer/lib/boxpacker/ItemTooLargeException.php'
+	),
+	'WooCommerce\\BoxPacker\\Vendor\\DVDoug\\BoxPacker\\LayerPacker' => array(
+		'version' => '1.4.1.0',
+		'path'    => $vendorDir . '/woocommerce/box-packer/lib/boxpacker/LayerPacker.php'
+	),
+	'WooCommerce\\BoxPacker\\Vendor\\DVDoug\\BoxPacker\\LayerStabiliser' => array(
+		'version' => '1.4.1.0',
+		'path'    => $vendorDir . '/woocommerce/box-packer/lib/boxpacker/LayerStabiliser.php'
+	),
+	'WooCommerce\\BoxPacker\\Vendor\\DVDoug\\BoxPacker\\LimitedSupplyBox' => array(
+		'version' => '1.4.1.0',
+		'path'    => $vendorDir . '/woocommerce/box-packer/lib/boxpacker/LimitedSupplyBox.php'
+	),
+	'WooCommerce\\BoxPacker\\Vendor\\DVDoug\\BoxPacker\\NoBoxesAvailableException' => array(
+		'version' => '1.4.1.0',
+		'path'    => $vendorDir . '/woocommerce/box-packer/lib/boxpacker/NoBoxesAvailableException.php'
+	),
+	'WooCommerce\\BoxPacker\\Vendor\\DVDoug\\BoxPacker\\OrientatedItem' => array(
+		'version' => '1.4.1.0',
+		'path'    => $vendorDir . '/woocommerce/box-packer/lib/boxpacker/OrientatedItem.php'
+	),
+	'WooCommerce\\BoxPacker\\Vendor\\DVDoug\\BoxPacker\\OrientatedItemFactory' => array(
+		'version' => '1.4.1.0',
+		'path'    => $vendorDir . '/woocommerce/box-packer/lib/boxpacker/OrientatedItemFactory.php'
+	),
+	'WooCommerce\\BoxPacker\\Vendor\\DVDoug\\BoxPacker\\OrientatedItemSorter' => array(
+		'version' => '1.4.1.0',
+		'path'    => $vendorDir . '/woocommerce/box-packer/lib/boxpacker/OrientatedItemSorter.php'
+	),
+	'WooCommerce\\BoxPacker\\Vendor\\DVDoug\\BoxPacker\\PackedBox' => array(
+		'version' => '1.4.1.0',
+		'path'    => $vendorDir . '/woocommerce/box-packer/lib/boxpacker/PackedBox.php'
+	),
+	'WooCommerce\\BoxPacker\\Vendor\\DVDoug\\BoxPacker\\PackedBoxList' => array(
+		'version' => '1.4.1.0',
+		'path'    => $vendorDir . '/woocommerce/box-packer/lib/boxpacker/PackedBoxList.php'
+	),
+	'WooCommerce\\BoxPacker\\Vendor\\DVDoug\\BoxPacker\\PackedItem' => array(
+		'version' => '1.4.1.0',
+		'path'    => $vendorDir . '/woocommerce/box-packer/lib/boxpacker/PackedItem.php'
+	),
+	'WooCommerce\\BoxPacker\\Vendor\\DVDoug\\BoxPacker\\PackedItemList' => array(
+		'version' => '1.4.1.0',
+		'path'    => $vendorDir . '/woocommerce/box-packer/lib/boxpacker/PackedItemList.php'
+	),
+	'WooCommerce\\BoxPacker\\Vendor\\DVDoug\\BoxPacker\\PackedLayer' => array(
+		'version' => '1.4.1.0',
+		'path'    => $vendorDir . '/woocommerce/box-packer/lib/boxpacker/PackedLayer.php'
+	),
+	'WooCommerce\\BoxPacker\\Vendor\\DVDoug\\BoxPacker\\Packer' => array(
+		'version' => '1.4.1.0',
+		'path'    => $vendorDir . '/woocommerce/box-packer/lib/boxpacker/Packer.php'
+	),
+	'WooCommerce\\BoxPacker\\Vendor\\DVDoug\\BoxPacker\\VolumePacker' => array(
+		'version' => '1.4.1.0',
+		'path'    => $vendorDir . '/woocommerce/box-packer/lib/boxpacker/VolumePacker.php'
+	),
+	'WooCommerce\\BoxPacker\\Vendor\\DVDoug\\BoxPacker\\WeightRedistributor' => array(
+		'version' => '1.4.1.0',
+		'path'    => $vendorDir . '/woocommerce/box-packer/lib/boxpacker/WeightRedistributor.php'
+	),
+	'WooCommerce\\BoxPacker\\Vendor\\DVDoug\\BoxPacker\\WorkingVolume' => array(
+		'version' => '1.4.1.0',
+		'path'    => $vendorDir . '/woocommerce/box-packer/lib/boxpacker/WorkingVolume.php'
+	),
+	'WooCommerce\\BoxPacker\\Vendor\\Psr\\Log\\AbstractLogger' => array(
+		'version' => '1.4.1.0',
+		'path'    => $vendorDir . '/woocommerce/box-packer/lib/psr-log/AbstractLogger.php'
+	),
+	'WooCommerce\\BoxPacker\\Vendor\\Psr\\Log\\InvalidArgumentException' => array(
+		'version' => '1.4.1.0',
+		'path'    => $vendorDir . '/woocommerce/box-packer/lib/psr-log/InvalidArgumentException.php'
+	),
+	'WooCommerce\\BoxPacker\\Vendor\\Psr\\Log\\LogLevel' => array(
+		'version' => '1.4.1.0',
+		'path'    => $vendorDir . '/woocommerce/box-packer/lib/psr-log/LogLevel.php'
+	),
+	'WooCommerce\\BoxPacker\\Vendor\\Psr\\Log\\LoggerAwareInterface' => array(
+		'version' => '1.4.1.0',
+		'path'    => $vendorDir . '/woocommerce/box-packer/lib/psr-log/LoggerAwareInterface.php'
+	),
+	'WooCommerce\\BoxPacker\\Vendor\\Psr\\Log\\LoggerAwareTrait' => array(
+		'version' => '1.4.1.0',
+		'path'    => $vendorDir . '/woocommerce/box-packer/lib/psr-log/LoggerAwareTrait.php'
+	),
+	'WooCommerce\\BoxPacker\\Vendor\\Psr\\Log\\LoggerInterface' => array(
+		'version' => '1.4.1.0',
+		'path'    => $vendorDir . '/woocommerce/box-packer/lib/psr-log/LoggerInterface.php'
+	),
+	'WooCommerce\\BoxPacker\\Vendor\\Psr\\Log\\LoggerTrait' => array(
+		'version' => '1.4.1.0',
+		'path'    => $vendorDir . '/woocommerce/box-packer/lib/psr-log/LoggerTrait.php'
+	),
+	'WooCommerce\\BoxPacker\\Vendor\\Psr\\Log\\NullLogger' => array(
+		'version' => '1.4.1.0',
+		'path'    => $vendorDir . '/woocommerce/box-packer/lib/psr-log/NullLogger.php'
 	),
 	'WooCommerce\\BoxPacker\\WC_Boxpack' => array(
 		'version' => 'dev-trunk',

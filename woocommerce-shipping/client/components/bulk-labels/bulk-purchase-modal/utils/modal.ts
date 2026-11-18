@@ -52,6 +52,8 @@ export const toSelectedBatchRate = (
 		return null;
 	}
 
+	const parent = toSelectedBatchRate( rate.parent );
+
 	return {
 		rate_id: rate.rateId,
 		service_id: rate.serviceId,
@@ -60,6 +62,8 @@ export const toSelectedBatchRate = (
 		shipment_id: rate.shipmentId,
 		rate: rate.rate,
 		retail_rate: rate.retailRate,
+		...( rate.type ? { type: rate.type } : {} ),
+		...( parent ? { parent } : {} ),
 	};
 };
 

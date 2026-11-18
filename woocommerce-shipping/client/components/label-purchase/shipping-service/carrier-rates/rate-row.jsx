@@ -344,8 +344,7 @@ export const RateRow = withBoundary(
 					htmlFor={ rateId }
 					className={ clsx(
 						[ isSelected && 'selected' ],
-						[ rateCaveatText && 'has-rate-caveat' ],
-						[ dropOffNote && 'has-dropoff-note' ]
+						[ rateCaveatText && 'has-rate-caveat' ]
 					) }
 				>
 					{ /* Inside the label so the visually hidden radio sits in its own row, not at the top of the list, when it takes focus. */ }

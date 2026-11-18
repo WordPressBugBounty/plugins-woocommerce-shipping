@@ -5,6 +5,7 @@ namespace Automattic\WCShipping\Connect;
 use Automattic\WCShipping\LabelPurchase\ViewService;
 use Jetpack_Connection_Banner;
 use Automattic\WCShipping\Utils;
+use Automattic\WCShipping\WPCOMConnection\ConnectionPermissions;
 use WP_Screen;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -100,6 +101,10 @@ class WC_Connect_Nux {
 	 * @uses self::get_jetpack_install_status()
 	 */
 	public function can_accept_tos() {
+		if ( ! ConnectionPermissions::user_can_connect_site() ) {
+			return false;
+		}
+
 		$jetpack_status = $this->get_jetpack_install_status();
 
 		// Developer case
@@ -107,7 +112,7 @@ class WC_Connect_Nux {
 			return true;
 		}
 
-		$can_accept = WC_Connect_Jetpack::is_current_user_connected();
+		$can_accept = WC_Connect_Jetpack::is_current_user_connection_owner();
 
 		return $can_accept;
 	}
@@ -347,6 +352,10 @@ class WC_Connect_Nux {
 
 		switch ( $banner_to_display ) {
 			case 'before_jetpack_connection':
+				if ( ! ConnectionPermissions::user_can_connect_site() ) {
+					break;
+				}
+
 				wp_enqueue_style( 'wcshipping_connect_banner' );
 
 				add_action(
@@ -645,6 +654,10 @@ class WC_Connect_Nux {
 	 */
 	public function register_wcshipping_jetpack() {
 		check_ajax_referer( 'wcshipping_nux_notice' );
+
+		if ( ! ConnectionPermissions::user_can_connect_site() ) {
+			wp_die( esc_html__( 'Only a site administrator can connect this store to WordPress.com.', 'woocommerce-shipping' ), '', 403 );
+		}
 
 		$redirect_url = '';
 		if ( isset( $_POST['redirect_url'] ) ) {

@@ -1,6 +1,8 @@
 import { Button, ToggleControl } from '@wordpress/components';
 import { __, sprintf, _n } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
+import { ShipFrom } from './ship-from';
+import type { ShipFromProps } from './ship-from';
 
 interface BatchSummaryProps {
 	readyCount: number;
@@ -8,6 +10,8 @@ interface BatchSummaryProps {
 	subtotal: number;
 	discount: number;
 	total: number;
+	/** True while the origins request or a rate request is in flight. */
+	isQuoting: boolean;
 	onPurchase: () => void;
 }
 
@@ -19,8 +23,13 @@ const BatchSummary = ( {
 	subtotal,
 	discount,
 	total,
+	isQuoting,
 	onPurchase,
 }: BatchSummaryProps ) => {
+	// The counts and the totals are not known while rates are in flight.
+	// An en dash replaces each value. It is hidden from assistive technology.
+	const pending = <span aria-hidden="true">–</span>;
+
 	return (
 		<section className="bulk-purchase-modal__sidebar-card">
 			<h3 className="bulk-purchase-modal__sidebar-heading">
@@ -29,7 +38,7 @@ const BatchSummary = ( {
 			<div className="bulk-purchase-modal__summary-counts">
 				<div className="bulk-purchase-modal__count-pill bulk-purchase-modal__count-pill--ready">
 					<div className="bulk-purchase-modal__count-pill-value">
-						{ readyCount }
+						{ isQuoting ? pending : readyCount }
 					</div>
 					<div className="bulk-purchase-modal__count-pill-label">
 						{ __( 'Ready to buy', 'woocommerce-shipping' ) }
@@ -37,7 +46,7 @@ const BatchSummary = ( {
 				</div>
 				<div className="bulk-purchase-modal__count-pill bulk-purchase-modal__count-pill--needs-fix">
 					<div className="bulk-purchase-modal__count-pill-value">
-						{ needsFixCount }
+						{ isQuoting ? pending : needsFixCount }
 					</div>
 					<div className="bulk-purchase-modal__count-pill-label">
 						{ __( 'Needs fix', 'woocommerce-shipping' ) }
@@ -47,7 +56,9 @@ const BatchSummary = ( {
 			<dl className="bulk-purchase-modal__summary-totals">
 				<div className="bulk-purchase-modal__summary-row">
 					<dt>{ __( 'Labels subtotal', 'woocommerce-shipping' ) }</dt>
-					<dd>{ formatCurrency( subtotal ) }</dd>
+					<dd>
+						{ isQuoting ? pending : formatCurrency( subtotal ) }
+					</dd>
 				</div>
 				{ discount > 0 && (
 					<div className="bulk-purchase-modal__summary-row bulk-purchase-modal__summary-row--discount">
@@ -57,12 +68,16 @@ const BatchSummary = ( {
 								'woocommerce-shipping'
 							) }
 						</dt>
-						<dd>{ `−${ formatCurrency( discount ) }` }</dd>
+						<dd>
+							{ isQuoting
+								? pending
+								: `−${ formatCurrency( discount ) }` }
+						</dd>
 					</div>
 				) }
 				<div className="bulk-purchase-modal__summary-row bulk-purchase-modal__summary-row--total">
 					<dt>{ __( 'Total', 'woocommerce-shipping' ) }</dt>
-					<dd>{ formatCurrency( total ) }</dd>
+					<dd>{ isQuoting ? pending : formatCurrency( total ) }</dd>
 				</div>
 			</dl>
 			<div className="bulk-purchase-modal__charging">
@@ -80,19 +95,21 @@ const BatchSummary = ( {
 				variant="primary"
 				className="bulk-purchase-modal__purchase-button"
 				onClick={ onPurchase }
-				disabled={ readyCount === 0 }
+				disabled={ isQuoting || readyCount === 0 }
 			>
-				{ sprintf(
-					/* translators: 1: number of ready labels, 2: total cost */
-					_n(
-						'Purchase %1$d label · %2$s',
-						'Purchase %1$d labels · %2$s',
-						readyCount,
-						'woocommerce-shipping'
-					),
-					readyCount,
-					formatCurrency( total )
-				) }
+				{ isQuoting
+					? __( 'Fetching rates…', 'woocommerce-shipping' )
+					: sprintf(
+							/* translators: 1: number of ready labels, 2: total cost */
+							_n(
+								'Purchase %1$d label · %2$s',
+								'Purchase %1$d labels · %2$s',
+								readyCount,
+								'woocommerce-shipping'
+							),
+							readyCount,
+							formatCurrency( total )
+					  ) }
 			</Button>
 			<p className="bulk-purchase-modal__purchase-footnote">
 				{ __(
@@ -155,28 +172,23 @@ const AfterPurchase = () => {
 	);
 };
 
-const ShipFrom = () => (
-	<section className="bulk-purchase-modal__sidebar-card">
-		<div className="bulk-purchase-modal__ship-from-header">
-			<h3 className="bulk-purchase-modal__sidebar-heading">
-				{ __( 'Ship from', 'woocommerce-shipping' ) }
-			</h3>
-			<Button variant="secondary">
-				{ __( 'Change', 'woocommerce-shipping' ) }
-			</Button>
-		</div>
-		<div className="bulk-purchase-modal__ship-from-body">
-			{ /* Placeholder ship-from. Wired to the real origin address in WOOSHIP-2133. Left untranslated so dummy strings don't enter the translation memory. */ }
-			<strong>Escargot HQ</strong>
-			<div>88 29th St PMB 343, San Francisco, CA 94110</div>
-		</div>
-	</section>
-);
-
-export const Sidebar = ( props: BatchSummaryProps ) => (
+export const Sidebar = ( {
+	origins,
+	selectedOriginId,
+	onOriginChange,
+	isOriginResolving,
+	hasOriginError,
+	...summaryProps
+}: BatchSummaryProps & ShipFromProps ) => (
 	<aside className="bulk-purchase-modal__sidebar">
-		<BatchSummary { ...props } />
+		<ShipFrom
+			origins={ origins }
+			selectedOriginId={ selectedOriginId }
+			onOriginChange={ onOriginChange }
+			isOriginResolving={ isOriginResolving }
+			hasOriginError={ hasOriginError }
+		/>
+		<BatchSummary { ...summaryProps } />
 		<AfterPurchase />
-		<ShipFrom />
 	</aside>
 );

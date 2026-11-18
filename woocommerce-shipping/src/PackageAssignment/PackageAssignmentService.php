@@ -338,10 +338,11 @@ class PackageAssignmentService {
 	/**
 	 * Run the boxpacker against the configured boxes/items and return the
 	 * resulting list of `WooCommerce\BoxPacker\Package` objects. Wrapped in
-	 * an output buffer because the dvdoug packer's
-	 * `Abstract_Packer::maybe_display_packing_error()` echoes
-	 * "Packing error: ..." straight to stdout for any user with
-	 * `manage_options`, which would corrupt the JSON REST response.
+	 * an output buffer so that nothing the packer prints can corrupt the JSON
+	 * REST response. Up to box-packer 1.4.0,
+	 * `Abstract_Packer::maybe_display_packing_error()` echoed
+	 * "Packing error: ..." for any user with `manage_options`; since 1.4.1 it
+	 * writes to the WooCommerce log (source `box-packer`) instead.
 	 *
 	 * The captured stdout is logged (with the order id for context) instead
 	 * of being discarded, so production packing diagnostics survive into the

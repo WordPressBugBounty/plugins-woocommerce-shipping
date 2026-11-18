@@ -146,6 +146,8 @@ export const mockUtils = ( overrides?: object ) => {
 						'missing_upsdap_terms_of_service_acceptance',
 					ORIGIN_ADDRESS_LIMIT_REACHED:
 						'origin_address_limit_reached',
+					CARRIER_REFUND_UNAVAILABLE: 'carrier_refund_unavailable',
+					CARRIER_REFUND_REJECTED: 'carrier_refund_rejected',
 				},
 			},
 			order: orderTestData,

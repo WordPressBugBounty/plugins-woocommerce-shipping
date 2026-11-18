@@ -2,7 +2,20 @@
 
 namespace WooCommerce\BoxPacker;
 
+use Exception;
+
 abstract class Abstract_Packer {
+
+	/**
+	 * Default for the `woocommerce_box_packer_max_units` filter: the most units one pack() call
+	 * accepts when the cart can't take the packer's fast path.
+	 */
+	const MAX_UNITS = 3000;
+
+	/**
+	 * Default for the same filter when the cart is one line the packer's fast path can take.
+	 */
+	const MAX_UNITS_FAST_PATH = 30000;
 
 	protected $dimension_unit;
 	protected $weight_unit;
@@ -100,17 +113,63 @@ abstract class Abstract_Packer {
 	}
 
 	/**
-	 * If the current user is an admin,
-	 * show them a packing error to help
-	 * them debug the issue.
+	 * Log a packing error to the WooCommerce log, source `box-packer`.
 	 *
-	 * @param string $message The packing error message to display.
+	 * Up to 1.4.0 this printed the error for admins. Printed text breaks the JSON of Store API and
+	 * AJAX responses, so the block cart failed for admins, and nothing was logged.
+	 *
+	 * @param string $message The packing error message.
 	 *
 	 * @return void
 	 */
 	public function maybe_display_packing_error( $message ) {
-		if ( current_user_can( 'manage_options' ) ) {
-			echo 'Packing error: ', $message, "\n";
+		if ( function_exists( 'wc_get_logger' ) ) {
+			wc_get_logger()->warning( 'Packing error: ' . $message, array( 'source' => 'box-packer' ) );
+		}
+	}
+
+	/**
+	 * The most units one pack() call accepts.
+	 *
+	 * Packing time grows with the unit count. The fast paths pack one line of one product far
+	 * faster than any other cart, so those carts get a higher limit.
+	 *
+	 * @param bool $fast_path Whether the cart is one line the packer's fast path can take.
+	 *
+	 * @return float
+	 */
+	protected function get_max_units( bool $fast_path ): float {
+		$default = $fast_path ? static::MAX_UNITS_FAST_PATH : static::MAX_UNITS;
+
+		/**
+		 * Filters the most units one pack() call accepts. Over it, nothing is packed.
+		 *
+		 * Return INF to turn the limit off. A value that is not a number above 0 keeps the default.
+		 * The Speed Packer also reads this filter in add_item(), once for each value of $fast_path.
+		 *
+		 * @since 1.4.1
+		 *
+		 * @param int|float       $max_units Default 3,000, or 30,000 when $fast_path is true.
+		 * @param Abstract_Packer $packer    The packer.
+		 * @param bool            $fast_path Whether the cart is one line the packer's fast path can take.
+		 */
+		$max_units = apply_filters( 'woocommerce_box_packer_max_units', $default, $this, $fast_path );
+
+		return is_numeric( $max_units ) && $max_units > 0 ? (float) $max_units : (float) $default;
+	}
+
+	/**
+	 * @param float $units     Units in the cart.
+	 * @param bool  $fast_path Whether the cart is one line the packer's fast path can take.
+	 *
+	 * @throws Exception When $units is over the limit.
+	 *
+	 * @return void
+	 */
+	protected function check_unit_count( float $units, bool $fast_path ) {
+		$max_units = $this->get_max_units( $fast_path );
+		if ( $units > $max_units ) {
+			throw new Exception( sprintf( 'Too many items to pack: %s units, the limit is %s.', number_format( $units ), number_format( $max_units ) ) );
 		}
 	}
 

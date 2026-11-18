@@ -46,7 +46,7 @@ class WPCOMConnectionRESTController extends WCShippingRESTController {
 				array(
 					'methods'             => WP_REST_Server::CREATABLE,
 					'callback'            => array( $this, 'post_handler' ),
-					'permission_callback' => array( WC_Connect_Functions::class, 'user_can_manage_labels' ),
+					'permission_callback' => array( $this, 'check_permission' ),
 					'args'                => array(
 						'return_url' => array(
 							'type'              => 'string',
@@ -66,6 +66,33 @@ class WPCOMConnectionRESTController extends WCShippingRESTController {
 				),
 			)
 		);
+	}
+
+	/**
+	 * Only users who can manage the site may connect it to WordPress.com. On an
+	 * already connected site, only the connection owner may accept the Terms of
+	 * Service through this route.
+	 *
+	 * @return bool|WP_Error
+	 */
+	public function check_permission() {
+		if ( ! WC_Connect_Functions::user_can_manage_labels() || ! ConnectionPermissions::user_can_connect_site() ) {
+			return new WP_Error(
+				'rest_forbidden',
+				__( 'Only a site administrator can connect this store to WordPress.com.', 'woocommerce-shipping' ),
+				array( 'status' => rest_authorization_required_code() )
+			);
+		}
+
+		if ( WC_Connect_Jetpack::is_connected() && ! ConnectionPermissions::user_can_accept_tos() ) {
+			return new WP_Error(
+				'rest_forbidden',
+				__( 'Only the WordPress.com connection owner can accept the Terms of Service.', 'woocommerce-shipping' ),
+				array( 'status' => rest_authorization_required_code() )
+			);
+		}
+
+		return true;
 	}
 
 	/**

@@ -6,7 +6,7 @@ import {
 	ProgressBar,
 } from '@wordpress/components';
 import { __, sprintf, _n } from '@wordpress/i18n';
-import { useCallback, useMemo, useState } from '@wordpress/element';
+import { useCallback, useMemo, useReducer, useState } from '@wordpress/element';
 import { DataViews } from '@wordpress/dataviews/wp';
 import type { Field, View } from '@wordpress/dataviews/wp';
 import { Icon, caution, closeSmall } from '@wordpress/icons';
@@ -21,12 +21,14 @@ import {
 } from 'data/bulk-labels';
 import type {
 	AssignablePackage,
+	BulkPurchaseOptions,
 	BulkPurchaseOrder,
 	ManualPackageSelections,
 	ManualServiceSelections,
 	PurchasableBulkPurchaseOrder,
 	RateRequestOrder,
 } from 'data/bulk-labels';
+import { getDateTS, toUTCMidnightISOString } from 'utils/date';
 import { CarrierIcon } from 'components/carrier-icon';
 import { AddressGroupingSuggestion, NeedsFixNotice } from './banners';
 import { Toolbar, type ApplyOption, type FilterMode } from './toolbar';
@@ -53,13 +55,30 @@ export const BulkPurchaseModal = ( {
 	const [ filter, setFilter ] = useState< FilterMode >( 'all' );
 	const [ manualSelections, setManualSelections ] =
 		useState< ManualPackageSelections >( {} );
+	const [ selectedShipDate, setSelectedShipDate ] = useState< Date >();
+	const [ signatureOption, setSignatureOption ] =
+		useState< BulkPurchaseOptions[ 'signature' ] >( 'no' );
+	// Derived on every render, not stored: a modal left open past midnight
+	// must not keep quoting or buying for yesterday.
+	const getEffectiveShipDate = () => {
+		const today = getDateTS( null, true );
+		return selectedShipDate && selectedShipDate >= today
+			? selectedShipDate
+			: today;
+	};
+	const effectiveShipDate = getEffectiveShipDate();
+	const shipDate = toUTCMidnightISOString( effectiveShipDate );
+	const bulkOptions = useMemo< BulkPurchaseOptions >(
+		() => ( { ship_date: shipDate, signature: signatureOption } ),
+		[ shipDate, signatureOption ]
+	);
+	const [ , refreshShipDate ] = useReducer( ( n: number ) => n + 1, 0 );
 
 	const { isResolving, error, records, orders, grouping } =
 		useBulkPurchaseOrders( orderIds, manualSelections );
 
-	const { packages: assignablePackages } = useAssignablePackages(
-		orderIds.length > 0
-	);
+	const { packages: assignablePackages, isResolving: isPackagesResolving } =
+		useAssignablePackages( orderIds.length > 0 );
 
 	const handleSelectPackage = useCallback(
 		( orderId: number, pkg: AssignablePackage | null ) => {
@@ -176,9 +195,14 @@ export const BulkPurchaseModal = ( {
 	const [ manualServiceSelections, setManualServiceSelections ] =
 		useState< ManualServiceSelections >( {} );
 
-	const { origin, error: originError } = useOriginAddress(
-		orderIds.length > 0
-	);
+	const {
+		origin,
+		origins,
+		selectedOriginId,
+		setSelectedOriginId,
+		isResolving: isOriginResolving,
+		error: originError,
+	} = useOriginAddress( orderIds.length > 0 );
 
 	// Resolve each order's effective box (manual pick or auto-assigned,
 	// looked up for real numeric dimensions) into the rate request shape.
@@ -237,17 +261,18 @@ export const BulkPurchaseModal = ( {
 							ap?.package_id ?? meta?.box_id ?? meta?.id ?? '',
 						is_letter: ap?.is_letter ?? false,
 					},
+					ship_date: shipDate,
 				};
 			} )
 			.filter( ( o ): o is RateRequestOrder => o !== null );
-	}, [ orders, assignablePackages ] );
+	}, [ orders, assignablePackages, shipDate ] );
 
 	const {
 		resolvingIds,
 		rates,
 		rateErrors,
 		error: rateRequestError,
-	} = useOrderRates( origin, rateRequestOrders );
+	} = useOrderRates( origin, rateRequestOrders, signatureOption );
 
 	const rateRequestOrderById = useMemo( () => {
 		const map = new Map< number, RateRequestOrder >();
@@ -267,6 +292,13 @@ export const BulkPurchaseModal = ( {
 		() => new Set( resolvingIds ),
 		[ resolvingIds ]
 	);
+
+	// The batch summary has no real counts or totals while the origins
+	// request, the packages request or a rate request is in flight. An
+	// order with no saved package gets no rate request before the
+	// packages arrive.
+	const isQuoting =
+		isOriginResolving || isPackagesResolving || resolvingRateIds.size > 0;
 
 	// The rate each row defaults to, given the apply-to-all strategy and
 	// any per-row manual override.
@@ -336,6 +368,11 @@ export const BulkPurchaseModal = ( {
 	const purchasableOrders = useMemo< PurchasableBulkPurchaseOrder[] >(
 		() =>
 			orders.flatMap( ( order ) => {
+				// A re-quote is in flight (e.g. the ship date changed), so
+				// the selected rate is stale and must not be purchased.
+				if ( resolvingRateIds.has( order.order_id ) ) {
+					return [];
+				}
 				if (
 					( effectiveStatusById[ order.order_id ] ??
 						order.status ) !== 'ready'
@@ -370,14 +407,17 @@ export const BulkPurchaseModal = ( {
 						request_package:
 							toBulkRequestPackage( rateRequestOrder ),
 						purchase_destination: toPurchaseDestination( order ),
+						bulk_options: bulkOptions,
 					},
 				];
 			} ),
 		[
 			orders,
+			resolvingRateIds,
 			effectiveStatusById,
 			selectedRateByOrder,
 			rateRequestOrderById,
+			bulkOptions,
 		]
 	);
 
@@ -812,23 +852,9 @@ export const BulkPurchaseModal = ( {
 		},
 	};
 
-	// Count the orders the modal will actually act on, not the raw
-	// selection — orders that errored out of the shipping-context fetch
-	// are dropped and surfaced in the "could not be loaded" notice, so
-	// the title must match the table/tabs (e.g. "All 10"). Fall back to
-	// the selection count while the fetch is still resolving so the
-	// header doesn't flash "Create 0 shipping labels".
-	const labelCount = hasData ? orders.length : orderIds.length;
-	const title = sprintf(
-		/* translators: %d: number of shipping labels to create */
-		_n(
-			'Create %d shipping label',
-			'Create %d shipping labels',
-			labelCount,
-			'woocommerce-shipping'
-		),
-		labelCount
-	);
+	// The header has no counts. The notice, the toolbar tabs and the
+	// sidebar show the ready and needs-fix counts.
+	const title = __( 'Create shipping labels', 'woocommerce-shipping' );
 
 	return (
 		<Modal
@@ -850,7 +876,7 @@ export const BulkPurchaseModal = ( {
 					<h2 className="bulk-purchase-modal__title">{ title }</h2>
 					<p className="bulk-purchase-modal__intro">
 						{ __(
-							'We picked the cheapest service and your most-used package for each order. Review, override what you need to, and purchase everything at once.',
+							'We picked the cheapest service and a package that fits. Review each order before you buy.',
 							'woocommerce-shipping'
 						) }
 					</p>
@@ -955,6 +981,10 @@ export const BulkPurchaseModal = ( {
 							serviceApplyOptions={ serviceApplyOptions }
 							serviceApplyValue={ serviceApplyMode }
 							onServiceApply={ handleApplyServiceToAll }
+							shipDate={ effectiveShipDate }
+							onShipDateChange={ setSelectedShipDate }
+							signatureValue={ signatureOption }
+							onSignatureApply={ setSignatureOption }
 						/>
 
 						<div className="bulk-purchase-modal__orders">
@@ -991,8 +1021,23 @@ export const BulkPurchaseModal = ( {
 						subtotal={ purchaseRateSummary.subtotal }
 						discount={ purchaseRateSummary.discount }
 						total={ purchaseRateSummary.total }
+						isQuoting={ isQuoting }
 						onPurchase={ () => {
-							if ( purchasableOrders.length === 0 || ! origin ) {
+							if (
+								isQuoting ||
+								purchasableOrders.length === 0 ||
+								! origin
+							) {
+								return;
+							}
+							// The day changed since the last render, so the
+							// rates are stale: re-render to re-quote.
+							if (
+								toUTCMidnightISOString(
+									getEffectiveShipDate()
+								) !== shipDate
+							) {
+								refreshShipDate();
 								return;
 							}
 							onCreateLabels?.(
@@ -1002,6 +1047,13 @@ export const BulkPurchaseModal = ( {
 								)
 							);
 						} }
+						origins={ origins }
+						selectedOriginId={ selectedOriginId }
+						onOriginChange={ setSelectedOriginId }
+						isOriginResolving={ isOriginResolving }
+						hasOriginError={
+							Boolean( originError ) && origins.length === 0
+						}
 					/>
 				</div>
 			) }

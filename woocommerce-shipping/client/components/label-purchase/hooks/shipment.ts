@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState, useMemo } from '@wordpress/element';
 import { dispatch, select as selectData, useSelect } from '@wordpress/data';
-import { invert, isEqual } from 'lodash';
+import { invert, isEqual, mapValues } from 'lodash';
 import {
 	getCurrentOrder,
 	getCurrentOrderItems,
@@ -107,6 +107,30 @@ export function useShipmentState() {
 		},
 		[ currentShipmentId, shipmentOrigins ]
 	);
+
+	const originAddresses = useSelect(
+		( select ) => select( addressStore ).getOriginAddresses(),
+		[]
+	);
+
+	// Each shipment keeps a copy of its origin. Refresh the copies when the
+	// stored address changes, so verifying it on one shipment covers the rest.
+	useEffect( () => {
+		if ( ! Array.isArray( originAddresses ) ) {
+			return;
+		}
+
+		setShipmentOrigins( ( prevState ) => {
+			const nextState = mapValues(
+				prevState,
+				( origin ) =>
+					originAddresses.find(
+						( { id }: OriginAddress ) => id === origin?.id
+					) ?? origin
+			);
+			return isEqual( nextState, prevState ) ? prevState : nextState;
+		} );
+	}, [ originAddresses ] );
 
 	const purchasedLabelOrigin = useSelect(
 		( select ) =>

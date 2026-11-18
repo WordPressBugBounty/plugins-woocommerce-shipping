@@ -2,7 +2,7 @@
 /**
  * WooCommerce Box Packer
  *
- * @version 1.2.0
+ * @version 1.4.1
  *
  * @package woocommerce/box-packer
  */

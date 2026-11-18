@@ -7,7 +7,7 @@ Requires at least: 7.0
 Tested up to: 7.1
 WC requires at least: 11.1
 WC tested up to: 11.3
-Stable tag: 2.5.1
+Stable tag: 2.5.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -127,6 +127,18 @@ Absolutely! You can read our Terms of Service [here](https://wordpress.com/tos).
 6. WooCommerce Shipping address validation at checkout suggestion.
 
 == Changelog ==
+
+= 2.5.2 - 2026-11-18 =
+* Fix   - Only let site administrators connect the store to WordPress.com; only its WordPress.com connection owner can accept the Terms of Service.
+* Fix   - Improve permission checks for address verification.
+* Fix   - Tell merchants why a shipping label refund failed: whether the carrier could not process it and the label can still be refunded later, or declined it.
+* Fix   - Export every label in the selected range from Analytics > Shipping Labels, not just the first 100.
+* Fix   - Show each shipping rate's full description in the label purchase screen instead of cutting off text that wraps onto a second line.
+* Fix   - Resolved a fatal error on sites running Roots/Acorn or other software bundling PSR-3 Log 2.x or 3.x, caused by the bundled box packing library.
+* Fix   - Open the sender address form when getting shipping rates with an unverified sender address, and get the rates once it is verified.
+* Tweak - Package suggestions are much faster for orders with large quantities. An order too large to pack in a few seconds (by default over 3,000 units; for one product, over 30,000 units on PHP 8) gets no package suggestion, and you pick the package yourself.
+* Fix   - Keep label purchase text readable at 200% zoom and with wider text spacing, and darken low-contrast gray text.
+* Tweak - Show the label purchase screen's two columns one above the other when there isn't room for both, such as at 200% zoom or in a window about 960 to 1000px wide, so no text is cut off.
 
 = 2.5.1 - 2026-11-11 =
 * Fix   - Show the missing EU product ID error as it is when buying a label, instead of a generic server error.

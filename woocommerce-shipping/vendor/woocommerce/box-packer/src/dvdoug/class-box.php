@@ -2,7 +2,7 @@
 
 namespace WooCommerce\BoxPacker\DVDoug;
 
-class Box implements \DVDoug\BoxPacker\Box, \WooCommerce\BoxPacker\Box {
+class Box implements \WooCommerce\BoxPacker\Vendor\DVDoug\BoxPacker\Box, \WooCommerce\BoxPacker\Box {
 
 	use Util;
 
@@ -269,7 +269,7 @@ class Box implements \DVDoug\BoxPacker\Box, \WooCommerce\BoxPacker\Box {
 	}
 
 	/**
-	 * Begin \DVDoug\BoxPacker\Box required methods
+	 * Begin \WooCommerce\BoxPacker\Vendor\DVDoug\BoxPacker\Box required methods
 	 */
 
 	/**

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from '@wordpress/element';
+import { useCallback, useEffect, useMemo, useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
 import { getOriginAddressesPath } from 'data/routes';
@@ -7,7 +7,12 @@ import type { LocationResponse } from 'types';
 interface UseOriginAddressResult {
 	isResolving: boolean;
 	error: Error | null;
+	/** The selected origin. Null until a verified origin is selected. */
 	origin: Partial< LocationResponse > | null;
+	/** Every saved origin address, verified or not, for the picker. */
+	origins: Partial< LocationResponse >[];
+	selectedOriginId: string;
+	setSelectedOriginId: ( id: string ) => void;
 }
 
 /**
@@ -29,6 +34,7 @@ interface RawOriginAddress {
 	country?: string;
 	default_address?: boolean;
 	is_verified?: boolean;
+	is_approved?: boolean;
 }
 
 export const toOrigin = (
@@ -54,20 +60,21 @@ export const toOrigin = (
 		state: raw.state,
 		postcode: raw.postcode,
 		country: raw.country,
-		is_verified: raw.is_verified,
+		// An origin that was explicitly not approved cannot quote rates,
+		// so it counts as unverified here.
+		is_verified: Boolean( raw.is_verified ) && raw.is_approved !== false,
+		default_address: raw.default_address,
 	};
 };
 
-/**
- * Fetch the store's ship-from address once when the modal opens. The
- * batch rate endpoint quotes the whole batch from a single origin, so we
- * pick the merchant's default origin (falling back to the first one).
- */
+// The batch rate endpoint quotes the whole batch from a single origin.
 export const useOriginAddress = (
 	enabled: boolean
 ): UseOriginAddressResult => {
-	const [ origin, setOrigin ] =
-		useState< Partial< LocationResponse > | null >( null );
+	const [ origins, setOrigins ] = useState< Partial< LocationResponse >[] >(
+		[]
+	);
+	const [ selectedOriginId, setSelectedId ] = useState< string >( '' );
 	const [ isResolving, setIsResolving ] = useState< boolean >( enabled );
 	const [ error, setError ] = useState< Error | null >( null );
 
@@ -86,18 +93,18 @@ export const useOriginAddress = (
 					return;
 				}
 				const list = Array.isArray( response ) ? response : [];
-				// Match the single-label rate flow: only quote from a
-				// verified origin. If none is verified, block the quote
-				// (origin stays null) and surface why, rather than
-				// silently rating against an address the other flow
-				// would reject.
-				const verified = list.filter( ( row ) => row.is_verified );
+				const nextOrigins = list.map( toOrigin );
+				// Only a verified origin can quote rates.
+				const verified = nextOrigins.filter(
+					( candidate ) => candidate.is_verified
+				);
 				const picked =
-					verified.find( ( row ) => row.default_address ) ??
-					verified[ 0 ] ??
-					null;
+					verified.find(
+						( candidate ) => candidate.default_address
+					) ?? verified[ 0 ];
+				setOrigins( nextOrigins );
 				if ( ! picked ) {
-					setOrigin( null );
+					setSelectedId( '' );
 					setError(
 						list.length > 0
 							? new Error(
@@ -111,14 +118,15 @@ export const useOriginAddress = (
 					setIsResolving( false );
 					return;
 				}
-				setOrigin( toOrigin( picked ) );
+				setSelectedId( picked.id ?? '' );
 				setIsResolving( false );
 			} )
 			.catch( ( err: unknown ) => {
 				if ( cancelled ) {
 					return;
 				}
-				setOrigin( null );
+				setOrigins( [] );
+				setSelectedId( '' );
 				setError(
 					err instanceof Error
 						? err
@@ -132,8 +140,45 @@ export const useOriginAddress = (
 		};
 	}, [ enabled ] );
 
+	// Like the single-label picker, an unverified origin can't be selected.
+	const setSelectedOriginId = useCallback(
+		( id: string ) => {
+			if (
+				origins.some(
+					( candidate ) =>
+						candidate.id === id && candidate.is_verified
+				)
+			) {
+				setSelectedId( id );
+			}
+		},
+		[ origins ]
+	);
+
+	const origin = useMemo(
+		() =>
+			origins.find(
+				( candidate ) => candidate.id === selectedOriginId
+			) ?? null,
+		[ origins, selectedOriginId ]
+	);
+
 	return useMemo(
-		() => ( { isResolving, error, origin } ),
-		[ isResolving, error, origin ]
+		() => ( {
+			isResolving,
+			error,
+			origin,
+			origins,
+			selectedOriginId,
+			setSelectedOriginId,
+		} ),
+		[
+			isResolving,
+			error,
+			origin,
+			origins,
+			selectedOriginId,
+			setSelectedOriginId,
+		]
 	);
 };

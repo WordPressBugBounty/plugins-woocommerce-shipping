@@ -1,5 +1,7 @@
 import { __, sprintf } from '@wordpress/i18n';
-import { ApplyDropdown, toOptions } from './apply-dropdown';
+import { ShippingDate } from 'components/label-purchase/details/shipping-date';
+import type { BulkPurchaseOptions } from 'data/bulk-labels';
+import { ApplyDropdown } from './apply-dropdown';
 import type { ApplyOption } from './apply-dropdown';
 
 export type { ApplyOption } from './apply-dropdown';
@@ -19,6 +21,10 @@ interface ToolbarProps {
 	serviceApplyOptions: ApplyOption[];
 	serviceApplyValue: string;
 	onServiceApply: ( value: string ) => void;
+	shipDate: Date;
+	onShipDateChange: ( date: Date ) => void;
+	signatureValue: BulkPurchaseOptions[ 'signature' ];
+	onSignatureApply: ( value: BulkPurchaseOptions[ 'signature' ] ) => void;
 }
 
 export const Toolbar = ( {
@@ -34,6 +40,10 @@ export const Toolbar = ( {
 	serviceApplyOptions,
 	serviceApplyValue,
 	onServiceApply,
+	shipDate,
+	onShipDateChange,
+	signatureValue,
+	onSignatureApply,
 }: ToolbarProps ) => {
 	return (
 		<div className="bulk-purchase-modal__toolbar">
@@ -59,38 +69,56 @@ export const Toolbar = ( {
 				</div>
 				<div className="bulk-purchase-modal__toolbar-controls">
 					<ApplyDropdown
-						emoji="📦"
 						label={ __( 'Package', 'woocommerce-shipping' ) }
 						options={ packageApplyOptions }
 						value={ packageApplyValue }
 						onSelect={ onPackageApply }
 					/>
 					<ApplyDropdown
-						emoji="🚚"
 						label={ __( 'Service', 'woocommerce-shipping' ) }
 						options={ serviceApplyOptions }
 						value={ serviceApplyValue }
 						onSelect={ onServiceApply }
 					/>
-					<ApplyDropdown
-						emoji="📅"
-						label={ __( 'Ship date', 'woocommerce-shipping' ) }
-						defaultValue="Today"
-						options={ toOptions( [
-							'Today',
-							'Tomorrow',
-							'Pick a date…',
-						] ) }
+					<ShippingDate
+						shippingDate={ shipDate }
+						setShippingDate={ onShipDateChange }
 					/>
 					<ApplyDropdown
-						emoji="✍️"
 						label={ __( 'Signature', 'woocommerce-shipping' ) }
-						defaultValue="Not required"
-						options={ toOptions( [
-							'Not required',
-							'Signature required',
-							'Adult signature required',
-						] ) }
+						value={ signatureValue }
+						onSelect={ ( value ) => {
+							if (
+								value === 'no' ||
+								value === 'yes' ||
+								value === 'adult'
+							) {
+								onSignatureApply( value );
+							}
+						} }
+						options={ [
+							{
+								label: __(
+									'Not required',
+									'woocommerce-shipping'
+								),
+								value: 'no',
+							},
+							{
+								label: __(
+									'Signature required',
+									'woocommerce-shipping'
+								),
+								value: 'yes',
+							},
+							{
+								label: __(
+									'Adult signature required',
+									'woocommerce-shipping'
+								),
+								value: 'adult',
+							},
+						] }
 					/>
 				</div>
 			</div>

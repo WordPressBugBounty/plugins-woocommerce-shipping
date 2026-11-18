@@ -114,14 +114,18 @@ export const Labels = ( { query, path, currency }: LabelReportProps ) => {
 			setPreparingExport( true );
 
 			try {
-				const result = await apiFetch< ReportResponse >( {
+				// With parsing on, core's fetchAllMiddleware rewrites `per_page=-1` to 100
+				// and cannot page an object response, so parse it here.
+				const response = await apiFetch< Response, false >( {
 					path: createReportQueryPath( {
 						...query,
 						perPage: '-1',
 						offset: '0',
 					} ),
 					method: 'GET',
+					parse: false,
 				} );
+				const result: ReportResponse = await response.json();
 				rows = result.rows
 					.map( camelCaseKeys )
 					.map( mapRowToTableData( currency ) );

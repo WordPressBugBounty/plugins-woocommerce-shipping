@@ -13,17 +13,38 @@
   ],
   "require-dev": {
     "phpunit/phpunit": "9.5",
-    "automattic/jetpack-autoloader": "^3"
+    "automattic/jetpack-autoloader": "^3",
+    "dvdoug/boxpacker": "3.9.3"
   },
   "require": {
-    "dvdoug/boxpacker": "3.9.3"
+    "php": ">=7.4"
   },
   "autoload": {
     "psr-4": {
       "WooCommerce\\BoxPacker\\": "./src"
-    }
+    },
+    "classmap": [
+      "lib/"
+    ]
+  },
+  "scripts": {
+    "scope": [
+      "rm -rf build lib",
+      "@composer install --working-dir=tools/php-scoper --no-interaction --quiet",
+      "tools/php-scoper/vendor/bin/php-scoper add-prefix --output-dir=build --force --no-interaction",
+      "mkdir -p lib",
+      "cp -r build/dvdoug/boxpacker/src lib/boxpacker",
+      "patch -p1 --fuzz=0 --no-backup-if-mismatch -d lib/boxpacker < patches/dvdoug-boxpacker-3.9.3-itemlist-rle.patch",
+      "cp -r build/psr/log/Psr/Log lib/psr-log",
+      "rm -rf lib/psr-log/Test build",
+      "@composer dump-autoload -o"
+    ],
+    "test": "phpunit"
   },
   "config": {
+    "platform": {
+      "php": "7.4"
+    },
     "allow-plugins": {
       "automattic/jetpack-autoloader": true
     }

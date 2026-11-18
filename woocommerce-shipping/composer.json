@@ -30,7 +30,7 @@
 		"automattic/jetpack-config": "^4.0.0",
 		"automattic/jetpack-autoloader": "^6.0.0",
 		"automattic/jetpack-status": "^7.0.1",
-		"woocommerce/box-packer": "1.2.0"
+		"woocommerce/box-packer": "1.4.1"
 	},
 	"require-dev": {
 		"phpunit/phpunit": "9.6.34",

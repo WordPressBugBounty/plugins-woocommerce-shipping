@@ -15,12 +15,14 @@ import {
 	registerOrdersShippingContextEntity,
 } from 'data/bulk-labels';
 import type { PurchasableBulkPurchaseOrder } from 'data/bulk-labels';
+import { registerAddressStore } from 'data/address';
 import type { LabelPrintFulfillmentRef } from 'types';
 import { initSentry } from 'utils';
 
 initSentry();
 registerOrdersShippingContextEntity();
 registerBulkLabelsStore();
+registerAddressStore( false );
 
 const CONTAINER_ID = 'wcshipping-bulk-labels-banner-root';
 const BULK_ACTION_VALUE = 'wcshipping_create_shipping_labels';

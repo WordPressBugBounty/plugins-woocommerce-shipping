@@ -10,20 +10,27 @@ import {
 	PACKAGE_SECTION,
 	SHIPPING_SERVICE_SECTION,
 	ITEMS_SECTION,
+	ORIGIN_ADDRESS_SECTION,
 } from './constants';
 import EssentialDetailListItem from './essential-detail-list-item';
 import FlatButton from './flat-button';
 import { recordEvent } from 'utils/tracks';
+import { canPurchaseFromOrigin } from 'utils';
+import { requestOriginAddressModal } from '../constants';
 
 export const EssentialDetails = withBoundary( () => {
 	const {
 		essentialDetails,
 		customs: { isCustomsNeeded },
-		shipment: { getShipmentOrigin },
+		shipment: { getShipmentOrigin, getCurrentShipmentIsReturn },
 		rates: { getSelectedRate },
 		hazmat: { getShipmentHazmat },
 		packages: { isPackageSpecified },
-		labels: { getCurrentShipmentLabel, isCurrentTabPurchasingExtraLabel },
+		labels: {
+			getCurrentShipmentLabel,
+			hasPurchasedLabel,
+			isCurrentTabPurchasingExtraLabel,
+		},
 	} = useLabelPurchaseContext();
 
 	const onClickHandler = ( focusArea: string ) => {
@@ -121,6 +128,32 @@ export const EssentialDetails = withBoundary( () => {
 		);
 	};
 
+	const originAddressSection = () => (
+		<EssentialDetailListItem isCompleted={ false }>
+			{ createInterpolateElement(
+				getCurrentShipmentIsReturn()
+					? __(
+							'Verify <fb>the Return to address</fb>.',
+							'woocommerce-shipping'
+					  )
+					: __(
+							'Verify <fb>the Ship from address</fb>.',
+							'woocommerce-shipping'
+					  ),
+				{
+					fb: (
+						<FlatButton
+							onClick={ () => {
+								onClickHandler( ORIGIN_ADDRESS_SECTION );
+								requestOriginAddressModal();
+							} }
+						/>
+					),
+				}
+			) }
+		</EssentialDetailListItem>
+	);
+
 	const extraLabelPurchaseSection = ( isCompleted: boolean ) => {
 		return (
 			<EssentialDetailListItem isCompleted={ isCompleted }>
@@ -150,6 +183,8 @@ export const EssentialDetails = withBoundary( () => {
 		return ! getSelectedRate() || ! getShipmentOrigin().isVerified;
 	};
 
+	const shipmentOrigin = getShipmentOrigin();
+
 	return (
 		showEssentialDetails() && (
 			<div className="essential-details">
@@ -157,6 +192,11 @@ export const EssentialDetails = withBoundary( () => {
 					<h3>Essential details to provide</h3>
 				</div>
 				<ul className="essential-details__ul">
+					{ /* Only while Ship from, which owns the modal, is shown. */ }
+					{ ! canPurchaseFromOrigin( shipmentOrigin ) &&
+						Boolean( shipmentOrigin.id ) &&
+						! hasPurchasedLabel( false ) &&
+						originAddressSection() }
 					{ isCurrentTabPurchasingExtraLabel() &&
 						extraLabelPurchaseSection(
 							essentialDetails.isExtraLabelPurchaseCompleted()

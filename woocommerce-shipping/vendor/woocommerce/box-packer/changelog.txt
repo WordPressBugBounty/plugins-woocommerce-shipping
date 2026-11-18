@@ -1,5 +1,22 @@
 == Changelog ==
 
+= 1.4.1 - 2026-11-06
+* Fix - Both packers stop at once, with no packages, when a cart has more units than they can pack in a few seconds: 30,000 units of one product (Accurate Packer: on PHP 8 only), 3,000 units otherwise. The `woocommerce_box_packer_max_units` and `woocommerce_box_packer_max_volume` filters set the limits.
+* Fix - The Speed Packer uses much less memory for large quantities of one product.
+* Fix - Packing errors go to the WooCommerce log (source `box-packer`) instead of being printed for admins. The printed text broke the block cart for logged-in admins. A `pack()` with no items is not an error: it returns no packages and logs nothing.
+* Dev - For a run of identical units, the Speed Packer builds `Package::unpacked` when it is read. `get_object_vars()`, `(array)` casts and `json_encode()` leave it out for those packages. `serialize()` keeps it and writes the shared list once, so serialized packages are much smaller than in 1.4.0. Packages serialized by 1.4.1 and read by 1.4.0 lose `unpacked`. On PHP 8.2 and later, 1.4.0 also logs two deprecation notices for each of these packages (`unpacked_source` and `unpacked_length` become dynamic properties).
+
+= 1.4.0 - 2026-10-15
+* Tweak - Packing carts with large item quantities is much faster with both packers. Packing results are unchanged.
+* Dev - The bundled `dvdoug/boxpacker` 3.9.3 carries a performance patch, applied by `composer scope` from `patches/`.
+* Dev - Added a golden-master test that compares packing results with box-packer 1.3.0.
+* Dev - The Speed Packer uses one shared `Item` object for all units of a line, so `Package::packed` can hold the same object more than once. Code that changes a packed item changes it for every unit of that line.
+
+= 1.3.0 - 2026-09-14
+* Fix - Resolved a fatal error on sites running Roots/Acorn, or any other software bundling PSR-3 Log 3.x, caused by the bundled box packing library registering PSR-3 Log 1.x globally.
+* Tweak - `dvdoug/boxpacker` and `psr/log` are no longer runtime dependencies. Prefixed copies ship in `lib/` under `WooCommerce\BoxPacker\Vendor`, so the public API is unchanged.
+* Tweak - The packing engine now lives in `lib/`. An extension whose `archive.exclude` re-includes only `src/` must add `!/vendor/woocommerce/box-packer/lib`, or the release zip ships without a packer.
+
 = 1.2.0 - 2024-10-11
 * Tweak - Add support for item quantity -- performances improvement for DVDoug packer.
 

@@ -4,8 +4,10 @@ namespace Automattic\WCShipping\Integrations;
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
+use Automattic\WCShipping\Connect\WC_Connect_Functions;
 use Automattic\WCShipping\Connect\WC_Connect_Options;
 use Automattic\WCShipping\WCShippingRESTController;
+use Automattic\WCShipping\WPCOMConnection\ConnectionPermissions;
 use WP_Error;
 use WP_REST_Server;
 
@@ -20,9 +22,26 @@ class TosRESTController extends WCShippingRESTController {
 				array(
 					'methods'             => WP_REST_Server::CREATABLE,
 					'callback'            => array( $this, 'post' ),
-					'permission_callback' => array( $this, 'ensure_rest_permission' ),
+					'permission_callback' => array( $this, 'check_permission' ),
 				),
 			)
+		);
+	}
+
+	/**
+	 * Only the WordPress.com connection owner may accept the Terms of Service.
+	 *
+	 * @return bool|WP_Error
+	 */
+	public function check_permission() {
+		if ( WC_Connect_Functions::user_can_manage_labels() && ConnectionPermissions::user_can_accept_tos() ) {
+			return true;
+		}
+
+		return new WP_Error(
+			'rest_forbidden',
+			__( 'Only the WordPress.com connection owner can accept the Terms of Service.', 'woocommerce-shipping' ),
+			array( 'status' => rest_authorization_required_code() )
 		);
 	}
 

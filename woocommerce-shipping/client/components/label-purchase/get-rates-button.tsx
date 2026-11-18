@@ -1,11 +1,15 @@
 import React from 'react';
 import { Button, Flex } from '@wordpress/components';
+import { useEffect, useRef } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
+import { useLabelPurchaseContext } from 'context/label-purchase';
+import { canPurchaseFromOrigin } from 'utils';
+import { requestOriginAddressModal } from './constants';
 
 interface GetRatesButtonProps {
 	isBusy: boolean;
 	disabled: boolean;
-	onClick: () => void;
+	onClick: ( userInitiated?: boolean ) => void;
 }
 
 export const GetRatesButton = ( {
@@ -13,6 +17,35 @@ export const GetRatesButton = ( {
 	disabled,
 	onClick,
 }: GetRatesButtonProps ) => {
+	const {
+		shipment: { getShipmentOrigin },
+		rates: { availableRates },
+	} = useLabelPurchaseContext();
+	const canPurchase = canPurchaseFromOrigin( getShipmentOrigin() );
+	const shouldGetRatesOnceVerified = useRef( false );
+
+	// Rates can't be bought from an unverified origin, so get them once it is
+	// verified on this shipment, unless some are already shown.
+	useEffect( () => {
+		if ( ! canPurchase ) {
+			shouldGetRatesOnceVerified.current = true;
+		} else if ( shouldGetRatesOnceVerified.current && ! isBusy ) {
+			shouldGetRatesOnceVerified.current = false;
+			if ( ! disabled && ! availableRates ) {
+				// System-driven, like the tabs' own auto-fetch: keep notices.
+				onClick( false );
+			}
+		}
+	}, [ canPurchase, isBusy, disabled, availableRates, onClick ] );
+
+	// The form is a prompt, not a gate: fetchRates still decides what to fetch.
+	const handleClick = () => {
+		if ( ! canPurchase ) {
+			requestOriginAddressModal();
+		}
+		onClick();
+	};
+
 	return (
 		<Flex
 			direction="column"
@@ -20,7 +53,7 @@ export const GetRatesButton = ( {
 			className="get-rates-button-wrapper"
 		>
 			<Button
-				onClick={ onClick }
+				onClick={ handleClick }
 				isBusy={ isBusy }
 				disabled={ disabled }
 				variant="secondary"

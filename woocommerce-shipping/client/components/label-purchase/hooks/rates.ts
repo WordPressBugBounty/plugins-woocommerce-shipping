@@ -1,4 +1,4 @@
-import { mapValues, sortBy, snakeCase, omit } from 'lodash';
+import { isEqual, mapValues, sortBy, snakeCase, omit } from 'lodash';
 import {
 	useCallback,
 	useEffect,
@@ -11,10 +11,12 @@ import { __, sprintf } from '@wordpress/i18n';
 import {
 	Carrier,
 	CustomPackage,
+	OriginAddress,
 	Package,
 	Rate,
 	RateWithParent,
 	RecordValues,
+	RequestAddress,
 	RequestPackage,
 	WPErrorRESTResponse,
 	RateExtraOptionNames,
@@ -26,6 +28,7 @@ import {
 	areAllOriginsUnverified,
 	getAccountSettings,
 	getCurrentOrder,
+	mapAddressForRequest,
 	setAccountSettings,
 	toUTCMidnightISOString,
 } from 'utils';
@@ -164,6 +167,9 @@ const maybeReformatInvalidParamError = ( payload: WPErrorRESTResponse ) => {
 		.join( '\n' );
 };
 
+const toRequestedOrigin = ( origin: OriginAddress | undefined ) =>
+	origin ? mapAddressForRequest( origin ) : undefined;
+
 export function useRatesState( {
 	currentShipmentId,
 	getPackageForRequest,
@@ -192,6 +198,11 @@ export function useRatesState( {
 		useState< Record< string, string | null > >( {} );
 	const attemptedCustomsFingerprints = useRef<
 		Record< string, string | null >
+	>( {} );
+	// Each shipment's origin is a copy that can change mid-request or while another shipment is open.
+	// Kept as sent, so flags the request omits (like defaultAddress) don't count as a change.
+	const requestedOrigins = useRef<
+		Record< string, RequestAddress | undefined >
 	>( {} );
 	// USPS and UPS DAP buy the shipment created at rate time, so a quote on older customs data can't be bought.
 	const isCustomsQuoteStale = Boolean(
@@ -461,6 +472,14 @@ export function useRatesState( {
 			const currentShipmentDate = getCurrentShipmentDate()?.shippingDate;
 			const requestedShipmentId = currentShipmentId;
 			const requestedCustomsFingerprint = customsFingerprint;
+			const requestedOrigin = getShipmentOrigin();
+			const hadRequestedOrigin =
+				requestedShipmentId in requestedOrigins.current;
+			const previousRequestedOrigin =
+				requestedOrigins.current[ requestedShipmentId ];
+			const recordedOrigin = toRequestedOrigin( requestedOrigin );
+			// Recorded before the await: the re-quote effect can run in the same render, before isFetching is set.
+			requestedOrigins.current[ requestedShipmentId ] = recordedOrigin;
 
 			// @ts-ignore TODO: Convert getRates to TypeScript
 			const { payload, type: responseType } = await dispatch(
@@ -472,7 +491,7 @@ export function useRatesState( {
 					),
 				],
 				orderId: getCurrentOrder().id,
-				origin: getShipmentOrigin(),
+				origin: requestedOrigin,
 				is_return: getCurrentShipmentIsReturn(),
 				shipment_options: {
 					label_date: currentShipmentDate
@@ -484,6 +503,20 @@ export function useRatesState( {
 			if ( responseType === RATES_FETCH_ABORTED ) {
 				// Aborted, do nothing, the previous request was aborted, so we don't need to set any errors.
 				// no need to setIsFetching( false ) because the request was aborted because of a new request.
+				// Nothing was quoted, so the rates on screen still match the earlier origin.
+				// A newer request for the same shipment has recorded its own; keep that one.
+				if (
+					requestedOrigins.current[ requestedShipmentId ] !==
+					recordedOrigin
+				) {
+					return;
+				}
+				if ( hadRequestedOrigin ) {
+					requestedOrigins.current[ requestedShipmentId ] =
+						previousRequestedOrigin;
+				} else {
+					delete requestedOrigins.current[ requestedShipmentId ];
+				}
 				return;
 			}
 
@@ -750,8 +783,9 @@ export function useRatesState( {
 
 	/**
 	 * updateRates drops a refresh asked for mid-request, and a request for another shipment
-	 * can abort this one's, so re-quote customs data that was never requested. Returning to a
-	 * shipment retries a failed re-quote once: another shipment's fetch clears the shared error.
+	 * can abort this one's, so re-quote customs data or an origin that was never requested.
+	 * Returning to a shipment retries a failed customs re-quote once: another shipment's fetch
+	 * clears the shared error.
 	 */
 	const requotedShipmentId = useRef( currentShipmentId );
 	useEffect( () => {
@@ -761,11 +795,19 @@ export function useRatesState( {
 		const isReturningToShipment =
 			requotedShipmentId.current !== currentShipmentId;
 		requotedShipmentId.current = currentShipmentId;
+		const isOriginUnrequested =
+			currentShipmentId in requestedOrigins.current &&
+			! isEqual(
+				requestedOrigins.current[ currentShipmentId ],
+				toRequestedOrigin( getShipmentOrigin() )
+			);
 		if (
-			! isCustomsQuoteStale ||
-			( ! isReturningToShipment &&
-				attemptedCustomsFingerprints.current[ currentShipmentId ] ===
-					customsFingerprint )
+			! isOriginUnrequested &&
+			( ! isCustomsQuoteStale ||
+				( ! isReturningToShipment &&
+					attemptedCustomsFingerprints.current[
+						currentShipmentId
+					] === customsFingerprint ) )
 		) {
 			return;
 		}
@@ -775,7 +817,7 @@ export function useRatesState( {
 			return;
 		}
 		void updateRates();
-		// Edits are re-quoted by the debounced customs refresh; re-running on them would skip the debounce.
+		// Edits are re-quoted where they happen (the debounced customs refresh, Ship from); re-running on them here would duplicate that.
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [ isFetching, currentShipmentId ] );
 

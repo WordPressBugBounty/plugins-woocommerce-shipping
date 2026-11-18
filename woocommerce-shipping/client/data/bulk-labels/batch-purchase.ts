@@ -10,13 +10,15 @@
 import { dispatch } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';
 import * as Sentry from '@sentry/react';
-import { BULK_LABELS_STORE_NAME } from 'data/constants';
+import { BULK_LABELS_STORE_NAME, LABEL_RATE_OPTION } from 'data/constants';
+import type { RateExtraOptions } from 'types';
 import type { BulkLabelsDispatch } from './store';
 import type {
 	BatchPurchaseEntry,
 	BatchPurchaseResponse,
 	BatchPurchaseShipment,
 	PurchasableBulkPurchaseOrder,
+	SelectedBatchRate,
 } from './types';
 
 export interface BulkBatchOutcome {
@@ -55,6 +57,16 @@ const isAbortError = ( err: unknown ): boolean =>
 
 const emptyResponse = (): BatchPurchaseResponse => ( {} );
 
+const toWireRate = ( rate: Omit< SelectedBatchRate, 'type' | 'parent' > ) => ( {
+	rate_id: rate.rate_id,
+	service_id: rate.service_id,
+	carrier_id: rate.carrier_id,
+	title: rate.service_name,
+	rate: rate.rate,
+	retail_rate: rate.retail_rate,
+	shipment_id: rate.shipment_id,
+} );
+
 /**
  * Build a single `shipments[]` entry for the batch purchase request.
  * The package payload reuses the dimensions/weight from the rate quote,
@@ -65,6 +77,17 @@ const buildShipment = (
 ): BatchPurchaseShipment => {
 	const rate = order.selected_rate;
 	const pkg = order.request_package;
+	const { signature } = order.bulk_options;
+	// A rate has a `parent` only when a signature is selected. Mirrors the
+	// single-order flow: the value plus its surcharge over the parent.
+	const selectedRateOptions: Partial< RateExtraOptions > = rate.parent
+		? {
+				[ LABEL_RATE_OPTION.SIGNATURE ]: {
+					value: signature,
+					surcharge: rate.rate - rate.parent.rate,
+				},
+		  }
+		: {};
 	const packagePayload = {
 		id: pkg.id,
 		box_id: pkg.box_id,
@@ -79,6 +102,7 @@ const buildShipment = (
 		shipment_id: rate.shipment_id,
 		rate_id: rate.rate_id,
 		products: pkg.products ?? [],
+		...( rate.parent ? { signature } : {} ),
 	};
 
 	return {
@@ -87,21 +111,18 @@ const buildShipment = (
 		packages: [ packagePayload ],
 		selected_rate: {
 			rate: {
-				rate_id: rate.rate_id,
-				service_id: rate.service_id,
-				carrier_id: rate.carrier_id,
-				title: rate.service_name,
-				rate: rate.rate,
-				retail_rate: rate.retail_rate,
-				shipment_id: rate.shipment_id,
+				...toWireRate( rate ),
+				...( rate.type ? { type: rate.type } : {} ),
 			},
-			parent: null,
+			parent: rate.parent ? toWireRate( rate.parent ) : null,
 		},
-		selected_rate_options: {},
+		selected_rate_options: selectedRateOptions,
 		hazmat: {},
 		customs: {},
 		features_supported_by_client: [ 'upsdap', 'fedex' ],
-		shipment_options: {},
+		// The Connect server accepts only `label_date` here. The signature
+		// travels on the package, like the single-order flow.
+		shipment_options: { label_date: order.bulk_options.ship_date },
 		is_return: false,
 	};
 };

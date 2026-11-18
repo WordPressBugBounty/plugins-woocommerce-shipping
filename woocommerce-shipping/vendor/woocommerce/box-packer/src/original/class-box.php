@@ -65,6 +65,10 @@ class Box implements \WooCommerce\BoxPacker\Box {
 	 */
 	private $volume;
 	/**
+	 * @var float|null Cached inner volume, used when no volume is set
+	 */
+	private $computed_volume = null;
+	/**
 	 * @var array Valid box types which affect packing
 	 */
 	private $valid_types = array( 'box', 'tube', 'envelope', 'packet' );
@@ -144,6 +148,8 @@ class Box implements \WooCommerce\BoxPacker\Box {
 		$this->length = $dimensions[2];
 		$this->width  = $dimensions[1];
 		$this->height = $dimensions[0];
+
+		$this->computed_volume = null;
 	}
 
 	/**
@@ -207,31 +213,66 @@ class Box implements \WooCommerce\BoxPacker\Box {
 
 		$this->reset_packed_dimensions();
 
-		while ( sizeof( $items ) > 0 ) {
-			$item = array_shift( $items );
+		$box_volume = $this->get_volume();
+		$max_weight = $this->get_max_weight();
+		// A packet's can_fit() changes the packed dimensions, so it is never memoised or skipped.
+		$pure_fit   = 'packet' !== $this->type;
+		$memo_item  = null;
+		$memo_fit   = false;
+		$min_volume = INF;
+		$min_weight = INF;
 
-			// Check dimensions
-			if ( ! $this->can_fit( $item ) ) {
+		if ( $pure_fit ) {
+			foreach ( $items as $item ) {
+				$v = $item->get_volume();
+				$w = $item->get_weight();
+				if ( $v < $min_volume ) {
+					$min_volume = $v;
+				}
+				if ( $w < $min_weight ) {
+					$min_weight = $w;
+				}
+			}
+		}
+
+		$position = 0;
+		foreach ( $items as $item ) {
+			++$position;
+
+			// Check dimensions. Units of one line share an Item object, so the result is reused for the run.
+			if ( $pure_fit ) {
+				if ( $item !== $memo_item ) {
+					$memo_item = $item;
+					$memo_fit  = $this->can_fit( $item );
+				}
+				$fits = $memo_fit;
+			} else {
+				$fits = $this->can_fit( $item );
+			}
+			if ( ! $fits ) {
 				$unpacked[] = $item;
 				continue;
 			}
 
+			$item_weight = $item->get_weight();
+			$item_volume = $item->get_volume();
+
 			// Check max weight
-			if ( ( $packed_weight + $item->get_weight() ) > $this->get_max_weight() && $this->get_max_weight() > 0 ) {
+			if ( ( $packed_weight + $item_weight ) > $max_weight && $max_weight > 0 ) {
 				$unpacked[] = $item;
 				continue;
 			}
 
 			// Check volume
-			if ( ( $packed_volume + $item->get_volume() ) > $this->get_volume() ) {
+			if ( ( $packed_volume + $item_volume ) > $box_volume ) {
 				$unpacked[] = $item;
 				continue;
 			}
 
 			// Pack
 			$packed[]      = $item;
-			$packed_volume += $item->get_volume();
-			$packed_weight += $item->get_weight();
+			$packed_volume += $item_volume;
+			$packed_weight += $item_weight;
 			$packed_value  += $item->get_value();
 
 			// Adjust dimensions if needed, after this item has been packed inside
@@ -243,8 +284,20 @@ class Box implements \WooCommerce\BoxPacker\Box {
 				$this->maybe_packed_length = NULL;
 				$this->maybe_packed_width  = NULL;
 			}
+
+			// Full: no remaining item can pass the volume or weight check (float addition is monotonic).
+			if ( $pure_fit && ( ( $packed_volume + $min_volume ) > $box_volume || ( ( $packed_weight + $min_weight ) > $max_weight && $max_weight > 0 ) ) ) {
+				foreach ( array_slice( $items, $position ) as $rest ) {
+					$unpacked[] = $rest;
+				}
+				break;
+			}
 		}
 
+		return $this->make_package( $packed, $unpacked, $packed_weight, $packed_volume, $packed_value );
+	}
+
+	private function make_package( $packed, $unpacked, $packed_weight, $packed_volume, $packed_value ) {
 		// Get weight of unpacked items
 		$unpacked_weight = 0;
 		$unpacked_volume = 0;
@@ -255,10 +308,29 @@ class Box implements \WooCommerce\BoxPacker\Box {
 
 		$package = new Package( $this->id, $this->type, $packed_weight, $packed_volume, $this->get_outer_length(), $this->get_outer_width(), $this->get_outer_height(), $packed_value, $unpacked, $packed );
 
-		// Calculate packing success % based on % of weight and volume of all items packed
-		$packed_weight_ratio      = NULL;
-		$packed_volume_ratio      = NULL;
-		$packed_weight_to_compare = $packed_weight - $this->get_weight();
+		$package->percent = self::success_percent( $packed_weight - $this->get_weight(), $packed_volume, $unpacked_weight, $unpacked_volume, sizeof( $packed ), sizeof( $unpacked ) );
+
+		return $package;
+	}
+
+	/**
+	 * Packing success % based on % of weight and volume of all items packed.
+	 * Packer::repeat_iterations() relies on this being the only place the value is computed.
+	 *
+	 * @internal Not part of the public API; it can change in any release.
+	 *
+	 * @param float $packed_weight_to_compare Weight of the packed items, without the box.
+	 * @param float $packed_volume            Volume of the packed items.
+	 * @param float $unpacked_weight          Weight of the items left over.
+	 * @param float $unpacked_volume          Volume of the items left over.
+	 * @param int   $packed_count             Number of packed items.
+	 * @param int   $unpacked_count           Number of items left over.
+	 *
+	 * @return float|int
+	 */
+	public static function success_percent( $packed_weight_to_compare, $packed_volume, $unpacked_weight, $unpacked_volume, $packed_count, $unpacked_count ) {
+		$packed_weight_ratio = NULL;
+		$packed_volume_ratio = NULL;
 
 		if ( $packed_weight_to_compare + $unpacked_weight > 0 ) {
 			$packed_weight_ratio = $packed_weight_to_compare / ( $packed_weight_to_compare + $unpacked_weight );
@@ -269,18 +341,16 @@ class Box implements \WooCommerce\BoxPacker\Box {
 
 		if ( is_null( $packed_weight_ratio ) && is_null( $packed_volume_ratio ) ) {
 			// Fallback to amount packed
-			$package->percent = ( sizeof( $packed ) / ( sizeof( $unpacked ) + sizeof( $packed ) ) ) * 100;
+			return ( $packed_count / ( $unpacked_count + $packed_count ) ) * 100;
 		} elseif ( is_null( $packed_weight_ratio ) ) {
 			// Volume only
-			$package->percent = $packed_volume_ratio * 100;
+			return $packed_volume_ratio * 100;
 		} elseif ( is_null( $packed_volume_ratio ) ) {
 			// Weight only
-			$package->percent = $packed_weight_ratio * 100;
-		} else {
-			$package->percent = $packed_weight_ratio * $packed_volume_ratio * 100;
+			return $packed_weight_ratio * 100;
 		}
 
-		return $package;
+		return $packed_weight_ratio * $packed_volume_ratio * 100;
 	}
 
 	/**
@@ -289,9 +359,13 @@ class Box implements \WooCommerce\BoxPacker\Box {
 	public function get_volume() {
 		if ( $this->volume ) {
 			return $this->volume;
-		} else {
-			return floatval( $this->get_height() * $this->get_width() * $this->get_length() );
 		}
+
+		if ( null === $this->computed_volume ) {
+			$this->computed_volume = floatval( $this->get_height() * $this->get_width() * $this->get_length() );
+		}
+
+		return $this->computed_volume;
 	}
 
 	/**

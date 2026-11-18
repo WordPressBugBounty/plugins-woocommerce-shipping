@@ -28,6 +28,17 @@ export const requestDestinationAddressModal = (
 	);
 };
 
+export const OPEN_ORIGIN_ADDRESS_MODAL_EVENT =
+	'wcshipping:open-origin-address-modal';
+
+export const requestOriginAddressModal = () => {
+	if ( typeof window === 'undefined' ) {
+		return;
+	}
+
+	window.dispatchEvent( new CustomEvent( OPEN_ORIGIN_ADDRESS_MODAL_EVENT ) );
+};
+
 const getFieldLabelText = ( field: HTMLInputElement ) => {
 	const fieldLabels = Array.from( field.labels ?? [] )
 		.map( ( label ) => label.textContent ?? '' )
@@ -173,6 +184,7 @@ export const customerPaidBannerStyles = {
 		boxSizing: 'border-box' as const,
 	},
 	text: {
-		color: 'var(--gutenberg-gray-700, #757575)',
+		// The usual muted gray is under 4.5:1 on the banner's gray.
+		color: '#646970',
 	},
 };

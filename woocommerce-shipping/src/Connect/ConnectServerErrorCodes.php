@@ -58,6 +58,23 @@ final class ConnectServerErrorCodes {
 	public const MISSING_EU_PRODUCT_IDS = 'missing_eu_product_ids';
 
 	/**
+	 * The carrier could not process a label void, typically because its
+	 * payment system was unavailable. Returned as a 503 by
+	 * `POST /shipping/label/{id}/refund`; no refund record is kept, so the
+	 * label is still refundable and the message tells the merchant to try
+	 * again later.
+	 */
+	public const CARRIER_REFUND_UNAVAILABLE = 'carrier_refund_unavailable';
+
+	/**
+	 * The carrier declined a label void: the void window has passed, the
+	 * parcel has been shipped, or the carrier reported the refund as rejected.
+	 * Returned as a 400 by `POST /shipping/label/{id}/refund`; the message
+	 * names the reason where the carrier gave one.
+	 */
+	public const CARRIER_REFUND_REJECTED = 'carrier_refund_rejected';
+
+	/**
 	 * Error codes that must reach the client with their code, message and
 	 * status intact instead of being collapsed into a generic server error.
 	 *
@@ -72,6 +89,8 @@ final class ConnectServerErrorCodes {
 		self::MISSING_UPSDAP_TOS_ACCEPTANCE,
 		self::ORIGIN_ADDRESS_LIMIT_REACHED,
 		self::MISSING_EU_PRODUCT_IDS,
+		self::CARRIER_REFUND_UNAVAILABLE,
+		self::CARRIER_REFUND_REJECTED,
 	);
 
 	/**
@@ -101,6 +120,8 @@ final class ConnectServerErrorCodes {
 			'MISSING_UPSDAP_TOS_ACCEPTANCE' => self::MISSING_UPSDAP_TOS_ACCEPTANCE,
 			'ORIGIN_ADDRESS_LIMIT_REACHED'  => self::ORIGIN_ADDRESS_LIMIT_REACHED,
 			'MISSING_EU_PRODUCT_IDS'        => self::MISSING_EU_PRODUCT_IDS,
+			'CARRIER_REFUND_UNAVAILABLE'    => self::CARRIER_REFUND_UNAVAILABLE,
+			'CARRIER_REFUND_REJECTED'       => self::CARRIER_REFUND_REJECTED,
 		);
 	}
 }

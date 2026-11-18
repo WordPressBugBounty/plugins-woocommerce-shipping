@@ -1,8 +1,17 @@
 import { useEffect, useMemo, useRef, useState } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
+import { __ } from '@wordpress/i18n';
+import { camelCase, groupBy } from 'lodash';
+import { LABEL_RATE_TYPE } from 'data/constants';
 import { getBatchRatesPath } from 'data/routes';
-import type { LocationResponse } from 'types';
-import type { OrderRate, OrderRatesMap, OrderRateErrors } from './types';
+import { getExtraOptionRate } from 'utils/rates';
+import type { LocationResponse, Rate, SnakeToCamelCase } from 'types';
+import type {
+	BulkPurchaseOptions,
+	OrderRate,
+	OrderRateErrors,
+	OrderRatesMap,
+} from './types';
 
 type OriginInput = Partial< LocationResponse >;
 
@@ -22,6 +31,8 @@ export interface RateRequestOrder {
 		box_id: string;
 		is_letter: boolean;
 	};
+	/** UTC-midnight ISO string, sent as `shipment_options.label_date`. */
+	ship_date: string;
 }
 
 interface UseOrderRatesResult {
@@ -37,7 +48,23 @@ interface UseOrderRatesResult {
 // keyed by it. Mirrors the single-order flow's `default_box` convention.
 const PACKAGE_ID = 'default_box';
 
-const EMPTY_RATES: OrderRatesMap = {};
+type OrderRateBuckets = Record<
+	( typeof LABEL_RATE_TYPE )[
+		| 'DEFAULT'
+		| 'SIGNATURE_REQUIRED'
+		| 'ADULT_SIGNATURE_REQUIRED' ],
+	OrderRate[]
+>;
+type OrderRateBucketsMap = Record< number, OrderRateBuckets >;
+
+// `getExtraOptionRate` matches by service id only and memoizes on the
+// array identity, so hand it one stable array per carrier.
+const ratesByCarrierCache = new WeakMap<
+	OrderRate[],
+	Record< string, OrderRate[] >
+>();
+
+const EMPTY_RATES: OrderRateBucketsMap = {};
 const EMPTY_ERRORS: OrderRateErrors = {};
 
 /**
@@ -56,6 +83,7 @@ export const toRateAddress = (
 	const { country, state, ...rest } = source;
 	delete rest.id;
 	delete rest.is_verified;
+	delete rest.default_address;
 	return {
 		...rest,
 		country_code: country ?? '',
@@ -125,8 +153,8 @@ const normalizeRates = ( rawRates: RawRate[] ): OrderRate[] =>
 
 const parseBatchResponse = (
 	response: Record< string, RawOrderEntry > | undefined
-): { rates: OrderRatesMap; errors: OrderRateErrors } => {
-	const rates: OrderRatesMap = {};
+): { rates: OrderRateBucketsMap; errors: OrderRateErrors } => {
+	const rates: OrderRateBucketsMap = {};
 	const errors: OrderRateErrors = {};
 	if ( ! response ) {
 		return { rates, errors };
@@ -158,8 +186,17 @@ const parseBatchResponse = (
 		const packageBucket =
 			buckets[ PACKAGE_ID ] ?? Object.values( buckets )[ 0 ];
 
-		const rawRates = packageBucket?.default?.rates ?? [];
-		rates[ orderId ] = normalizeRates( rawRates );
+		const bucketRates = ( type: keyof OrderRateBuckets ): OrderRate[] =>
+			normalizeRates( packageBucket?.[ type ]?.rates ?? [] );
+		rates[ orderId ] = {
+			[ LABEL_RATE_TYPE.DEFAULT ]: bucketRates( LABEL_RATE_TYPE.DEFAULT ),
+			[ LABEL_RATE_TYPE.SIGNATURE_REQUIRED ]: bucketRates(
+				LABEL_RATE_TYPE.SIGNATURE_REQUIRED
+			),
+			[ LABEL_RATE_TYPE.ADULT_SIGNATURE_REQUIRED ]: bucketRates(
+				LABEL_RATE_TYPE.ADULT_SIGNATURE_REQUIRED
+			),
+		};
 	}
 
 	return { rates, errors };
@@ -168,15 +205,17 @@ const parseBatchResponse = (
 /**
  * Quote rates for every order in one POST to the batch rate endpoint,
  * using the shared origin and each order's resolved package. Refetches
- * only when the origin or a package/destination signature changes — not
- * on unrelated re-renders.
+ * only when the origin, a package/destination signature or the ship date
+ * changes — not on unrelated re-renders.
  */
 export const useOrderRates = (
 	origin: OriginInput | null,
-	orders: RateRequestOrder[]
+	orders: RateRequestOrder[],
+	signatureOption: BulkPurchaseOptions[ 'signature' ]
 ): UseOrderRatesResult => {
-	const [ rates, setRates ] = useState< OrderRatesMap >( EMPTY_RATES );
-	const [ rateErrors, setRateErrors ] =
+	const [ rateBuckets, setRateBuckets ] =
+		useState< OrderRateBucketsMap >( EMPTY_RATES );
+	const [ serverRateErrors, setRateErrors ] =
 		useState< OrderRateErrors >( EMPTY_ERRORS );
 	const [ isResolving, setIsResolving ] = useState< boolean >( false );
 	// Order ids whose rate request is currently in flight, so each row can
@@ -196,9 +235,9 @@ export const useOrderRates = (
 		[ orders ]
 	);
 
-	// Per-order fingerprint: changes only when *this* order's box or
-	// destination changes, so a single manual package edit re-quotes that
-	// one order instead of the whole batch.
+	// Per-order fingerprint: changes only when *this* order's box,
+	// destination or ship date changes, so a single manual package edit
+	// re-quotes that one order instead of the whole batch.
 	const orderSig = ( o: RateRequestOrder ): string =>
 		JSON.stringify( [
 			o.package.length,
@@ -207,6 +246,7 @@ export const useOrderRates = (
 			o.package.weight,
 			o.package.box_id,
 			o.package.is_letter,
+			o.ship_date,
 			o.destination.postcode,
 			o.destination.country,
 			o.destination.state,
@@ -216,10 +256,13 @@ export const useOrderRates = (
 	// all of them.
 	const originSig = origin
 		? JSON.stringify( [
+				origin.id,
 				origin.postcode,
 				origin.country,
 				origin.state,
+				origin.city,
 				origin.address_1,
+				origin.address_2,
 		  ] )
 		: '';
 
@@ -256,7 +299,7 @@ export const useOrderRates = (
 		if ( ! reqOrigin || reqOrders.length === 0 ) {
 			fetchedSigRef.current = new Map();
 			originSigRef.current = null;
-			setRates( EMPTY_RATES );
+			setRateBuckets( EMPTY_RATES );
 			setRateErrors( EMPTY_ERRORS );
 			setIsResolving( false );
 			setResolvingIds( [] );
@@ -287,7 +330,7 @@ export const useOrderRates = (
 			} );
 			return changed ? next : map;
 		};
-		setRates( ( prev ) => prune( prev ) );
+		setRateBuckets( ( prev ) => prune( prev ) );
 		setRateErrors( ( prev ) => prune( prev ) );
 
 		// A changed origin invalidates every quote; otherwise only the
@@ -341,6 +384,7 @@ export const useOrderRates = (
 					return {
 						order_id: o.order_id,
 						destination: { ...destination, phone: destPhone },
+						shipment_options: { label_date: o.ship_date },
 						packages: [
 							{
 								id: PACKAGE_ID,
@@ -363,7 +407,7 @@ export const useOrderRates = (
 				const parsed = parseBatchResponse( response );
 				// Merge only the fetched orders; leave every other order's
 				// existing rates untouched.
-				setRates( ( prev ) => {
+				setRateBuckets( ( prev ) => {
 					const next = { ...prev };
 					toFetch.forEach( ( o ) => {
 						if ( o.order_id in parsed.rates ) {
@@ -404,7 +448,7 @@ export const useOrderRates = (
 				// inputs changed, so any prior rate is stale and must not
 				// keep reading as "Ready". Orders that weren't part of
 				// this request keep their valid rates (no full-table wipe).
-				setRates( ( prev ) => {
+				setRateBuckets( ( prev ) => {
 					const next = { ...prev };
 					toFetch.forEach( ( o ) => delete next[ o.order_id ] );
 					return next;
@@ -431,6 +475,59 @@ export const useOrderRates = (
 		};
 		// eslint-disable-next-line react-hooks/exhaustive-deps -- `signature` encodes every input the effect reads
 	}, [ signature ] );
+
+	// Every quote holds all signature buckets, so the option is applied
+	// here and stays out of the fetch fingerprint.
+	const { rates, rateErrors } = useMemo( () => {
+		const selected: OrderRatesMap = {};
+		const unavailable: OrderRateErrors = {};
+		const bucketKey =
+			signatureOption === 'adult'
+				? LABEL_RATE_TYPE.ADULT_SIGNATURE_REQUIRED
+				: LABEL_RATE_TYPE.SIGNATURE_REQUIRED;
+		const type = camelCase( bucketKey ) as SnakeToCamelCase<
+			typeof bucketKey
+		>;
+		Object.entries( rateBuckets ).forEach( ( [ key, buckets ] ) => {
+			const orderId = Number( key );
+			const baseRates = buckets[ LABEL_RATE_TYPE.DEFAULT ];
+			if ( signatureOption === 'no' ) {
+				selected[ orderId ] = baseRates;
+				return;
+			}
+			const optionRates = buckets[ bucketKey ];
+			let ratesByCarrier = ratesByCarrierCache.get( optionRates );
+			if ( ! ratesByCarrier ) {
+				ratesByCarrier = groupBy( optionRates, 'carrierId' );
+				ratesByCarrierCache.set( optionRates, ratesByCarrier );
+			}
+			selected[ orderId ] = baseRates.flatMap( ( baseRate ) => {
+				const carrierRates = ratesByCarrier[ baseRate.carrierId ];
+				const signatureRate =
+					carrierRates &&
+					getExtraOptionRate(
+						baseRate.serviceId,
+						// Only the `OrderRate` fields of `Rate` are read.
+						carrierRates as Rate[],
+						baseRate.rate,
+						type
+					);
+				return signatureRate
+					? [ { ...signatureRate, parent: baseRate } ]
+					: [];
+			} );
+			if ( baseRates.length > 0 && selected[ orderId ].length === 0 ) {
+				unavailable[ orderId ] = __(
+					'Selected signature option not available',
+					'woocommerce-shipping'
+				);
+			}
+		} );
+		return {
+			rates: selected,
+			rateErrors: { ...unavailable, ...serverRateErrors },
+		};
+	}, [ rateBuckets, serverRateErrors, signatureOption ] );
 
 	return useMemo(
 		() => ( { isResolving, resolvingIds, error, rates, rateErrors } ),

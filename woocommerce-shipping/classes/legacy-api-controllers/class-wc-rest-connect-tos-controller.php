@@ -5,6 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 use Automattic\WCShipping\Connect\WC_Connect_Options;
+use Automattic\WCShipping\WPCOMConnection\ConnectionPermissions;
 use WP_REST_Response;
 use WP_Error;
 
@@ -44,8 +45,19 @@ class WC_REST_Connect_Tos_Controller extends WC_REST_Connect_Base_Controller {
 	 * Validate the requester's permissions
 	 */
 	public function check_permission( $request ) {
-		return current_user_can( 'manage_woocommerce' ) &&
+		$can_manage_legacy_tos = current_user_can( 'manage_woocommerce' ) &&
 			current_user_can( 'install_plugins' ) &&
 			current_user_can( 'activate_plugins' );
+
+		if ( ! $can_manage_legacy_tos ) {
+			return false;
+		}
+
+		// Keep the existing read permission for reads (HEAD is served by the GET route). Every other method changes store-wide legal state.
+		if ( in_array( $request->get_method(), array( 'GET', 'HEAD' ), true ) ) {
+			return true;
+		}
+
+		return ConnectionPermissions::user_can_accept_tos();
 	}
 }

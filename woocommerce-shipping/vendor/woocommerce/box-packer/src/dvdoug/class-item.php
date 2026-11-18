@@ -4,7 +4,7 @@ namespace WooCommerce\BoxPacker\DVDoug;
 
 use WooCommerce\BoxPacker\Abstract_Item;
 
-class Item extends Abstract_Item implements \DVDoug\BoxPacker\Item {
+class Item extends Abstract_Item implements \WooCommerce\BoxPacker\Vendor\DVDoug\BoxPacker\Item {
 
 	use Util;
 

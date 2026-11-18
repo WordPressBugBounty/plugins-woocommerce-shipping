@@ -1,5 +1,10 @@
 import { Destination, OriginAddress } from 'types';
 
+/** True when a label can be bought from this origin. */
+export const canPurchaseFromOrigin = (
+	origin: Partial< OriginAddress > | undefined | null
+): boolean => Boolean( origin?.isVerified ) && origin?.isApproved !== false;
+
 /**
  * Returns true if there are no origin addresses or every address is unverified.
  *

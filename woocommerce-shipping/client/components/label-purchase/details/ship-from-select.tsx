@@ -1,6 +1,6 @@
 import React from 'react';
 import { __ } from '@wordpress/i18n';
-import { DropdownMenu, Flex, MenuGroup, Modal } from '@wordpress/components';
+import { Flex, Modal } from '@wordpress/components';
 import {
 	createInterpolateElement,
 	useCallback,
@@ -9,29 +9,24 @@ import {
 	useState,
 } from '@wordpress/element';
 import { Link } from 'components/wc';
-import { chevronDown, Icon } from '@wordpress/icons';
 import { useSelect } from '@wordpress/data';
+import { isEqual } from 'lodash';
 import {
-	addressToString,
 	camelCaseKeys,
 	formatAddressFields,
 	getConfig,
 	snakeCaseKeys,
 } from 'utils';
 import { OriginAddress } from 'types';
-import { settingsPageUrl } from '../constants';
-import { ShipFromOption } from './ship-from-option';
+import { OPEN_ORIGIN_ADDRESS_MODAL_EVENT, settingsPageUrl } from '../constants';
+import { ShipFromDropdown } from './ship-from-dropdown';
 import { useLabelPurchaseContext } from 'context/label-purchase';
 import { AddressStep } from 'components/address-step';
 import { ADDRESS_TYPES } from 'data/constants';
 import { AddressVerifiedIcon } from 'components/address-verified-icon';
 import { addressStore } from 'data/address';
 
-interface ShipFromSelectProps {
-	disabled: boolean;
-}
-
-export const ShipFromSelect = ( { disabled }: ShipFromSelectProps ) => {
+export const ShipFromSelect = () => {
 	const origins = useSelect(
 		( select ) => select( addressStore ).getOriginAddresses(),
 		[]
@@ -42,8 +37,9 @@ export const ShipFromSelect = ( { disabled }: ShipFromSelectProps ) => {
 	} = useLabelPurchaseContext();
 	const prevOrigin = useRef( getShipmentOrigin() );
 
+	// Re-quote once the edited origin is in state, not the pre-edit one.
 	useEffect( () => {
-		if ( prevOrigin.current?.id !== getShipmentOrigin()?.id ) {
+		if ( ! isEqual( prevOrigin.current, getShipmentOrigin() ) ) {
 			updateRates();
 		}
 		prevOrigin.current = getShipmentOrigin();
@@ -57,10 +53,28 @@ export const ShipFromSelect = ( { disabled }: ShipFromSelectProps ) => {
 		( address: OriginAddress ) => {
 			setShipmentOrigin( address.id );
 			openAddressForEdit( false );
-			updateRates();
 		},
-		[ setShipmentOrigin, updateRates ]
+		[ setShipmentOrigin ]
 	);
+
+	const editShipmentOrigin = useCallback( () => {
+		const origin = getShipmentOrigin();
+		if ( origin?.id ) {
+			openAddressForEdit( origin );
+		}
+	}, [ getShipmentOrigin ] );
+
+	useEffect( () => {
+		window.addEventListener(
+			OPEN_ORIGIN_ADDRESS_MODAL_EVENT,
+			editShipmentOrigin
+		);
+		return () =>
+			window.removeEventListener(
+				OPEN_ORIGIN_ADDRESS_MODAL_EVENT,
+				editShipmentOrigin
+			);
+	}, [ editShipmentOrigin ] );
 
 	if ( origins.length < 1 ) {
 		return createInterpolateElement(
@@ -87,49 +101,16 @@ export const ShipFromSelect = ( { disabled }: ShipFromSelectProps ) => {
 				justify="flex-start"
 				align="flex-start"
 			>
-				<DropdownMenu
-					label={ __(
-						'Choose a ship from address',
-						'woocommerce-shipping'
-					) }
-					text={ '' }
-					icon={
-						<>
-							<span>
-								{ addressToString( getShipmentOrigin() ) }
-							</span>
-							<Icon icon={ chevronDown } />
-						</>
-					}
-					className="origin-address-dropdown"
-					variant="ship-from"
-					disabled={ disabled }
-				>
-					{ ( { onClose } ) => (
-						<MenuGroup className="origin-address-options">
-							{ origins.map( ( address ) => (
-								<ShipFromOption
-									key={ address.id }
-									close={ onClose }
-									address={ address }
-									isSelected={
-										address.id === getShipmentOrigin()?.id
-									}
-									editAddress={ openAddressForEdit }
-								/>
-							) ) }
-						</MenuGroup>
-					) }
-				</DropdownMenu>
+				<ShipFromDropdown
+					origins={ origins }
+					selectedOrigin={ getShipmentOrigin() }
+					onSelect={ ( address ) => setShipmentOrigin( address.id ) }
+					onEdit={ openAddressForEdit }
+				/>
 				{ noValidAddress && (
 					<AddressVerifiedIcon
 						isVerified={ false }
-						onClick={ () => {
-							const org = getShipmentOrigin();
-							if ( org ) {
-								openAddressForEdit( org );
-							}
-						} }
+						onClick={ () => editShipmentOrigin() }
 						errorMessage={ __(
 							'Validate your address',
 							'woocommerce-shipping'

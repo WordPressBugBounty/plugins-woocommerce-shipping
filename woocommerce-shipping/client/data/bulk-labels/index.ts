@@ -25,6 +25,7 @@ export type {
 	BatchPurchaseShipment,
 	BatchPurchaseSuccessEntry,
 	BatchSummary,
+	BulkPurchaseOptions,
 	BulkRequestPackage,
 	BulkPurchaseOrder,
 	ManualPackageSelections,

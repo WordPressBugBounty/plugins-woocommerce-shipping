@@ -266,19 +266,25 @@ export const CustomPackage = withBoundary(
 			};
 		};
 
-		const getRates = useCallback( async () => {
-			const tracksProperties = {
-				package_id: rawPackageData?.id,
-				is_letter:
-					rawPackageData?.type === CUSTOM_PACKAGE_TYPES.ENVELOPE,
-				width: rawPackageData?.width,
-				height: rawPackageData?.height,
-				length: rawPackageData?.length,
-				box_weight: rawPackageData?.boxWeight,
-			};
-			recordEvent( 'label_purchase_get_rates_clicked', tracksProperties );
-			fetchRates( rawPackageData );
-		}, [ rawPackageData, fetchRates ] );
+		const getRates = useCallback(
+			async ( userInitiated = true ) => {
+				const tracksProperties = {
+					package_id: rawPackageData?.id,
+					is_letter:
+						rawPackageData?.type === CUSTOM_PACKAGE_TYPES.ENVELOPE,
+					width: rawPackageData?.width,
+					height: rawPackageData?.height,
+					length: rawPackageData?.length,
+					box_weight: rawPackageData?.boxWeight,
+				};
+				recordEvent(
+					'label_purchase_get_rates_clicked',
+					tracksProperties
+				);
+				fetchRates( rawPackageData, { userInitiated } );
+			},
+			[ rawPackageData, fetchRates ]
+		);
 
 		const isExtraLabelPurchase = useCallback( () => {
 			return ! hasMissingPurchase();

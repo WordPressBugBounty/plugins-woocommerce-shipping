@@ -8,7 +8,6 @@ import { __, _x, sprintf } from '@wordpress/i18n';
 import { addressToString } from 'utils';
 import { OriginAddress } from 'types';
 import { AddressVerifiedIcon } from '../../address-verified-icon';
-import { useLabelPurchaseContext } from 'context/label-purchase';
 import { check, Icon } from '@wordpress/icons';
 import { Link } from 'components/wc';
 import { ADDRESS_TYPES } from 'data/constants';
@@ -17,35 +16,30 @@ interface ShipFromOptionProps {
 	address: OriginAddress;
 	close: () => void;
 	isSelected: boolean;
-	editAddress: ( address: OriginAddress ) => void;
+	onSelect: ( address: OriginAddress ) => void;
+	onEdit?: ( address: OriginAddress ) => void;
+	disabled?: boolean;
 }
 
 export const ShipFromOption = ( {
 	address,
 	close,
 	isSelected,
-	editAddress,
+	onSelect,
+	onEdit,
+	disabled,
 }: ShipFromOptionProps ) => {
-	const {
-		shipment: { setShipmentOrigin },
-	} = useLabelPurchaseContext();
-
-	const onEditClick = ( e: MouseEvent ) => {
-		e.stopPropagation();
-		e.preventDefault();
-		close();
-		editAddress( address );
-	};
 	return (
 		<MenuItem
 			onClick={ () => {
 				if ( address.isVerified ) {
-					setShipmentOrigin( address.id );
+					onSelect( address );
 				} else {
-					editAddress( address );
+					onEdit?.( address );
 				}
 				close();
 			} }
+			disabled={ disabled }
 			aria-label={ addressToString( address ) }
 			isSelected={ isSelected }
 			role="menuitemradio"
@@ -66,9 +60,20 @@ export const ShipFromOption = ( {
 						  ) }
 				</sub>
 				<Text truncate={ false }>{ addressToString( address ) }</Text>
-				<Link onClick={ onEditClick } type="wp-admin" href="#">
-					{ __( 'Edit', 'woocommerce-shipping' ) }
-				</Link>
+				{ onEdit && (
+					<Link
+						onClick={ ( e: MouseEvent ) => {
+							e.stopPropagation();
+							e.preventDefault();
+							close();
+							onEdit( address );
+						} }
+						type="wp-admin"
+						href="#"
+					>
+						{ __( 'Edit', 'woocommerce-shipping' ) }
+					</Link>
+				) }
 				{ Boolean( address.isVerified ) === false && (
 					<AddressVerifiedIcon
 						isVerified={ false }

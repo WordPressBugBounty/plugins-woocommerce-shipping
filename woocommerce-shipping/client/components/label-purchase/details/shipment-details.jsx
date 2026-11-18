@@ -217,9 +217,7 @@ export const ShipmentDetails = withBoundary(
 				// Opting into the new styles for margin bottom
 				__nextHasNoMarginBottom={ true }
 			>
-				{ ! hasPurchasedLabel( false ) && (
-					<ShipFromSelect disabled={ hasPurchasedLabel( false ) } />
-				) }
+				{ ! hasPurchasedLabel( false ) && <ShipFromSelect /> }
 				{ hasPurchasedLabel( false ) && getShipmentPurchaseOrigin() && (
 					<Text>
 						{ addressToString( getShipmentPurchaseOrigin() ) }

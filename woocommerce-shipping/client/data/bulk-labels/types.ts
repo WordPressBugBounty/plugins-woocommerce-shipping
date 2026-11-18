@@ -17,6 +17,7 @@ import type {
 	LocationResponse,
 	Package,
 	Rate,
+	RateExtraOptionValue,
 } from 'types';
 
 /**
@@ -117,6 +118,8 @@ export type SelectedBatchRate = Pick<
 > & {
 	rate: number;
 	retail_rate: number;
+	type?: OrderRate[ 'type' ];
+	parent?: Omit< SelectedBatchRate, 'type' | 'parent' >;
 };
 
 /**
@@ -128,9 +131,16 @@ export interface PurchasableBulkPurchaseOrder extends BulkPurchaseOrder {
 	selected_rate: SelectedBatchRate;
 	request_package: BulkRequestPackage;
 	purchase_destination: Record< string, unknown >;
+	bulk_options: BulkPurchaseOptions;
 }
 
 export type BatchPurchaseShipment = Record< string, unknown >;
+
+export interface BulkPurchaseOptions {
+	/** UTC-midnight ISO string, same format as the single-label `label_date`. */
+	ship_date: string;
+	signature: Extract< RateExtraOptionValue, string >;
+}
 
 export interface BatchPurchaseSuccessEntry {
 	labels: {
@@ -242,7 +252,12 @@ export type OrderRate = Pick<
 	| 'rate'
 	| 'retailRate'
 	| 'deliveryDays'
->;
+	| 'type'
+> & {
+	// A signature rate is a full price. `batch-purchase.ts` stores its base
+	// rate so the label UI can group the base fee and the surcharge.
+	parent?: OrderRate;
+};
 
 /** order_id → quoted services (empty array when the order couldn't be quoted). */
 export type OrderRatesMap = Record< number, OrderRate[] >;
